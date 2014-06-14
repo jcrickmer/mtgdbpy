@@ -1,9 +1,7 @@
-{% if card_list %}
-    <ul>
-    {% for card in card_list %}
-        <li><a href="{% url 'cards:detail' card.multiverseid %}">{{ card.basecard.name }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No cards are available.</p>
-{% endif %}
+{% extends "cards/base.html" %}
+
+{% block title %}Card Search{% endblock %}
+
+{% block content %}
+go to the <a href="list/">List</a>.
+{% endblock %}

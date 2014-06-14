@@ -1,1 +1,83 @@
-{{ card }}
+{% extends "cards/base.html" %}
+
+{% block title %}{{ card.basecard.name }}{% endblock %}
+
+{% block content %}
+<img src="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid={{ card.multiverseid }}&type=card" />
+<table>
+  <tbody>
+    <tr>
+      <td>Name<td>
+      <td>{{ card.basecard.name }}</td>
+    </tr>
+    <tr>
+      <td>Mana Cost<td>
+      <td>{{ card.basecard.mana_cost }}</td>
+    </tr>
+    <tr>
+      <td>Type<td>
+      <td>{% for ttype in card.basecard.types.all %}{{ ttype.type }} {% endfor %}</td>
+    </tr>
+    <tr>
+      <td>Subtype<td>
+      <td>{% for tsubtype in card.basecard.subtypes.all %}{{ tsubtype.subtype }} {% endfor %}</td>
+    </tr>
+    <tr>
+      <td>Text<td>
+      <td>{{ card.basecard.rules_text }}</td>
+    </tr>
+{% if card.basecard.power %}
+    <tr>
+      <td>Power<td>
+      <td>{{ card.basecard.power }}</td>
+    </tr>
+{% endif %}
+{% if card.basecard.toughness %}
+    <tr>
+      <td>Toughness<td>
+      <td>{{ card.basecard.toughness }}</td>
+    </tr>
+{% endif %}
+{% if card.basecard.loyalty > 0 %}
+    <tr>
+      <td>Loyalty<td>
+      <td>{{ card.basecard.loyalty }}</td>
+    </tr>
+{% endif %}
+    <tr>
+      <td>Flavor Text<td>
+      <td>{{ card.flavor_text }}</td>
+    </tr>
+{% if card.mark.mark %}
+    <tr>
+      <td>Mark<td>
+      <td>{{ card.mark.mark }}</td>
+    </tr>
+{% endif %}
+    <tr>
+      <td>CMC<td>
+      <td>{{ card.basecard.cmc }}</td>
+    </tr>
+    <tr>
+      <td>Color<td>
+      <td>{% for tcolor in card.basecard.colors.all %}{{ tcolor.color }} {% endfor %}{% if card.basecard.colors.all|length == 0 %}Colorless{% endif %}</td>
+    </tr>
+    <tr>
+      <td>Multiverse Id<td>
+      <td>{{ card.multiverseid }}</td>
+    </tr>
+    <tr>
+      <td>Expansion Set<td>
+      <td>{{ card.expansionset.name }}</td>
+    </tr>
+    <tr>
+      <td>Rarity<td>
+      <td>{{ card.rarity.rarity }}</td>
+    </tr>
+    <tr>
+      <td>Card Number<td>
+      <td>{{ card.card_number }}</td>
+    </tr>
+  </tbody>
+<table>
+{% endblock %}
