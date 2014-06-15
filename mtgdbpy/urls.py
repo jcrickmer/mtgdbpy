@@ -4,6 +4,6 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
+    url(r'^cards/admin/', include(admin.site.urls)),
     url(r'^cards/', include('mtgdbapp.urls', namespace="cards")),
-    url(r'^admin/', include(admin.site.urls)),
 )
