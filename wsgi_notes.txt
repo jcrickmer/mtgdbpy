@@ -7,10 +7,12 @@ This is what I added to Apache's configs:
 
    DocumentRoot /tmp/public_html
 
-   WSGIScriptAlias /a /home/jason/projects/mtgdbpy/mtgdb.wsgi
+   WSGIScriptAlias /a /home/jason/projects/mtgdbpy/mtgdb.wsgi/cards
    <Directory /home/jason/projects/mtgdbpy>
       Order allow,deny
       Allow from all
    </Directory>
+
+   Alias /cn/ /home/jason/projects/mtgdbpy/cn/
 
 </VirtualHost>
