@@ -1,0 +1,16 @@
+This is what I added to Apache's configs:
+
+<VirtualHost smoker:80>
+   ServerName smoker
+   ServerAlias smoker
+   ServerAdmin webmaster@smoker
+
+   DocumentRoot /tmp/public_html
+
+   WSGIScriptAlias /a /home/jason/projects/mtgdbpy/mtgdb.wsgi
+   <Directory /home/jason/projects/mtgdbpy>
+      Order allow,deny
+      Allow from all
+   </Directory>
+
+</VirtualHost>
