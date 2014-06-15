@@ -1,0 +1,42 @@
+.aligncenter {
+  text-align: center;
+}
+.photo { 
+  width: 300px; 
+  text-align: center; 
+} 
+.photo .ui-widget-header { 
+  margin: 1em 0; 
+} 
+.map { 
+  width: 350px; 
+  height: 350px; 
+} 
+.ui-tooltip { 
+  max-width: 350px; 
+} 
+
+div.embed-wrap { /* solving problem of Google follow widget making an ugly square */
+  padding-bottom: 20%;
+  padding-top:20%;
+}
+
+a.footnote_ref {
+  font-size: 70%;
+  vertical-align: super;
+}
+
+div.footnotes {
+  border-top: 1px solid #909090;
+  color: #808080;
+  font-size: 90%;
+}
+
+th {
+  font-weight: bold;
+  vertical-align: bottom;
+}
+
+th, td {
+  padding: 0.5em;
+}
