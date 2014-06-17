@@ -1,10 +1,12 @@
 .aligncenter {
   text-align: center;
 }
+/*
 .photo { 
   width: 300px; 
   text-align: center; 
-} 
+}
+*/ 
 .photo .ui-widget-header { 
   margin: 1em 0; 
 } 
