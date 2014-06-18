@@ -12,7 +12,7 @@
     </tr>
     <tr>
       <td>Mana Cost<td>
-      <td>{{ card.basecard.mana_cost }}</td>
+      <td>{{ mana_cost_html }}</td>
     </tr>
     <tr>
       <td>Type<td>
@@ -24,7 +24,7 @@
     </tr>
     <tr>
       <td>Text<td>
-      <td>{{ card.basecard.rules_text }}</td>
+      <td>{{ rules_text_html }}</td>
     </tr>
 {% if card.basecard.power %}
     <tr>
@@ -46,7 +46,7 @@
 {% endif %}
     <tr>
       <td>Flavor Text<td>
-      <td>{{ card.flavor_text }}</td>
+      <td>{{ flavor_text_html }}</td>
     </tr>
 {% if card.mark.mark %}
     <tr>

@@ -1,8 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <link rel="stylesheet" href="style.css" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% endblock %} - card.ninja</title>
+
+    <!-- Bootstrap -->
+    <link href="/cn/bootstrap/css/bootstrap.min.css" rel="stylesheet"> 
+    <link href="/cn/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet"> 
+
     <script>/*
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -20,18 +27,34 @@
     <link rel="stylesheet" href="/cn/cn.css">
   </head>
 
-  <body>
-    <div id="sidebar">
-        {% block sidebar %}
-        <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="{% url 'cards:search' %}">Card Search</a></li>
-        </ul>
-        {% endblock %}
+  <body role="document">
+    <div role="navigation" class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button data-target="#card-nav-bar" data-toggle="collapse" class="navbar-toggle" type="button">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="#" class="navbar-brand">Card.Ninja - Cards</a>
+        </div>
+        <div class="navbar-collapse collapse" id="card-nav-bar">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="/">Home</a></li>
+            <li><a href="{% url 'cards:search' %}">Card Search</a></li> 
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
     </div>
-
-    <div id="content">
-        {% block content %}{% endblock %}
+    <div class="container theme-showcase" role="main">
+      <div id="content">
+<div class="page-header">
+        <h1>Card Database</h1>
+      </div>
+        {% block content %} this is the content block {% endblock %}
+      </div>
     </div>
+    <script src="/cn/bootstrap/js/bootstrap.min.js"></script>
   </body>
 </html>
