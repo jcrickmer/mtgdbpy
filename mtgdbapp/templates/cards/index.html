@@ -3,5 +3,15 @@
 {% block title %}Card Search{% endblock %}
 
 {% block content %}
-go to the <a href="list/">List</a>.
+<form action="{% url 'cards:list' %}" method="get">
+  <div>
+    <label for="qcardname">Name Search</label> <input id="qcardname" type="text" name="qcardname" />
+  </div>
+  <div>
+    <input type="submit" name="search" value="Search" />
+  </div>
+</form>
+<div>
+  Go to the <a href="list/">List</a>.
+</div>
 {% endblock %}

@@ -84,21 +84,33 @@ def detail(request, multiverseid):
 	return response
 
 def list(request):
-    card_list = Card.objects.order_by('multiverseid')[:500]
-    paginator = Paginator(card_list, 25)
-    page = request.GET.get('page')
-    try:
-        cards = paginator.page(page)
-    except PageNotAnInteger:
-        cards = paginator.page(1)
-    except EmptyPage:
-        cards = paginator.page(paginator.num_pages)
+	card_list = {}
+	# Let's see if the user is trying to perform a search. Any value here will do.
+	if request.GET.get('search'):
+		# must be trying to search. Let's figure out what they want and add that term to their session.
+		request.session['qcardname'] = request.GET['qcardname']
 
-    context = {
-        'cards': cards,
-        }
-    return render(request, 'cards/list.html', context)
+	# Ok, lets get the data. First, if they are querying by card name, let's get that list.
+ 	if request.session.get('qcardname', False):
+		card_list = Card.objects.filter(basecard__name__icontains = request.session.get('qcardname', ''))
+	else:
+		# Nope? They must just want everything. Too big, though - let's constrain it to 500 records.
+		card_list = Card.objects.order_by('multiverseid')[:500]
+
+	paginator = Paginator(card_list, 25)
+	page = request.GET.get('page')
+	try:
+		cards = paginator.page(page)
+	except PageNotAnInteger:
+		cards = paginator.page(1)
+	except EmptyPage:
+		cards = paginator.page(paginator.num_pages)
+
+	context = {
+		'cards': cards,
+		}
+	return render(request, 'cards/list.html', context)
 
 
 def vote(request, multiverseid):
-    return HttpResponse("You're voting on card %s." % multiverseid)
+	return HttpResponse("You're voting on card %s." % multiverseid)
