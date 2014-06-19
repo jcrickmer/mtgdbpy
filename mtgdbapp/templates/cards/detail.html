@@ -3,7 +3,11 @@
 {% block title %}{{ card.basecard.name }}{% endblock %}
 
 {% block content %}
-<img src="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid={{ card.multiverseid }}&type=card" />
+<div class="row">
+  <div class="span4">
+    <img class="cardimage" src="{{ img_url }}" alt="{{ card.basecard.name }}"/>
+  </div>
+  <div class="span8">
 <table>
   <tbody>
     <tr>
@@ -80,4 +84,6 @@
     </tr>
   </tbody>
 <table>
+</div>
+</div>
 {% endblock %}
