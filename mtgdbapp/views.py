@@ -39,7 +39,8 @@ def detail(request, multiverseid):
 	except Card.DoesNotExist:
 		raise Http404
 	mana_cost_html = convertSymbolsToHTML(card.basecard.mana_cost)
-	img_url = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + str(card.multiverseid) + '&type=card'
+	#img_url = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + str(card.multiverseid) + '&type=card'
+	img_url = '/img/' + str(card.multiverseid) + '.jpg'
 	response = HttpResponse("stupid")
 	if request.is_ajax():
 		response_dict = {}
@@ -57,21 +58,11 @@ def detail(request, multiverseid):
 				 'rarity': card.rarity.rarity,
 				 'card_number': card.card_number,
 				 'img_url': img_url,
+				 'power': card.basecard.power,
+				 'toughness': card.basecard.toughness,
+				 'loyalty': card.basecard.loyalty,
+				 'colors': [cc.color for cc in card.basecard.colors.all()]
 				 }
-
-# 				 'color': join(",  <td>{% for tcolor in card.basecard.colors.all %}{{ tcolor.color }} {% endfor %}{% if card.basecard.colors.all|length == 0 %}Colorless{% endif %}
-# {% if card.basecard.power %}
-#       <td>Power<td>
-#       <td>{{ card.basecard.power }}</td>
-# {% endif %}
-# {% if card.basecard.toughness %}
-#       <td>Toughness<td>
-#       <td>{{ card.basecard.toughness }}</td>
-# {% endif %}
-# {% if card.basecard.loyalty > 0 %}
-#       <td>Loyalty<td>
-#       <td>{{ card.basecard.loyalty }}</td>
-# {% endif %}
 
 		response_dict.update({'status': 'success', 'card': jcard, })
 		response = HttpResponse(simplejson.dumps(response_dict), mimetype='application/javascript')

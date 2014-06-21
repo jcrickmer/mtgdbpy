@@ -9,5 +9,6 @@ urlpatterns = patterns('',
     url(r'^cards/admin/', include(admin.site.urls)),
     url(r'^cards/', include('mtgdbapp.urls', namespace="cards")),
     (r'^cn/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '/home/jason/projects/mtgdbpy/cn'}),
+    (r'^img/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '/home/jason/projects/mtgstats/card_images'}),
 )
 
