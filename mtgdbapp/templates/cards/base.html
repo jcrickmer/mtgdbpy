@@ -28,23 +28,26 @@
   </head>
 
   <body role="document">
-    <div role="navigation" class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header">
-          <button data-target="#card-nav-bar" data-toggle="collapse" class="navbar-toggle" type="button">
-            <span class="sr-only">Toggle navigation</span>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button data-target=".nav-collapse" data-toggle="collapse" class="btn btn-navbar" type="button">
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a href="#" class="navbar-brand">Card.Ninja - Cards</a>
+          <a href="/" class="brand">card.ninja</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="active">
+                <a href="/">Home</a>
+              </li>
+              <li class="">
+                <a href="{% url 'cards:search' %}">Card Search</a>
+              </li>
+            </ul>
+          </div>
         </div>
-        <div class="navbar-collapse collapse" id="card-nav-bar">
-          <ul class="nav navbar-nav">
-            <li class="active"><a href="/">Home</a></li>
-            <li><a href="{% url 'cards:search' %}">Card Search</a></li> 
-          </ul>
-        </div><!--/.nav-collapse -->
       </div>
     </div>
     <div class="container theme-showcase" role="main">
@@ -57,6 +60,23 @@
         </div>
       </div>
     </div>
-    <script src="/cn/bootstrap/js/bootstrap.min.js"></script>
+
+    <footer class="footer">
+      <div class="container">
+        <p>The information presented on this site about <em>Magic: The Gathering</em>, both literal and graphical, is TM and copyright of Wizards of the Coast, Inc. a subsidiary of Hasbro, Inc. All rights reserved. This site is unaffiliated. Wizards of the Coast, Magic: The Gathering, and their logos are trademarks of Wizards of the Coast, Inc., a subsidiary of Hasbro, Inc., in the United States and other countries. &copy; 2014 Wizards. All Rights Reserved. This web site is not affiliated with, endorsed, sponsored, or specifically approved by Wizards of the Coast, Inc. This web site may use the trademarks and other intellectual property of Wizards of the Coast, Inc. which is permitted under Wizards' <a href="http://www.wizards.com/fankit/fantoolkitdnd.html">Fan Site Policy</a>. For more information about Wizards of the Coast or any of Wizards' trademarks or other intellectual property, please visit their website at <a href="http://www.wizards.com/">www.wizards.com</a>.</p>
+        <p>&copy; 2014 Jason Crickmer. All rights reserved.</p>
+        <p>Articles and comments may be user submitted and do not represent official endorsements of this site.</p>
+        <ul class="footer-links">
+          <li><a href="/terms-of-use/">Terms of Use</a></li>
+          <li class="muted">|</li>
+          <li><a href="/privacy-policy/">Privacy Policy</a></li>
+          <li class="muted">|</li>
+          <li><a href="/dcma-requests/">DCMA Requests</a></li>
+          <li class="muted">|</li>
+          <li><a href="/business-inquiries/">Business Inquiries</a></li>
+        </ul>
+      </div>
+    </footer>
+	<script src="/cn/bootstrap/js/bootstrap.min.js"></script>
   </body>
 </html>
