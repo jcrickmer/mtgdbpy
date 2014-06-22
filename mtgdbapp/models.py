@@ -10,6 +10,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from datetime import datetime
 
 class AuthGroup(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -105,17 +106,28 @@ class Subtype(models.Model):
 	def __unicode__(self):
 		return self.subtype
 
+class PhysicalCard(models.Model):
+	#	 id = models.IntegerField(primary_key=True)
+	class Meta:
+		managed = True
+		db_table = 'physicalcards'
+		verbose_name_plural = 'Physical Cards'
+	def __unicode__(self):
+		return self.name
+
 class BaseCard(models.Model):
 	#	 id = models.IntegerField(primary_key=True)
-	name = models.CharField(max_length=128)
+	physicalcard = models.ForeignKey(PhysicalCard)
+	name = models.CharField(max_length=128, unique=True)
 	rules_text = models.CharField(max_length=1000, blank=True)
-	mana_cost = models.CharField(max_length=60)
-	cmc = models.IntegerField()
-	power = models.CharField(max_length=4, blank=True)
-	toughness = models.CharField(max_length=4, blank=True)
-	loyalty = models.CharField(max_length=4, blank=True)
-	created_at = models.DateTimeField(blank=True, null=True)
-	updated_at = models.DateTimeField(blank=True, null=True)
+	mana_cost = models.CharField(max_length=60, null=False)
+	cmc = models.IntegerField(null=False, default=0)
+	power = models.CharField(max_length=4, null=True, blank=True)
+	toughness = models.CharField(max_length=4, null=True, blank=True)
+	loyalty = models.CharField(max_length=4, null=True, blank=True)
+	created_at = models.DateTimeField(default=datetime.now, null=False, blank=True)
+	updated_at = models.DateTimeField(default=datetime.now, null=False, blank=True)
+	cardposition = models.CharField(max_length=1, null=False, default='F')
 	types = models.ManyToManyField(Type, through='CardType')
 	subtypes = models.ManyToManyField(Subtype, through='CardSubtype')
 	colors = models.ManyToManyField(Color, through='CardColor')
@@ -123,6 +135,7 @@ class BaseCard(models.Model):
 		managed = True
 		db_table = 'basecards'
 		verbose_name_plural = 'Base Cards'
+		unique_together = ('physicalcard', 'cardposition',)
 	def __unicode__(self):
 		return self.name
 	def save(self):
@@ -133,7 +146,7 @@ class BaseCard(models.Model):
 class ExpansionSet(models.Model):
 	#	id = models.IntegerField(primary_key=True)
 	name = models.CharField(unique=True, max_length=128)
-	abbr = models.CharField(unique=True, max_length=6)
+	abbr = models.CharField(unique=False, max_length=6)
 	class Meta:
 		managed = True
 		db_table = 'expansionsets'
@@ -155,12 +168,12 @@ class Card(models.Model):
 	expansionset = models.ForeignKey('ExpansionSet')
 	basecard = models.ForeignKey(BaseCard)
 	rarity = models.ForeignKey('Rarity', db_column='rarity', blank=True, null=True)
-	multiverseid = models.IntegerField(unique=True, blank=True, null=True)
-	flavor_text = models.CharField(max_length=1000, blank=True)
-	card_number = models.IntegerField(blank=True, null=True)
+	multiverseid = models.IntegerField(unique=True, blank=True, null=False)
+	flavor_text = models.CharField(max_length=1000, blank=True, null=True)
+	card_number = models.CharField(max_length=6, blank=True, null=True)
 	mark = models.ForeignKey('Mark', blank=True, null=True)
-	created_at = models.DateTimeField(blank=True, null=True)
-	updated_at = models.DateTimeField(blank=True, null=True)
+	created_at = models.DateTimeField(default=datetime.now, null=False, blank=True)
+	updated_at = models.DateTimeField(default=datetime.now, null=False, blank=True)
 	class Meta:
 		managed = True
 		db_table = 'cards'
@@ -174,6 +187,7 @@ class CardColor(models.Model):
 	class Meta:
 		managed = True
 		db_table = 'cardcolors'
+		unique_together = ('basecard', 'color',)
 
 class CardSubtype(models.Model):
 	#	id = models.IntegerField(primary_key=True)
@@ -183,6 +197,7 @@ class CardSubtype(models.Model):
 	class Meta:
 		managed = True
 		db_table = 'cardsubtypes'
+		unique_together = ('basecard', 'position',)
 
 class CardType(models.Model):
 	#	id = models.IntegerField(primary_key=True)
@@ -192,6 +207,7 @@ class CardType(models.Model):
 	class Meta:
 		managed = True
 		db_table = 'cardtypes'
+		unique_together = ('basecard', 'position',)
 	def __unicode__(self):
 		return str(self.id) + " [Card: " + str(self.basecard.id) + " (" + self.basecard.name + "), Type: " + str(self.type.id) + " (" + self.type.type + "), Position: " + str(self.position) + "]"
 
