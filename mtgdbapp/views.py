@@ -3,9 +3,13 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.template import RequestContext, loader
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.utils import simplejson
+import json
+from django.db.models import Max, Min
 
 from mtgdbapp.models import Card
+
+# import the logging library
+import logging
 
 
 def index(request):
@@ -38,6 +42,7 @@ def detail(request, multiverseid):
 		card = Card.objects.get(multiverseid=multiverseid)
 	except Card.DoesNotExist:
 		raise Http404
+	twinCards = Card.objects.filter(basecard__id = card.basecard.id).order_by('multiverseid')
 	mana_cost_html = convertSymbolsToHTML(card.basecard.mana_cost)
 	#img_url = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + str(card.multiverseid) + '&type=card'
 	img_url = '/img/' + str(card.multiverseid) + '.jpg'
@@ -65,9 +70,10 @@ def detail(request, multiverseid):
 				 }
 
 		response_dict.update({'status': 'success', 'card': jcard, })
-		response = HttpResponse(simplejson.dumps(response_dict), mimetype='application/javascript')
+		response = HttpResponse(json.dumps(response_dict), mimetype='application/javascript')
 	else:
 		response = render(request, 'cards/detail.html', {'card': card,
+														 'other_versions': twinCards,
 														 'rules_text_html': mark_safe(card.basecard.rules_text),
 														 'flavor_text_html': mark_safe(card.flavor_text),
 														 'mana_cost_html': mana_cost_html,
@@ -82,12 +88,24 @@ def list(request):
 		request.session['qcardname'] = request.GET['qcardname']
 
 	# Ok, lets get the data. First, if they are querying by card name, let's get that list.
- 	if request.session.get('qcardname', False):
-		card_list = Card.objects.filter(basecard__name__icontains = request.session.get('qcardname', ''))
+	if request.session.get('qcardname', False):
+		# Not sure of the performance in here. Basically, I needed to
+		# do a GROUP BY to get the max multiverseid and only display
+		# that card. The first query here is getting the max
+		# multiverseid for the given query. The second query then uses
+		# that "mid_max" value to get back a list of all of the cards.
+		card_listP = Card.objects.filter(basecard__name__icontains = request.session.get('qcardname', '')).values('basecard__id').annotate(mid_max=Max('multiverseid'))
+		card_list = Card.objects.filter(multiverseid__in=[g['mid_max'] for g in card_listP]).order_by('basecard__name')
+
 	else:
 		# Nope? They must just want everything. Too big, though - let's constrain it to 500 records.
-		card_list = Card.objects.order_by('multiverseid')[:500]
+		card_listP = Card.objects.values('basecard__id').annotate(mid_max=Max('multiverseid'))[:500]
+		card_list = Card.objects.filter(multiverseid__in=[g['mid_max'] for g in card_listP]).order_by('basecard__name')
 
+	# Get an instance of a logger
+	#logger = logging.getLogger(__name__)
+	#logger.error(card_list)
+	
 	paginator = Paginator(card_list, 25)
 	page = request.GET.get('page')
 	try:
