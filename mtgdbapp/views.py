@@ -39,45 +39,57 @@ def convertSymbolsToHTML(text):
 
 def detail(request, multiverseid):
 	try:
-		card = Card.objects.get(multiverseid=multiverseid)
+		cards = Card.objects.filter(multiverseid=multiverseid).order_by('card_number')
 	except Card.DoesNotExist:
 		raise Http404
-	twinCards = Card.objects.filter(basecard__id = card.basecard.id).order_by('multiverseid')
-	mana_cost_html = convertSymbolsToHTML(card.basecard.mana_cost)
-	#img_url = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + str(card.multiverseid) + '&type=card'
-	img_url = '/img/' + str(card.multiverseid) + '.jpg'
+	twinCards = Card.objects.filter(basecard__id = cards[0].basecard.id).order_by('multiverseid')
 	response = HttpResponse("stupid")
-	if request.is_ajax():
-		response_dict = {}
-		jcard = {'name': card.basecard.name,
-				 'mana_cost': card.basecard.mana_cost,
-				 'mana_cost_html': mana_cost_html,
-				 'type': [tt.type for tt in card.basecard.types.all()],
-				 'subtype': [st.subtype for st in card.basecard.subtypes.all()],
-				 'text': card.basecard.rules_text,
-				 'flavor_text': card.flavor_text,
-				 'mark': '' if card.mark is None else card.mark.mark,
-				 'cmc': card.basecard.cmc,
-				 'multiverseid': card.multiverseid,
-				 'expansionset': {'name': card.expansionset.name, 'abbr':card.expansionset.abbr},
-				 'rarity': card.rarity.rarity,
-				 'card_number': card.card_number,
-				 'img_url': img_url,
-				 'power': card.basecard.power,
-				 'toughness': card.basecard.toughness,
-				 'loyalty': card.basecard.loyalty,
-				 'colors': [cc.color for cc in card.basecard.colors.all()]
+	jcards = []
+	card_list = []
+	for card in cards:
+		card_helper = {}
+		mana_cost_html = convertSymbolsToHTML(card.basecard.mana_cost)
+		#img_url = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + str(card.multiverseid) + '&type=card'
+		card_helper['img_url'] = '/img/' + str(card.multiverseid) + '.jpg'
+		card_helper['mana_cost_html'] = mark_safe(mana_cost_html)
+		card_helper['rules_text_html'] = mark_safe(card.basecard.rules_text)
+		card_helper['flavor_text_html'] = mark_safe(card.flavor_text)
+		
+		if request.is_ajax():
+			response_dict = {}
+			jcard = {'name': card.basecard.name,
+					 'mana_cost': card.basecard.mana_cost,
+					 'mana_cost_html': mana_cost_html,
+			         'type': [tt.type for tt in card.basecard.types.all()],
+			         'subtype': [st.subtype for st in card.basecard.subtypes.all()],
+				     'text': card.basecard.rules_text,
+				     'flavor_text': card.flavor_text,
+				     'mark': '' if card.mark is None else card.mark.mark,
+				     'cmc': card.basecard.cmc,
+				     'multiverseid': card.multiverseid,
+				     'expansionset': {'name': card.expansionset.name, 'abbr':card.expansionset.abbr},
+				     'rarity': card.rarity.rarity,
+				     'card_number': card.card_number,
+				     'img_url': card_helper['img_url'],
+				     'power': card.basecard.power,
+				     'toughness': card.basecard.toughness,
+				     'loyalty': card.basecard.loyalty,
+				     'colors': [cc.color for cc in card.basecard.colors.all()]
 				 }
+			jcards.append(jcard)
+		card_list.append({'card': card, 'helper': card_helper})
 
-		response_dict.update({'status': 'success', 'card': jcard, })
+	if request.is_ajax():
+		response_dict.update({'status': 'success', 'cards': jcards, })
 		response = HttpResponse(json.dumps(response_dict), mimetype='application/javascript')
 	else:
-		response = render(request, 'cards/detail.html', {'card': card,
+		response = render(request, 'cards/detail.html', {'cards': card_list,
 														 'other_versions': twinCards,
-														 'rules_text_html': mark_safe(card.basecard.rules_text),
-														 'flavor_text_html': mark_safe(card.flavor_text),
-														 'mana_cost_html': mana_cost_html,
-														 'img_url': img_url, })
+														 #'rules_text_html': mark_safe(card.basecard.rules_text),
+														 #'flavor_text_html': mark_safe(card.flavor_text),
+														 #'mana_cost_html': mana_cost_html,
+														 #'img_url': img_url, })
+														 })
 	return response
 
 def list(request):

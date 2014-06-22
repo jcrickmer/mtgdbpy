@@ -113,7 +113,7 @@ class PhysicalCard(models.Model):
 		db_table = 'physicalcards'
 		verbose_name_plural = 'Physical Cards'
 	def __unicode__(self):
-		return self.name
+		return self.id
 
 class BaseCard(models.Model):
 	#	 id = models.IntegerField(primary_key=True)
@@ -137,7 +137,7 @@ class BaseCard(models.Model):
 		verbose_name_plural = 'Base Cards'
 		unique_together = ('physicalcard', 'cardposition',)
 	def __unicode__(self):
-		return self.name
+		return self.name + ' (physicalcard.id=' + str(self.physicalcard.id) + ')'
 	def save(self):
 		# We should always set the CMC to the value that is indicated mana_cost field
 		self.cmc = 1;
@@ -168,7 +168,7 @@ class Card(models.Model):
 	expansionset = models.ForeignKey('ExpansionSet')
 	basecard = models.ForeignKey(BaseCard)
 	rarity = models.ForeignKey('Rarity', db_column='rarity', blank=True, null=True)
-	multiverseid = models.IntegerField(unique=True, blank=True, null=False)
+	multiverseid = models.IntegerField(unique=False, blank=True, null=False)
 	flavor_text = models.CharField(max_length=1000, blank=True, null=True)
 	card_number = models.CharField(max_length=6, blank=True, null=True)
 	mark = models.ForeignKey('Mark', blank=True, null=True)

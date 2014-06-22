@@ -20,9 +20,9 @@ $(function() {
 				complete: function(data) {
 					var envelop = data.responseJSON;
 					if (envelop.status == 'success') {
-						window.cn.cardCache['mid' + multiverseId] = envelop.card;
+						window.cn.cardCache['mid' + multiverseId] = envelop.cards[0]; // hard coded to the first result that comes back.
 					}
-					card = envelop.card;
+					card = envelop.cards[0]; // hard coded to the first result that comes back.
 				},
 			});
 		}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from mtgdbapp.models import Color, Rarity, Card, BaseCard, Mark, ExpansionSet, Subtype, Type, CardType, CardSubtype
+from mtgdbapp.models import Color, Rarity, Card, BaseCard, Mark, ExpansionSet, Subtype, Type, CardType, CardSubtype, PhysicalCard
 from django import forms
 
 class CardModelForm(forms.ModelForm):
@@ -16,6 +16,9 @@ class BaseCardModelForm(forms.ModelForm):
     rules_text = forms.CharField(widget=forms.Textarea)
     class Meta:
         model = BaseCard
+
+class ExpansionSetAdmin(admin.ModelAdmin):
+	readonly_fields = ('id',)
 
 class TypeAdmin(admin.ModelAdmin):
 	readonly_fields = ('id',)
@@ -47,23 +50,32 @@ class ColorAdmin(admin.ModelAdmin):
 class CardColorAdmin(admin.ModelAdmin):
 	readonly_fields = ('id',)
 
+class MarkAdmin(admin.ModelAdmin):
+	readonly_fields = ('id',)
+
 class CardColorInline(admin.TabularInline):
 	readonly_fields = ('id',)
 	model = BaseCard.colors.through
 
+class PhysicalCardAdmin(admin.ModelAdmin):
+	readonly_fields = ('id',)
+	fields = ['id',]
+    
 class BaseCardAdmin(admin.ModelAdmin):
+	search_fields = ['name',]
 	readonly_fields = ('id','cmc')
-	fields = ['id','name','rules_text','mana_cost','cmc','power','toughness','loyalty']
+	fields = ['id','physicalcard', 'name','rules_text','mana_cost','cmc','power','toughness','loyalty']
 	inlines = [CardColorInline,CardTypeInline,CardSubtypeInline]
 	form = BaseCardModelForm
 	
 # Register your models here.
-admin.site.register(Color)
+admin.site.register(Color, ColorAdmin)
 admin.site.register(Rarity)
 admin.site.register(Card, CardAdmin)
 admin.site.register(BaseCard, BaseCardAdmin)
-admin.site.register(Mark)
-admin.site.register(ExpansionSet)
+admin.site.register(Mark, MarkAdmin)
+admin.site.register(ExpansionSet,ExpansionSetAdmin)
+admin.site.register(PhysicalCard, PhysicalCardAdmin)
 admin.site.register(Type,TypeAdmin)
 admin.site.register(CardType,CardTypeAdmin)
 admin.site.register(Subtype,SubtypeAdmin)
