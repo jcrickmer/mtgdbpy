@@ -56,7 +56,7 @@ def detail(request, multiverseid):
 				 'subtype': [st.subtype for st in card.basecard.subtypes.all()],
 				 'text': card.basecard.rules_text,
 				 'flavor_text': card.flavor_text,
-				 'mark': card.mark,
+				 'mark': '' if card.mark is None else card.mark.mark,
 				 'cmc': card.basecard.cmc,
 				 'multiverseid': card.multiverseid,
 				 'expansionset': {'name': card.expansionset.name, 'abbr':card.expansionset.abbr},
