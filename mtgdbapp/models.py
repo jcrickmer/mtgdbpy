@@ -177,6 +177,7 @@ class Card(models.Model):
 	class Meta:
 		managed = True
 		db_table = 'cards'
+		unique_together = ('expansionset', 'card_number',)
 	def __unicode__(self):
 		return self.basecard.name + "(" + self.expansionset.abbr + ") [" + str(self.multiverseid) + "]"
 

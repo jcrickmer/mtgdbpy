@@ -22,6 +22,7 @@ LOCK TABLES `rarities` WRITE;
 INSERT INTO `rarities` (`id`, `rarity`, `sortorder`) VALUES ('b','Basic Land',NULL);
 INSERT INTO `rarities` (`id`, `rarity`, `sortorder`) VALUES ('c','Common',0);
 INSERT INTO `rarities` (`id`, `rarity`, `sortorder`) VALUES ('m','Mythic Rare',3);
+INSERT INTO `rarities` (`id`, `rarity`, `sortorder`) VALUES ('s','Special',4);
 INSERT INTO `rarities` (`id`, `rarity`, `sortorder`) VALUES ('r','Rare',2);
 INSERT INTO `rarities` (`id`, `rarity`, `sortorder`) VALUES ('u','Uncommon',1);
 /*!40000 ALTER TABLE `rarities` ENABLE KEYS */;
