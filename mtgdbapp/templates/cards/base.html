@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta name="description" content="{% block description %}Exploring the theories and economics of Magic: The Gathering cards{% endblock %}">
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8">
     <meta charset="utf-8">
+    <meta name="robots" content="index, follow">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}{% endblock %} - card.ninja</title>
-
+    <title>{% block title %}Card Database{% endblock %} - card.ninja</title>
+    <script>window.origTitle = document.title;</script>
     <!-- Bootstrap -->
     <link href="/cn/bootstrap/css/bootstrap.min.css" rel="stylesheet"> 
     <link href="/cn/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet"> 
@@ -28,32 +31,30 @@
   </head>
 
   <body role="document">
-    <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container">
-          <button data-target=".nav-collapse" data-toggle="collapse" class="btn btn-navbar" type="button">
+    <nav class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a href="/" class="brand">card.ninja</a>
-          <div class="nav-collapse collapse">
-            <ul class="nav">
-              <li class="active">
-                <a href="/">Home</a>
-              </li>
-              <li class="">
-                <a href="{% url 'cards:search' %}">Card Search</a>
-              </li>
-            </ul>
-          </div>
+          <a href="/" class="navbar-brand"><img class="logo-dark-bg" src="/cn/cardninja_light_sm.png" alt="card.ninja"></a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="/">Home</a></li>
+            <li class=""><a href="{% url 'cards:search' %}">Card Search</a></li>
+          </ul>
         </div>
       </div>
-    </div>
+	</nav>
     <div class="container theme-showcase" role="main">
       <div id="content">
         <div class="page-header">
           <h1>Card Database</h1>
+          <h2>{% block pagetitle %}Search{% endblock %}</h2>
         </div>
         <div class="container">
 	      {% block content %} this is the content block {% endblock %}
@@ -61,6 +62,25 @@
       </div>
     </div>
 
+    <div class="container">
+      <div id="content">
+        <div class="row" style="margin-top: 60px;">
+		  <div class="col-sm-2 col-md-2 col-lg-3">&nbsp;</div>
+          <div class="col-sm-8 col-md-7 col-lg-6">
+		    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- card details bottom -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:468px;height:60px"
+     data-ad-client="ca-pub-2349589868456305"
+     data-ad-slot="8298633471"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+	      </div>
+		  <div class="col-sm-2 col-md-3 col-lg-3"></div>
+		</div>
+      </div>
+	</div>
     <footer class="footer">
       <div class="container">
         <p>The information presented on this site about <em>Magic: The Gathering</em>, both literal and graphical, is TM and copyright of Wizards of the Coast, Inc. a subsidiary of Hasbro, Inc. All rights reserved. This site is unaffiliated. Wizards of the Coast, Magic: The Gathering, and their logos are trademarks of Wizards of the Coast, Inc., a subsidiary of Hasbro, Inc., in the United States and other countries. &copy; 2014 Wizards. All Rights Reserved. This web site is not affiliated with, endorsed, sponsored, or specifically approved by Wizards of the Coast, Inc. This web site may use the trademarks and other intellectual property of Wizards of the Coast, Inc. which is permitted under Wizards' <a href="http://www.wizards.com/fankit/fantoolkitdnd.html">Fan Site Policy</a>. For more information about Wizards of the Coast or any of Wizards' trademarks or other intellectual property, please visit their website at <a href="http://www.wizards.com/">www.wizards.com</a>.</p>
@@ -78,5 +98,6 @@
       </div>
     </footer>
 	<script src="/cn/bootstrap/js/bootstrap.min.js"></script>
+	<script>$(function(){document.title = window.origTitle;}); /* looks like bootstrap.js is changing my document.title. */</script>
   </body>
 </html>

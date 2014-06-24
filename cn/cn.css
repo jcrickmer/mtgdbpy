@@ -63,6 +63,18 @@
 .symbol_mana_19_small {
     background-position:-135px -15px;
 }
+.symbol_mana_20_small {
+    background-position:0px -30px;
+}
+.symbol_mana_x_small {
+    background-position:-15px -30px;
+}
+.symbol_mana_y_small {
+    background-position:-30px -30px;
+}
+.symbol_mana_z_small {
+    background-position:-45px -30px;
+}
 .symbol_mana_w_small {
     background-position:-60px -30px;
 }
@@ -77,6 +89,54 @@
 }
 .symbol_mana_g_small {
     background-position:-120px -30px;
+}
+.symbol_snow_small {
+    background-position:-135px -30px;
+}
+.symbol_mana_wu_small {
+    background-position:0px -45px;
+}
+.symbol_mana_wb_small {
+    background-position:-15px -45px;
+}
+.symbol_mana_ub_small {
+    background-position:-30px -45px;
+}
+.symbol_mana_ur_small {
+    background-position:-45px -45px;
+}
+.symbol_mana_br_small {
+    background-position:-60px -45px;
+}
+.symbol_mana_bg_small {
+    background-position:-75px -45px;
+}
+.symbol_mana_rw_small {
+    background-position:-90px -45px;
+}
+.symbol_mana_rg_small {
+    background-position:-105px -45px;
+}
+.symbol_mana_gw_small {
+    background-position:-120px -45px;
+}
+.symbol_mana_gu_small {
+    background-position:-135px -45px;
+}
+.symbol_mana_2w_small {
+    background-position:0px -60px;
+}
+.symbol_mana_2u_small {
+    background-position:-15px -60px;
+}
+.symbol_mana_2b_small {
+    background-position:-30px -60px;
+}
+.symbol_mana_2r_small {
+    background-position:-45px -60px;
+}
+.symbol_mana_2g_small {
+    background-position:-60px -60px;
 }
 .symbol_mana_wp_small {
     background-position:-75px -60px;
@@ -93,15 +153,15 @@
 .symbol_mana_gp_small {
     background-position:-135px -60px;
 }
-.symbol_phyrexian_small {
-    width: 9px;
-    background-position:-141px -90px;
-}
 .symbol_tap_small {
     background-position:0px -75px;
 }
 .symbol_untap_small {
     background-position:-15px -75px;
+}
+.symbol_phyrexian_small {
+    width: 9px;
+    background-position:-141px -90px;
 }
 
 .aligncenter {

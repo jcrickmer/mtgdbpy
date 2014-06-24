@@ -13,15 +13,15 @@ import logging
 
 
 def index(request):
-    return search(request)
+	return search(request)
 
 
 def search(request):
-    card_list = Card.objects.order_by('multiverseid')[:25]
-    context = {
-        'card_list': card_list,
-        }
-    return render(request, 'cards/index.html', context)
+	card_list = Card.objects.order_by('multiverseid')[:25]
+	context = {
+		'card_list': card_list,
+		}
+	return render(request, 'cards/index.html', context)
 
 
 def convertSymbolsToHTML(text):
@@ -47,6 +47,19 @@ def convertSymbolsToHTML(text):
 	result = result.replace("{2r}", tag_open + 'class="magic-symbol-small symbol_mana_2r_small" alt="{2r}"' + tag_close)
 	result = result.replace("{2g}", tag_open + 'class="magic-symbol-small symbol_mana_2g_small" alt="{2g}"' + tag_close)
 
+	result = result.replace("{wu}", tag_open + 'class="magic-symbol-small symbol_mana_wu_small" alt="{wu}"' + tag_close)
+	result = result.replace("{wb}", tag_open + 'class="magic-symbol-small symbol_mana_wb_small" alt="{wb}"' + tag_close)
+	result = result.replace("{ub}", tag_open + 'class="magic-symbol-small symbol_mana_ub_small" alt="{ub}"' + tag_close)
+	result = result.replace("{ur}", tag_open + 'class="magic-symbol-small symbol_mana_ur_small" alt="{ur}"' + tag_close)
+	result = result.replace("{br}", tag_open + 'class="magic-symbol-small symbol_mana_br_small" alt="{br}"' + tag_close)
+
+	result = result.replace("{bg}", tag_open + 'class="magic-symbol-small symbol_mana_bg_small" alt="{bg}"' + tag_close)
+	result = result.replace("{rg}", tag_open + 'class="magic-symbol-small symbol_mana_rg_small" alt="{rg}"' + tag_close)
+	result = result.replace("{rw}", tag_open + 'class="magic-symbol-small symbol_mana_rw_small" alt="{rw}"' + tag_close)
+	result = result.replace("{gw}", tag_open + 'class="magic-symbol-small symbol_mana_gw_small" alt="{gw}"' + tag_close)
+	result = result.replace("{gu}", tag_open + 'class="magic-symbol-small symbol_mana_gu_small" alt="{gu}"' + tag_close)
+
+	result = result.replace("{x}", tag_open + 'class="magic-symbol-small symbol_mana_x_small" alt="{x}"' + tag_close)
 	result = result.replace("{p}", tag_open + 'class="magic-symbol-small symbol_phyrexian_small" alt="{p}"' + tag_close)
 	result = result.replace("{t}", tag_open + 'class="magic-symbol-small symbol_tap_small" alt="{t}"' + tag_close)
 	result = result.replace("{q}", tag_open + 'class="magic-symbol-small symbol_untap_small" alt="{q}"' + tag_close)
@@ -71,6 +84,19 @@ def convertSymbolsToHTML(text):
 	result = result.replace("{2R}", tag_open + 'class="magic-symbol-small symbol_mana_2r_small" alt="{2r}"' + tag_close)
 	result = result.replace("{2G}", tag_open + 'class="magic-symbol-small symbol_mana_2g_small" alt="{2g}"' + tag_close)
 
+	result = result.replace("{WU}", tag_open + 'class="magic-symbol-small symbol_mana_wu_small" alt="{wu}"' + tag_close)
+	result = result.replace("{WB}", tag_open + 'class="magic-symbol-small symbol_mana_wb_small" alt="{wb}"' + tag_close)
+	result = result.replace("{UB}", tag_open + 'class="magic-symbol-small symbol_mana_ub_small" alt="{ub}"' + tag_close)
+	result = result.replace("{UR}", tag_open + 'class="magic-symbol-small symbol_mana_ur_small" alt="{ur}"' + tag_close)
+	result = result.replace("{BR}", tag_open + 'class="magic-symbol-small symbol_mana_br_small" alt="{br}"' + tag_close)
+	result = result.replace("{BG}", tag_open + 'class="magic-symbol-small symbol_mana_bg_small" alt="{bg}"' + tag_close)
+	result = result.replace("{RG}", tag_open + 'class="magic-symbol-small symbol_mana_rg_small" alt="{rg}"' + tag_close)
+	result = result.replace("{RW}", tag_open + 'class="magic-symbol-small symbol_mana_rw_small" alt="{rw}"' + tag_close)
+	result = result.replace("{GW}", tag_open + 'class="magic-symbol-small symbol_mana_gw_small" alt="{gw}"' + tag_close)
+	result = result.replace("{GU}", tag_open + 'class="magic-symbol-small symbol_mana_gu_small" alt="{gu}"' + tag_close)
+
+	result = result.replace("{X}", tag_open + 'class="magic-symbol-small symbol_mana_x_small" alt="{x}"' + tag_close)
+	result = result.replace("{P}", tag_open + 'class="magic-symbol-small symbol_mana_phyrexian_small" alt="{p}"' + tag_close)
 	result = result.replace("{T}", tag_open + 'class="magic-symbol-small symbol_tap_small" alt="{t}"' + tag_close)
 	result = result.replace("{Q}", tag_open + 'class="magic-symbol-small symbol_untap_small" alt="{q}"' + tag_close)
 	result = result.replace("{UNTAP}", tag_open + 'class="magic-symbol-small symbol_untap_small" alt="{q}"' + tag_close)
@@ -95,9 +121,10 @@ def detail(request, multiverseid):
 		logger.error(backCards)
 	cards = cards | backCards
 	twinCards = Card.objects.filter(basecard__id = cards[0].basecard.id).order_by('multiverseid')
-	response = HttpResponse("stupid")
+	response = HttpResponse("Lame. Something must be broken.")
 	jcards = []
 	card_list = []
+	card_titles = []
 	for card in cards:
 		card_helper = {}
 		mana_cost_html = convertSymbolsToHTML(card.basecard.mana_cost)
@@ -106,37 +133,39 @@ def detail(request, multiverseid):
 		card_helper['mana_cost_html'] = mark_safe(mana_cost_html)
 		card_helper['rules_text_html'] = mark_safe(convertSymbolsToHTML(card.basecard.rules_text))
 		card_helper['flavor_text_html'] = mark_safe(card.flavor_text)
+		card_titles.append(card.basecard.name)
 		
 		if request.is_ajax():
 			response_dict = {}
 			jcard = {'name': card.basecard.name,
 					 'mana_cost': card.basecard.mana_cost,
 					 'mana_cost_html': mana_cost_html,
-			         'type': [tt.type for tt in card.basecard.types.all()],
-			         'subtype': [st.subtype for st in card.basecard.subtypes.all()],
-				     'text': card.basecard.rules_text,
-				     'flavor_text': card.flavor_text,
-				     'mark': '' if card.mark is None else card.mark.mark,
-				     'cmc': card.basecard.cmc,
-				     'multiverseid': card.multiverseid,
-				     'expansionset': {'name': card.expansionset.name, 'abbr':card.expansionset.abbr},
-				     'rarity': card.rarity.rarity,
-				     'card_number': card.card_number,
-				     'img_url': card_helper['img_url'],
-				     'power': card.basecard.power,
-				     'toughness': card.basecard.toughness,
-				     'loyalty': card.basecard.loyalty,
-				     'colors': [cc.color for cc in card.basecard.colors.all()]
+					 'type': [tt.type for tt in card.basecard.types.all()],
+					 'subtype': [st.subtype for st in card.basecard.subtypes.all()],
+					 'text': card_helper['rules_text_html'],
+					 'flavor_text': card.flavor_text,
+					 'mark': '' if card.mark is None else card.mark.mark,
+					 'cmc': card.basecard.cmc,
+					 'multiverseid': card.multiverseid,
+					 'expansionset': {'name': card.expansionset.name, 'abbr':card.expansionset.abbr},
+					 'rarity': card.rarity.rarity,
+					 'card_number': card.card_number,
+					 'img_url': card_helper['img_url'],
+					 'power': card.basecard.power,
+					 'toughness': card.basecard.toughness,
+					 'loyalty': card.basecard.loyalty,
+					 'colors': [cc.color for cc in card.basecard.colors.all()]
 				 }
 			jcards.append(jcard)
 		card_list.append({'card': card, 'helper': card_helper})
 
 	if request.is_ajax():
-		response_dict.update({'status': 'success', 'cards': jcards, })
+		response_dict.update({'status': 'success', 'physicalCardTitle': " // ".join(card_titles), 'cards': jcards, })
 		response = HttpResponse(json.dumps(response_dict), mimetype='application/javascript')
 	else:
 		response = render(request, 'cards/detail.html', {'cards': card_list,
 														 'other_versions': twinCards,
+														 'physicalCardTitle': " // ".join(card_titles),
 														 #'rules_text_html': mark_safe(card.basecard.rules_text),
 														 #'flavor_text_html': mark_safe(card.flavor_text),
 														 #'mana_cost_html': mana_cost_html,

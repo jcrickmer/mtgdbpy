@@ -1,14 +1,16 @@
 {% extends "cards/base.html" %}
 
-{% block title %}{{ card.basecard.name }}{% endblock %}
+{% block title %}{{ physicalCardTitle }}{% endblock %}
+{% block pagetitle %}{{ physicalCardTitle }}{% endblock %}
+{% block description %}Magic: The Gathering card {{ physicalCardTitle }} information and analysis{% endblock %}
 
 {% block content %}
 {% for working in cards %}
 <div class="row">
-  <div class="span4">
+  <div class="col-sm-3 col-md-3 col-lg-3">
     <img class="cardimage" src="{{ working.helper.img_url }}" alt="{{ working.card.basecard.name }}"/>
   </div>
-  <div class="span8">
+  <div class="col-sm-8 col-md-6 col-lg-6">
 <table>
   <tbody>
     <tr>
@@ -89,7 +91,8 @@
     </tr>
   </tbody>
 </table>
-</div>
+  </div>
+  <div class="col-sm-1 col-md-3 col-lg-3"></div>
 </div>
 {% endfor %}
 {% endblock %}
