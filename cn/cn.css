@@ -1,3 +1,109 @@
+.magic-symbol-small {
+  background: url("/cn/glyphs/symbols_small.png");
+  height: 15px;
+  width: 15px;
+}
+.symbol_mana_0_small {
+    background-position:0px 0px;
+}
+.symbol_mana_1_small {
+    background-position:-15px 0px;
+}
+.symbol_mana_2_small {
+    background-position:-30px 0px;
+}
+.symbol_mana_3_small {
+    background-position:-45px 0px;
+}
+.symbol_mana_4_small {
+    background-position:-60px 0px;
+}
+.symbol_mana_5_small {
+    background-position:-75px 0px;
+}
+.symbol_mana_6_small {
+    background-position:-90px 0px;
+}
+.symbol_mana_7_small {
+    background-position:-105px 0px;
+}
+.symbol_mana_8_small {
+    background-position:-120px 0px;
+}
+.symbol_mana_9_small {
+    background-position:-135px 0px;
+}
+.symbol_mana_10_small {
+    background-position:0px -15px;
+}
+.symbol_mana_11_small {
+    background-position:-15px -15px;
+}
+.symbol_mana_12_small {
+    background-position:-30px -15px;
+}
+.symbol_mana_13_small {
+    background-position:-45px -15px;
+}
+.symbol_mana_14_small {
+    background-position:-60px -15px;
+}
+.symbol_mana_15_small {
+    background-position:-75px -15px;
+}
+.symbol_mana_16_small {
+    background-position:-90px -15px;
+}
+.symbol_mana_17_small {
+    background-position:-105px -15px;
+}
+.symbol_mana_18_small {
+    background-position:-120px -15px;
+}
+.symbol_mana_19_small {
+    background-position:-135px -15px;
+}
+.symbol_mana_w_small {
+    background-position:-60px -30px;
+}
+.symbol_mana_u_small {
+    background-position:-75px -30px;
+}
+.symbol_mana_b_small {
+    background-position:-90px -30px;
+}
+.symbol_mana_r_small {
+    background-position:-105px -30px;
+}
+.symbol_mana_g_small {
+    background-position:-120px -30px;
+}
+.symbol_mana_wp_small {
+    background-position:-75px -60px;
+}
+.symbol_mana_up_small {
+    background-position:-90px -60px;
+}
+.symbol_mana_bp_small {
+    background-position:-105px -60px;
+}
+.symbol_mana_rp_small {
+    background-position:-120px -60px;
+}
+.symbol_mana_gp_small {
+    background-position:-135px -60px;
+}
+.symbol_phyrexian_small {
+    width: 9px;
+    background-position:-141px -90px;
+}
+.symbol_tap_small {
+    background-position:0px -75px;
+}
+.symbol_untap_small {
+    background-position:-15px -75px;
+}
+
 .aligncenter {
   text-align: center;
 }

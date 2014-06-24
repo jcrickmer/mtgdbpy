@@ -26,15 +26,61 @@ def search(request):
 
 def convertSymbolsToHTML(text):
 	base = '/cn/glyphs/'
-	tag_open = '<img class="magic-symbol" src="' + base
+	tag_open = '<img src="/cn/glyphs/clear.png" ' + base
 	tag_close = '>'
-	result = text.replace("{w}", tag_open + 'symbol_mana_w_small.gif" alt="{w}"' + tag_close)
-	result = result.replace("{u}", tag_open + 'symbol_mana_u_small.gif" alt="{u}"' + tag_close)
-	result = result.replace("{b}", tag_open + 'symbol_mana_b_small.gif" alt="{b}"' + tag_close)
-	result = result.replace("{r}", tag_open + 'symbol_mana_r_small.gif" alt="{r}"' + tag_close)
-	result = result.replace("{g}", tag_open + 'symbol_mana_g_small.gif" alt="{g}"' + tag_close)
+	result = text; #.lower()
+	result = result.replace("{w}", tag_open + 'class="magic-symbol-small symbol_mana_w_small" alt="{w}"' + tag_close)
+	result = result.replace("{u}", tag_open + 'class="magic-symbol-small symbol_mana_u_small" alt="{u}"' + tag_close)
+	result = result.replace("{b}", tag_open + 'class="magic-symbol-small symbol_mana_b_small" alt="{b}"' + tag_close)
+	result = result.replace("{r}", tag_open + 'class="magic-symbol-small symbol_mana_r_small" alt="{r}"' + tag_close)
+	result = result.replace("{g}", tag_open + 'class="magic-symbol-small symbol_mana_g_small" alt="{g}"' + tag_close)
+
+	result = result.replace("{wp}", tag_open + 'class="magic-symbol-small symbol_mana_wp_small" alt="{wp}"' + tag_close)
+	result = result.replace("{up}", tag_open + 'class="magic-symbol-small symbol_mana_up_small" alt="{up}"' + tag_close)
+	result = result.replace("{bp}", tag_open + 'class="magic-symbol-small symbol_mana_bp_small" alt="{bp}"' + tag_close)
+	result = result.replace("{rp}", tag_open + 'class="magic-symbol-small symbol_mana_rp_small" alt="{rp}"' + tag_close)
+	result = result.replace("{gp}", tag_open + 'class="magic-symbol-small symbol_mana_gp_small" alt="{gp}"' + tag_close)
+
+	result = result.replace("{2w}", tag_open + 'class="magic-symbol-small symbol_mana_2w_small" alt="{2w}"' + tag_close)
+	result = result.replace("{2u}", tag_open + 'class="magic-symbol-small symbol_mana_2u_small" alt="{2u}"' + tag_close)
+	result = result.replace("{2b}", tag_open + 'class="magic-symbol-small symbol_mana_2b_small" alt="{2b}"' + tag_close)
+	result = result.replace("{2r}", tag_open + 'class="magic-symbol-small symbol_mana_2r_small" alt="{2r}"' + tag_close)
+	result = result.replace("{2g}", tag_open + 'class="magic-symbol-small symbol_mana_2g_small" alt="{2g}"' + tag_close)
+
+	result = result.replace("{p}", tag_open + 'class="magic-symbol-small symbol_phyrexian_small" alt="{p}"' + tag_close)
+	result = result.replace("{t}", tag_open + 'class="magic-symbol-small symbol_tap_small" alt="{t}"' + tag_close)
+	result = result.replace("{q}", tag_open + 'class="magic-symbol-small symbol_untap_small" alt="{q}"' + tag_close)
+	result = result.replace("{untap}", tag_open + 'class="magic-symbol-small symbol_untap_small" alt="{q}"' + tag_close)
+
+	# ####
+	result = result.replace("{W}", tag_open + 'class="magic-symbol-small symbol_mana_w_small" alt="{w}"' + tag_close)
+	result = result.replace("{U}", tag_open + 'class="magic-symbol-small symbol_mana_u_small" alt="{u}"' + tag_close)
+	result = result.replace("{B}", tag_open + 'class="magic-symbol-small symbol_mana_b_small" alt="{b}"' + tag_close)
+	result = result.replace("{R}", tag_open + 'class="magic-symbol-small symbol_mana_r_small" alt="{r}"' + tag_close)
+	result = result.replace("{G}", tag_open + 'class="magic-symbol-small symbol_mana_g_small" alt="{g}"' + tag_close)
+
+	result = result.replace("{WP}", tag_open + 'class="magic-symbol-small symbol_mana_wp_small" alt="{wp}"' + tag_close)
+	result = result.replace("{UP}", tag_open + 'class="magic-symbol-small symbol_mana_up_small" alt="{up}"' + tag_close)
+	result = result.replace("{BP}", tag_open + 'class="magic-symbol-small symbol_mana_bp_small" alt="{bp}"' + tag_close)
+	result = result.replace("{RP}", tag_open + 'class="magic-symbol-small symbol_mana_rp_small" alt="{rp}"' + tag_close)
+	result = result.replace("{GP}", tag_open + 'class="magic-symbol-small symbol_mana_gp_small" alt="{gp}"' + tag_close)
+
+	result = result.replace("{2W}", tag_open + 'class="magic-symbol-small symbol_mana_2w_small" alt="{2w}"' + tag_close)
+	result = result.replace("{2U}", tag_open + 'class="magic-symbol-small symbol_mana_2u_small" alt="{2u}"' + tag_close)
+	result = result.replace("{2B}", tag_open + 'class="magic-symbol-small symbol_mana_2b_small" alt="{2b}"' + tag_close)
+	result = result.replace("{2R}", tag_open + 'class="magic-symbol-small symbol_mana_2r_small" alt="{2r}"' + tag_close)
+	result = result.replace("{2G}", tag_open + 'class="magic-symbol-small symbol_mana_2g_small" alt="{2g}"' + tag_close)
+
+	result = result.replace("{T}", tag_open + 'class="magic-symbol-small symbol_tap_small" alt="{t}"' + tag_close)
+	result = result.replace("{Q}", tag_open + 'class="magic-symbol-small symbol_untap_small" alt="{q}"' + tag_close)
+	result = result.replace("{UNTAP}", tag_open + 'class="magic-symbol-small symbol_untap_small" alt="{q}"' + tag_close)
+	# ####
+
 	for x in range(0, 15):
-		result = result.replace("{" + str(x) + "}", tag_open + 'symbol_mana_' + str(x) + '_small.gif" alt="{' + str(x) + '}"' + tag_close)
+		result = result.replace("{" + str(x) + "}", tag_open + ' class="magic-symbol-small symbol_mana_' + str(x) + '_small" alt="{' + str(x) + '}"' + tag_close)
+
+	result = result.replace("\n", "<br />\n")
+
 	return mark_safe(result)
 
 def detail(request, multiverseid):
@@ -42,6 +88,12 @@ def detail(request, multiverseid):
 		cards = Card.objects.filter(multiverseid=multiverseid).order_by('card_number')
 	except Card.DoesNotExist:
 		raise Http404
+	backCards = []
+	if len(cards) > 0:
+		logger = logging.getLogger(__name__)
+		backCards = Card.objects.filter(basecard__physicalcard__id = cards[0].basecard.physicalcard.id, expansionset__id = cards[0].expansionset.id)
+		logger.error(backCards)
+	cards = cards | backCards
 	twinCards = Card.objects.filter(basecard__id = cards[0].basecard.id).order_by('multiverseid')
 	response = HttpResponse("stupid")
 	jcards = []
@@ -52,7 +104,7 @@ def detail(request, multiverseid):
 		#img_url = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + str(card.multiverseid) + '&type=card'
 		card_helper['img_url'] = '/img/' + str(card.multiverseid) + '.jpg'
 		card_helper['mana_cost_html'] = mark_safe(mana_cost_html)
-		card_helper['rules_text_html'] = mark_safe(card.basecard.rules_text)
+		card_helper['rules_text_html'] = mark_safe(convertSymbolsToHTML(card.basecard.rules_text))
 		card_helper['flavor_text_html'] = mark_safe(card.flavor_text)
 		
 		if request.is_ajax():
