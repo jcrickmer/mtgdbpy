@@ -126,6 +126,8 @@ def detail(request, multiverseid):
 	card_list = []
 	card_titles = []
 	for card in cards:
+		if card.basecard.name in card_titles:
+			continue
 		card_helper = {}
 		mana_cost_html = convertSymbolsToHTML(card.basecard.mana_cost)
 		#img_url = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + str(card.multiverseid) + '&type=card'
