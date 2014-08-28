@@ -176,26 +176,47 @@ def detail(request, multiverseid):
 	return response
 
 def list(request):
-	card_list = {}
-	# Let's see if the user is trying to perform a search. Any value here will do.
-	if request.GET.get('search'):
-		# must be trying to search. Let's figure out what they want and add that term to their session.
-		request.session['qcardname'] = request.GET['qcardname']
+
+	queries_without_page = request.GET.copy()
+	if queries_without_page.has_key('page'):
+		del queries_without_page['page']
+
+	# Not sure of the performance in here. Basically, I needed to
+	# do a GROUP BY to get the max multiverseid and only display
+	# that card. The first query here is getting the max
+	# multiverseid for the given query. The second query then uses
+	# that "mid_max" value to get back a list of all of the cards.
+	card_listP = Card.objects.values('basecard__id').annotate(mid_max=Max('multiverseid'))
+	card_list = Card.objects.filter(multiverseid__in=[g['mid_max'] for g in card_listP]).order_by('basecard__name')
 
 	# Ok, lets get the data. First, if they are querying by card name, let's get that list.
-	if request.session.get('qcardname', False):
-		# Not sure of the performance in here. Basically, I needed to
-		# do a GROUP BY to get the max multiverseid and only display
-		# that card. The first query here is getting the max
-		# multiverseid for the given query. The second query then uses
-		# that "mid_max" value to get back a list of all of the cards.
-		card_listP = Card.objects.filter(basecard__name__icontains = request.session.get('qcardname', '')).values('basecard__id').annotate(mid_max=Max('multiverseid'))
-		card_list = Card.objects.filter(multiverseid__in=[g['mid_max'] for g in card_listP]).order_by('basecard__name')
+	if request.GET.get('qcardname', False):
+		card_list = card_list.filter(basecard__name__icontains = request.GET.get('qcardname', ''))
 
-	else:
-		# Nope? They must just want everything. Too big, though - let's constrain it to 500 records.
-		card_listP = Card.objects.values('basecard__id').annotate(mid_max=Max('multiverseid'))[:500]
-		card_list = Card.objects.filter(multiverseid__in=[g['mid_max'] for g in card_listP]).order_by('basecard__name')
+	if request.GET.get('qformat','') == 'Modern_2014-07-18':
+		card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','M15','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU'])
+		card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
+
+	elif request.GET.get('qformat','') == 'Modern_2014-05-02':
+		card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU'])
+		card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
+
+	elif request.GET.get('qformat','') == 'Standard_2012-10-05':
+		card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR'])
+	elif request.GET.get('qformat','') == 'Standard_2013-02-01':
+		card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR','GTC'])
+	elif request.GET.get('qformat','') == 'Standard_2013-05-03':
+		card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR','GTC','DGM'])
+	elif request.GET.get('qformat','') == 'Standard_2013-07-19':
+		card_list = card_list.filter(expansionset__abbr__in=['M13','M14','ISD','DKA','AVR','RTR','GTC','DGM'])
+	elif request.GET.get('qformat','') == 'Standard_2013-09-27':
+		card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS'])
+	elif request.GET.get('qformat','') == 'Standard_2014-02-07':
+		card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS','BNG'])
+	elif request.GET.get('qformat','') == 'Standard_2014-05-02':
+		card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS','BNG','JOU'])
+	elif request.GET.get('qformat','') == 'Standard_2014-07-18':
+		card_list = card_list.filter(expansionset__abbr__in=['M14','M15','RTR','GTC','DGM','THS','BNG','JOU'])
 
 	# Get an instance of a logger
 	#logger = logging.getLogger(__name__)
@@ -212,6 +233,7 @@ def list(request):
 
 	context = {
 		'cards': cards,
+		'queries': queries_without_page,
 		}
 	return render(request, 'cards/list.html', context)
 

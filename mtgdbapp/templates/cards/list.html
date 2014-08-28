@@ -13,11 +13,11 @@
 {% endif %}
 
   <ul class="pagination">
-    <li><a href="?page=1">&laquo;</a></li>
+    <li><a href="?{{queries.urlencode}}&amp;page=1">&laquo;</a></li>
 {% for ppp in cards.paginator.page_range %}
-    <li><a href="?page={{ppp}}">{{ppp}}</a></li>
+    <li><a href="?{{queries.urlencode}}&amp;page={{ppp}}">{{ppp}}</a></li>
 {% endfor %}
-    <li><a href="?page={{cards.paginator.num_pages}}">&raquo;</a></li>
+    <li><a href="?{{queries.urlencode}}&amp;page={{cards.paginator.num_pages}}">&raquo;</a></li>
   </ul>
 
 {% endblock %}
