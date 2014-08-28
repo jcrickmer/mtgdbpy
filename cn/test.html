@@ -25,25 +25,26 @@
 
   </head>
   <body>
-    <div class="content">
-      <div class="row">
-        <div class="span12">
-		  some test text. <a href="/cards/215080/" data-mid="215080">Engulfing Slagwurm</a> or <a href="/cards/368950/" data-mid="368950">Wear // Tear</a>
+    <div class="container theme-showcase" role="main">
+      <div id="content">
+        <div class="row">
+          <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+	  	    some test text. <a href="/cards/215080/" data-mid="215080">Engulfing Slagwurm</a> or <a href="/cards/368950/" data-mid="368950">Wear // Tear</a>
+          </div>
         </div>
-      </div>
-	  <div class="row">
-        <div class="span8">
-          <ul>
-		    <li><a href="/cards/260991/" onmouseover="cn.updateCard('cardarea', 260991);">Nicol Bolas, Planeswalker</a></li>
+	    <div class="row">
+          <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8">
+            <ul>
+	    	    <li><a href="/cards/260991/" onmouseover="cn.updateCard('cardarea', 260991);">Nicol Bolas, Planeswalker</a></li>
 		    <li><a href="/cards/370788/" onmouseover="cn.updateCard('cardarea', 370788);">Giant Growth</a></li>
 		    <li><a href="/cards/215080/" onmouseover="cn.updateCard('cardarea', 215080);">Engulfing Slagwurm</a></li>
 		    <li><a href="/cards/373557/" onmouseover="cn.updateCard('cardarea', 373557);">Dissolve</a></li>
 		    <li><a href="/cards/373723/" onmouseover="cn.updateCard('cardarea', 373723);">Island</a></li>
 		    <li><a href="/cards/368950/" onmouseover="cn.updateCard('cardarea', 368950);">Wear // Tear</a></li>
-		  </ul>
-          <h3>Common cards in Modern</h3>
-		  <ul>
-<li><a class="card_name" href="/cards/190393/" onmouseover="cn.updateCard('cardarea', 190393);">Scalding Tarn</a></li>
+		    </ul>
+            <h3>Common cards in Modern</h3>
+		    <ul id="listarea">
+              <li><a class="card_name" href="/cards/190393/" onmouseover="cn.updateCard('cardarea', 190393);">Scalding Tarn</a></li>
 <li><a class="card_name" href="/cards/234704/" onmouseover="cn.updateCard('cardarea', 234704);">Lightning Bolt</a></li>
 <li><a class="card_name" href="/cards/227676/" onmouseover="cn.updateCard('cardarea', 227676);">Snapcaster Mage</a></li>
 <li><a class="card_name" href="/cards/380261/" onmouseover="cn.updateCard('cardarea', 380261);">Island</a></li>
@@ -398,12 +399,62 @@
 <li><a class="card_name" href="/cards/373500/" onmouseover="cn.updateCard('cardarea', 373500);">Ashiok, Nightmare Weaver</a></li>
 <li><a class="card_name" href="/cards/370627/" onmouseover="cn.updateCard('cardarea', 370627);">Archangel of Thune</a></li>
 <li><a class="card_name" href="/cards/247358/" onmouseover="cn.updateCard('cardarea', 247358);">Akroma, Angel of Fury</a></li>
-          </ul>
-        </div>
-        <div class="span4">
-		  <div id="cardarea">waiting...</div>
+              </ul>
+            </div>
+            <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+              <div id="cardarea"></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8">
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+<p>a lot more content</p>
+			</div>
+		  </div>
         </div>
       </div>
     </div>
+    <script>
+$(document).ready(function () {
+  cn.updateCard('cardarea', 190393);
+  var el=$('#cardarea');
+  el.css({'position':'absolute'});
+  var originalelpos=el.offset().top; // take it where it originally is on the page
+  $(window).scroll(function(){
+    var el = $('#cardarea'); // important! (local)
+    var elpos = el.offset().top; // take current situation
+    var windowpos = $(window).scrollTop();
+    var floatBottom=$('#listarea').height() - el.height();
+    var finaldestination = Math.min(windowpos+originalelpos, floatBottom);
+console.log("we want to go to " + finaldestination);
+	el.stop().animate({'top':finaldestination},250);
+   });
+});
+	</script>
   </body>
 </html>
