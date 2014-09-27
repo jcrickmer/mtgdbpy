@@ -193,7 +193,11 @@ def list(request):
 	if request.GET.get('qcardname', False):
 		card_list = card_list.filter(basecard__name__icontains = request.GET.get('qcardname', ''))
 
-	if request.GET.get('qformat','') == 'Modern_2014-07-18':
+	if request.GET.get('qformat','') == 'Modern_2014-09-26':
+		card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','M15','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU','KTK'])
+		card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
+
+	elif request.GET.get('qformat','') == 'Modern_2014-07-18':
 		card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','M15','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU'])
 		card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
 
@@ -217,6 +221,8 @@ def list(request):
 		card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS','BNG','JOU'])
 	elif request.GET.get('qformat','') == 'Standard_2014-07-18':
 		card_list = card_list.filter(expansionset__abbr__in=['M14','M15','RTR','GTC','DGM','THS','BNG','JOU'])
+	elif request.GET.get('qformat','') == 'Standard_2014-09-25':
+		card_list = card_list.filter(expansionset__abbr__in=['M15','THS','BNG','JOU','KTK'])
 
 	# Get an instance of a logger
 	#logger = logging.getLogger(__name__)
