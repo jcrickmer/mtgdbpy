@@ -5,24 +5,183 @@ from django.template import RequestContext, loader
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
 from django.db.models import Max, Min
+from django.shortcuts import redirect
 
 from mtgdbapp.models import Card
 
 # import the logging library
 import logging
 
+#
+# The index view simple shows a search page. The page may be
+# interactive, but the index view has no specific interactions
+#
+# From the index template's search interface, the user may
+# "search", which uses the search method. This method removes all search
+#  query terms from the sessions, and then sets the new ones based on
+# what you entered. With search terms set in the session, you are then
+# sent on to the list.
+#
+# The "list" view method performs the query given the search terms in
+# the session, and then pushes that list out to the template to be
+# displayed. This view also handles pagination.
+#
+# If you like what see on the list, then you can view the "details" of
+# the card.
+#
 
 def index(request):
-	return search(request)
+	context = {}
+	return render(request, 'cards/index.html', context)
 
 
 def search(request):
-	card_list = Card.objects.order_by('multiverseid')[:25]
-	context = {
-		'card_list': card_list,
-		}
-	return render(request, 'cards/index.html', context)
+	if request.session.get('qcardname', False):
+		del request.session['qcardname']
+	if request.GET.get('qcardname', False):
+		request.session['qcardname'] = request.GET.get('qcardname', '')
+	if request.session.get('qformat', False):
+		del request.session['qformat']
+	if request.GET.get('qformat', False):
+		request.session['qformat'] = request.GET.get('qformat', '')
+	return redirect('cards:list')
 
+
+def list(request):
+
+	queries_without_page = request.GET.copy()
+	if queries_without_page.has_key('page'):
+		del queries_without_page['page']
+
+	# Not sure of the performance in here. Basically, I needed to
+	# do a GROUP BY to get the max multiverseid and only display
+	# that card. The first query here is getting the max
+	# multiverseid for the given query. The second query then uses
+	# that "mid_max" value to get back a list of all of the cards.
+	card_listP = Card.objects.values('basecard__id').annotate(mid_max=Max('multiverseid'))
+	card_list = Card.objects.filter(multiverseid__in=[g['mid_max'] for g in card_listP]).order_by('basecard__name')
+
+	# Ok, lets get the data. First, if they are querying by card name, let's get that list.
+	if request.session.get('qcardname', False):
+		card_list = card_list.filter(basecard__name__icontains = request.session.get('qcardname', ''))
+
+	if request.session.get('qformat','') == 'Modern_2014-09-26':
+		card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','M15','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU','KTK'])
+		card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
+
+	elif request.session.get('qformat','') == 'Modern_2014-07-18':
+		card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','M15','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU'])
+		card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
+
+	elif request.session.get('qformat','') == 'Modern_2014-05-02':
+		card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU'])
+		card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
+
+	elif request.session.get('qformat','') == 'Standard_2012-10-05':
+		card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR'])
+	elif request.session.get('qformat','') == 'Standard_2013-02-01':
+		card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR','GTC'])
+	elif request.session.get('qformat','') == 'Standard_2013-05-03':
+		card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR','GTC','DGM'])
+	elif request.session.get('qformat','') == 'Standard_2013-07-19':
+		card_list = card_list.filter(expansionset__abbr__in=['M13','M14','ISD','DKA','AVR','RTR','GTC','DGM'])
+	elif request.session.get('qformat','') == 'Standard_2013-09-27':
+		card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS'])
+	elif request.session.get('qformat','') == 'Standard_2014-02-07':
+		card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS','BNG'])
+	elif request.session.get('qformat','') == 'Standard_2014-05-02':
+		card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS','BNG','JOU'])
+	elif request.session.get('qformat','') == 'Standard_2014-07-18':
+		card_list = card_list.filter(expansionset__abbr__in=['M14','M15','RTR','GTC','DGM','THS','BNG','JOU'])
+	elif request.session.get('qformat','') == 'Standard_2014-09-26':
+		card_list = card_list.filter(expansionset__abbr__in=['M15','THS','BNG','JOU','KTK'])
+
+	# Get an instance of a logger
+	#logger = logging.getLogger(__name__)
+	#logger.error(card_list)
+	
+	paginator = Paginator(card_list, 25)
+	page = request.GET.get('page', 1)
+	try:
+		cards = paginator.page(page)
+	except PageNotAnInteger:
+		cards = paginator.page(1)
+	except EmptyPage:
+		cards = paginator.page(paginator.num_pages)
+
+	context = {
+		'cards': cards,
+		'queries': queries_without_page,
+		}
+	return render(request, 'cards/list.html', context)
+
+
+
+def detail(request, multiverseid):
+	try:
+		cards = Card.objects.filter(multiverseid=multiverseid).order_by('card_number')
+	except Card.DoesNotExist:
+		raise Http404
+	backCards = []
+	if len(cards) > 0:
+		logger = logging.getLogger(__name__)
+		backCards = Card.objects.filter(basecard__physicalcard__id = cards[0].basecard.physicalcard.id, expansionset__id = cards[0].expansionset.id)
+		logger.error(backCards)
+	cards = cards | backCards
+	twinCards = Card.objects.filter(basecard__id = cards[0].basecard.id).order_by('multiverseid')
+	response = HttpResponse("Lame. Something must be broken.")
+	jcards = []
+	card_list = []
+	card_titles = []
+	for card in cards:
+		if card.basecard.name in card_titles:
+			continue
+		card_helper = {}
+		mana_cost_html = convertSymbolsToHTML(card.basecard.mana_cost)
+		#img_url = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + str(card.multiverseid) + '&type=card'
+		card_helper['img_url'] = '/img/' + str(card.multiverseid) + '.jpg'
+		card_helper['mana_cost_html'] = mark_safe(mana_cost_html)
+		card_helper['rules_text_html'] = mark_safe(convertSymbolsToHTML(card.basecard.rules_text))
+		card_helper['flavor_text_html'] = mark_safe(card.flavor_text)
+		card_titles.append(card.basecard.name)
+		
+		if request.is_ajax():
+			response_dict = {}
+			jcard = {'name': card.basecard.name,
+					 'mana_cost': card.basecard.mana_cost,
+					 'mana_cost_html': mana_cost_html,
+					 'type': [tt.type for tt in card.basecard.types.all()],
+					 'subtype': [st.subtype for st in card.basecard.subtypes.all()],
+					 'text': card_helper['rules_text_html'],
+					 'flavor_text': card.flavor_text,
+					 'mark': '' if card.mark is None else card.mark.mark,
+					 'cmc': card.basecard.cmc,
+					 'multiverseid': card.multiverseid,
+					 'expansionset': {'name': card.expansionset.name, 'abbr':card.expansionset.abbr},
+					 'rarity': card.rarity.rarity,
+					 'card_number': card.card_number,
+					 'img_url': card_helper['img_url'],
+					 'power': card.basecard.power,
+					 'toughness': card.basecard.toughness,
+					 'loyalty': card.basecard.loyalty,
+					 'colors': [cc.color for cc in card.basecard.colors.all()]
+				 }
+			jcards.append(jcard)
+		card_list.append({'card': card, 'helper': card_helper})
+
+	if request.is_ajax():
+		response_dict.update({'status': 'success', 'physicalCardTitle': " // ".join(card_titles), 'cards': jcards, })
+		response = HttpResponse(json.dumps(response_dict), mimetype='application/javascript')
+	else:
+		response = render(request, 'cards/detail.html', {'cards': card_list,
+														 'other_versions': twinCards,
+														 'physicalCardTitle': " // ".join(card_titles),
+														 #'rules_text_html': mark_safe(card.basecard.rules_text),
+														 #'flavor_text_html': mark_safe(card.flavor_text),
+														 #'mana_cost_html': mana_cost_html,
+														 #'img_url': img_url, })
+														 })
+	return response
 
 def convertSymbolsToHTML(text):
 	base = '/cn/glyphs/'
@@ -108,140 +267,6 @@ def convertSymbolsToHTML(text):
 	result = result.replace("\n", "<br />\n")
 
 	return mark_safe(result)
-
-def detail(request, multiverseid):
-	try:
-		cards = Card.objects.filter(multiverseid=multiverseid).order_by('card_number')
-	except Card.DoesNotExist:
-		raise Http404
-	backCards = []
-	if len(cards) > 0:
-		logger = logging.getLogger(__name__)
-		backCards = Card.objects.filter(basecard__physicalcard__id = cards[0].basecard.physicalcard.id, expansionset__id = cards[0].expansionset.id)
-		logger.error(backCards)
-	cards = cards | backCards
-	twinCards = Card.objects.filter(basecard__id = cards[0].basecard.id).order_by('multiverseid')
-	response = HttpResponse("Lame. Something must be broken.")
-	jcards = []
-	card_list = []
-	card_titles = []
-	for card in cards:
-		if card.basecard.name in card_titles:
-			continue
-		card_helper = {}
-		mana_cost_html = convertSymbolsToHTML(card.basecard.mana_cost)
-		#img_url = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + str(card.multiverseid) + '&type=card'
-		card_helper['img_url'] = '/img/' + str(card.multiverseid) + '.jpg'
-		card_helper['mana_cost_html'] = mark_safe(mana_cost_html)
-		card_helper['rules_text_html'] = mark_safe(convertSymbolsToHTML(card.basecard.rules_text))
-		card_helper['flavor_text_html'] = mark_safe(card.flavor_text)
-		card_titles.append(card.basecard.name)
-		
-		if request.is_ajax():
-			response_dict = {}
-			jcard = {'name': card.basecard.name,
-					 'mana_cost': card.basecard.mana_cost,
-					 'mana_cost_html': mana_cost_html,
-					 'type': [tt.type for tt in card.basecard.types.all()],
-					 'subtype': [st.subtype for st in card.basecard.subtypes.all()],
-					 'text': card_helper['rules_text_html'],
-					 'flavor_text': card.flavor_text,
-					 'mark': '' if card.mark is None else card.mark.mark,
-					 'cmc': card.basecard.cmc,
-					 'multiverseid': card.multiverseid,
-					 'expansionset': {'name': card.expansionset.name, 'abbr':card.expansionset.abbr},
-					 'rarity': card.rarity.rarity,
-					 'card_number': card.card_number,
-					 'img_url': card_helper['img_url'],
-					 'power': card.basecard.power,
-					 'toughness': card.basecard.toughness,
-					 'loyalty': card.basecard.loyalty,
-					 'colors': [cc.color for cc in card.basecard.colors.all()]
-				 }
-			jcards.append(jcard)
-		card_list.append({'card': card, 'helper': card_helper})
-
-	if request.is_ajax():
-		response_dict.update({'status': 'success', 'physicalCardTitle': " // ".join(card_titles), 'cards': jcards, })
-		response = HttpResponse(json.dumps(response_dict), mimetype='application/javascript')
-	else:
-		response = render(request, 'cards/detail.html', {'cards': card_list,
-														 'other_versions': twinCards,
-														 'physicalCardTitle': " // ".join(card_titles),
-														 #'rules_text_html': mark_safe(card.basecard.rules_text),
-														 #'flavor_text_html': mark_safe(card.flavor_text),
-														 #'mana_cost_html': mana_cost_html,
-														 #'img_url': img_url, })
-														 })
-	return response
-
-def list(request):
-
-	queries_without_page = request.GET.copy()
-	if queries_without_page.has_key('page'):
-		del queries_without_page['page']
-
-	# Not sure of the performance in here. Basically, I needed to
-	# do a GROUP BY to get the max multiverseid and only display
-	# that card. The first query here is getting the max
-	# multiverseid for the given query. The second query then uses
-	# that "mid_max" value to get back a list of all of the cards.
-	card_listP = Card.objects.values('basecard__id').annotate(mid_max=Max('multiverseid'))
-	card_list = Card.objects.filter(multiverseid__in=[g['mid_max'] for g in card_listP]).order_by('basecard__name')
-
-	# Ok, lets get the data. First, if they are querying by card name, let's get that list.
-	if request.GET.get('qcardname', False):
-		card_list = card_list.filter(basecard__name__icontains = request.GET.get('qcardname', ''))
-
-	if request.GET.get('qformat','') == 'Modern_2014-09-26':
-		card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','M15','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU','KTK'])
-		card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
-
-	elif request.GET.get('qformat','') == 'Modern_2014-07-18':
-		card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','M15','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU'])
-		card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
-
-	elif request.GET.get('qformat','') == 'Modern_2014-05-02':
-		card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU'])
-		card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
-
-	elif request.GET.get('qformat','') == 'Standard_2012-10-05':
-		card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR'])
-	elif request.GET.get('qformat','') == 'Standard_2013-02-01':
-		card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR','GTC'])
-	elif request.GET.get('qformat','') == 'Standard_2013-05-03':
-		card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR','GTC','DGM'])
-	elif request.GET.get('qformat','') == 'Standard_2013-07-19':
-		card_list = card_list.filter(expansionset__abbr__in=['M13','M14','ISD','DKA','AVR','RTR','GTC','DGM'])
-	elif request.GET.get('qformat','') == 'Standard_2013-09-27':
-		card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS'])
-	elif request.GET.get('qformat','') == 'Standard_2014-02-07':
-		card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS','BNG'])
-	elif request.GET.get('qformat','') == 'Standard_2014-05-02':
-		card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS','BNG','JOU'])
-	elif request.GET.get('qformat','') == 'Standard_2014-07-18':
-		card_list = card_list.filter(expansionset__abbr__in=['M14','M15','RTR','GTC','DGM','THS','BNG','JOU'])
-	elif request.GET.get('qformat','') == 'Standard_2014-09-25':
-		card_list = card_list.filter(expansionset__abbr__in=['M15','THS','BNG','JOU','KTK'])
-
-	# Get an instance of a logger
-	#logger = logging.getLogger(__name__)
-	#logger.error(card_list)
-	
-	paginator = Paginator(card_list, 25)
-	page = request.GET.get('page')
-	try:
-		cards = paginator.page(page)
-	except PageNotAnInteger:
-		cards = paginator.page(1)
-	except EmptyPage:
-		cards = paginator.page(paginator.num_pages)
-
-	context = {
-		'cards': cards,
-		'queries': queries_without_page,
-		}
-	return render(request, 'cards/list.html', context)
 
 
 def vote(request, multiverseid):

@@ -3,7 +3,7 @@
 {% block title %}Card Search{% endblock %}
 
 {% block content %}
-<form action="{% url 'cards:list' %}" method="get">
+<form action="{% url 'cards:search' %}" method="get">
   <div>
     <label for="qcardname">Name Search</label> <input id="qcardname" type="text" name="qcardname" />
   </div>
