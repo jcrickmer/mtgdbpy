@@ -8,19 +8,19 @@
     <div class="col-xs-6">
       <div>
         <label for="cardname">Name</label>
-        <select id="cardname_op" name="cardname_op"><option value="and" selected>and</option><option value="or">or</option><option value="not">not</option></select>
+        <select id="cardname_op" name="cardname_op"><option value="and" selected>and</option><!--<option value="or">or</option>--><option value="not">not</option></select>
         <input id="cardname" type="text" name="cardname" />
         <button name="cardname_add">Add</button>
       </div>
   <div>
     <label for="rules">Rules Text</label>
-    <select id="rules_op" name="rules_op"><option value="and" selected>and</option><option value="or">or</option><option value="not">not</option></select>
+    <select id="rules_op" name="rules_op"><option value="and" selected>and</option><!--<option value="or">or</option>--><option value="not">not</option></select>
     <input id="rules" type="text" name="rules" />
     <button name="rules_add">Add</button>
   </div>
   <div>
     <label for="color">Color</label>
-    <select id="color_op" name="color_op"><option value="and" selected>and</option><option value="or">or</option><option value="not">not</option></select>
+    <select id="color_op" name="color_op"><option value="and" selected>and</option><!--<option value="or">or</option>--><option value="not">not</option></select>
     <select id="color" name="color">
       <option value="w">white</option>
       <option value="u">blue</option>
@@ -32,7 +32,8 @@
     <button name="color_add">Add</button>
   </div>
   <div>
-    <label for="format">Format</label> <select id="format" name="format">
+    <label for="format">Format</label>
+    <select id="format" name="format">
       <option></option>
       <option value="Modern_2014-09-26">Modern (September 26, 2014)</option>
       <option value="Modern_2014-07-18">Modern (July 18, 2014)</option>
@@ -49,14 +50,12 @@
     </select>
   </div>
 <script>
-function updateQueryDisplay() {
-    $("#search_terms").empty();
-    for (var t = 0; t < window.rules.length ; t++) {
-        var rule = rules[t];
-        $("#search_terms").append($("<div>").append(rule.field + " :: " + rule.op + " :: \"" + rule.value + "\"")); 
-    }
-    console.dir(rules);
-}
+window.rules = {{ predicates_js|safe }};
+$(function() {
+    cdb.searchPredicatesDisplay(window.rules, $("#search_terms"));
+});
+</script>
+<script>
 function sendQuery() {
     var form_jq = $("<form action=\"{% url 'cards:search' %}\" method=\"get\">")
     $(document.body).append(form_jq);
@@ -67,12 +66,29 @@ function sendQuery() {
 }
 
   $(function() {
-    window.rules = [];
+    $("#format").on('change',function(event) {
+	    var match = false;
+        for (var g = 0; g < window.rules.length ; g++) {
+		    if (window.rules[g].field == "format") {
+			    window.rules[g].value = $("#format option:selected").attr("value");
+				match = true;
+			}
+        }
+		if (! match) {
+		    window.rules.push({"field" : "format", "op" : "and", "value" : $("#format option:selected").attr("value")});
+		}
+		cdb.searchPredicatesDisplay(window.rules, $("#search_terms"));
+    });
+	$("#clear_terms").click(function() {
+		window.rules = [];
+		cdb.searchPredicatesDisplay(window.rules, $("#search_terms"));
+		return false;
+	});
     $( "button" )
       .button()
       .click(function( event ) {
         //console.dir(event);
-        console.log("You clicked it! " + event.target.name);
+        //console.log("You clicked it! " + event.target.name);
         if (event.target.name == "sendQuery") {
             return sendQuery();
         }
@@ -89,16 +105,16 @@ function sendQuery() {
 		    //console.log(field_name + " is a select");
 		    var op = $("#" + field_name + "_op option:selected").attr("value");
 			window.rules.push({"field" : field_name, "op" : op, "value" : $("#" + field_name + " option:selected").attr("value")});
-		} else { alert("what?"); }
-        updateQueryDisplay();
+		} else { alert("I do not yet understand this query type."); }
+		cdb.searchPredicatesDisplay(window.rules, $("#search_terms"));
         event.preventDefault();
       });
   });
   </script>
 	</div>
     <div class="col-xs-6">
-      <div id="search_terms">
-      </div>
+      <div id="search_terms"></div>
+      <div><a id="clear_terms" href="#">Clear all terms</a></div>
       <div>
         <button name="sendQuery">Search</button>
       </div>

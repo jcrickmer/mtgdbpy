@@ -9,6 +9,8 @@ from django.shortcuts import redirect
 
 from mtgdbapp.models import Card
 
+import json
+
 # import the logging library
 import logging
 
@@ -32,11 +34,25 @@ import logging
 
 def index(request):
 	context = {}
+	if request.session['query_pred_array'] is None:
+		request.session['query_pred_array'] = []
+
+	context['predicates'] = request.session.get('query_pred_array')
+	context['predicates_js'] = json.dumps(request.session.get('query_pred_array'))
+
 	return render(request, 'cards/index.html', context)
 
 
 def search(request):
-	# BOOKMARK - the HTML page is now sending just one query param, "query", and it is an ajax object with each of the query args in array of objects of {field, op, value}. Now what are we going to do with that?
+	if request.session.get('query_pred_array', False):
+		request.session["curpage"] = 1
+		del request.session['query_pred_array']
+	if request.GET.get('query', False):
+		q_array = json.loads(request.GET.get('query', ''))
+		logger = logging.getLogger(__name__)
+		logger.error(q_array)
+		request.session['query_pred_array'] = q_array
+
 	if request.session.get('qcardname', False):
 		del request.session['qcardname']
 	if request.GET.get('qcardname', False):
@@ -56,10 +72,6 @@ def search(request):
 
 def list(request):
 
-	queries_without_page = request.GET.copy()
-	if queries_without_page.has_key('page'):
-		del queries_without_page['page']
-
 	# Not sure of the performance in here. Basically, I needed to
 	# do a GROUP BY to get the max multiverseid and only display
 	# that card. The first query here is getting the max
@@ -68,60 +80,81 @@ def list(request):
 	card_listP = Card.objects.values('basecard__id').annotate(mid_max=Max('multiverseid'))
 	card_list = Card.objects.filter(multiverseid__in=[g['mid_max'] for g in card_listP]).order_by('basecard__name')
 
-	# Ok, lets get the data. First, if they are querying by card name, let's get that list.
-	if request.session.get('qcardname', False):
-		card_list = card_list.filter(basecard__name__icontains = request.session.get('qcardname', ''))
+	# Let's get the array of predicates from the session
+	query_pred_array = []
+	if request.session.get('query_pred_array', False):
+		query_pred_array = request.session.get('query_pred_array')
 
-	if request.session.get('qrules', False):
-		card_list = card_list.filter(basecard__rules_text__icontains = request.session.get('qrules', ''))
+	for pred in query_pred_array:
+		if pred['field'] == 'cardname':
+			if pred['op'] == 'not':
+				card_list = card_list.exclude(basecard__name__icontains = pred['value'])
+			else:
+				card_list = card_list.filter(basecard__name__icontains = pred['value'])
 
-	if request.session.get('qformat','') == 'Modern_2014-09-26':
-		card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','M15','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU','KTK'])
-		card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
+		if pred['field'] == 'rules':
+			if pred['op'] == 'not':
+				card_list = card_list.exclude(basecard__rules_text__icontains = pred['value'])
+			else:
+				card_list = card_list.filter(basecard__rules_text__icontains = pred['value'])
+				
+		if pred['field'] == 'color':
+			if pred['op'] == 'not':
+				card_list = card_list.exclude(basecard__colors__in = pred['value'])
+			else:
+				card_list = card_list.filter(basecard__colors__in = pred['value'])
+				
+		if pred['field'] == 'format':
+			if pred['value'] == 'Modern_2014-09-26':
+				card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','M15','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU','KTK'])
+				card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
 
-	elif request.session.get('qformat','') == 'Modern_2014-07-18':
-		card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','M15','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU'])
-		card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
+			elif pred['value'] == 'Modern_2014-07-18':
+				card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','M15','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU'])
+				card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
 
-	elif request.session.get('qformat','') == 'Modern_2014-05-02':
-		card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU'])
-		card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
+			elif pred['value'] == 'Modern_2014-05-02':
+				card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU'])
+				card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
 
-	elif request.session.get('qformat','') == 'Standard_2012-10-05':
-		card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR'])
-	elif request.session.get('qformat','') == 'Standard_2013-02-01':
-		card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR','GTC'])
-	elif request.session.get('qformat','') == 'Standard_2013-05-03':
-		card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR','GTC','DGM'])
-	elif request.session.get('qformat','') == 'Standard_2013-07-19':
-		card_list = card_list.filter(expansionset__abbr__in=['M13','M14','ISD','DKA','AVR','RTR','GTC','DGM'])
-	elif request.session.get('qformat','') == 'Standard_2013-09-27':
-		card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS'])
-	elif request.session.get('qformat','') == 'Standard_2014-02-07':
-		card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS','BNG'])
-	elif request.session.get('qformat','') == 'Standard_2014-05-02':
-		card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS','BNG','JOU'])
-	elif request.session.get('qformat','') == 'Standard_2014-07-18':
-		card_list = card_list.filter(expansionset__abbr__in=['M14','M15','RTR','GTC','DGM','THS','BNG','JOU'])
-	elif request.session.get('qformat','') == 'Standard_2014-09-26':
-		card_list = card_list.filter(expansionset__abbr__in=['M15','THS','BNG','JOU','KTK'])
+			elif pred['value'] == 'Standard_2012-10-05':
+				card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR'])
+			elif pred['value'] == 'Standard_2013-02-01':
+				card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR','GTC'])
+			elif pred['value'] == 'Standard_2013-05-03':
+				card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR','GTC','DGM'])
+			elif pred['value'] == 'Standard_2013-07-19':
+				card_list = card_list.filter(expansionset__abbr__in=['M13','M14','ISD','DKA','AVR','RTR','GTC','DGM'])
+			elif pred['value'] == 'Standard_2013-09-27':
+				card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS'])
+			elif pred['value'] == 'Standard_2014-02-07':
+				card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS','BNG'])
+			elif pred['value'] == 'Standard_2014-05-02':
+				card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS','BNG','JOU'])
+			elif pred['value'] == 'Standard_2014-07-18':
+				card_list = card_list.filter(expansionset__abbr__in=['M14','M15','RTR','GTC','DGM','THS','BNG','JOU'])
+			elif pred['value'] == 'Standard_2014-09-26':
+				card_list = card_list.filter(expansionset__abbr__in=['M15','THS','BNG','JOU','KTK'])
 
 	# Get an instance of a logger
 	#logger = logging.getLogger(__name__)
 	#logger.error(card_list)
 	
 	paginator = Paginator(card_list, 25)
-	page = request.GET.get('page', 1)
+	page = request.GET.get('page', request.session.get("curpage",1))
 	try:
 		cards = paginator.page(page)
+		request.session["curpage"] = page
 	except PageNotAnInteger:
 		cards = paginator.page(1)
+		request.session["curpage"] = 1
 	except EmptyPage:
 		cards = paginator.page(paginator.num_pages)
-
+		request.session["curpage"] = paginator.num_pages
 	context = {
 		'cards': cards,
-		'queries': queries_without_page,
+		'predicates': query_pred_array,
+		'predicates_js': json.dumps(query_pred_array),
 		}
 	return render(request, 'cards/list.html', context)
 
