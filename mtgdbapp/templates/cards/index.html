@@ -4,11 +4,35 @@
 
 {% block content %}
 <form action="{% url 'cards:search' %}" method="get">
+  <div class="row">
+    <div class="col-xs-6">
+      <div>
+        <label for="cardname">Name</label>
+        <select id="cardname_op" name="cardname_op"><option value="and" selected>and</option><option value="or">or</option><option value="not">not</option></select>
+        <input id="cardname" type="text" name="cardname" />
+        <button name="cardname_add">Add</button>
+      </div>
   <div>
-    <label for="qcardname">Name Search</label> <input id="qcardname" type="text" name="qcardname" />
+    <label for="rules">Rules Text</label>
+    <select id="rules_op" name="rules_op"><option value="and" selected>and</option><option value="or">or</option><option value="not">not</option></select>
+    <input id="rules" type="text" name="rules" />
+    <button name="rules_add">Add</button>
   </div>
   <div>
-    <label for="qformat">Format</label> <select id="qformat" name="qformat">
+    <label for="color">Color</label>
+    <select id="color_op" name="color_op"><option value="and" selected>and</option><option value="or">or</option><option value="not">not</option></select>
+    <select id="color" name="color">
+      <option value="w">white</option>
+      <option value="u">blue</option>
+      <option value="b">black</option>
+      <option value="r">red</option>
+      <option value="g">green</option>
+      <option value="c">colorless</option>
+	</select>
+    <button name="color_add">Add</button>
+  </div>
+  <div>
+    <label for="format">Format</label> <select id="format" name="format">
       <option></option>
       <option value="Modern_2014-09-26">Modern (September 26, 2014)</option>
       <option value="Modern_2014-07-18">Modern (July 18, 2014)</option>
@@ -24,8 +48,61 @@
       <option value="Standard_2012-10-05">Standard (October 5, 2012)</option>
     </select>
   </div>
-  <div>
-    <input type="submit" name="search" value="Search" />
+<script>
+function updateQueryDisplay() {
+    $("#search_terms").empty();
+    for (var t = 0; t < window.rules.length ; t++) {
+        var rule = rules[t];
+        $("#search_terms").append($("<div>").append(rule.field + " :: " + rule.op + " :: \"" + rule.value + "\"")); 
+    }
+    console.dir(rules);
+}
+function sendQuery() {
+    var form_jq = $("<form action=\"{% url 'cards:search' %}\" method=\"get\">")
+    $(document.body).append(form_jq);
+	form_jq.append("<input id=\"subform_q\" type=\"hidden\" name=\"query\">");
+    $("#subform_q").val(JSON.stringify(rules));
+	form_jq.submit();
+    event.preventDefault();
+}
+
+  $(function() {
+    window.rules = [];
+    $( "button" )
+      .button()
+      .click(function( event ) {
+        //console.dir(event);
+        console.log("You clicked it! " + event.target.name);
+        if (event.target.name == "sendQuery") {
+            return sendQuery();
+        }
+        var field_name = event.target.name.replace("_add","");
+		var form_field = $("#" + field_name);
+		var input_type = form_field.prop("tagName").toLowerCase();
+		var op = $("#" + field_name + "_op option:selected").attr("value");
+		if (input_type == "input") {
+		    //console.log(field_name + " is an input");
+		    //console.log(field_name + " is " + op + " value \"" + form_field.val() + "\"");
+			window.rules.push({"field" : field_name, "op" : op, "value" : form_field.val()});
+			form_field.val("");
+		} else if (input_type == "select") {
+		    //console.log(field_name + " is a select");
+		    var op = $("#" + field_name + "_op option:selected").attr("value");
+			window.rules.push({"field" : field_name, "op" : op, "value" : $("#" + field_name + " option:selected").attr("value")});
+		} else { alert("what?"); }
+        updateQueryDisplay();
+        event.preventDefault();
+      });
+  });
+  </script>
+	</div>
+    <div class="col-xs-6">
+      <div id="search_terms">
+      </div>
+      <div>
+        <button name="sendQuery">Search</button>
+      </div>
+	</div>
   </div>
 </form>
 <div>

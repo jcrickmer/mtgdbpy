@@ -36,10 +36,17 @@ def index(request):
 
 
 def search(request):
+	# BOOKMARK - the HTML page is now sending just one query param, "query", and it is an ajax object with each of the query args in array of objects of {field, op, value}. Now what are we going to do with that?
 	if request.session.get('qcardname', False):
 		del request.session['qcardname']
 	if request.GET.get('qcardname', False):
 		request.session['qcardname'] = request.GET.get('qcardname', '')
+
+	if request.session.get('qrules', False):
+		del request.session['qrules']
+	if request.GET.get('qrules', False):
+		request.session['qrules'] = request.GET.get('qrules', '')
+
 	if request.session.get('qformat', False):
 		del request.session['qformat']
 	if request.GET.get('qformat', False):
@@ -64,6 +71,9 @@ def list(request):
 	# Ok, lets get the data. First, if they are querying by card name, let's get that list.
 	if request.session.get('qcardname', False):
 		card_list = card_list.filter(basecard__name__icontains = request.session.get('qcardname', ''))
+
+	if request.session.get('qrules', False):
+		card_list = card_list.filter(basecard__rules_text__icontains = request.session.get('qrules', ''))
 
 	if request.session.get('qformat','') == 'Modern_2014-09-26':
 		card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','M15','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU','KTK'])
