@@ -8,6 +8,8 @@ from django.db.models import Max, Min
 from django.shortcuts import redirect
 
 from mtgdbapp.models import Card
+from mtgdbapp.models import Type
+from mtgdbapp.models import Subtype
 
 import json
 
@@ -39,6 +41,8 @@ def index(request):
 
 	context['predicates'] = request.session.get('query_pred_array')
 	context['predicates_js'] = json.dumps(request.session.get('query_pred_array'))
+	context['types'] = [tt.type for tt in Type.objects.all()]
+	context['subtypes'] = [st.subtype for st in Subtype.objects.all()]
 
 	return render(request, 'cards/index.html', context)
 
@@ -53,20 +57,6 @@ def search(request):
 		logger.error(q_array)
 		request.session['query_pred_array'] = q_array
 
-	if request.session.get('qcardname', False):
-		del request.session['qcardname']
-	if request.GET.get('qcardname', False):
-		request.session['qcardname'] = request.GET.get('qcardname', '')
-
-	if request.session.get('qrules', False):
-		del request.session['qrules']
-	if request.GET.get('qrules', False):
-		request.session['qrules'] = request.GET.get('qrules', '')
-
-	if request.session.get('qformat', False):
-		del request.session['qformat']
-	if request.GET.get('qformat', False):
-		request.session['qformat'] = request.GET.get('qformat', '')
 	return redirect('cards:list')
 
 
@@ -103,7 +93,37 @@ def list(request):
 				card_list = card_list.exclude(basecard__colors__in = pred['value'])
 			else:
 				card_list = card_list.filter(basecard__colors__in = pred['value'])
-				
+
+		if pred['field'] == 'cmc':
+			# If it isn't an int, then skip it.
+			try:
+				pred['value'] = int(pred['value'])
+			except ValueError:
+				# we should remove this predicate. it is bogus
+				query_pred_array.remove(pred)
+				break
+			if pred['op'] == 'lt':
+				card_list = card_list.filter(basecard__cmc__lt = pred['value'])
+			elif pred['op'] == 'gt':
+				card_list = card_list.filter(basecard__cmc__gt = pred['value'])
+			elif pred['op'] == 'ne':
+				card_list = card_list.exclude(basecard__cmc__exact = pred['value'])
+			else:
+				# Assume equals
+ 				card_list = card_list.filter(basecard__cmc__exact = pred['value'])
+
+		if pred['field'] == 'type':
+			if pred['op'] == 'not':
+				card_list = card_list.exclude(basecard__types__type__icontains = pred['value'])
+			else:
+				card_list = card_list.filter(basecard__types__type__icontains = pred['value'])
+
+		if pred['field'] == 'subtype':
+			if pred['op'] == 'not':
+				card_list = card_list.exclude(basecard__subtypes__subtype__icontains = pred['value'])
+			else:
+				card_list = card_list.filter(basecard__subtypes__subtype__icontains = pred['value'])
+
 		if pred['field'] == 'format':
 			if pred['value'] == 'Modern_2014-09-26':
 				card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','M15','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU','KTK'])

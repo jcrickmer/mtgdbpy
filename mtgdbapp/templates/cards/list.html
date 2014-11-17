@@ -4,6 +4,15 @@
 {% block title %}Search Results{% endblock %}
 
 {% block content %}
+<div>Search query is <div id="search_terms"></div>
+</div>
+<script>
+window.predicates = {{ predicates_js|safe }};
+$(function() {
+    cdb.searchPredicatesDisplay(window.predicates, "#search_terms", true);
+});
+</script>
+<div>Found {{cards.paginator.count}} results.</div>
 {% if cards %}
   <ul>{% for card in cards %}
     <li><a href="{% url 'cards:detail' card.multiverseid %}">{{ card.basecard.name }}</a></li>
@@ -13,11 +22,11 @@
 {% endif %}
 
   <ul class="pagination">
-    <li><a href="?{{queries.urlencode}}&amp;page=1">&laquo;</a></li>
+    <li><a href="?page=1">&laquo;</a></li>
 {% for ppp in cards.paginator.page_range %}
-    <li><a href="?{{queries.urlencode}}&amp;page={{ppp}}">{{ppp}}</a></li>
+    <li><a href="?page={{ppp}}">{{ppp}}</a></li>
 {% endfor %}
-    <li><a href="?{{queries.urlencode}}&amp;page={{cards.paginator.num_pages}}">&raquo;</a></li>
+    <li><a href="?page={{cards.paginator.num_pages}}">&raquo;</a></li>
   </ul>
 
 {% endblock %}

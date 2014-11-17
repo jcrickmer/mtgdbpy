@@ -32,6 +32,32 @@
     <button name="color_add">Add</button>
   </div>
   <div>
+    <label for="cmc">CMC</label>
+    <select id="cmc_op" name="cmc_op"><option value="eq" selected>equals</option><option value="ne">not</option><option value="lt">less than</option><option value="gt">greater than</option></select>
+    <input id="cmc" name="cmc" type="text" />
+    <button name="cmc_add">Add</button>
+  </div>
+  <div>
+    <label for="type">Type</label>
+    <select id="type_op" name="type_op"><option value="and" selected>and</option><!--<option value="or">or</option>--><option value="not">not</option></select>
+    <input id="type" name="type" type="text" />
+<script>$(function() {
+var types = [{% for type in types %}"{{ type }}",{% endfor %}];
+$("#type").autocomplete({source : types});
+});</script>
+    <button name="type_add">Add</button>
+  </div>
+  <div>
+    <label for="subtype">Subtype</label>
+    <select id="subtype_op" name="subtype_op"><option value="and" selected>and</option><!--<option value="or">or</option>--><option value="not">not</option></select>
+    <input id="subtype" name="subtype" type="text" />
+<script>$(function() {
+var subtypes = [{% for subtype in subtypes %}"{{ subtype }}",{% endfor %}];
+$("#subtype").autocomplete({source : subtypes});
+});</script>
+    <button name="subtype_add">Add</button>
+  </div>
+  <div>
     <label for="format">Format</label>
     <select id="format" name="format">
       <option></option>
@@ -52,7 +78,7 @@
 <script>
 window.rules = {{ predicates_js|safe }};
 $(function() {
-    cdb.searchPredicatesDisplay(window.rules, $("#search_terms"));
+    cdb.searchPredicatesDisplay(window.rules, "#search_terms");
 });
 </script>
 <script>
@@ -75,13 +101,13 @@ function sendQuery() {
 			}
         }
 		if (! match) {
-		    window.rules.push({"field" : "format", "op" : "and", "value" : $("#format option:selected").attr("value")});
+		    window.rules.push({"field" : "format", "op" : "and", "value" : $("#format option:selected").attr("value"), "hint" : "format"});
 		}
-		cdb.searchPredicatesDisplay(window.rules, $("#search_terms"));
+		cdb.searchPredicatesDisplay(window.rules, "#search_terms");
     });
 	$("#clear_terms").click(function() {
 		window.rules = [];
-		cdb.searchPredicatesDisplay(window.rules, $("#search_terms"));
+		cdb.searchPredicatesDisplay(window.rules, "#search_terms");
 		return false;
 	});
     $( "button" )
@@ -99,14 +125,14 @@ function sendQuery() {
 		if (input_type == "input") {
 		    //console.log(field_name + " is an input");
 		    //console.log(field_name + " is " + op + " value \"" + form_field.val() + "\"");
-			window.rules.push({"field" : field_name, "op" : op, "value" : form_field.val()});
+			window.rules.push({"field" : field_name, "op" : op, "value" : form_field.val(), "hint" : field_name + op + form_field.val()});
 			form_field.val("");
 		} else if (input_type == "select") {
 		    //console.log(field_name + " is a select");
 		    var op = $("#" + field_name + "_op option:selected").attr("value");
-			window.rules.push({"field" : field_name, "op" : op, "value" : $("#" + field_name + " option:selected").attr("value")});
+			window.rules.push({"field" : field_name, "op" : op, "value" : $("#" + field_name + " option:selected").attr("value"), "hint" : field_name + op + $("#" + field_name + " option:selected").attr("value")});
 		} else { alert("I do not yet understand this query type."); }
-		cdb.searchPredicatesDisplay(window.rules, $("#search_terms"));
+		cdb.searchPredicatesDisplay(window.rules, "#search_terms");
         event.preventDefault();
       });
   });
