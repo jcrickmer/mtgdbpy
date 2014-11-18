@@ -88,7 +88,7 @@ function sendQuery() {
 	form_jq.append("<input id=\"subform_q\" type=\"hidden\" name=\"query\">");
     $("#subform_q").val(JSON.stringify(rules));
 	form_jq.submit();
-    event.preventDefault();
+    return false; //event.preventDefault();
 }
 
   $(function() {
