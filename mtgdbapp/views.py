@@ -36,7 +36,9 @@ import logging
 
 def index(request):
 	context = {}
-	if request.session['query_pred_array'] is None:
+	try:
+		request.session['query_pred_array'] is None
+	except KeyError:
 		request.session['query_pred_array'] = []
 
 	context['predicates'] = request.session.get('query_pred_array')
