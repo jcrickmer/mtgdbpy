@@ -12,6 +12,9 @@ from __future__ import unicode_literals
 from django.db import models
 from datetime import datetime
 
+from mtgdbapp.view_utils import convertSymbolsToHTML
+from django.utils.safestring import mark_safe
+
 class AuthGroup(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(unique=True, max_length=80)
@@ -174,6 +177,14 @@ class Card(models.Model):
 	mark = models.ForeignKey('Mark', blank=True, null=True)
 	created_at = models.DateTimeField(default=datetime.now, null=False, blank=True)
 	updated_at = models.DateTimeField(default=datetime.now, null=False, blank=True)
+	def img_url(self):
+		return '/img/' + str(self.multiverseid) + '.jpg'
+	def mana_cost_html(self):
+		return convertSymbolsToHTML(self.basecard.mana_cost)
+	def rules_text_html(self):
+		return convertSymbolsToHTML(self.basecard.rules_text)
+	def flavor_text_html(self):
+		return mark_safe(self.flavor_text)
 	class Meta:
 		managed = True
 		db_table = 'cards'

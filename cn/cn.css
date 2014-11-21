@@ -211,6 +211,23 @@ th, td {
 td {
   vertical-align: top;
 }
+
+.list_cardimage {
+  width:150px;
+  height: auto;
+}
+.list_cardname {
+  font-size: 110%;
+}
+.list_cardtype {
+  font-style: italic;
+}
+.list_rules {
+padding-top: 11px;
+}
+.list_mana_cost {}
+.list_cmc {}
+
 .footer {
     background-color: #f5f5f5;
     border-top: 1px solid #e5e5e5;

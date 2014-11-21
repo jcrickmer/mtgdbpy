@@ -14,12 +14,18 @@ $(function() {
 </script>
 <div>Found {{cards.paginator.count}} results.</div>
 {% if cards %}
+  <table>
   <ul>{% for card in cards %}
-    <li><a href="{% url 'cards:detail' card.multiverseid %}">{{ card.basecard.name }}</a></li>
-  {% endfor %}</ul>
-{% else %}
-  <p>No cards are available.</p>
-{% endif %}
+    <tr>
+      <td><a href="{% url 'cards:detail' card.multiverseid %}"><img class="list_cardimage" src="{{ card.img_url }}" alt="{{ card.basecard.name }}"/></a></td></td>
+      <td>
+        <div><span class="list_cardname"><a href="{% url 'cards:detail' card.multiverseid %}">{{ card.basecard.name }}</a></span> <span class="list_mana_cost">{{card.mana_cost_html }}</span> <span class="list_cmc">({{card.basecard.cmc}})</span></div>
+        <div class="list_cardtype">{% for ttype in card.basecard.types.all %}{{ ttype.type }} {% endfor %} {% if card.basecard.subtypes.all %}&mdash; {% for tsubtype in card.basecard.subtypes.all %}{{ tsubtype.subtype }} {% endfor %}{%endif%}</div>
+        <div class="list_rules">{{card.rules_text_html}}</div>
+      </td>
+    </tr>
+  {% endfor %}
+  </table>
 
   <ul class="pagination">
     <li><a href="?page=1">&laquo;</a></li>
@@ -28,5 +34,9 @@ $(function() {
 {% endfor %}
     <li><a href="?page={{cards.paginator.num_pages}}">&raquo;</a></li>
   </ul>
+
+{% else %}
+  <p>No cards are available.</p>
+{% endif %}
 
 {% endblock %}

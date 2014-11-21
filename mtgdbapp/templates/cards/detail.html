@@ -16,7 +16,7 @@
 {% for working in cards %}
 <div class="row">
   <div class="col-sm-3 col-md-3 col-lg-3">
-    <img class="cardimage" src="{{ working.helper.img_url }}" alt="{{ working.card.basecard.name }}"/>
+    <img class="cardimage" src="{{ working.card.img_url }}" alt="{{ working.card.basecard.name }}"/>
   </div>
   <div class="col-sm-8 col-md-6 col-lg-6">
 <table>
@@ -27,7 +27,7 @@
     </tr>
     <tr>
       <td>Mana Cost<td>
-      <td>{{ working.helper.mana_cost_html }}</td>
+      <td>{{ working.card.mana_cost_html }}</td>
     </tr>
     <tr>
       <td>Type<td>
@@ -41,7 +41,7 @@
 {% endif %}
     <tr>
       <td>Text<td>
-      <td>{{ working.helper.rules_text_html }}</td>
+      <td>{{ working.card.rules_text_html }}</td>
     </tr>
 {% if working.card.basecard.power %}
     <tr>
@@ -63,7 +63,7 @@
 {% endif %}
     <tr>
       <td>Flavor Text<td>
-      <td>{{ working.helper.flavor_text_html }}</td>
+      <td>{{ working.card.flavor_text_html }}</td>
     </tr>
 {% if working.card.mark.mark %}
     <tr>
@@ -105,4 +105,5 @@
   <div class="col-sm-1 col-md-3 col-lg-3"></div>
 </div>
 {% endfor %}
+<div class="row"><div class="col-sm-1 col-md-3 col-lg-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_muid}}">View on Gatherer</a></div></div>
 {% endblock %}
