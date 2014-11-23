@@ -223,7 +223,24 @@ class CardType(models.Model):
 	def __unicode__(self):
 		return str(self.id) + " [Card: " + str(self.basecard.id) + " (" + self.basecard.name + "), Type: " + str(self.type.id) + " (" + self.type.type + "), Position: " + str(self.position) + "]"
 
-
+class Format(models.Model):
+	id = models.IntegerField(primary_key=True)
+	formatname = models.CharField(max_length=60, null=False)
+	format = models.CharField(max_length=60, unique=True, null=False)
+	start_date = models.DateField(auto_now=False, auto_now_add=False, null=True)
+	end_date = models.DateField(auto_now=False, auto_now_add=False, null=True)
+	def __unicode__(self):
+		return str(self.id) + " [Format: " + str(self.formatname) + " (" + self.format + ")]"
+	
+class FormatBasecard(models.Model):
+	format = models.ForeignKey(Format)
+	basecard = models.ForeignKey(BaseCard)
+	class Meta:
+		verbose_name_plural = 'Format Base Cards'
+		unique_together = ('format', 'basecard',)
+	def __unicode__(self):
+		return "[Format: " + str(self.format.format) + " - " + self.basecard.name + " (" + str(self.basecard.id) + ")]"
+	
 class DjangoAdminLog(models.Model):
 	id = models.IntegerField(primary_key=True)
 	action_time = models.DateTimeField()

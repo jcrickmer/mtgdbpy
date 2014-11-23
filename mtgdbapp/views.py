@@ -10,6 +10,8 @@ from django.shortcuts import redirect
 from mtgdbapp.models import Card
 from mtgdbapp.models import Type
 from mtgdbapp.models import Subtype
+from mtgdbapp.models import Format
+from mtgdbapp.models import FormatBasecard
 
 # import the logging library
 import logging
@@ -62,6 +64,10 @@ def search(request):
 
 def list(request):
 
+	# Get an instance of a logger
+	logger = logging.getLogger(__name__)
+	#logger.error(request)
+
 	# Not sure of the performance in here. Basically, I needed to
 	# do a GROUP BY to get the max multiverseid and only display
 	# that card. The first query here is getting the max
@@ -74,7 +80,7 @@ def list(request):
 	query_pred_array = []
 	if request.session.get('query_pred_array', False):
 		query_pred_array = request.session.get('query_pred_array')
-
+		
 	for pred in query_pred_array:
 		if pred['field'] == 'cardname':
 			if pred['op'] == 'not':
@@ -125,39 +131,10 @@ def list(request):
 				card_list = card_list.filter(basecard__subtypes__subtype__icontains = pred['value'])
 
 		if pred['field'] == 'format':
-			if pred['value'] == 'Modern_2014-09-26':
-				card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','M15','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU','KTK'])
-				card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
+			bc_vals = FormatBasecard.objects.filter(format__format__exact = pred['value']).values_list('basecard', flat=True)
+			# Note that one example from Django said that I needed to do list(bc_vals). But that TOTALLY bombed, probably because list() is defined in this file. That was hard to debug.
+			card_list = card_list.filter(basecard__pk__in = bc_vals)
 
-			elif pred['value'] == 'Modern_2014-07-18':
-				card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','M15','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU'])
-				card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
-
-			elif pred['value'] == 'Modern_2014-05-02':
-				card_list = card_list.filter(expansionset__abbr__in=['8ED','9ED','10E','M10','M11','M12','M13','M14','MRD','DST','5DN','CHK','BOK','SOK','RAV','GPT','DIS','TSP','TSB','PLC','FUT','LRW','MOR','SHM','EVE','ALA','CON','ARB','ZEN','WWK','ROE','SOM','MBS','NPH','ISD','DKA','AVR','RTR','GTC','DGM','THS','BNG','JOU'])
-				card_list = card_list.exclude(basecard__name__in=['Ancestral Vision','Ancient Den','Blazing Shoal','Bloodbraid Elf','Chrome Mox','Cloudpost','Dark Depths','Deathrite Shaman','Dread Return','Glimpse of Nature','Golgari Grave-Troll','Great Furnace','Green Sun\'s Zenith','Hypergenesis','Jace, the Mind Sculptor','Mental Misstep','Ponder','Preordain','Punishing Fire','Rite of Flame','Seat of the Synod','Second Sunrise','Seething Song','Sensei\'s Divining Top','Stoneforge Mystic','Skullclamp','Sword of the Meek','Tree of Tales','Umezawa\'s Jitte','Vault of Whispers'])
-
-			elif pred['value'] == 'Standard_2012-10-05':
-				card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR'])
-			elif pred['value'] == 'Standard_2013-02-01':
-				card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR','GTC'])
-			elif pred['value'] == 'Standard_2013-05-03':
-				card_list = card_list.filter(expansionset__abbr__in=['M13','ISD','DKA','AVR','RTR','GTC','DGM'])
-			elif pred['value'] == 'Standard_2013-07-19':
-				card_list = card_list.filter(expansionset__abbr__in=['M13','M14','ISD','DKA','AVR','RTR','GTC','DGM'])
-			elif pred['value'] == 'Standard_2013-09-27':
-				card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS'])
-			elif pred['value'] == 'Standard_2014-02-07':
-				card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS','BNG'])
-			elif pred['value'] == 'Standard_2014-05-02':
-				card_list = card_list.filter(expansionset__abbr__in=['M14','RTR','GTC','DGM','THS','BNG','JOU'])
-			elif pred['value'] == 'Standard_2014-07-18':
-				card_list = card_list.filter(expansionset__abbr__in=['M14','M15','RTR','GTC','DGM','THS','BNG','JOU'])
-			elif pred['value'] == 'Standard_2014-09-26':
-				card_list = card_list.filter(expansionset__abbr__in=['M15','THS','BNG','JOU','KTK'])
-
-	# Get an instance of a logger
-	#logger = logging.getLogger(__name__)
 	#logger.error(card_list)
 	
 	paginator = Paginator(card_list, 25)
