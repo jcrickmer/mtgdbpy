@@ -4,7 +4,7 @@
 {% block title %}Search Results{% endblock %}
 
 {% block content %}
-<div>Search query is <div id="search_terms"></div>
+<div><a href="{% url 'cards:index' %}">Search query is</a> <div id="search_terms"></div>
 </div>
 <script>
 window.predicates = {{ predicates_js|safe }};
