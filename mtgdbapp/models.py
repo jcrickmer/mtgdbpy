@@ -122,6 +122,7 @@ class BaseCard(models.Model):
 	#	 id = models.IntegerField(primary_key=True)
 	physicalcard = models.ForeignKey(PhysicalCard)
 	name = models.CharField(max_length=128, unique=True)
+	filing_name = models.CharField(max_length=128, default='')
 	rules_text = models.CharField(max_length=1000, blank=True)
 	mana_cost = models.CharField(max_length=60, null=False)
 	cmc = models.IntegerField(null=False, default=0)

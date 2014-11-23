@@ -13,6 +13,8 @@ from mtgdbapp.models import Subtype
 from mtgdbapp.models import Format
 from mtgdbapp.models import FormatBasecard
 
+from django.db.models import Q
+
 # import the logging library
 import logging
 
@@ -74,7 +76,7 @@ def list(request):
 	# multiverseid for the given query. The second query then uses
 	# that "mid_max" value to get back a list of all of the cards.
 	card_listP = Card.objects.values('basecard__id').annotate(mid_max=Max('multiverseid'))
-	card_list = Card.objects.filter(multiverseid__in=[g['mid_max'] for g in card_listP]).order_by('basecard__name')
+	card_list = Card.objects.filter(multiverseid__in=[g['mid_max'] for g in card_listP]).order_by('basecard__filing_name')
 
 	# Let's get the array of predicates from the session
 	query_pred_array = []
@@ -85,8 +87,9 @@ def list(request):
 		if pred['field'] == 'cardname':
 			if pred['op'] == 'not':
 				card_list = card_list.exclude(basecard__name__icontains = pred['value'])
+				card_list = card_list.exclude(basecard__filing_name__icontains = pred['value'])
 			else:
-				card_list = card_list.filter(basecard__name__icontains = pred['value'])
+				card_list = card_list.filter(Q(basecard__name__icontains = pred['value']) | Q(basecard__filing_name__icontains = pred['value']))
 
 		if pred['field'] == 'rules':
 			if pred['op'] == 'not':
