@@ -1,0 +1,34 @@
+  <ul class="pagination">
+{% if cards.has_previous %}
+    <li><a href="?page=1">&laquo;</a></li>
+    <li><a href="?page={{cards.previous_page_number}}">&lsaquo;</a></li>
+{% endif %}
+{% if cards.paginator.num_pages > 8 %}
+  {% if ellided_prev_page > 0 and cards.number > 4 and cards.number != 5 %}
+    <li><a href="?page={{ ellided_prev_page }}">...</a></li>
+  {% endif %}
+  {% for ppp in cards.paginator.page_range %}
+    {% if ppp == 1 and cards.number == 5 %}
+      <li><a href="?page={{ppp}}">{{ppp}}</a></li>
+    {% elif ppp == cards.paginator.num_pages and cards.number == cards.paginator.num_pages|add:"-4" %}
+      <li><a href="?page={{ppp}}">{{ppp}}</a></li>
+    {% elif cards.number < ppp|add:"-3" %}
+    {% elif cards.number > ppp|add:"3" %}
+    {% else %}
+      <li {% if cards.number == ppp %}class="active" {% endif %}><a href="?page={{ppp}}">{{ppp}}</a></li>
+    {% endif %}
+  {% endfor %}
+  {% if ellided_next_page < cards.paginator.num_pages %}
+    <li><a href="?page={{ ellided_next_page }}">...</a></li>
+  {% endif %}
+{% else %}
+  {% for ttt in cards.paginator.page_range %}
+    <li {% if cards.number == ttt %}class="active" {% endif %}><a href="?page={{ttt}}">{{ttt}}</a></li>
+  {% endfor %}
+{% endif %}
+{% if cards.has_next %}
+    <li><a href="?page={{cards.next_page_number}}">&rsaquo;</a></li>
+    <li><a href="?page={{cards.paginator.num_pages}}">&raquo;</a></li>
+{% endif %}
+  </ul>
+

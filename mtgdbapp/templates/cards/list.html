@@ -4,36 +4,36 @@
 {% block title %}Search Results{% endblock %}
 
 {% block content %}
-<div><a href="{% url 'cards:index' %}">Search query is</a> <div id="search_terms"></div>
-</div>
-<script>
+  <div>
+    <a href="{% url 'cards:index' %}">Search query is</a>
+    <div id="search_terms"></div>
+  </div>
+  <script>
 window.predicates = {{ predicates_js|safe }};
 $(function() {
     cdb.searchPredicatesDisplay(window.predicates, "#search_terms", true);
 });
-</script>
-<div>Found {{cards.paginator.count}} results.</div>
+  </script>
+  <div>Found {{cards.paginator.count}} results.</div>
 {% if cards %}
+
+  {% include "cards/card_pagination.html" %}
+
   <table>
-  <ul>{% for card in cards %}
-    <tr>
-      <td><a href="{% url 'cards:detail' card.multiverseid %}"><img class="list_cardimage" src="{{ card.img_url }}" alt="{{ card.basecard.name }}"/></a></td></td>
-      <td>
-        <div><span class="list_cardname"><a href="{% url 'cards:detail' card.multiverseid %}">{{ card.basecard.name }}</a></span> <span class="list_mana_cost">{{card.mana_cost_html }}</span> <span class="list_cmc">({{card.basecard.cmc}})</span></div>
-        <div class="list_cardtype">{% for ttype in card.basecard.types.all %}{{ ttype.type }} {% endfor %} {% if card.basecard.subtypes.all %}&mdash; {% for tsubtype in card.basecard.subtypes.all %}{{ tsubtype.subtype }} {% endfor %}{%endif%}</div>
-        <div class="list_rules">{{card.rules_text_html}}</div>
-      </td>
-    </tr>
-  {% endfor %}
+    {% for card in cards %}
+      <tr>
+        <td><a href="{% url 'cards:detail' card.multiverseid %}"><img class="list_cardimage" src="{{ card.img_url }}" alt="{{ card.basecard.name }}"/></a></td></td>
+        <td>
+          <div><span class="list_cardname"><a href="{% url 'cards:detail' card.multiverseid %}">{{ card.basecard.name }}</a></span> <span class="list_mana_cost">{{card.mana_cost_html }}</span> <span class="list_cmc">({{card.basecard.cmc}})</span></div>
+          <div class="list_cardtype">{% for ttype in card.basecard.types.all %}{{ ttype.type }} {% endfor %} {% if card.basecard.subtypes.all %}&mdash; {% for tsubtype in card.basecard.subtypes.all %}{{ tsubtype.subtype }} {% endfor %}{%endif%}</div>
+          <div class="list_rules">{{card.rules_text_html}}</div>
+        </td>
+      </tr>
+    {% endfor %}
   </table>
 
-  <ul class="pagination">
-    <li><a href="?page=1">&laquo;</a></li>
-{% for ppp in cards.paginator.page_range %}
-    <li><a href="?page={{ppp}}">{{ppp}}</a></li>
-{% endfor %}
-    <li><a href="?page={{cards.paginator.num_pages}}">&raquo;</a></li>
-  </ul>
+  {% include "cards/card_pagination.html" %}
+  <div>{{cards.paginator.count}} results.</div>
 
 {% else %}
   <p>No cards are available.</p>

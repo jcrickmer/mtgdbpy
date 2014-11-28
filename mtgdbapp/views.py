@@ -152,6 +152,8 @@ def list(request):
 		cards = paginator.page(paginator.num_pages)
 		request.session["curpage"] = paginator.num_pages
 	context = {
+		'ellided_prev_page': max(0, int(page) - 4),
+		'ellided_next_page': min(paginator.num_pages, int(page) + 4),
 		'cards': cards,
 		'predicates': query_pred_array,
 		'predicates_js': json.dumps(query_pred_array),
