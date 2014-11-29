@@ -12,6 +12,7 @@ from mtgdbapp.models import Type
 from mtgdbapp.models import Subtype
 from mtgdbapp.models import Format
 from mtgdbapp.models import FormatBasecard
+from mtgdbapp.models import Ruling
 
 from django.db.models import Q
 

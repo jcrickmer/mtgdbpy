@@ -22,83 +22,87 @@
 <table>
   <tbody>
     <tr>
-      <td style="width: 130px;">Name<td>
+      <td style="width: 130px;">Name</td>
       <td>{{ working.card.basecard.name }}</td>
     </tr>
     <tr>
-      <td>Mana Cost<td>
+      <td>Mana Cost</td>
       <td>{{ working.card.mana_cost_html }}</td>
     </tr>
     <tr>
-      <td>Type<td>
+      <td>Type</td>
       <td>{% for ttype in working.card.basecard.types.all %}{{ ttype.type }} {% endfor %}</td>
     </tr>
 {% if working.card.basecard.subtypes.all %}
     <tr>
-      <td>Subtype<td>
+      <td>Subtype</td>
       <td>{% for tsubtype in working.card.basecard.subtypes.all %}{{ tsubtype.subtype }} {% endfor %}</td>
     </tr>
 {% endif %}
     <tr>
-      <td>Text<td>
+      <td>Text</td>
       <td>{{ working.card.rules_text_html }}</td>
     </tr>
 {% if working.card.basecard.power %}
     <tr>
-      <td>Power<td>
+      <td>Power</td>
       <td>{{ working.card.basecard.power }}</td>
     </tr>
 {% endif %}
 {% if working.card.basecard.toughness %}
     <tr>
-      <td>Toughness<td>
+      <td>Toughness</td>
       <td>{{ working.card.basecard.toughness }}</td>
     </tr>
 {% endif %}
 {% if working.card.basecard.loyalty %}
     <tr>
-      <td>Loyalty<td>
+      <td>Loyalty</td>
       <td>{{ working.card.basecard.loyalty }}</td>
     </tr>
 {% endif %}
     <tr>
-      <td>Flavor Text<td>
+      <td>Flavor Text</td>
       <td>{{ working.card.flavor_text_html }}</td>
     </tr>
 {% if working.card.mark.mark %}
     <tr>
-      <td>Mark<td>
+      <td>Mark</td>
       <td>{{ working.card.mark.mark }}</td>
     </tr>
 {% endif %}
     <tr>
-      <td>CMC<td>
+      <td>CMC</td>
       <td>{{ working.card.basecard.cmc }}</td>
     </tr>
     <tr>
-      <td>Color<td>
+      <td>Color</td>
       <td>{% for tcolor in working.card.basecard.colors.all %}{{ tcolor.color }} {% endfor %}{% if working.card.basecard.colors.all|length == 0 %}Colorless{% endif %}</td>
     </tr>
     <tr>
-      <td>Multiverse Id<td>
+      <td>Multiverse Id</td>
       <td>{{ working.card.multiverseid }}</td>
     </tr>
     <tr>
-      <td>Expansion Set<td>
+      <td>Expansion Set</td>
       <td>{{ working.card.expansionset.name }}</td>
     </tr>
     <tr>
-      <td>Rarity<td>
+      <td>Rarity</td>
       <td>{{ working.card.rarity.rarity }}</td>
     </tr>
     <tr>
-      <td>Card Number<td>
+      <td>Card Number</td>
       <td>{{ working.card.card_number }}</td>
     </tr>
     <tr>
-      <td>Other Versions<td>
+      <td>Other Versions</td>
       <td>{% for ocard in other_versions %}<a href="{% url 'cards:detail' multiverseid=ocard.multiverseid %}">{{ ocard.expansionset.abbr }}</a> {% endfor %}</td>
     </tr>
+    <tr>
+      <td colspan="2">Rulings</td>
+    </tr>
+    {% for ruling in working.card.basecard.get_rulings %}<tr><td class="rulingdate">{{ruling.ruling_date}}</td><td class="cardruling">{{ruling.ruling_text}}</td></tr> {% endfor %}
   </tbody>
 </table>
   </div>

@@ -111,12 +111,26 @@ class Subtype(models.Model):
 
 class PhysicalCard(models.Model):
 	#	 id = models.IntegerField(primary_key=True)
+	NORMAL = 'normal'
+	SPLIT = 'split'
+	FLIP = 'flip'
+	DOUBLE = 'double'
+	TOKEN = 'token'
+	PLANE = 'plane'
+	SCHEME = 'scheme'
+	PHENOMENON = 'phenomenon'
+	LEVELER = 'leveler'
+	VANGUARD = 'vanguard'
+	LAYOUT_CHOICES = ((NORMAL , 'normal'), (SPLIT , 'split'), (FLIP , 'flip'), (DOUBLE , 'double'), (TOKEN , 'token'), (PLANE , 'plane'), (SCHEME , 'scheme'), (PHENOMENON , 'phenomenon'), (LEVELER , 'leveler'), (VANGUARD , 'vanguard'))
+	layout = models.CharField(max_length=10, choices=LAYOUT_CHOICES, default=NORMAL)
+
 	class Meta:
 		managed = True
 		db_table = 'physicalcards'
 		verbose_name_plural = 'Physical Cards'
 	def __unicode__(self):
 		return self.id
+
 
 class BaseCard(models.Model):
 	#	 id = models.IntegerField(primary_key=True)
@@ -135,6 +149,8 @@ class BaseCard(models.Model):
 	types = models.ManyToManyField(Type, through='CardType')
 	subtypes = models.ManyToManyField(Subtype, through='CardSubtype')
 	colors = models.ManyToManyField(Color, through='CardColor')
+	def get_rulings(self):
+		return Ruling.objects.filter(basecard=self.id).order_by('ruling_date')
 	class Meta:
 		managed = True
 		db_table = 'basecards'
@@ -146,6 +162,18 @@ class BaseCard(models.Model):
 		# We should always set the CMC to the value that is indicated mana_cost field
 		self.cmc = 1;
 		super(BaseCard, self).save()
+
+
+class Ruling(models.Model):
+	#	 id = models.IntegerField(primary_key=True)
+	basecard = models.ForeignKey(BaseCard)
+	ruling_text = models.TextField(null=False)
+	ruling_date = models.DateField(null=False, blank=False)
+	class Meta:
+		verbose_name_plural = 'Rulings'
+	def __unicode__(self):
+		return "Ruling " + str(self.id) + " for " + self.basecard.name
+
 
 class ExpansionSet(models.Model):
 	#	id = models.IntegerField(primary_key=True)
