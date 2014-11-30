@@ -7,12 +7,15 @@ import json
 from django.db.models import Max, Min
 from django.shortcuts import redirect
 
+import operator
+
 from mtgdbapp.models import Card
 from mtgdbapp.models import Type
 from mtgdbapp.models import Subtype
 from mtgdbapp.models import Format
 from mtgdbapp.models import FormatBasecard
 from mtgdbapp.models import Ruling
+from mtgdbapp.models import Rarity
 
 from django.db.models import Q
 
@@ -48,6 +51,8 @@ def index(request):
 	context['predicates_js'] = json.dumps(request.session.get('query_pred_array'))
 	context['types'] = [tt.type for tt in Type.objects.all()]
 	context['subtypes'] = [st.subtype for st in Subtype.objects.all()]
+	context['rarities'] = [{'id':rr.id, 'rarity':rr.rarity} for rr in Rarity.objects.all().order_by('sortorder')]
+	context['formats'] = [{'format':f.format, 'formatname':f.formatname, 'start_date':f.start_date} for f in Format.objects.all().order_by('format')]
 
 	return render(request, 'cards/index.html', context)
 
@@ -79,11 +84,15 @@ def list(request):
 	card_listP = Card.objects.values('basecard__id').annotate(mid_max=Max('multiverseid'))
 	card_list = Card.objects.filter(multiverseid__in=[g['mid_max'] for g in card_listP]).order_by('basecard__filing_name')
 
+	# Filer out the non-playing cards for now
+	card_list = card_list.filter(basecard__physicalcard__layout__in = ('normal','double-faced','split','flip','leveler'))
+
 	# Let's get the array of predicates from the session
 	query_pred_array = []
 	if request.session.get('query_pred_array', False):
 		query_pred_array = request.session.get('query_pred_array')
 		
+	rlist = []
 	for pred in query_pred_array:
 		if pred['field'] == 'cardname':
 			if pred['op'] == 'not':
@@ -103,6 +112,12 @@ def list(request):
 				card_list = card_list.exclude(basecard__colors__in = pred['value'])
 			else:
 				card_list = card_list.filter(basecard__colors__in = pred['value'])
+
+		if pred['field'] == 'rarity':
+			if pred['op'] == 'not':
+				card_list = card_list.exclude(rarity__in = pred['value'])
+			else:
+				rlist.append(('rarity__exact', pred['value']))
 
 		if pred['field'] == 'cmc':
 			# If it isn't an int, then skip it.
@@ -139,7 +154,11 @@ def list(request):
 			# Note that one example from Django said that I needed to do list(bc_vals). But that TOTALLY bombed, probably because list() is defined in this file. That was hard to debug.
 			card_list = card_list.filter(basecard__pk__in = bc_vals)
 
+	if len(rlist) > 0:
+		card_list = card_list.filter(reduce(operator.or_, [Q(x) for x in rlist]))
+
 	#logger.error(card_list)
+	#logger.error(card_list.query)
 	
 	paginator = Paginator(card_list, 25)
 	page = request.GET.get('page', request.session.get("curpage",1))
@@ -163,13 +182,13 @@ def list(request):
 
 
 def detail(request, multiverseid):
+	logger = logging.getLogger(__name__)
 	try:
 		cards = Card.objects.filter(multiverseid=multiverseid).order_by('card_number')
 	except Card.DoesNotExist:
 		raise Http404
 	backCards = []
 	if len(cards) > 0:
-		logger = logging.getLogger(__name__)
 		backCards = Card.objects.filter(basecard__physicalcard__id = cards[0].basecard.physicalcard.id, expansionset__id = cards[0].expansionset.id)
 		logger.error(backCards)
 	cards = cards | backCards
@@ -179,6 +198,7 @@ def detail(request, multiverseid):
 	card_list = []
 	card_titles = []
 	for card in cards:
+		#logger.error('rules text: ' + card.rules_text_html())
 		if card.basecard.name in card_titles:
 			continue
 		card_titles.append(card.basecard.name)

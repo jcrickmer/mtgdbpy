@@ -211,7 +211,9 @@ th, td {
 td {
   vertical-align: top;
 }
-
+td.rulingdate {
+  white-space: nowrap;
+}
 .list_cardimage {
   width:150px;
   height: auto;

@@ -18,6 +18,8 @@ $(function() {
 				result = result + " is \"" + rule.value + "\"";
 			} else if (rule.op == "and") {
 				result = result + " contains \"" + rule.value + "\"";
+			} else if (rule.op == "or") { /* revisit this one */
+				result = result + " contains \"" + rule.value + "\"";
 			} else if (rule.op == "not") {
 				result = result + " does not contain \"" + rule.value + "\"";
 			} else if (rule.op == "eq") {

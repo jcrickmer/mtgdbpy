@@ -114,15 +114,15 @@ class PhysicalCard(models.Model):
 	NORMAL = 'normal'
 	SPLIT = 'split'
 	FLIP = 'flip'
-	DOUBLE = 'double'
+	DOUBLE = 'double-faced'
 	TOKEN = 'token'
 	PLANE = 'plane'
 	SCHEME = 'scheme'
 	PHENOMENON = 'phenomenon'
 	LEVELER = 'leveler'
 	VANGUARD = 'vanguard'
-	LAYOUT_CHOICES = ((NORMAL , 'normal'), (SPLIT , 'split'), (FLIP , 'flip'), (DOUBLE , 'double'), (TOKEN , 'token'), (PLANE , 'plane'), (SCHEME , 'scheme'), (PHENOMENON , 'phenomenon'), (LEVELER , 'leveler'), (VANGUARD , 'vanguard'))
-	layout = models.CharField(max_length=10, choices=LAYOUT_CHOICES, default=NORMAL)
+	LAYOUT_CHOICES = ((NORMAL , 'normal'), (SPLIT , 'split'), (FLIP , 'flip'), (DOUBLE , 'double-faced'), (TOKEN , 'token'), (PLANE , 'plane'), (SCHEME , 'scheme'), (PHENOMENON , 'phenomenon'), (LEVELER , 'leveler'), (VANGUARD , 'vanguard'))
+	layout = models.CharField(max_length=12, choices=LAYOUT_CHOICES, default=NORMAL)
 
 	class Meta:
 		managed = True

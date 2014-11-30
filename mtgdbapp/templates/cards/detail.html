@@ -41,7 +41,7 @@
 {% endif %}
     <tr>
       <td>Text</td>
-      <td>{{ working.card.rules_text_html }}</td>
+      <td>{{ working.card.rules_text_html|escape }}</td>
     </tr>
 {% if working.card.basecard.power %}
     <tr>
@@ -102,12 +102,14 @@
     <tr>
       <td colspan="2">Rulings</td>
     </tr>
-    {% for ruling in working.card.basecard.get_rulings %}<tr><td class="rulingdate">{{ruling.ruling_date}}</td><td class="cardruling">{{ruling.ruling_text}}</td></tr> {% endfor %}
+    <tr><td colspan="2"><table>
+    {% for ruling in working.card.basecard.get_rulings %}<tr><td class="rulingdate">{{ruling.ruling_date|date:"Y-m-d"}}</td><td class="cardruling">{{ruling.ruling_text}}</td></tr> {% endfor %}
+    </td></tr></table>
   </tbody>
 </table>
   </div>
   <div class="col-sm-1 col-md-3 col-lg-3"></div>
 </div>
 {% endfor %}
-<div class="row"><div class="col-sm-1 col-md-3 col-lg-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_muid}}">View on Gatherer</a></div></div>
+<div class="row"><div class="col-sm-1 col-md-3 col-lg-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_muid}}" target="_blank">View on Gatherer</a></div></div>
 {% endblock %}

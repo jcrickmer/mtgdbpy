@@ -58,21 +58,20 @@ $("#subtype").autocomplete({source : subtypes});
     <button name="subtype_add">Add</button>
   </div>
   <div>
+    <label for="rarity">Rarity</label>
+    <select id="rarity_op" name="rarity_op"><option value="or" selected>or</option><option value="not">not</option></select>
+    <select id="rarity" name="rarity">
+{% for rarity in rarities %}<option value="{{ rarity.id }}">{{ rarity.rarity }}</option>{% endfor %}
+    </select>
+    <button name="rarity_add">Add</button>
+  </div>
+  <div>
     <label for="format">Format</label>
     <select id="format" name="format">
       <option></option>
-      <option value="Modern_2014-09-26">Modern (September 26, 2014)</option>
-      <option value="Modern_2014-07-18">Modern (July 18, 2014)</option>
-      <option value="Modern_2014-05-02">Modern (May 2, 2014)</option>
-      <option value="Standard_2014-09-26">Standard (September 26, 2014)</option>
-      <option value="Standard_2014-07-18">Standard (July 18, 2014)</option>
-      <option value="Standard_2014-05-02">Standard (May 2, 2014)</option>
-      <option value="Standard_2014-02-07">Standard (February 7, 2014)</option>
-      <option value="Standard_2013-09-27">Standard (September 27, 2013)</option>
-      <option value="Standard_2013-07-19">Standard (July 19, 2013)</option>
-      <option value="Standard_2013-05-03">Standard (May 3, 2013)</option>
-      <option value="Standard_2013-02-01">Standard (February 1, 2013)</option>
-      <option value="Standard_2012-10-05">Standard (October 5, 2012)</option>
+{% for format in formats %}
+      <option value="{{format.format}}">{{format.formatname}} ({{format.start_date}})</option>
+{% endfor %}
     </select>
   </div>
 <script>
@@ -125,7 +124,10 @@ function sendQuery() {
 		if (input_type == "input") {
 		    //console.log(field_name + " is an input");
 		    //console.log(field_name + " is " + op + " value \"" + form_field.val() + "\"");
-			window.rules.push({"field" : field_name, "op" : op, "value" : form_field.val(), "hint" : field_name + op + form_field.val()});
+            var plops = form_field.val().split(" ");
+            for (var p = 0; p < plops.length ; p++) {
+			    window.rules.push({"field" : field_name, "op" : op, "value" : plops[p], "hint" : field_name + op + plops[p]});
+			}
 			form_field.val("");
 		} else if (input_type == "select") {
 		    //console.log(field_name + " is a select");
