@@ -258,7 +258,26 @@ padding-top: 11px;
 }
 
 .pred_remove {
-  padding-left: 1em;
-  padding-right: 1em;
+  padding-left: .5em;
+  padding-right: .5em;
+  margin-left: .5em;
   background-color: #f5f5f5;
+}
+
+.term_input {
+  padding-bottom: 8px;
+}
+
+.termsbox {
+  border: 1px solid #c0c0c0;
+  background-color: #d0d0d0;
+  margin-bottom: 7px;
+}
+ul#search_terms {
+  margin-left: 11px;
+  padding-left: 11px;
+  list-style-type: square;
+}
+ul#search_terms li {
+
 }

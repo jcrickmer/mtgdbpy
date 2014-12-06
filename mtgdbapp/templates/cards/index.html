@@ -1,114 +1,127 @@
 {% extends "cards/base.html" %}
 
 {% block title %}Card Search{% endblock %}
+{% block pagetitle %}Card Search{% endblock %}
 
 {% block content %}
 <form action="{% url 'cards:search' %}" method="get">
-  <div class="row">
-    <div class="col-xs-6">
-      <div>
-        <label for="cardname">Name</label>
-        <select id="cardname_op" name="cardname_op"><option value="and" selected>and</option><!--<option value="or">or</option>--><option value="not">not</option></select>
-        <input id="cardname" type="text" name="cardname" />
-        <button name="cardname_add">Add</button>
+	<div class="row">
+	  <div class="col-xs-12 col-sm-6">
+	    <div class="row term_input">
+        <div class="col-xs-2 searchlabel"><label for="cardname">Name</label></div>
+        <div class="col-xs-2"><select id="cardname_op" name="cardname_op"><option value="and" selected>and</option><option value="not">not</option></select></div>
+        <div class="col-xs-6"><input id="cardname" type="text" name="cardname" /></div>
+        <div class="col-xs-2"><button name="cardname_add">Add</button></div>
       </div>
-  <div>
-    <label for="rules">Rules Text</label>
-    <select id="rules_op" name="rules_op"><option value="and" selected>and</option><!--<option value="or">or</option>--><option value="not">not</option></select>
-    <input id="rules" type="text" name="rules" />
-    <button name="rules_add">Add</button>
-  </div>
-  <div>
-    <label for="color">Color</label>
-    <select id="color_op" name="color_op"><option value="and" selected>and</option><!--<option value="or">or</option>--><option value="not">not</option></select>
-    <select id="color" name="color">
-      <option value="w">white</option>
-      <option value="u">blue</option>
-      <option value="b">black</option>
-      <option value="r">red</option>
-      <option value="g">green</option>
-      <option value="c">colorless</option>
-	</select>
-    <button name="color_add">Add</button>
-  </div>
-  <div>
-    <label for="cmc">CMC</label>
-    <select id="cmc_op" name="cmc_op"><option value="eq" selected>equals</option><option value="ne">not</option><option value="lt">less than</option><option value="gt">greater than</option></select>
-    <input id="cmc" name="cmc" type="text" />
-    <button name="cmc_add">Add</button>
-  </div>
-  <div>
-    <label for="type">Type</label>
-    <select id="type_op" name="type_op"><option value="and" selected>and</option><!--<option value="or">or</option>--><option value="not">not</option></select>
-    <input id="type" name="type" type="text" />
-<script>$(function() {
-var types = [{% for type in types %}"{{ type }}",{% endfor %}];
-$("#type").autocomplete({source : types});
-});</script>
-    <button name="type_add">Add</button>
-  </div>
-  <div>
-    <label for="subtype">Subtype</label>
-    <select id="subtype_op" name="subtype_op"><option value="and" selected>and</option><!--<option value="or">or</option>--><option value="not">not</option></select>
-    <input id="subtype" name="subtype" type="text" />
-<script>$(function() {
-var subtypes = [{% for subtype in subtypes %}"{{ subtype }}",{% endfor %}];
-$("#subtype").autocomplete({source : subtypes});
-});</script>
-    <button name="subtype_add">Add</button>
-  </div>
-  <div>
-    <label for="rarity">Rarity</label>
-    <select id="rarity_op" name="rarity_op"><option value="or" selected>or</option><option value="not">not</option></select>
-    <select id="rarity" name="rarity">
+      <div class="row term_input">
+        <div class="col-xs-2 searchlabel"><label for="rules">Rules</label></div>
+        <div class="col-xs-2"><select id="rules_op" name="rules_op"><option value="and" selected>and</option><option value="not">not</option></select></div>
+        <div class="col-xs-6"><input id="rules" type="text" name="rules" /></div>
+        <div class="col-xs-2"><button name="rules_add">Add</button></div>
+      </div>
+      <div class="row term_input">
+        <div class="col-xs-2 searchlabel"><label for="color">Color</label></div>
+        <div class="col-xs-2"><select id="color_op" name="color_op"><option value="and" selected>and</option><option value="not">not</option></select></div>
+        <div class="col-xs-6">
+          <select id="color" name="color">
+            <option value="w">white</option>
+            <option value="u">blue</option>
+            <option value="b">black</option>
+            <option value="r">red</option>
+            <option value="g">green</option>
+            <option value="c">colorless</option>
+          </select>
+        </div>
+        <div class="col-xs-2"><button name="color_add">Add</button></div>
+      </div>
+      <div class="row term_input">
+        <div class="col-xs-2"><label for="cmc">CMC</label></div>
+        <div class="col-xs-2"><select id="cmc_op" name="cmc_op"><option value="eq" selected>==</option><option value="ne">!=</option><option value="lt">&lt;</option><option value="gt">&gt;</option></select></div>
+        <div class="col-xs-6"><input id="cmc" name="cmc" type="number" min="0" max="20"/></div>
+        <div class="col-xs-2"><button name="cmc_add">Add</button></div>
+      </div>
+      <div class="row term_input">
+        <div class="col-xs-2 searchlabel"><label for="type">Type</label></div>
+        <div class="col-xs-2"><select id="type_op" name="type_op"><option value="and" selected>and</option><option value="not">not</option></select></div>
+        <div class="col-xs-6"><input id="type" name="type" type="text" /></div>
+        <script>$(function() { var types = [{% for type in types %}"{{ type }}",{% endfor %}]; $("#type").autocomplete({source : types}); });</script>
+        <div class="col-xs-2"><button name="type_add">Add</button></div>
+      </div>
+      <div class="row term_input">
+        <div class="col-xs-2 searchlabel"><label for="subtype">Subtype</label></div>
+        <div class="col-xs-2"><select id="subtype_op" name="subtype_op"><option value="and" selected>and</option><option value="not">not</option></select></div>
+        <div class="col-xs-6"><input id="subtype" name="subtype" type="text" /></div>
+        <script>$(function() { var subtypes = [{% for subtype in subtypes %}"{{ subtype }}",{% endfor %}]; $("#subtype").autocomplete({source : subtypes}); });</script>
+        <div class="col-xs-2"><button name="subtype_add">Add</button></div>
+      </div>
+      <div class="row term_input">
+        <div class="col-xs-2"><label for="rarity">Rarity</label></div>
+        <div class="col-xs-2"><select id="rarity_op" name="rarity_op"><option value="or" selected>or</option><option value="not">not</option></select></div>
+        <div class="col-xs-6"><select id="rarity" name="rarity"><option></option>
 {% for rarity in rarities %}<option value="{{ rarity.id }}">{{ rarity.rarity }}</option>{% endfor %}
-    </select>
-    <button name="rarity_add">Add</button>
-  </div>
-  <div>
-    <label for="format">Format</label>
-    <select id="format" name="format">
-      <option></option>
+        </select></div>
+        <div class="col-xs-2"><button name="rarity_add">Add</button></div>
+      </div>
+      <div class="row term_input">
+        <div class="col-xs-2"><label for="format">Format</label></div>
+        <div class="col-xs-10"><select id="format" name="format">
+          <option></option>
+          <option value="Standard_2014-09-26">Standard (Current)</option>
+          <option value="Modern_2014-09-26">Modern (Current)</option>
+          <option value="Command_2014-11-07">Comander (Current)</option>
+          <option value="" disabled="disabled">───────────────</option>
 {% for format in formats %}
-      <option value="{{format.format}}">{{format.formatname}} ({{format.start_date}})</option>
+          <option value="{{format.format}}">{{format.formatname}} ({{format.start_date}})</option>
 {% endfor %}
-    </select>
+        </select></div>
+      </div>
+    </div>
+<!-- end term input column -->
+<!-- start query column -->
+    <div class="col-xs-12 col-sm-6">
+      <div class="termsbox">
+        <div class="text-right"><a id="clear_terms" href="#">Clear all terms</a></div>
+        <ul id="search_terms"></ul>
+      </div>
+      <div class="text-right"><button name="sendQuery">Search</button></div>
+    </div>
+<!-- end query column -->
   </div>
-<script>
+  <script>
 window.rules = {{ predicates_js|safe }};
 $(function() {
     cdb.searchPredicatesDisplay(window.rules, "#search_terms");
 });
-</script>
-<script>
+      </script>
+      <script>
 function sendQuery() {
     var form_jq = $("<form action=\"{% url 'cards:search' %}\" method=\"get\">")
     $(document.body).append(form_jq);
-	form_jq.append("<input id=\"subform_q\" type=\"hidden\" name=\"query\">");
+    form_jq.append("<input id=\"subform_q\" type=\"hidden\" name=\"query\">");
     $("#subform_q").val(JSON.stringify(rules));
-	form_jq.submit();
+    form_jq.submit();
     return false; //event.preventDefault();
 }
 
   $(function() {
     $("#format").on('change',function(event) {
-	    var match = false;
+        var match = false;
         for (var g = 0; g < window.rules.length ; g++) {
-		    if (window.rules[g].field == "format") {
-			    window.rules[g].value = $("#format option:selected").attr("value");
-				match = true;
-			}
+            if (window.rules[g].field == "format") {
+                window.rules[g].value = $("#format option:selected").attr("value");
+                match = true;
+            }
         }
-		if (! match) {
-		    window.rules.push({"field" : "format", "op" : "and", "value" : $("#format option:selected").attr("value"), "hint" : "format"});
-		}
-		cdb.searchPredicatesDisplay(window.rules, "#search_terms");
+        if (! match) {
+            window.rules.push({"field" : "format", "op" : "and", "value" : $("#format option:selected").attr("value"), "hint" : "format"});
+        }
+        cdb.searchPredicatesDisplay(window.rules, "#search_terms");
     });
-	$("#clear_terms").click(function() {
-		window.rules = [];
-		cdb.searchPredicatesDisplay(window.rules, "#search_terms");
-		return false;
-	});
+    $("#clear_terms").click(function() {
+        window.rules = [];
+        cdb.searchPredicatesDisplay(window.rules, "#search_terms");
+        return false;
+    });
     $( "button" )
       .button()
       .click(function( event ) {
@@ -118,38 +131,34 @@ function sendQuery() {
             return sendQuery();
         }
         var field_name = event.target.name.replace("_add","");
-		var form_field = $("#" + field_name);
-		var input_type = form_field.prop("tagName").toLowerCase();
-		var op = $("#" + field_name + "_op option:selected").attr("value");
-		if (input_type == "input") {
-		    //console.log(field_name + " is an input");
-		    //console.log(field_name + " is " + op + " value \"" + form_field.val() + "\"");
+        var form_field = $("#" + field_name);
+        var input_type = form_field.prop("tagName").toLowerCase();
+        var op = $("#" + field_name + "_op option:selected").attr("value");
+        if (input_type == "input") {
+            //console.log(field_name + " is an input");
+            //console.log(field_name + " is " + op + " value \"" + form_field.val() + "\"");
             var plops = form_field.val().split(" ");
             for (var p = 0; p < plops.length ; p++) {
-			    window.rules.push({"field" : field_name, "op" : op, "value" : plops[p], "hint" : field_name + op + plops[p]});
-			}
-			form_field.val("");
-		} else if (input_type == "select") {
-		    //console.log(field_name + " is a select");
-		    var op = $("#" + field_name + "_op option:selected").attr("value");
-			window.rules.push({"field" : field_name, "op" : op, "value" : $("#" + field_name + " option:selected").attr("value"), "hint" : field_name + op + $("#" + field_name + " option:selected").attr("value")});
-		} else { alert("I do not yet understand this query type."); }
-		cdb.searchPredicatesDisplay(window.rules, "#search_terms");
+                window.rules.push({"field" : field_name, "op" : op, "value" : plops[p], "hint" : field_name + op + plops[p]});
+            }
+            form_field.val("");
+        } else if (input_type == "select") {
+            //console.log(field_name + " is a select");
+            var op = $("#" + field_name + "_op option:selected").attr("value");
+            window.rules.push({"field" : field_name, "op" : op, "value" : $("#" + field_name + " option:selected").attr("value"), "hint" : field_name + op + $("#" + field_name + " option:selected").attr("value")});
+        } else { alert("I do not yet understand this query type."); }
+        cdb.searchPredicatesDisplay(window.rules, "#search_terms");
         event.preventDefault();
       });
   });
-  </script>
-	</div>
-    <div class="col-xs-6">
-      <div id="search_terms"></div>
-      <div><a id="clear_terms" href="#">Clear all terms</a></div>
-      <div>
-        <button name="sendQuery">Search</button>
-      </div>
-	</div>
-  </div>
+      </script>
 </form>
-<div>
-  Go to the <a href="list/">List</a>.
+<div class="row">
+  <div class="col-xs-12">
+    <h3>Common Searches</h3>
+    <ul>
+      <li><a href="_search">All Cards</a></li>
+    </ul>
+  </div>
 </div>
 {% endblock %}

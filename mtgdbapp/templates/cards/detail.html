@@ -6,29 +6,29 @@
 
 {% block subsearchnav %}
 <div class="row">
-<ul>
-<li><a href="{% url 'cards:index' %}">Search Terms</a></li>
-<li><a href="{% url 'cards:list' %}">Search Results</a></li>
-</ul>
+  <ul>
+    <li><a href="{% url 'cards:index' %}">Search Terms</a></li>
+    <li><a href="{% url 'cards:list' %}">Search Results</a></li>
+  </ul>
 </div>
 {% endblock %}
 {% block content %}
 {% for working in cards %}
 <div class="row">
-  <div class="col-sm-3 col-md-3 col-lg-3">
+  <div class="col-xs-12 col-sm-6 col-md-3 text-center">
     <img class="cardimage" src="{{ working.card.img_url }}" alt="{{ working.card.basecard.name }}"/>
   </div>
-  <div class="col-sm-8 col-md-6 col-lg-6">
-<table>
-  <tbody>
-    <tr>
-      <td style="width: 130px;">Name</td>
-      <td>{{ working.card.basecard.name }}</td>
-    </tr>
-    <tr>
-      <td>Mana Cost</td>
-      <td>{{ working.card.mana_cost_html }}</td>
-    </tr>
+  <div class="col-xs-12 col-sm-6 col-md-6">
+    <table>
+      <tbody>
+        <tr>
+          <td style="width: 130px;">Name</td>
+          <td>{{ working.card.basecard.name }}</td>
+        </tr>
+        <tr>
+          <td>Mana Cost</td>
+          <td>{{ working.card.mana_cost_html }}</td>
+        </tr>
     <tr>
       <td>Type</td>
       <td>{% for ttype in working.card.basecard.types.all %}{{ ttype.type }} {% endfor %}</td>
@@ -95,21 +95,28 @@
       <td>Card Number</td>
       <td>{{ working.card.card_number }}</td>
     </tr>
-    <tr>
-      <td>Other Versions</td>
-      <td>{% for ocard in other_versions %}<a href="{% url 'cards:detail' multiverseid=ocard.multiverseid %}">{{ ocard.expansionset.abbr }}</a> {% endfor %}</td>
-    </tr>
-    <tr>
-      <td colspan="2">Rulings</td>
-    </tr>
-    <tr><td colspan="2"><table>
-    {% for ruling in working.card.basecard.get_rulings %}<tr><td class="rulingdate">{{ruling.ruling_date|date:"Y-m-d"}}</td><td class="cardruling">{{ruling.ruling_text}}</td></tr> {% endfor %}
-    </td></tr></table>
-  </tbody>
-</table>
+        <tr>
+          <td>Other Versions</td>
+          <td>{% for ocard in other_versions %}<a href="{% url 'cards:detail' multiverseid=ocard.multiverseid %}">{{ ocard.expansionset.abbr }}</a> {% endfor %}</td>
+        </tr>
+        <tr>
+          <td colspan="2">Rulings</td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <table>{% for ruling in working.card.basecard.get_rulings %}
+              <tr>
+                <td class="rulingdate">{{ruling.ruling_date|date:"Y-m-d"}}</td>
+                <td class="cardruling">{{ruling.ruling_text}}</td>
+              </tr>{% endfor %}
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
   <div class="col-sm-1 col-md-3 col-lg-3"></div>
 </div>
 {% endfor %}
-<div class="row"><div class="col-sm-1 col-md-3 col-lg-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_muid}}" target="_blank">View on Gatherer</a></div></div>
+<div class="row"><div class="col-xs-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_muid}}" target="_blank">View on Gatherer</a></div></div>
 {% endblock %}

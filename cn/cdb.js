@@ -10,6 +10,10 @@ $(function() {
 	cdb.searchPredicatesDisplay = function(predicates, parent_jqs, doNotShowRemove) {
 		cdb.predicates = predicates;
 		parent_jq = $(parent_jqs);
+		childTag = "<div>";
+		if (parent_jq.prop("tagName") == "UL") {
+			childTag = "<li>";
+		}
 		parent_jq.empty();
         for (var t = 0; t < predicates.length ; t++) {
             var rule = predicates[t];
@@ -32,9 +36,9 @@ $(function() {
 				result = result + " &gt; " + rule.value;
 			}
 			if (doNotShowRemove) {
-				parent_jq.append($("<div>").append(result));
+				parent_jq.append($(childTag).append(result));
 			} else {
-				parent_jq.append($("<div>").append(result, "<a class=\"pred_remove\" href=\"#\" onclick=\"cdb.removeSearchPredicate('" + rule.hint + "','" + parent_jqs + "');\">x</a>")); 
+				parent_jq.append($(childTag).append(result, "<a class=\"pred_remove\" href=\"#\" onclick=\"cdb.removeSearchPredicate('" + rule.hint + "','" + parent_jqs + "');\">x</a>")); 
 			}
 		}
     };
