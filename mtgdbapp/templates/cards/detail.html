@@ -96,8 +96,8 @@
       <td>{{ working.card.card_number }}</td>
     </tr>
         <tr>
-          <td>Other Versions</td>
-          <td>{% for ocard in other_versions %}<a href="{% url 'cards:detail' multiverseid=ocard.multiverseid %}">{{ ocard.expansionset.abbr }}</a> {% endfor %}</td>
+          <td>All Versions</td>
+          <td>{% for ocard in other_versions %}<a href="{% url 'cards:detail' multiverseid=ocard.multiverseid slug=ocard.url_slug %}">{{ ocard.expansionset.abbr }}</a> {% endfor %}</td>
         </tr>
         <tr>
           <td colspan="2">Rulings</td>

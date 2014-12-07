@@ -6,10 +6,12 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
 from django.db.models import Max, Min
 from django.shortcuts import redirect
+from django.http import Http404
 
 import operator
 
 from mtgdbapp.models import Card
+from mtgdbapp.models import Mark
 from mtgdbapp.models import Type
 from mtgdbapp.models import Subtype
 from mtgdbapp.models import Format
@@ -181,12 +183,42 @@ def list(request):
 	return render(request, 'cards/list.html', context)
 
 
-def detail(request, multiverseid):
+def detail(request, multiverseid=None, slug=None):
 	logger = logging.getLogger(__name__)
+	cards = []
 	try:
-		cards = Card.objects.filter(multiverseid=multiverseid).order_by('card_number')
+		if multiverseid is not None:
+			cards = Card.objects.filter(multiverseid=multiverseid).order_by('card_number')
+		elif slug is not None:
+			slugws = slug.lower().replace('-', ' ')
+			cards = Card.objects.filter(basecard__filing_name=slugws).order_by('card_number')
+			if len(cards) > 0:
+				multiverseid = cards[0].multiverseid
+				return redirect('cards:detail', permanent=True, multiverseid=multiverseid, slug=slug)
+			else:
+				raise Http404
+		else:
+			raise Http404
 	except Card.DoesNotExist:
 		raise Http404
+
+	# Let's see if the slub matching my filing name
+	if slug is not None:
+		slugws = slug.lower().replace('-', ' ')
+		logger.error("slug is now \"" + slugws + "\"")
+		amatch = False
+		for acard in cards:
+			if amatch:
+				break
+			amatch = amatch or (slugws == acard.basecard.filing_name)
+		if not amatch:
+			raise Http404
+	elif not request.is_ajax():
+		# we have a card with a filing_name, let's just redirect them...
+		# But only redirect if it is NOT an ajax request. Let's make it easy on our ajax friends.
+		newslug = cards[0].basecard.filing_name.replace(' ', '-')
+		return redirect('cards:detail', permanent=True, multiverseid=multiverseid, slug=newslug)
+
 	backCards = []
 	if len(cards) > 0:
 		backCards = Card.objects.filter(basecard__physicalcard__id = cards[0].basecard.physicalcard.id, expansionset__id = cards[0].expansionset.id)
@@ -212,7 +244,7 @@ def detail(request, multiverseid):
 					 'subtype': [st.subtype for st in card.basecard.subtypes.all()],
 					 'text': card.rules_text_html(),
 					 'flavor_text': card.flavor_text,
-					 'mark': '' if card.mark is None else card.mark.mark,
+					 'mark': '',
 					 'cmc': card.basecard.cmc,
 					 'multiverseid': card.multiverseid,
 					 'expansionset': {'name': card.expansionset.name, 'abbr':card.expansionset.abbr},
@@ -224,12 +256,18 @@ def detail(request, multiverseid):
 					 'loyalty': card.basecard.loyalty,
 					 'colors': [cc.color for cc in card.basecard.colors.all()]
 				 }
+			try:
+				if card.mark is not None:
+					jcard['mark'] = card.mark.mark
+			except Mark.DoesNotExist:
+				1
+				#jcard.mark = ''
 			jcards.append(jcard)
 		card_list.append({'card': card, })
 
 	if request.is_ajax():
 		response_dict.update({'status': 'success', 'physicalCardTitle': " // ".join(card_titles), 'cards': jcards, })
-		response = HttpResponse(json.dumps(response_dict), mimetype='application/javascript')
+		response = HttpResponse(json.dumps(response_dict), content_type='application/javascript')
 	else:
 		response = render(request, 'cards/detail.html', {'request_muid': multiverseid,
 														 'cards': card_list,

@@ -214,6 +214,8 @@ class Card(models.Model):
 		return convertSymbolsToHTML(self.basecard.rules_text)
 	def flavor_text_html(self):
 		return mark_safe(self.flavor_text)
+	def url_slug(self):
+		return self.basecard.filing_name.replace(' ', '-').lower()
 	class Meta:
 		managed = True
 		db_table = 'cards'
