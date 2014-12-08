@@ -7,6 +7,7 @@ import json
 from django.db.models import Max, Min
 from django.shortcuts import redirect
 from django.http import Http404
+from django.db import connection
 
 import operator
 
@@ -18,6 +19,8 @@ from mtgdbapp.models import Format
 from mtgdbapp.models import FormatBasecard
 from mtgdbapp.models import Ruling
 from mtgdbapp.models import Rarity
+from mtgdbapp.models import Battle
+from mtgdbapp.models import BattleTest
 
 from django.db.models import Q
 
@@ -280,6 +283,58 @@ def detail(request, multiverseid=None, slug=None):
 														 })
 	return response
 
+
+def battle(request):
+	# this shows two cards at random and then let's the user decide which one is better.
+
+	# force current standard
+	format_id = 4
+	cursor = connection.cursor()
+	cursor.execute('SELECT basecard_id, RAND() r FROM mtgdbapp_formatbasecard WHERE format_id = ' + str(format_id) + ' ORDER BY r ASC LIMIT 2');
+	rows = cursor.fetchall()
+
+	#[{'parent_id': None, 'id': 54360982L}, {'parent_id': None, 'id': 54360880L}]
+	card_a_list = Card.objects.filter(basecard__id__exact=rows[0][0]).order_by('-multiverseid')
+	card_a = card_a_list[0]
+
+	card_b_list = Card.objects.filter(basecard__id__exact=rows[1][0]).order_by('-multiverseid')
+	card_b = card_b_list[0]
+	context = {'card_a': card_a,
+			   'card_b': card_b}
+	
+	response = render(request, 'cards/battle.html', context)
+	return response
+	
+def winbattle(request):
+	# There is no error checking in here yet. Needs to be tested off of the happy path!
+	logger = logging.getLogger(__name__)
+	winning_card = None
+	losing_card = None
+	format = None
+	test = None
+ 	if request.GET.get('winner', False):
+		card_w_list = Card.objects.filter(multiverseid__exact=request.GET.get('winner', 0))
+		winning_card = card_w_list[0]
+ 	if request.GET.get('loser', False):
+		card_l_list = Card.objects.filter(multiverseid__exact=request.GET.get('loser', 0))
+		losing_card = card_l_list[0]
+ 	if request.GET.get('format_id', False):
+		format = Format.objects.get(pk=request.GET.get('format_id'))
+ 	if request.GET.get('test_id', False):
+		test = BattleTest.objects.get(pk=request.GET.get('test_id'))
+
+	#logger.error("winner physical: " + str(winning_card.basecard.physicalcard.id))
+	#logger.error("loser physical: " + str(losing_card.basecard.physicalcard.id))
+	#logger.error("format: " + str(format))
+	#logger.error("test: " + str(test))
+	#logger.error("session: " + request.session.session_key)
+	battle = Battle(test = test,
+					format = format,
+					winner_pcard = winning_card.basecard.physicalcard,
+					loser_pcard = losing_card.basecard.physicalcard,
+		            session_key = request.session.session_key)
+	battle.save()
+	return redirect('cards:battle')
 
 def vote(request, multiverseid):
 	return HttpResponse("You're voting on card %s." % multiverseid)

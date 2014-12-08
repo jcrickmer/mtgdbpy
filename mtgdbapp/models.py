@@ -271,7 +271,25 @@ class FormatBasecard(models.Model):
 		unique_together = ('format', 'basecard',)
 	def __unicode__(self):
 		return "[Format: " + str(self.format.format) + " - " + self.basecard.name + " (" + str(self.basecard.id) + ")]"
-	
+
+class Battle(models.Model):
+	#id = models.IntegerField(primary_key=True)
+	test = models.ForeignKey('BattleTest')
+	format = models.ForeignKey('Format')
+	winner_pcard = models.ForeignKey('PhysicalCard', related_name='winner')
+	loser_pcard = models.ForeignKey('PhysicalCard', related_name='loser')
+	battle_date = models.DateField(auto_now=True, auto_now_add=True, null=False)
+	session_key = models.CharField(null=False, max_length=40)
+	class Meta:
+		verbose_name_plural = 'Battles'
+		unique_together = ('format', 'winner_pcard','loser_pcard','session_key')
+	def __unicode__(self):
+		return "[Battle " + str(self.id) + ": " + str(self.winner_pcard.id) + " > " + str(self.loser_pcard.id) + " in " + self.format.format + "]"
+
+class BattleTest(models.Model):
+	#id = models.IntegerField(primary_key=True)
+	name = models.CharField(max_length=100)
+
 class DjangoAdminLog(models.Model):
 	id = models.IntegerField(primary_key=True)
 	action_time = models.DateTimeField()

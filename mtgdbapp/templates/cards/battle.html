@@ -1,0 +1,21 @@
+{% extends "cards/base.html" %}
+
+{% block pagetitle %}Battle{% endblock %}
+{% block title %}Battle{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xs-12 text-center">
+     Subjectively, which card is "<em>better</em>" in the current Standard format?
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-12 col-sm-6 text-center">
+    <a href="{% url 'cards:winbattle' %}?winner={{card_a.multiverseid}}&loser={{card_b.multiverseid}}&format_id=4&test_id=1"><img class="cardimage" src="{{ card_a.img_url }}" alt="{{ card_a.basecard.name }}"/><br>{{ card_a.basecard.name }}</a>
+  </div>
+  <div class="col-xs-12 col-sm-6 text-center">
+    <a href="{% url 'cards:winbattle' %}?winner={{card_b.multiverseid}}&loser={{card_a.multiverseid}}&format_id=4&test_id=1"><img class="cardimage" src="{{ card_b.img_url }}" alt="{{ card_b.basecard.name }}"/><br>{{ card_b.basecard.name }}</a>
+  </div>
+</div>
+
+{% endblock %}
