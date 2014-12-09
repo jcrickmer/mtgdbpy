@@ -1,0 +1,33 @@
+{% extends "cards/base.html" %}
+
+{% block pagetitle %}Ratings{% endblock %}
+{% block title %}Ratings{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xs-12">
+    <table>
+      <tr>
+        <th>Rating</td>
+        <th>Card</td>
+        <th>Quality of Score</td>
+      </tr>
+      {% for valarray in sorted_cards %}
+        <tr>
+          <td>{{valarray.0}}</td>
+          <td><a href="{% url 'cards:detail' valarray.2.multiverseid valarray.2.url_slug %}">{{valarray.2.basecard.name}}</a></td>
+          <td>{{valarray.1}}</td>
+          <td><a href="{% url 'cards:battle' %}?muid={{valarray.2.multiverseid}}">Battle...</a></td>
+        </tr>
+      {% endfor %}
+    </table>
+    <p>
+      Note that <em>lower</em> Quality of Score means that the ranking is more accurate.
+    </p>
+    <p>
+      This table is a list of cards that have been rated in the current Standard format. The cards that were choosen for rating were weighted so that the top ~110 cards being played in decks were presented about 50% of the time, and all cards in standard were presented about 50% of the time. Thus, cards that are not seeing much play in tournament-level play are (a) not this list, or (b) liekly to have a worse Quality of Score (a higher number).
+    </p>
+  </div>
+</div>
+
+{% endblock %}
