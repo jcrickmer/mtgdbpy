@@ -8,7 +8,9 @@ from django.db.models import Max, Min
 from django.shortcuts import redirect
 from django.http import Http404
 from django.db import connection
+from django.db import IntegrityError
 
+import random
 import operator
 
 from mtgdbapp.models import Card
@@ -26,6 +28,8 @@ from django.db.models import Q
 
 # import the logging library
 import logging
+
+from trueskill import TrueSkill, Rating, quality_1vs1, rate_1vs1
 
 #
 # The index view simple shows a search page. The page may be
@@ -290,14 +294,30 @@ def battle(request):
 	# force current standard
 	format_id = 4
 	cursor = connection.cursor()
-	cursor.execute('SELECT basecard_id, RAND() r FROM mtgdbapp_formatbasecard WHERE format_id = ' + str(format_id) + ' ORDER BY r ASC LIMIT 2');
+	# BE SURE TO SET THE LIMIT BACK TO 2 WHEN NOT DOING GOOD_CARDS
+	cursor.execute('SELECT basecard_id, RAND() r FROM mtgdbapp_formatbasecard WHERE format_id = ' + str(format_id) + ' ORDER BY r ASC LIMIT 100');
 	rows = cursor.fetchall()
 
 	#[{'parent_id': None, 'id': 54360982L}, {'parent_id': None, 'id': 54360880L}]
-	card_a_list = Card.objects.filter(basecard__id__exact=rows[0][0]).order_by('-multiverseid')
-	card_a = card_a_list[0]
 
-	card_b_list = Card.objects.filter(basecard__id__exact=rows[1][0]).order_by('-multiverseid')
+	# for the time being, let's force the first card to be a 'good' card in the current standard format.
+	good_cards = [8642,2239,4644,695,6636,8621,4376,8733,933,5842,7897,5557,5553,8550,6217,8601,8530,5864,7442,8531,1764,6004,8636,1273,1704,6256,8625,108,1543,8396,6124,8664,8392,33,5766,8666,8523,8435,5999,7914,2450,1167,690,123,8568,8684,475,8373,8731,8734,4976,26,8602,5345,5191,6345,8447,8681,4466,8714,3948,8732,8637,8739,8411,8397,7552,41,7666,2059,4511,2699,878,7894,3751,3770,60,8680,8362,1381,8556,7173,8727,8520,1268]
+	for foo in rows:
+		good_cards.append(foo[0])
+
+	rand_basecard_ids = random.sample(good_cards, 2)
+	card_a = None
+ 	if request.GET.get('muid', False):
+		# this is a BATTLE CHEAT so that you can battle a specific card
+		cheat_list = Card.objects.filter(multiverseid__exact=request.GET.get('muid', rand_basecard_ids[0]))
+		card_a = cheat_list[0]
+	else:
+		#card_a_list = Card.objects.filter(basecard__id__exact=rows[0][0]).order_by('-multiverseid')
+		card_a_list = Card.objects.filter(basecard__id__exact=rand_basecard_ids[0]).order_by('-multiverseid')
+		card_a = card_a_list[0]
+
+	#card_b_list = Card.objects.filter(basecard__id__exact=rows[1][0]).order_by('-multiverseid')
+ 	card_b_list = Card.objects.filter(basecard__id__exact=rand_basecard_ids[1]).order_by('-multiverseid')
 	card_b = card_b_list[0]
 	context = {'card_a': card_a,
 			   'card_b': card_b}
@@ -333,8 +353,54 @@ def winbattle(request):
 					winner_pcard = winning_card.basecard.physicalcard,
 					loser_pcard = losing_card.basecard.physicalcard,
 		            session_key = request.session.session_key)
-	battle.save()
+	try:
+		battle.save()
+	except IntegrityError as ie:
+		logger.error("Integrity Error on winning a battle... probably not a big deal: " + str(ie))
+
 	return redirect('cards:battle')
 
 def vote(request, multiverseid):
 	return HttpResponse("You're voting on card %s." % multiverseid)
+
+def ratings(request):
+	logger = logging.getLogger(__name__)
+	# dummy test harness to just get some ratings...
+	context = {}
+	context['foo'] = 'bar'
+	ts = TrueSkill(backend='mpmath')
+	card_ratings = {}
+	battles = Battle.objects.all()
+	# let's do the training
+	for battle in battles:
+		card_a = {}
+		card_b = {}
+		try:
+			card_a = card_ratings[str(battle.winner_pcard.id)]
+		except KeyError:
+			card_a['rating'] = Rating()
+			xcard_a_list = Card.objects.filter(basecard__physicalcard__id__exact=battle.winner_pcard.id).order_by('-multiverseid')
+			card_a['card'] = xcard_a_list[0]
+			#logger.error("adding " + card_a['card'].basecard.name)
+			card_ratings[str(battle.winner_pcard.id)] = card_a
+
+		try:
+			card_b = card_ratings[str(battle.loser_pcard.id)]
+		except KeyError:
+			card_b['rating'] = Rating()
+			xcard_b_list = Card.objects.filter(basecard__physicalcard__id__exact=battle.loser_pcard.id).order_by('-multiverseid')
+			card_b['card'] = xcard_b_list[0]
+			#logger.error("adding " + card_b['card'].basecard.name)
+			card_ratings[str(battle.loser_pcard.id)] = card_b
+
+		card_a['rating'], card_b['rating'] = rate_1vs1(card_a['rating'], card_b['rating'], env=ts)
+
+	thelist = []
+	for ggg in card_ratings.values():
+		thelist.append([ggg['rating'].mu, ggg['rating'].sigma, ggg['card']])
+		#logger.error(str(ggg))
+	sorted_cards = sorted(thelist, key=operator.itemgetter(0), reverse=True)
+	context['sorted_cards'] = sorted_cards
+	response = render(request, 'cards/ratings.html', context)
+	return response
+	

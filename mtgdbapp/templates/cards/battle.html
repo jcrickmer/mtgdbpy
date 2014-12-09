@@ -4,17 +4,30 @@
 {% block title %}Battle{% endblock %}
 
 {% block content %}
-<div class="row">
+<div class="row hidden-xs">
   <div class="col-xs-12 text-center">
-     Subjectively, which card is "<em>better</em>" in the current Standard format?
+    <h3 class="text-center">Subjectively, which card is "<em>better</em>" in the current Standard format?</h3>
+  </div>
+</div>
+<div class="row" style="margin-top: 10px; margin-bottom: 25px;">
+  <div class="col-xs-12 col-sm-offset-3 col-sm-3 text-center">
+    <a href="{% url 'cards:winbattle' %}?winner={{card_a.multiverseid}}&loser={{card_b.multiverseid}}&format_id=4&test_id=1"><img class="cardimage" src="{{ card_a.img_url }}" alt="{{ card_a.basecard.name }}"/><br>{{ card_a.basecard.name }}</a>
+  </div>
+  <div class="col-xs-12 col-sm-3 text-center">
+    <a href="{% url 'cards:winbattle' %}?winner={{card_b.multiverseid}}&loser={{card_a.multiverseid}}&format_id=4&test_id=1"><img class="cardimage" src="{{ card_b.img_url }}" alt="{{ card_b.basecard.name }}"/><br>{{ card_b.basecard.name }}</a>
   </div>
 </div>
 <div class="row">
-  <div class="col-xs-12 col-sm-6 text-center">
-    <a href="{% url 'cards:winbattle' %}?winner={{card_a.multiverseid}}&loser={{card_b.multiverseid}}&format_id=4&test_id=1"><img class="cardimage" src="{{ card_a.img_url }}" alt="{{ card_a.basecard.name }}"/><br>{{ card_a.basecard.name }}</a>
-  </div>
-  <div class="col-xs-12 col-sm-6 text-center">
-    <a href="{% url 'cards:winbattle' %}?winner={{card_b.multiverseid}}&loser={{card_a.multiverseid}}&format_id=4&test_id=1"><img class="cardimage" src="{{ card_b.img_url }}" alt="{{ card_b.basecard.name }}"/><br>{{ card_b.basecard.name }}</a>
+  <div class="col-xs-12 col-sm-offset-3 col-sm-6 text-info">
+    <p>
+      Click on the card that you think is <em>better</em> in the current Standard format. Better is subjective, however things to think about are:
+    </p>
+    <ul>
+      <li>which one is more playable?</li>
+      <li>which one is more likely to cause the other one to be removed?</li>
+      <li>which one offers more "card advantage"?</li>
+      <li>let's say you are drafting, first pack, thirteenth pick, and you don't yet have a plan. Which one?</li>
+    </ul>
   </div>
 </div>
 

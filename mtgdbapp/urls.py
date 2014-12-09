@@ -6,6 +6,7 @@ urlpatterns = patterns('',
                        url(r'^$', views.index, name='index'),
 					   # ex: /cards/_search
                        url(r'^_search$', views.search, name='search'),
+                       url(r'^ratings/$', views.ratings, name='ratings'),
                        url(r'^list/$', views.list, name='list'),
                        url(r'^_list$', views.list, name='list'),
                        # ex: /cards/5/
