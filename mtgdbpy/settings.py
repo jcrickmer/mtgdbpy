@@ -20,11 +20,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = 'fn+&ta$dafk$a57ozf9h*!@!j-&np6_ik-%tg#y=$z*@$6b^@$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-TEMPLATE_DEBUG = True
+TEMPLATE_DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'card.ninja', '172-31-44-78']
 
 
 # Application definition
@@ -62,8 +62,10 @@ DATABASES = {
 #        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'mtgdbpy',
-        'USER': 'mtgdb',
-        'PASSWORD': 'password'
+        #'USER': 'mtgdb',
+        #'PASSWORD': 'password'
+        'USER': 'root',
+        'PASSWORD': 'godzilla'
     },
     'test': {
 #        'ENGINE': 'django.db.backends.sqlite3',
@@ -97,6 +99,13 @@ LOGGING = {
         #    'class': 'logging.FileHandler',
         #    'filename': '/tmp/debug.log',
         #},
+        'applogfile': {
+            'level':'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join('/tmp/', 'mtgdbpy_debug.log'),
+            'maxBytes': 1024*1024*15, # 15MB
+            'backupCount': 10,
+        },
         'console':{
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
@@ -104,10 +113,19 @@ LOGGING = {
         },
 	},
     'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
         'mtgdbapp.views': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
+        },
+        'APPNAME': {
+            'handlers': ['applogfile',],
+            'level': 'DEBUG',
         },
     },
 }
@@ -116,4 +134,4 @@ LOGGING = {
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = "/home/jason/projects/mtgdbpy/cstatic/"
+STATIC_ROOT = "/opt/mtgdbpy/cstatic/"

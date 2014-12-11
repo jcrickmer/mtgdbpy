@@ -1,10 +1,10 @@
 import os
 import sys
 
-sys.path.append('/home/jason/projects/mtgdbpy')
+sys.path.append('/opt/mtgdbpy')
 
-os.environ['PYTHON_EGG_CACHE'] = '/home/jason/projects/.python-egg'
+os.environ['PYTHON_EGG_CACHE'] = '/tmp/.python-egg'
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mtgdbpy.settings'
 
-import django.core.handlers.wsgi
-application = django.core.handlers.wsgi.WSGIHandler()
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
