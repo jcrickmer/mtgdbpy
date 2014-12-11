@@ -143,8 +143,8 @@ class BaseCard(models.Model):
 	power = models.CharField(max_length=4, null=True, blank=True)
 	toughness = models.CharField(max_length=4, null=True, blank=True)
 	loyalty = models.CharField(max_length=4, null=True, blank=True)
-	created_at = models.DateTimeField(default=datetime.now, null=False, blank=True)
-	updated_at = models.DateTimeField(default=datetime.now, null=False, blank=True)
+	created_at = models.DateTimeField(default=datetime.now, null=False, blank=True, auto_now_add=True)
+	updated_at = models.DateTimeField(default=datetime.now, null=False, blank=True, auto_now=True)
 	cardposition = models.CharField(max_length=1, null=False, default='F')
 	types = models.ManyToManyField(Type, through='CardType')
 	subtypes = models.ManyToManyField(Subtype, through='CardSubtype')
@@ -204,8 +204,8 @@ class Card(models.Model):
 	flavor_text = models.CharField(max_length=1000, blank=True, null=True)
 	card_number = models.CharField(max_length=6, blank=True, null=True)
 	mark = models.ForeignKey('Mark', blank=True, null=True)
-	created_at = models.DateTimeField(default=datetime.now, null=False, blank=True)
-	updated_at = models.DateTimeField(default=datetime.now, null=False, blank=True)
+	created_at = models.DateTimeField(default=datetime.now, null=False, blank=True, auto_now_add=True)
+	updated_at = models.DateTimeField(default=datetime.now, null=False, blank=True, auto_now=True)
 	def img_url(self):
 		return '/img/' + str(self.multiverseid) + '.jpg'
 	def mana_cost_html(self):
@@ -278,7 +278,7 @@ class Battle(models.Model):
 	format = models.ForeignKey('Format')
 	winner_pcard = models.ForeignKey('PhysicalCard', related_name='winner')
 	loser_pcard = models.ForeignKey('PhysicalCard', related_name='loser')
-	battle_date = models.DateField(auto_now=True, auto_now_add=True, null=False)
+	battle_date = models.DateTimeField(auto_now=True, auto_now_add=True, null=False)
 	session_key = models.CharField(null=False, max_length=40)
 	class Meta:
 		verbose_name_plural = 'Battles'
@@ -290,6 +290,20 @@ class BattleTest(models.Model):
 	#id = models.IntegerField(primary_key=True)
 	name = models.CharField(max_length=100)
 
+class CardRating(models.Model):
+	id = models.AutoField(primary_key=True)
+	physicalcard = models.ForeignKey('PhysicalCard', related_name='physicalcard')
+	mu = models.FloatField(default=25.0, null=False)
+	sigma = models.FloatField(default=25.0/3.0, null=False)
+	test = models.ForeignKey('BattleTest')
+	format = models.ForeignKey('Format')
+	updated_at = models.DateTimeField(default=datetime.now, auto_now=True, null=False)
+	class Meta:
+		verbose_name_plural = 'Card Ratings'
+		unique_together = ('physicalcard', 'format', 'test')
+	def __unicode__(self):
+		return "[CardRating " + str(self.id) + ": " + str(self.physicalcard.id) + " mu=" + str(self.mu) + " sigma=" + self.sigma + " for format \"" + self.format.format + ", test \"" + self.test.name + "\"]"
+	
 class DjangoAdminLog(models.Model):
 	id = models.IntegerField(primary_key=True)
 	action_time = models.DateTimeField()

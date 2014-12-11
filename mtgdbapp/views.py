@@ -289,23 +289,51 @@ def detail(request, multiverseid=None, slug=None):
 
 
 def battle(request):
+	logger = logging.getLogger(__name__)
 	# this shows two cards at random and then let's the user decide which one is better.
 
 	# force current standard
 	format_id = 4
-	cursor = connection.cursor()
-	# BE SURE TO SET THE LIMIT BACK TO 2 WHEN NOT DOING GOOD_CARDS
-	cursor.execute('SELECT basecard_id, RAND() r FROM mtgdbapp_formatbasecard WHERE format_id = ' + str(format_id) + ' ORDER BY r ASC LIMIT 100');
+
+	# Going straight to the DB on this...
+ 	cursor = connection.cursor()
+
+	#cursor.execute('SELECT basecard_id, RAND() r FROM mtgdbapp_formatbasecard WHERE format_id = ' + str(format_id) + ' ORDER BY r ASC LIMIT 100')
+	cursor.execute('SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' ORDER BY cr.sigma DESC, r ASC LIMIT 1')
 	rows = cursor.fetchall()
+	first_card = {
+		'basecard_id': rows[0][0],
+		'mu': rows[0][1],
+		'sigma': rows[0][2],
+		}
+	good_cards = [first_card['basecard_id']]
 
-	#[{'parent_id': None, 'id': 54360982L}, {'parent_id': None, 'id': 54360880L}]
+	# now let's get a card of similar level - make it a real battle
+	sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' AND fbc.basecard_id <> ' + str(first_card['basecard_id']) + ' AND cr.mu > ' + str(first_card['mu'] - first_card['sigma']) + ' AND cr.mu < ' + str(first_card['mu'] + first_card['sigma']) + ' ORDER BY cr.sigma DESC, r ASC LIMIT 1'
+	#logger.error("SQL: " + sqls)
+	cursor.execute(sqls)
+	rows = cursor.fetchall()
+	try:
+		good_cards.append(rows[0][0])
+		second_card = {
+			'basecard_id': rows[0][0],
+			'mu': rows[0][1],
+			'sigma': rows[0][2],
+			}
+	except IndexError:
+		logger.error("Battle: UGH. IndexError. This SQL returned no result: " + sqls)
+		# There is always a chance that we do not get a card. That would be bad. Just fill in one of these for now.
+		faked_id = random.sample([8642,2239,4644,695,6636,8621,4376,8733,933,5842,7897,5557,5553,8550,6217,8601,8530,5864,7442,8531,1764,6004,8636,1273,1704,6256,8625,108,1543,8396,6124,8664,8392,33,5766,8666,8523,8435,5999,7914,2450,1167,690,123,8568,8684,475,8373,8731,8734,4976,26,8602,5345,5191,6345,8447,8681,4466,8714,3948,8732,8637,8739,8411,8397,7552,41,7666,2059,4511,2699,878,7894,3751,3770,60,8680,8362,1381,8556,7173,8727,8520,1268], 1)
+		good_cards.append(faked_id)
+		second_card = {
+			'basecard_id': faked_id,
+			'mu': 25.0,
+			'sigma': 8.35,
+			}
 
-	# for the time being, let's force the first card to be a 'good' card in the current standard format.
-	good_cards = [8642,2239,4644,695,6636,8621,4376,8733,933,5842,7897,5557,5553,8550,6217,8601,8530,5864,7442,8531,1764,6004,8636,1273,1704,6256,8625,108,1543,8396,6124,8664,8392,33,5766,8666,8523,8435,5999,7914,2450,1167,690,123,8568,8684,475,8373,8731,8734,4976,26,8602,5345,5191,6345,8447,8681,4466,8714,3948,8732,8637,8739,8411,8397,7552,41,7666,2059,4511,2699,878,7894,3751,3770,60,8680,8362,1381,8556,7173,8727,8520,1268]
-	for foo in rows:
-		good_cards.append(foo[0])
-
-	rand_basecard_ids = random.sample(good_cards, 2)
+	logger.error("Battle: dealing with pcards " + str(good_cards))
+	#rand_basecard_ids = random.sample(good_cards, 2)
+	rand_basecard_ids = good_cards
 	card_a = None
  	if request.GET.get('muid', False):
 		# this is a BATTLE CHEAT so that you can battle a specific card
@@ -320,7 +348,10 @@ def battle(request):
  	card_b_list = Card.objects.filter(basecard__id__exact=rand_basecard_ids[1]).order_by('-multiverseid')
 	card_b = card_b_list[0]
 	context = {'card_a': card_a,
-			   'card_b': card_b}
+			   'card_b': card_b,
+			   'first_card': first_card,
+			   'second_card': second_card,
+			   }
 	
 	response = render(request, 'cards/battle.html', context)
 	return response
