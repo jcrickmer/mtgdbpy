@@ -23,6 +23,7 @@ from mtgdbapp.models import Ruling
 from mtgdbapp.models import Rarity
 from mtgdbapp.models import Battle
 from mtgdbapp.models import BattleTest
+from mtgdbapp.models import CardRating
 
 from django.db.models import Q
 
@@ -398,40 +399,20 @@ def ratings(request):
 	logger = logging.getLogger(__name__)
 	# dummy test harness to just get some ratings...
 	context = {}
-	context['foo'] = 'bar'
-	ts = TrueSkill(backend='mpmath')
-	card_ratings = {}
-	battles = Battle.objects.all()
-	# let's do the training
-	for battle in battles:
-		card_a = {}
-		card_b = {}
-		try:
-			card_a = card_ratings[str(battle.winner_pcard.id)]
-		except KeyError:
-			card_a['rating'] = Rating()
-			xcard_a_list = Card.objects.filter(basecard__physicalcard__id__exact=battle.winner_pcard.id).order_by('-multiverseid')
-			card_a['card'] = xcard_a_list[0]
-			#logger.error("adding " + card_a['card'].basecard.name)
-			card_ratings[str(battle.winner_pcard.id)] = card_a
+	# REVISIT - hard coded! to subjective tet in Standard
+	card_ratings = CardRating.objects.filter(format__id__exact=4, test__id__exact=1).order_by('-mu')
 
-		try:
-			card_b = card_ratings[str(battle.loser_pcard.id)]
-		except KeyError:
-			card_b['rating'] = Rating()
-			xcard_b_list = Card.objects.filter(basecard__physicalcard__id__exact=battle.loser_pcard.id).order_by('-multiverseid')
-			card_b['card'] = xcard_b_list[0]
-			#logger.error("adding " + card_b['card'].basecard.name)
-			card_ratings[str(battle.loser_pcard.id)] = card_b
+	context['ratings'] = []
+	for rating in card_ratings:
+		context['ratings'].append({'rating':rating})
 
-		card_a['rating'], card_b['rating'] = rate_1vs1(card_a['rating'], card_b['rating'], env=ts)
+	fbcards = FormatBasecard.objects.filter(format=4)
+	for fbcard in fbcards:
+		for meta in context['ratings']:
+			if meta['rating'].physicalcard.id == fbcard.basecard.physicalcard.id:
+				meta['basecard'] = fbcard.basecard
+				break
 
-	thelist = []
-	for ggg in card_ratings.values():
-		thelist.append([ggg['rating'].mu, ggg['rating'].sigma, ggg['card']])
-		#logger.error(str(ggg))
-	sorted_cards = sorted(thelist, key=operator.itemgetter(0), reverse=True)
-	context['sorted_cards'] = sorted_cards
 	response = render(request, 'cards/ratings.html', context)
 	return response
 	

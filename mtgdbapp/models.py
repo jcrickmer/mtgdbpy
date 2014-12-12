@@ -124,12 +124,18 @@ class PhysicalCard(models.Model):
 	LAYOUT_CHOICES = ((NORMAL , 'normal'), (SPLIT , 'split'), (FLIP , 'flip'), (DOUBLE , 'double-faced'), (TOKEN , 'token'), (PLANE , 'plane'), (SCHEME , 'scheme'), (PHENOMENON , 'phenomenon'), (LEVELER , 'leveler'), (VANGUARD , 'vanguard'))
 	layout = models.CharField(max_length=12, choices=LAYOUT_CHOICES, default=NORMAL)
 
+	def getCardRating(self, format_id, test_id):
+		# shortcut to get the CardRating for a given format and test.
+		# This is accessible in templates
+		return self.cardrating_set.get(format__id=format_id, test__id=test_id)
+	pass
+
 	class Meta:
 		managed = True
 		db_table = 'physicalcards'
 		verbose_name_plural = 'Physical Cards'
 	def __unicode__(self):
-		return self.id
+		return "[PhysicalCard " + str(self.id) + "]"
 
 
 class BaseCard(models.Model):
@@ -292,17 +298,19 @@ class BattleTest(models.Model):
 
 class CardRating(models.Model):
 	id = models.AutoField(primary_key=True)
-	physicalcard = models.ForeignKey('PhysicalCard', related_name='physicalcard')
+	physicalcard = models.ForeignKey('PhysicalCard')
 	mu = models.FloatField(default=25.0, null=False)
 	sigma = models.FloatField(default=25.0/3.0, null=False)
 	test = models.ForeignKey('BattleTest')
 	format = models.ForeignKey('Format')
 	updated_at = models.DateTimeField(default=datetime.now, auto_now=True, null=False)
+	def confidence(self):
+		return 100.0 * ( (25.0/3.0) - self.sigma ) / (25.0/3.0)
 	class Meta:
 		verbose_name_plural = 'Card Ratings'
 		unique_together = ('physicalcard', 'format', 'test')
 	def __unicode__(self):
-		return "[CardRating " + str(self.id) + ": " + str(self.physicalcard.id) + " mu=" + str(self.mu) + " sigma=" + self.sigma + " for format \"" + self.format.format + ", test \"" + self.test.name + "\"]"
+		return "[CardRating " + str(self.id) + ": " + str(self.physicalcard.id) + " mu=" + str(self.mu) + " sigma=" + str(self.sigma) + " for format \"" + str(self.format.format) + ", test \"" + str(self.test.name) + "\"]"
 	
 class DjangoAdminLog(models.Model):
 	id = models.IntegerField(primary_key=True)

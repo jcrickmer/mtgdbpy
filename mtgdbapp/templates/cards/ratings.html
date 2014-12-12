@@ -12,12 +12,12 @@
         <th>Card</td>
         <th>Quality of Score</td>
       </tr>
-      {% for valarray in sorted_cards %}
+      {% for rating_dict in ratings %}
         <tr>
-          <td>{{valarray.0}}</td>
-          <td><a href="{% url 'cards:detail' valarray.2.multiverseid valarray.2.url_slug %}">{{valarray.2.basecard.name}}</a></td>
-          <td>{{valarray.1}}</td>
-          <td><a href="{% url 'cards:battle' %}?muid={{valarray.2.multiverseid}}">Battle...</a></td>
+          <td>{{rating_dict.rating.mu}}</td>
+          <td>{{rating_dict.basecard.name}}</td>
+          <td>{{rating_dict.rating.sigma}}</td>
+          <!-- <td><a href="{% url 'cards:battle' %}?muid=-{valarray.2.multiverseid}-">Battle...</a></td> -->
         </tr>
       {% endfor %}
     </table>

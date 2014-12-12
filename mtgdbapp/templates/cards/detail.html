@@ -62,16 +62,6 @@
     </tr>
 {% endif %}
     <tr>
-      <td>Flavor Text</td>
-      <td>{{ working.card.flavor_text_html }}</td>
-    </tr>
-{% if working.card.mark.mark %}
-    <tr>
-      <td>Mark</td>
-      <td>{{ working.card.mark.mark }}</td>
-    </tr>
-{% endif %}
-    <tr>
       <td>CMC</td>
       <td>{{ working.card.basecard.cmc }}</td>
     </tr>
@@ -84,9 +74,31 @@
       <td>{{ working.card.multiverseid }}</td>
     </tr>
     <tr>
+      <td>card.ninja Card&nbsp;Rating</td>
+      <td>
+        {% for cardrating in working.card.basecard.physicalcard.cardrating_set.all %}
+          {% if cardrating.format.id == 4 %}
+            {% if cardrating.test.id == 1 %}
+              Current Standard: {{cardrating.mu|floatformat:3 }} (confidence {{cardrating.confidence|floatformat:2 }}%) 
+            {% endif %}
+          {% endif %}
+        {% endfor%}
+      </td>
+    </tr>
+    <tr>
       <td>Expansion Set</td>
       <td>{{ working.card.expansionset.name }}</td>
     </tr>
+    <tr>
+      <td>Flavor Text</td>
+      <td>{{ working.card.flavor_text_html }}</td>
+    </tr>
+{% if working.card.mark.mark %}
+    <tr>
+      <td>Mark</td>
+      <td>{{ working.card.mark.mark }}</td>
+    </tr>
+{% endif %}
     <tr>
       <td>Rarity</td>
       <td>{{ working.card.rarity.rarity }}</td>
