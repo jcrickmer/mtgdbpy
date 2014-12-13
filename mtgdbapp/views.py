@@ -300,7 +300,9 @@ def battle(request):
  	cursor = connection.cursor()
 
 	#cursor.execute('SELECT basecard_id, RAND() r FROM mtgdbapp_formatbasecard WHERE format_id = ' + str(format_id) + ' ORDER BY r ASC LIMIT 100')
-	cursor.execute('SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' ORDER BY cr.sigma DESC, r ASC LIMIT 1')
+	fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' ORDER BY r ASC LIMIT 1'
+	logger.error("First Card SQL: " + fcsqls)
+	cursor.execute(fcsqls)
 	rows = cursor.fetchall()
 	first_card = {
 		'basecard_id': rows[0][0],
@@ -310,8 +312,8 @@ def battle(request):
 	good_cards = [first_card['basecard_id']]
 
 	# now let's get a card of similar level - make it a real battle
-	sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' AND fbc.basecard_id <> ' + str(first_card['basecard_id']) + ' AND cr.mu > ' + str(first_card['mu'] - first_card['sigma']) + ' AND cr.mu < ' + str(first_card['mu'] + first_card['sigma']) + ' ORDER BY cr.sigma DESC, r ASC LIMIT 1'
-	#logger.error("SQL: " + sqls)
+	sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' AND fbc.basecard_id <> ' + str(first_card['basecard_id']) + ' AND cr.mu > ' + str(first_card['mu'] - first_card['sigma']) + ' AND cr.mu < ' + str(first_card['mu'] + first_card['sigma']) + ' ORDER BY r ASC LIMIT 1'
+	logger.error("Second Card SQL: " + sqls)
 	cursor.execute(sqls)
 	rows = cursor.fetchall()
 	try:

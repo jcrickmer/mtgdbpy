@@ -9,6 +9,8 @@ from mtgdbapp.models import BaseCard
 
 import logging
 
+import datetime
+
 from trueskill import TrueSkill, Rating, quality_1vs1, rate_1vs1
 
 class Command(BaseCommand):
@@ -37,31 +39,64 @@ class Command(BaseCommand):
  				# Let's get all of the battles that have taken place. After the
 				# initial run of this for a given format and test, this will be
 				# the normal path.
-				battles = Battle.objects.filter(test__id__exact=test.id, format__id__exact=format.id)#, winner_pcard__id__in=[1381, 933, 2059])
+				battles = Battle.objects.filter(test__id__exact=test.id, format__id__exact=format.id).order_by('battle_date')#, winner_pcard__id__in=[1381, 933, 2059])
 
 				# IN THE FUTURE... when we have more data than we know what to
 				# do with, this is where we would probably want to load the
 				# cards' existing ratings and work from there.
 				
+				card_battled = {}
 				card_ratings = {}
+				card_lmd = {} # last modified dates of cards
 				for battle in battles:
 					card_a = None
 					card_b = None
+					card_a_date = None
+					card_b_date = None
 					try:
 						card_a = card_ratings[str(battle.winner_pcard.id)]
 					except KeyError:
-						card_a = Rating()
+						# let's try to get the rating from the database
+						crsdb = CardRating.objects.filter(physicalcard__id__exact=battle.winner_pcard.id,
+														  test__id__exact=test.id,
+						                                  format__id__exact=format.id)
+						try:
+							crdb = crsdb[0]
+							card_a = Rating(mu=crdb.mu, sigma=crdb.sigma)
+							card_a_date = crdb.updated_at
+						except KeyError:
+							# ok, let's start fresh
+							card_a = Rating()
+
+ 						card_lmd[str(battle.winner_pcard.id)] = card_a_date
 						card_ratings[str(battle.winner_pcard.id)] = card_a
 
 					try:
 						card_b = card_ratings[str(battle.loser_pcard.id)]
 					except KeyError:
-						card_b = Rating()
+						# let's try to get the rating from the database
+						crsdb = CardRating.objects.filter(physicalcard__id__exact=battle.loser_pcard.id,
+														  test__id__exact=test.id,
+						                                  format__id__exact=format.id)
+						try:
+							crdb = crsdb[0]
+							card_b = Rating(mu=crdb.mu, sigma=crdb.sigma)
+							card_b_date = crdb.updated_at
+						except KeyError:
+							# ok, let's start fresh
+							card_b = Rating()
+
+ 						card_lmd[str(battle.loser_pcard.id)] = card_b_date
 						card_ratings[str(battle.loser_pcard.id)] = card_b
 
-					# calculate!
-					card_ratings[str(battle.winner_pcard.id)], card_ratings[str(battle.loser_pcard.id)] = rate_1vs1(card_a, card_b, env=ts)
 
+					# calculate!
+					if card_lmd[str(battle.winner_pcard.id)] is None or card_lmd[str(battle.winner_pcard.id)] < battle.battle_date:
+						self.stdout.write("updating battles for cards " + str(battle.winner_pcard.id) + " and " + str(battle.loser_pcard.id))
+						card_ratings[str(battle.winner_pcard.id)], card_ratings[str(battle.loser_pcard.id)] = rate_1vs1(card_a, card_b, env=ts)
+						card_battled[str(battle.winner_pcard.id)] = True
+						card_battled[str(battle.loser_pcard.id)] = True
+						
 				#self.stdout.write("all " + str(card_ratings))
 
 				# But wait? What about all of those cards not yet rated?!
@@ -93,9 +128,12 @@ class Command(BaseCommand):
 						cr_db.physicalcard = PhysicalCard.objects.get(pk=int(pcard_id))
 						cr_db.test = test
 						cr_db.format = format
+ 						card_lmd[str(pcard_id)] = datetime.now()
+						card_battled[str(pcard_id)] = True
 
-					cr_db.mu = card_rating.mu;
-					cr_db.sigma = card_rating.sigma;
-					cr_db.save()
+					if str(pcard_id) in card_battled and card_battled[str(pcard_id)]:
+						cr_db.mu = card_rating.mu;
+						cr_db.sigma = card_rating.sigma;
+						self.stdout.write("saving to db pcard_id " + str(pcard_id))
+						cr_db.save()
 						
-			#self.stdout.write('Successfully closed poll "%s"' % poll_id)
