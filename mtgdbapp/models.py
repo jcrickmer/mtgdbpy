@@ -304,6 +304,8 @@ class CardRating(models.Model):
 	test = models.ForeignKey('BattleTest')
 	format = models.ForeignKey('Format')
 	updated_at = models.DateTimeField(default=datetime.now, auto_now=True, null=False)
+	def cardninjaRating(self):
+		return self.mu * 20.0
 	def confidence(self):
 		return 100.0 * ( (25.0/3.0) - self.sigma ) / (25.0/3.0)
 	class Meta:

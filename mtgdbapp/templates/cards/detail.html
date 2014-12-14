@@ -79,7 +79,7 @@
         {% for cardrating in working.card.basecard.physicalcard.cardrating_set.all %}
           {% if cardrating.format.id == 4 %}
             {% if cardrating.test.id == 1 %}
-              Current Standard: {{cardrating.mu|floatformat:3 }} (confidence {{cardrating.confidence|floatformat:2 }}%) 
+              Current Standard: {{cardrating.cardninjaRating|floatformat:3 }} (confidence {{cardrating.confidence|floatformat:2 }}%) 
             {% endif %}
           {% endif %}
         {% endfor%}
