@@ -6,18 +6,31 @@
 {% block content %}
 <div class="row">
   <div class="col-xs-12">
+	<div>Total Battles: {{battle_count}}</div>
+	<div>Total Cards in this format: {{cards_count}}</div>
+	<div>Total Battlers (Sessions): {{battlers_count}}</div>
+	<div>Total Battles / Possible Battles: {{battle_percentage|floatformat:2}}%</div>
     <table>
       <tr>
         <th>Rating</td>
         <th>Card</td>
-        <th>Quality of Score</td>
+        <th>Score Quality</td>
+        <th>battles</td>
+        <th>wins</td>
+        <th>losses</td>
+        <th><em>mu</em></td>
+        <th><em>sigma</em></td>
       </tr>
       {% for rating_dict in ratings %}
         <tr>
-          <td>{{rating_dict.rating.mu}}</td>
+          <td>{{rating_dict.rating.cardninjaRating}}</td>
           <td>{{rating_dict.basecard.name}}</td>
+          <td>{{rating_dict.rating.confidence}}</td>
+          <td>{{rating_dict.battles}}</td>
+          <td>{{rating_dict.wins}}</td>
+          <td>{{rating_dict.losses}}</td>
+          <td>{{rating_dict.rating.mu}}</td>
           <td>{{rating_dict.rating.sigma}}</td>
-          <!-- <td><a href="{% url 'cards:battle' %}?muid=-{valarray.2.multiverseid}-">Battle...</a></td> -->
         </tr>
       {% endfor %}
     </table>

@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.template import RequestContext, loader
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
-from django.db.models import Max, Min
+from django.db.models import Max, Min, Count
 from django.shortcuts import redirect
 from django.http import Http404
 from django.db import connection
@@ -403,16 +403,43 @@ def ratings(request):
 	context = {}
 	# REVISIT - hard coded! to subjective tet in Standard
 	card_ratings = CardRating.objects.filter(format__id__exact=4, test__id__exact=1).order_by('-mu')
-
+	context['battle_count'] = Battle.objects.filter(format__id__exact=4, test__id__exact=1).count()
+	context['cards_count'] = FormatBasecard.objects.filter(format=4).count()
+	bc = Battle.objects.filter(format__id__exact=4, test__id__exact=1).aggregate(Count('session_key', distinct=True))
+	context['battlers_count'] = bc['session_key__count']
+	context['battle_possibilities'] = context['cards_count'] * (context['cards_count'] - 1)
+	context['battle_percentage'] = float(100) * float(context['battle_count']) / float(context['battle_possibilities'])
 	context['ratings'] = []
 	for rating in card_ratings:
 		context['ratings'].append({'rating':rating})
+
+ 	cursor = connection.cursor()
+	winnerss = 'SELECT winner_pcard_id, count(id) FROM mtgdbapp_battle WHERE format_id = 4 AND test_id = 1 GROUP BY winner_pcard_id'
+	cursor.execute(winnerss)
+	context['winners'] = cursor.fetchall()
+
+	loserss = 'SELECT loser_pcard_id, count(id) FROM mtgdbapp_battle WHERE format_id = 4 AND test_id = 1 GROUP BY loser_pcard_id'
+	cursor.execute(loserss)
+	context['losers'] = cursor.fetchall()
 
 	fbcards = FormatBasecard.objects.filter(format=4)
 	for fbcard in fbcards:
 		for meta in context['ratings']:
 			if meta['rating'].physicalcard.id == fbcard.basecard.physicalcard.id:
 				meta['basecard'] = fbcard.basecard
+				for win in context['winners']:
+					if win[0] == fbcard.basecard.physicalcard.id:
+						meta['wins'] = win[1]
+						break
+				for loss in context['losers']:
+					if loss[0] == fbcard.basecard.physicalcard.id:
+						meta['losses'] = loss[1]
+						break
+				if 'losses' not in meta:
+					meta['losses'] = 0
+				if 'wins' not in meta:
+					meta['wins'] = 0
+				meta['battles'] = meta['wins'] + meta['losses']
 				break
 
 	response = render(request, 'cards/ratings.html', context)
