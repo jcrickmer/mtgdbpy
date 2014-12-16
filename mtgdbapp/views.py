@@ -295,21 +295,63 @@ def battle(request):
 
 	# force current standard
 	format_id = 4
+	test_id = 1
 
 	# Going straight to the DB on this...
  	cursor = connection.cursor()
 
-	#cursor.execute('SELECT basecard_id, RAND() r FROM mtgdbapp_formatbasecard WHERE format_id = ' + str(format_id) + ' ORDER BY r ASC LIMIT 100')
-	fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' ORDER BY r ASC LIMIT 1'
-	logger.error("First Card SQL: " + fcsqls)
-	cursor.execute(fcsqls)
-	rows = cursor.fetchall()
+	card_a = None
 	first_card = {
-		'basecard_id': rows[0][0],
-		'mu': rows[0][1],
-		'sigma': rows[0][2],
+		'mu': 25.0,
+		'sigma': 25.0/3.0,
 		}
-	good_cards = [first_card['basecard_id']]
+	second_card = {
+		'mu': 25.0,
+		'sigma': 25.0/3.0,
+		}
+	if request.GET.get('muid', False) or request.session.get('battle_cont_muid', False):
+		# this is a BATTLE CHEAT so that you can battle a specific card
+		cheat_list = Card.objects.filter(multiverseid__exact=request.GET.get('muid', request.session.get('battle_cont_muid', 100)))
+		card_a = cheat_list[0]
+		first_card['basecard_id'] = card_a.basecard.id
+		crsdb = CardRating.objects.filter(physicalcard__id__exact=card_a.basecard.physicalcard.id,
+										  test__id__exact=test_id,
+			                              format__id__exact=format_id)
+		try:
+			crdb = crsdb[0]
+			first_card['mu'] = crdb.mu
+			first_card['sigma'] = crdb.sigma
+		except KeyError:
+			# no op
+			logger.error("Battle: bad ju-ju finding card ratings for basecard id " + str(card_a.basecard.id))
+	elif request.GET.get('bcid', False):
+		# they passed us a basecard id
+		cheat_list = Card.objects.filter(basecard__id__exact=int(request.GET.get('bcid', 1))).order_by('-multiverseid')
+		card_a = cheat_list[0]
+		first_card['basecard_id'] = card_a.basecard.id
+		crsdb = CardRating.objects.filter(physicalcard__id__exact=card_a.basecard.physicalcard.id,
+										  test__id__exact=test_id,
+			                              format__id__exact=format_id)
+		try:
+			crdb = crsdb[0]
+			first_card['mu'] = crdb.mu
+			first_card['sigma'] = crdb.sigma
+		except KeyError:
+			# no op
+			logger.error("Battle: bad ju-ju finding card ratings for basecard id " + str(card_a.basecard.id))
+	else:
+		#cursor.execute('SELECT basecard_id, RAND() r FROM mtgdbapp_formatbasecard WHERE format_id = ' + str(format_id) + ' ORDER BY r ASC LIMIT 100')
+		fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' ORDER BY r ASC LIMIT 1'
+		logger.error("First Card SQL: " + fcsqls)
+		cursor.execute(fcsqls)
+		rows = cursor.fetchall()
+		first_card = {
+			'basecard_id': rows[0][0],
+			'mu': rows[0][1],
+			'sigma': rows[0][2],
+			}
+		card_a_list = Card.objects.filter(basecard__id__exact=rows[0][0]).order_by('-multiverseid')
+		card_a = card_a_list[0]
 
 	# now let's get a card of similar level - make it a real battle
 	sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' AND fbc.basecard_id <> ' + str(first_card['basecard_id']) + ' AND cr.mu > ' + str(first_card['mu'] - first_card['sigma']) + ' AND cr.mu < ' + str(first_card['mu'] + first_card['sigma']) + ' ORDER BY r ASC LIMIT 1'
@@ -317,7 +359,6 @@ def battle(request):
 	cursor.execute(sqls)
 	rows = cursor.fetchall()
 	try:
-		good_cards.append(rows[0][0])
 		second_card = {
 			'basecard_id': rows[0][0],
 			'mu': rows[0][1],
@@ -327,28 +368,14 @@ def battle(request):
 		logger.error("Battle: UGH. IndexError. This SQL returned no result: " + sqls)
 		# There is always a chance that we do not get a card. That would be bad. Just fill in one of these for now.
 		faked_id = random.sample([8642,2239,4644,695,6636,8621,4376,8733,933,5842,7897,5557,5553,8550,6217,8601,8530,5864,7442,8531,1764,6004,8636,1273,1704,6256,8625,108,1543,8396,6124,8664,8392,33,5766,8666,8523,8435,5999,7914,2450,1167,690,123,8568,8684,475,8373,8731,8734,4976,26,8602,5345,5191,6345,8447,8681,4466,8714,3948,8732,8637,8739,8411,8397,7552,41,7666,2059,4511,2699,878,7894,3751,3770,60,8680,8362,1381,8556,7173,8727,8520,1268], 1)
-		good_cards.append(faked_id)
 		second_card = {
 			'basecard_id': faked_id,
 			'mu': 25.0,
 			'sigma': 8.35,
 			}
 
-	logger.error("Battle: dealing with pcards " + str(good_cards))
-	#rand_basecard_ids = random.sample(good_cards, 2)
-	rand_basecard_ids = good_cards
-	card_a = None
- 	if request.GET.get('muid', False) or request.session.get('battle_cont_muid', False):
-		# this is a BATTLE CHEAT so that you can battle a specific card
-		cheat_list = Card.objects.filter(multiverseid__exact=request.GET.get('muid', request.session.get('battle_cont_muid', 100)))
-		card_a = cheat_list[0]
-	else:
-		#card_a_list = Card.objects.filter(basecard__id__exact=rows[0][0]).order_by('-multiverseid')
-		card_a_list = Card.objects.filter(basecard__id__exact=rand_basecard_ids[0]).order_by('-multiverseid')
-		card_a = card_a_list[0]
-
 	#card_b_list = Card.objects.filter(basecard__id__exact=rows[1][0]).order_by('-multiverseid')
- 	card_b_list = Card.objects.filter(basecard__id__exact=rand_basecard_ids[1]).order_by('-multiverseid')
+ 	card_b_list = Card.objects.filter(basecard__id__exact=second_card['basecard_id']).order_by('-multiverseid')
 	card_b = card_b_list[0]
 	context = {'card_a': card_a,
 			   'card_b': card_b,
@@ -360,7 +387,8 @@ def battle(request):
 		context['continue_muid'] = card_a.multiverseid
 		context['continue_muid_qs'] = '&muid=' + str(card_a.multiverseid)
 		# get this out of the session. we only needed it for one page turn. The next page will pass a query param if it wants it.
-		del request.session['battle_cont_muid']
+		if 'battle_cont_muid' in request.session:
+			del request.session['battle_cont_muid']
 	response = render(request, 'cards/battle.html', context)
 	return response
 	
@@ -397,8 +425,54 @@ def winbattle(request):
 	except IntegrityError as ie:
 		logger.error("Integrity Error on winning a battle... probably not a big deal: " + str(ie))
 
+	updateRatings(battle)
+	
 	request.session['battle_cont_muid'] = request.GET.get('muid',False)
 	return redirect('cards:battle')
+
+def updateRatings(battle):
+	logger = logging.getLogger(__name__)
+	ts = TrueSkill(backend='mpmath')
+	crdb_w = None
+	crdb_l = None
+	rating_w = None
+	rating_l = None
+
+	crsdb_w = CardRating.objects.filter(physicalcard__id__exact=battle.winner_pcard.id,
+										test__id__exact=battle.test.id,
+		                                format__id__exact=battle.format.id)
+	try:
+		crdb_w = crsdb_w[0]
+		rating_w = Rating(mu=crdb_w.mu, sigma=crdb_w.sigma)
+	except KeyError:
+		# well, that isn't good. Just be done with it. The cron job will fix it later.
+		logger.error("updateRatings - could not get the CardRating for the winner. battle =" + str(battle))
+		return
+
+	crsdb_l = CardRating.objects.filter(physicalcard__id__exact=battle.loser_pcard.id,
+										test__id__exact=battle.test.id,
+		                                format__id__exact=battle.format.id)
+	try:
+		crdb_l = crsdb_l[0]
+		rating_l = Rating(mu=crdb_l.mu, sigma=crdb_l.sigma)
+	except KeyError:
+		# well, that isn't good. Just be done with it. The cron job will fix it later.
+		logger.error("updateRatings - could not get the CardRating for the loser. battle =" + str(battle))
+		return
+
+	# calculate!
+	logger.error("updating battles for cards " + str(battle.winner_pcard.id) + " and " + str(battle.loser_pcard.id))
+	rating_w, rating_l = rate_1vs1(rating_w, rating_l, env=ts)
+
+	# save
+	crdb_w.mu = rating_w.mu
+	crdb_w.sigma = rating_w.sigma
+	crdb_w.save()
+	crdb_l.mu = rating_l.mu
+	crdb_l.sigma = rating_l.sigma
+	crdb_l.save()
+
+	return
 
 def vote(request, multiverseid):
 	return HttpResponse("You're voting on card %s." % multiverseid)
