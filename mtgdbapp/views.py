@@ -338,9 +338,9 @@ def battle(request):
 	#rand_basecard_ids = random.sample(good_cards, 2)
 	rand_basecard_ids = good_cards
 	card_a = None
- 	if request.GET.get('muid', False):
+ 	if request.GET.get('muid', False) or request.session.get('battle_cont_muid', False):
 		# this is a BATTLE CHEAT so that you can battle a specific card
-		cheat_list = Card.objects.filter(multiverseid__exact=request.GET.get('muid', rand_basecard_ids[0]))
+		cheat_list = Card.objects.filter(multiverseid__exact=request.GET.get('muid', request.session.get('battle_cont_muid', 100)))
 		card_a = cheat_list[0]
 	else:
 		#card_a_list = Card.objects.filter(basecard__id__exact=rows[0][0]).order_by('-multiverseid')
@@ -355,7 +355,12 @@ def battle(request):
 			   'first_card': first_card,
 			   'second_card': second_card,
 			   }
-	
+	if request.GET.get('c', False) or request.session.get('battle_cont_muid', False):
+		# let's keep card_a in rotation
+		context['continue_muid'] = card_a.multiverseid
+		context['continue_muid_qs'] = '&muid=' + str(card_a.multiverseid)
+		# get this out of the session. we only needed it for one page turn. The next page will pass a query param if it wants it.
+		del request.session['battle_cont_muid']
 	response = render(request, 'cards/battle.html', context)
 	return response
 	
@@ -392,6 +397,7 @@ def winbattle(request):
 	except IntegrityError as ie:
 		logger.error("Integrity Error on winning a battle... probably not a big deal: " + str(ie))
 
+	request.session['battle_cont_muid'] = request.GET.get('muid',False)
 	return redirect('cards:battle')
 
 def vote(request, multiverseid):
