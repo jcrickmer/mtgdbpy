@@ -1,5 +1,5 @@
 from django.utils.safestring import mark_safe
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.template import RequestContext, loader
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -289,13 +289,19 @@ def detail(request, multiverseid=None, slug=None):
 	return response
 
 
-def battle(request):
+def battle(request, format="redirect"):
 	logger = logging.getLogger(__name__)
 	# this shows two cards at random and then let's the user decide which one is better.
 
 	# force current standard
+	if format == "redirect":
+		return redirect('cards:battle', format="standard")
+
 	format_id = 4
 	test_id = 1
+
+	format_obj = get_object_or_404(Format.objects.filter(formatname__iexact=format.lower()).order_by('-start_date')[0:1])
+	format_id = format_obj.id
 
 	# Going straight to the DB on this...
  	cursor = connection.cursor()
@@ -354,7 +360,7 @@ def battle(request):
 		card_a = card_a_list[0]
 
 	# now let's get a card of similar level - make it a real battle
-	sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' AND fbc.basecard_id <> ' + str(first_card['basecard_id']) + ' AND cr.mu > ' + str(first_card['mu'] - first_card['sigma']) + ' AND cr.mu < ' + str(first_card['mu'] + first_card['sigma']) + ' ORDER BY r ASC LIMIT 1'
+	sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' AND fbc.basecard_id <> ' + str(first_card['basecard_id']) + ' AND cr.mu > ' + str(first_card['mu'] - (1.5 * first_card['sigma'])) + ' AND cr.mu < ' + str(first_card['mu'] + (1.5 * first_card['sigma'])) + ' ORDER BY r ASC LIMIT 1'
 	logger.error("Second Card SQL: " + sqls)
 	cursor.execute(sqls)
 	rows = cursor.fetchall()
@@ -381,6 +387,9 @@ def battle(request):
 			   'card_b': card_b,
 			   'first_card': first_card,
 			   'second_card': second_card,
+			   'test_id': test_id,
+			   'format_id': format_id,
+			   'format': format_obj,
 			   }
 	if request.GET.get('c', False) or request.session.get('battle_cont_muid', False):
 		# let's keep card_a in rotation
@@ -398,6 +407,7 @@ def winbattle(request):
 	winning_card = None
 	losing_card = None
 	format = None
+	format_nick = 'standard'
 	test = None
  	if request.GET.get('winner', False):
 		card_w_list = Card.objects.filter(multiverseid__exact=request.GET.get('winner', 0))
@@ -407,6 +417,7 @@ def winbattle(request):
 		losing_card = card_l_list[0]
  	if request.GET.get('format_id', False):
 		format = Format.objects.get(pk=request.GET.get('format_id'))
+		format_nick = format.formatname.lower()
  	if request.GET.get('test_id', False):
 		test = BattleTest.objects.get(pk=request.GET.get('test_id'))
 
@@ -428,7 +439,7 @@ def winbattle(request):
 	updateRatings(battle)
 	
 	request.session['battle_cont_muid'] = request.GET.get('muid',False)
-	return redirect('cards:battle')
+	return redirect('cards:battle', format=format_nick)
 
 def updateRatings(battle):
 	logger = logging.getLogger(__name__)
@@ -479,13 +490,15 @@ def vote(request, multiverseid):
 
 def ratings(request):
 	logger = logging.getLogger(__name__)
+	format_id = 4
+	test_id = 1
 	# dummy test harness to just get some ratings...
 	context = {}
 	# REVISIT - hard coded! to subjective tet in Standard
-	card_ratings = CardRating.objects.filter(format__id__exact=4, test__id__exact=1).order_by('-mu')
-	context['battle_count'] = Battle.objects.filter(format__id__exact=4, test__id__exact=1).count()
-	context['cards_count'] = FormatBasecard.objects.filter(format=4).count()
-	bc = Battle.objects.filter(format__id__exact=4, test__id__exact=1).aggregate(Count('session_key', distinct=True))
+	card_ratings = CardRating.objects.filter(format__id__exact=format_id, test__id__exact=test_id).order_by('-mu')
+	context['battle_count'] = Battle.objects.filter(format__id__exact=format_id, test__id__exact=test_id).count()
+	context['cards_count'] = FormatBasecard.objects.filter(format=format_id).count()
+	bc = Battle.objects.filter(format__id__exact=format_id, test__id__exact=test_id).aggregate(Count('session_key', distinct=True))
 	context['battlers_count'] = bc['session_key__count']
 	context['battle_possibilities'] = context['cards_count'] * (context['cards_count'] - 1)
 	context['battle_percentage'] = float(100) * float(context['battle_count']) / float(context['battle_possibilities'])
@@ -494,15 +507,15 @@ def ratings(request):
 		context['ratings'].append({'rating':rating})
 
  	cursor = connection.cursor()
-	winnerss = 'SELECT winner_pcard_id, count(id) FROM mtgdbapp_battle WHERE format_id = 4 AND test_id = 1 GROUP BY winner_pcard_id'
+	winnerss = 'SELECT winner_pcard_id, count(id) FROM mtgdbapp_battle WHERE format_id = ' + str(format_id) + ' AND test_id = ' + str(test_id) + ' GROUP BY winner_pcard_id'
 	cursor.execute(winnerss)
 	context['winners'] = cursor.fetchall()
 
-	loserss = 'SELECT loser_pcard_id, count(id) FROM mtgdbapp_battle WHERE format_id = 4 AND test_id = 1 GROUP BY loser_pcard_id'
+	loserss = 'SELECT loser_pcard_id, count(id) FROM mtgdbapp_battle WHERE format_id = ' + str(format_id) + ' AND test_id = ' + str(test_id) + ' GROUP BY loser_pcard_id'
 	cursor.execute(loserss)
 	context['losers'] = cursor.fetchall()
 
-	fbcards = FormatBasecard.objects.filter(format=4)
+	fbcards = FormatBasecard.objects.filter(format=format_id)
 	for fbcard in fbcards:
 		for meta in context['ratings']:
 			if meta['rating'].physicalcard.id == fbcard.basecard.physicalcard.id:

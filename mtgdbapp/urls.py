@@ -15,6 +15,7 @@ urlpatterns = patterns('',
                        url(r'^(?P<multiverseid>\d+)-(?P<slug>[a-zA-Z-]+)/$', views.detail, name='detail'),
 					   # ex: /cards/battle/
 					   url(r'^battle/$', views.battle, name='battle'),
+					   url(r'^battle/(?P<format>[a-zA-Z-]+)/$', views.battle, name='battle'),
 					   url(r'^_winbattle$', views.winbattle, name='winbattle'),
 					   # ex: /cards/augur-of-bolas/
                        url(r'^(?P<slug>[a-zA-Z-]+)/$', views.detail, name='detail'),

@@ -77,9 +77,17 @@
       <td>card.ninja Card&nbsp;Rating</td>
       <td>
         {% for cardrating in working.card.basecard.physicalcard.cardrating_set.all %}
-          {% if cardrating.format.id == 4 %}
-            {% if cardrating.test.id == 1 %}
-              Current Standard: {{cardrating.cardninjaRating|floatformat:3 }} (confidence {{cardrating.confidence|floatformat:2 }}%) 
+          {% if cardrating.test.id == 1 %}
+            {% if cardrating.format.id == 4 %}
+              {{cardrating.format.formatname}}: {{cardrating.cardninjaRating|floatformat:3 }} (confidence {{cardrating.confidence|floatformat:2 }})<br>
+
+            {% endif %}
+            {% if cardrating.format.id == 1 %}
+              {{cardrating.format.formatname}}: {{cardrating.cardninjaRating|floatformat:3 }} (confidence {{cardrating.confidence|floatformat:2 }})<br>
+
+            {% endif %}
+            {% if cardrating.format.id == 13 %}
+              {{cardrating.format.formatname}}: {{cardrating.cardninjaRating|floatformat:3 }} (confidence {{cardrating.confidence|floatformat:2 }})<br>
             {% endif %}
           {% endif %}
         {% endfor%}
