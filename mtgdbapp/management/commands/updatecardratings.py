@@ -33,7 +33,7 @@ class Command(BaseCommand):
 			# iterate through each format
 			for format in formats:
 				# REVISIT - forcing format 4
-				if format.id != 4:
+				if not (format.id == 4 or format.id == 1 or format.id == 13):
 					continue
 
  				# Let's get all of the battles that have taken place. After the
@@ -64,7 +64,7 @@ class Command(BaseCommand):
 							crdb = crsdb[0]
 							card_a = Rating(mu=crdb.mu, sigma=crdb.sigma)
 							card_a_date = crdb.updated_at
-						except KeyError:
+						except IndexError:
 							# ok, let's start fresh
 							card_a = Rating()
 
@@ -82,7 +82,7 @@ class Command(BaseCommand):
 							crdb = crsdb[0]
 							card_b = Rating(mu=crdb.mu, sigma=crdb.sigma)
 							card_b_date = crdb.updated_at
-						except KeyError:
+						except IndexError:
 							# ok, let's start fresh
 							card_b = Rating()
 
@@ -128,7 +128,7 @@ class Command(BaseCommand):
 						cr_db.physicalcard = PhysicalCard.objects.get(pk=int(pcard_id))
 						cr_db.test = test
 						cr_db.format = format
- 						card_lmd[str(pcard_id)] = datetime.now()
+ 						card_lmd[str(pcard_id)] = datetime.datetime.now()
 						card_battled[str(pcard_id)] = True
 
 					if str(pcard_id) in card_battled and card_battled[str(pcard_id)]:
