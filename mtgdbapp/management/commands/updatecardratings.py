@@ -56,7 +56,7 @@ class Command(BaseCommand):
 					card_b_date = None
 					try:
 						card_a = card_ratings[str(battle.winner_pcard.id)]
-					except KeyError:
+					except IndexError:
 						# let's try to get the rating from the database
 						crsdb = CardRating.objects.filter(physicalcard__id__exact=battle.winner_pcard.id,
 														  test__id__exact=test.id,
@@ -74,7 +74,7 @@ class Command(BaseCommand):
 
 					try:
 						card_b = card_ratings[str(battle.loser_pcard.id)]
-					except KeyError:
+					except IndexError:
 						# let's try to get the rating from the database
 						crsdb = CardRating.objects.filter(physicalcard__id__exact=battle.loser_pcard.id,
 														  test__id__exact=test.id,
@@ -109,7 +109,7 @@ class Command(BaseCommand):
 						card_rating = card_ratings[str(pcard.id)]
 						# if we got here, then we already have a
 						# rating for the card.
- 					except KeyError:
+ 					except IndexError:
 						# Oops. No rating yet.
 						card_ratings[str(pcard.id)] = Rating()
 

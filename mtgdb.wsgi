@@ -1,7 +1,7 @@
 import os
 import sys
 
-sys.path.append('/opt/mtgdbpy')
+sys.path.append('/opt/mtgdb')
 
 os.environ['PYTHON_EGG_CACHE'] = '/tmp/.python-egg'
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mtgdbpy.settings_prod'

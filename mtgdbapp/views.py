@@ -54,7 +54,7 @@ def index(request):
 	context = {}
 	try:
 		request.session['query_pred_array'] is None
-	except KeyError:
+	except IndexError:
 		request.session['query_pred_array'] = []
 
 	context['predicates'] = request.session.get('query_pred_array')
@@ -327,7 +327,7 @@ def battle(request, format="redirect"):
 			crdb = crsdb[0]
 			first_card['mu'] = crdb.mu
 			first_card['sigma'] = crdb.sigma
-		except KeyError:
+		except IndexError:
 			# no op
 			logger.error("Battle: bad ju-ju finding card ratings for basecard id " + str(card_a.basecard.id))
 	elif request.GET.get('bcid', False):
@@ -342,7 +342,7 @@ def battle(request, format="redirect"):
 			crdb = crsdb[0]
 			first_card['mu'] = crdb.mu
 			first_card['sigma'] = crdb.sigma
-		except KeyError:
+		except IndexError:
 			# no op
 			logger.error("Battle: bad ju-ju finding card ratings for basecard id " + str(card_a.basecard.id))
 	else:
@@ -455,7 +455,7 @@ def updateRatings(battle):
 	try:
 		crdb_w = crsdb_w[0]
 		rating_w = Rating(mu=crdb_w.mu, sigma=crdb_w.sigma)
-	except KeyError:
+	except IndexError:
 		# well, that isn't good. Just be done with it. The cron job will fix it later.
 		logger.error("updateRatings - could not get the CardRating for the winner. battle =" + str(battle))
 		return
@@ -466,7 +466,7 @@ def updateRatings(battle):
 	try:
 		crdb_l = crsdb_l[0]
 		rating_l = Rating(mu=crdb_l.mu, sigma=crdb_l.sigma)
-	except KeyError:
+	except IndexError:
 		# well, that isn't good. Just be done with it. The cron job will fix it later.
 		logger.error("updateRatings - could not get the CardRating for the loser. battle =" + str(battle))
 		return
