@@ -25,7 +25,7 @@ DEBUG = True
 TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
-
+INTERNAL_IPS = ('127.0.0.1', 'localhost', '192.168.1.6','192.168.1.7','192.168.1.11','192.168.1.18','192.168.1.19','smoker')
 
 # Application definition
 

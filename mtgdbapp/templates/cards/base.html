@@ -13,7 +13,7 @@
     <link href="/cn/bootstrap/css/bootstrap.min.css" rel="stylesheet"> 
     <link href="/cn/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet"> 
 
-    <script>
+    <script>{% if debug %}/*{% endif %}
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
   m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -21,7 +21,7 @@
 
   ga('create', 'UA-51890509-1', 'card.ninja');
   ga('send', 'pageview');
-    </script>
+{% if debug %}*/{% endif %}    </script>
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
     <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
     <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
