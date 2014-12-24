@@ -64,12 +64,6 @@ DATABASES = {
 		'USER': 'mtgdb',
 		'PASSWORD': 'password'
 		},
-	'test': {
-		'ENGINE': 'django.db.backends.mysql',
-		'NAME': 'mtgdbpy_test',
-		'USER': 'mtgdb',
-		'PASSWORD': 'password'
-    }
 }
 
 # Internationalization
