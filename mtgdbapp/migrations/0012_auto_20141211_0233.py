@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import datetime
+from django.utils import timezone
 
 
 class Migration(migrations.Migration):
@@ -19,19 +20,19 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='cardrating',
             name='updated_at',
-            field=models.DateTimeField(default=datetime.datetime.now, auto_now=True),
+            field=models.DateTimeField(default=timezone.now, auto_now=True),
             preserve_default=True,
         ),
         migrations.AlterField(
             model_name='basecard',
             name='created_at',
-            field=models.DateTimeField(default=datetime.datetime.now, auto_now_add=True),
+            field=models.DateTimeField(default=timezone.now, auto_now_add=True),
             preserve_default=True,
         ),
         migrations.AlterField(
             model_name='basecard',
             name='updated_at',
-            field=models.DateTimeField(default=datetime.datetime.now, auto_now=True),
+            field=models.DateTimeField(default=timezone.now, auto_now=True),
             preserve_default=True,
         ),
         migrations.AlterField(
@@ -43,13 +44,13 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='card',
             name='created_at',
-            field=models.DateTimeField(default=datetime.datetime.now, auto_now_add=True),
+            field=models.DateTimeField(default=timezone.now, auto_now_add=True),
             preserve_default=True,
         ),
         migrations.AlterField(
             model_name='card',
             name='updated_at',
-            field=models.DateTimeField(default=datetime.datetime.now, auto_now=True),
+            field=models.DateTimeField(default=timezone.now, auto_now=True),
             preserve_default=True,
         ),
     ]
