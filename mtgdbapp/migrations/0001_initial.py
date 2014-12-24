@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import datetime
+from django.utils import timezone
 
 
 class Migration(migrations.Migration):
@@ -11,92 +12,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='AuthGroup',
-            fields=[
-                ('id', models.IntegerField(serialize=False, primary_key=True)),
-                ('name', models.CharField(unique=True, max_length=80)),
-            ],
-            options={
-                'db_table': 'auth_group',
-                'managed': True,
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='AuthGroupPermissions',
-            fields=[
-                ('id', models.IntegerField(serialize=False, primary_key=True)),
-                ('group_id', models.IntegerField()),
-                ('permission_id', models.IntegerField()),
-            ],
-            options={
-                'db_table': 'auth_group_permissions',
-                'managed': True,
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='AuthPermission',
-            fields=[
-                ('id', models.IntegerField(serialize=False, primary_key=True)),
-                ('name', models.CharField(max_length=50)),
-                ('content_type_id', models.IntegerField()),
-                ('codename', models.CharField(max_length=100)),
-            ],
-            options={
-                'db_table': 'auth_permission',
-                'managed': True,
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='AuthUser',
-            fields=[
-                ('id', models.IntegerField(serialize=False, primary_key=True)),
-                ('password', models.CharField(max_length=128)),
-                ('last_login', models.DateTimeField()),
-                ('is_superuser', models.IntegerField()),
-                ('username', models.CharField(unique=True, max_length=30)),
-                ('first_name', models.CharField(max_length=30)),
-                ('last_name', models.CharField(max_length=30)),
-                ('email', models.CharField(max_length=75)),
-                ('is_staff', models.IntegerField()),
-                ('is_active', models.IntegerField()),
-                ('date_joined', models.DateTimeField()),
-            ],
-            options={
-                'db_table': 'auth_user',
-                'managed': True,
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='AuthUserGroups',
-            fields=[
-                ('id', models.IntegerField(serialize=False, primary_key=True)),
-                ('user_id', models.IntegerField()),
-                ('group_id', models.IntegerField()),
-            ],
-            options={
-                'db_table': 'auth_user_groups',
-                'managed': True,
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='AuthUserUserPermissions',
-            fields=[
-                ('id', models.IntegerField(serialize=False, primary_key=True)),
-                ('user_id', models.IntegerField()),
-                ('permission_id', models.IntegerField()),
-            ],
-            options={
-                'db_table': 'auth_user_user_permissions',
-                'managed': True,
-            },
-            bases=(models.Model,),
-        ),
         migrations.CreateModel(
             name='BaseCard',
             fields=[
@@ -108,8 +23,8 @@ class Migration(migrations.Migration):
                 ('power', models.CharField(max_length=4, null=True, blank=True)),
                 ('toughness', models.CharField(max_length=4, null=True, blank=True)),
                 ('loyalty', models.CharField(max_length=4, null=True, blank=True)),
-                ('created_at', models.DateTimeField(default=datetime.datetime.now, blank=True)),
-                ('updated_at', models.DateTimeField(default=datetime.datetime.now, blank=True)),
+                ('created_at', models.DateTimeField(default=timezone.now, blank=True)),
+                ('updated_at', models.DateTimeField(default=timezone.now, blank=True)),
                 ('cardposition', models.CharField(default='F', max_length=1)),
             ],
             options={
@@ -126,8 +41,8 @@ class Migration(migrations.Migration):
                 ('multiverseid', models.IntegerField(blank=True)),
                 ('flavor_text', models.CharField(max_length=1000, null=True, blank=True)),
                 ('card_number', models.CharField(max_length=6, null=True, blank=True)),
-                ('created_at', models.DateTimeField(default=datetime.datetime.now, blank=True)),
-                ('updated_at', models.DateTimeField(default=datetime.datetime.now, blank=True)),
+                ('created_at', models.DateTimeField(default=timezone.now, blank=True)),
+                ('updated_at', models.DateTimeField(default=timezone.now, blank=True)),
                 ('basecard', models.ForeignKey(to='mtgdbapp.BaseCard')),
             ],
             options={
@@ -182,38 +97,6 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'colors',
-                'managed': True,
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='DjangoAdminLog',
-            fields=[
-                ('id', models.IntegerField(serialize=False, primary_key=True)),
-                ('action_time', models.DateTimeField()),
-                ('user_id', models.IntegerField()),
-                ('content_type_id', models.IntegerField(null=True, blank=True)),
-                ('object_id', models.TextField(blank=True)),
-                ('object_repr', models.CharField(max_length=200)),
-                ('action_flag', models.IntegerField()),
-                ('change_message', models.TextField()),
-            ],
-            options={
-                'db_table': 'django_admin_log',
-                'managed': True,
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='DjangoContentType',
-            fields=[
-                ('id', models.IntegerField(serialize=False, primary_key=True)),
-                ('name', models.CharField(max_length=100)),
-                ('app_label', models.CharField(max_length=100)),
-                ('model', models.CharField(max_length=100)),
-            ],
-            options={
-                'db_table': 'django_content_type',
                 'managed': True,
             },
             bases=(models.Model,),
