@@ -12,6 +12,7 @@ from __future__ import unicode_literals
 from django.db import models
 from datetime import datetime
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 from mtgdbapp.view_utils import convertSymbolsToHTML
 from django.utils.safestring import mark_safe
@@ -86,32 +87,58 @@ class PhysicalCard(models.Model):
 class BaseCard(models.Model):
 	#	 id = models.IntegerField(primary_key=True)
 	physicalcard = models.ForeignKey(PhysicalCard)
-	name = models.CharField(max_length=128, unique=True)
-	filing_name = models.CharField(max_length=128, default='')
+	name = models.CharField(max_length=128, unique=True, blank=False)
+	filing_name = models.CharField(max_length=128, blank=False)
 	rules_text = models.CharField(max_length=1000, blank=True)
 	mana_cost = models.CharField(max_length=60, null=False)
 	cmc = models.IntegerField(null=False, default=0)
 	power = models.CharField(max_length=4, null=True, blank=True)
 	toughness = models.CharField(max_length=4, null=True, blank=True)
 	loyalty = models.CharField(max_length=4, null=True, blank=True)
-	created_at = models.DateTimeField(default=timezone.now, null=False, blank=True, auto_now_add=True)
-	updated_at = models.DateTimeField(default=timezone.now, null=False, blank=True, auto_now=True)
+	created_at = models.DateTimeField(default=timezone.now, null=False, auto_now_add=True)
+	updated_at = models.DateTimeField(default=timezone.now, null=False, auto_now=True)
 	cardposition = models.CharField(max_length=1, null=False, default='F')
 	types = models.ManyToManyField(Type, through='CardType')
 	subtypes = models.ManyToManyField(Subtype, through='CardSubtype')
 	colors = models.ManyToManyField(Color, through='CardColor')
+
+	def __setattr__(self, attrname, val):
+		super(BaseCard, self).__setattr__(attrname, val)
+
+		if attrname == 'name':
+			self.filing_name = self.make_filing_name(val)
+
+		if attrname == 'mana_cost':
+			# REVISIT!
+			self.cmc = 1
+
 	def get_rulings(self):
 		return Ruling.objects.filter(basecard=self.id).order_by('ruling_date')
+
+	def make_filing_name(self, name):
+		# REVISIT- Currently filing name logic is in Perl. See
+		# MTG::Util::makeFilingName in the mtgstats project. We need
+		# to get that moved to Python
+		return name.lower()
+
 	class Meta:
 		managed = True
 		db_table = 'basecards'
 		verbose_name_plural = 'Base Cards'
 		unique_together = ('physicalcard', 'cardposition',)
+
 	def __unicode__(self):
 		return self.name + ' (physicalcard.id=' + str(self.physicalcard.id) + ')'
+
+	def clean(self):
+		# A name is required.
+		if self.name is None or self.name == '':
+			raise ValidationError('BaseCard must have a name.')
+		# A filing_name is required.
+		if self.filing_name is None or self.filing_name == '':
+			raise ValidationError('BaseCard must have a filing_name. It should be set through the name attribute.')
+
 	def save(self):
-		# We should always set the CMC to the value that is indicated mana_cost field
-		self.cmc = 1;
 		super(BaseCard, self).save()
 
 
@@ -155,8 +182,8 @@ class Card(models.Model):
 	flavor_text = models.CharField(max_length=1000, blank=True, null=True)
 	card_number = models.CharField(max_length=6, blank=True, null=True)
 	mark = models.ForeignKey('Mark', blank=True, null=True)
-	created_at = models.DateTimeField(default=timezone.now, null=False, blank=True, auto_now_add=True)
-	updated_at = models.DateTimeField(default=timezone.now, null=False, blank=True, auto_now=True)
+	created_at = models.DateTimeField(default=timezone.now, null=False, auto_now_add=True)
+	updated_at = models.DateTimeField(default=timezone.now, null=False, auto_now=True)
 	def img_url(self):
 		return '/img/' + str(self.multiverseid) + '.jpg'
 	def mana_cost_html(self):
