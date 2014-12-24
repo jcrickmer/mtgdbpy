@@ -4,7 +4,7 @@ import sys
 sys.path.append('/opt/mtgdb')
 
 os.environ['PYTHON_EGG_CACHE'] = '/tmp/.python-egg'
-os.environ['DJANGO_SETTINGS_MODULE'] = 'mtgdbpy.settings_prod'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'mtgdb.settings_prod'
 
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
