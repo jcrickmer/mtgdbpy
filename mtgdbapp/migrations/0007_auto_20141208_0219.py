@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('battle_date', models.DateField(auto_now=True, auto_now_add=True)),
                 ('format', models.ForeignKey(to='mtgdbapp.Format')),
                 ('loser_pcard', models.ForeignKey(related_name='loser', to='mtgdbapp.PhysicalCard')),
-                ('session_key', models.ForeignKey(to='mtgdbapp.DjangoSession')),
+                ('session_key', models.CharField(max_length=40)),
                 ('winner_pcard', models.ForeignKey(related_name='winner', to='mtgdbapp.PhysicalCard')),
             ],
             options={

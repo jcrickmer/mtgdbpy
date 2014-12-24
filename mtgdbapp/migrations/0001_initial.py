@@ -102,19 +102,6 @@ class Migration(migrations.Migration):
             bases=(models.Model,),
         ),
         migrations.CreateModel(
-            name='DjangoSession',
-            fields=[
-                ('session_key', models.CharField(max_length=40, serialize=False, primary_key=True)),
-                ('session_data', models.TextField()),
-                ('expire_date', models.DateTimeField()),
-            ],
-            options={
-                'db_table': 'django_session',
-                'managed': True,
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
             name='ExpansionSet',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),

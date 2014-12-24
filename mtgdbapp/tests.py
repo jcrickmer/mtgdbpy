@@ -1,10 +1,11 @@
 from django.test import TestCase, TransactionTestCase
 
-from mtgdbapp.models import Color, Rarity
+from mtgdbapp.models import Color, Rarity, Type, Subtype
+from django.db import IntegrityError
 
 # Create your tests here.
 
-class ModelsTestCase(TransactionTestCase):
+class MigrationTestCase(TransactionTestCase):
 	serialized_rollback = True
 	#def test_basic_addition(self):
 	#	serialized_rollback = True
@@ -37,6 +38,52 @@ class ModelsTestCase(TransactionTestCase):
 		self.assertEqual(s.sortorder, 5)
 		rarities = Rarity.objects.all()
 		self.assertEqual(len(rarities), 6)
+
+
+class TypeTestCase(TestCase):
+
+	def test_type_create_basic(self):
+		testType_s = 'Contraption'
+		t = Type()
+		t.type = testType_s
+		t.save()
+
+		t1 = Type.objects.filter(type__exact=testType_s).first()
+		self.assertEqual(t1.type, testType_s)
+
+	def test_type_uniqueness(self):
+		testType_s = 'Contraption'
+		t = Type()
+		t.type = testType_s
+		t.save()
+
+		t2 = Type()
+		t2.type = testType_s
+		self.assertRaises(IntegrityError, t2.save)
+		
+
+class SubtypeTestCase(TestCase):
+
+	def test_subtype_create_basic(self):
+		testSubtype_s = 'Alien'
+		st = Subtype()
+		st.subtype = testSubtype_s
+		st.save()
+
+		st1 = Subtype.objects.filter(subtype__exact=testSubtype_s).first()
+		self.assertEqual(st1.subtype, testSubtype_s)
+
+
+	def test_subtype_uniqueness(self):		
+		testSubtype_s = 'Alien'
+		st = Subtype()
+		st.subtype = testSubtype_s
+		st.save()
+
+		st2 = Subtype()
+		st2.subtype = testSubtype_s
+		self.assertRaises(IntegrityError, st2.save)
+
 
 class ViewsTestCase(TestCase):
 	def test_basic_addition(self):

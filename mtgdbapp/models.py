@@ -38,7 +38,7 @@ class Rarity(models.Model):
 
 class Type(models.Model):
 	#    id = models.IntegerField(primary_key=True)
-    type = models.CharField(max_length=128)
+    type = models.CharField(max_length=128, unique=True)
     class Meta:
         managed = True
         db_table = 'types'
@@ -47,7 +47,7 @@ class Type(models.Model):
 
 class Subtype(models.Model):
 	#    id = models.IntegerField(primary_key=True)
-	subtype = models.CharField(max_length=128)
+	subtype = models.CharField(max_length=128, unique=True)
 	class Meta:
 		managed = True
 		db_table = 'subtypes'
