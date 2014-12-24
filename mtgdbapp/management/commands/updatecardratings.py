@@ -10,6 +10,7 @@ from mtgdbapp.models import BaseCard
 import logging
 
 import datetime
+from django.utils import timezone
 
 from trueskill import TrueSkill, Rating, quality_1vs1, rate_1vs1
 
@@ -128,7 +129,7 @@ class Command(BaseCommand):
 						cr_db.physicalcard = PhysicalCard.objects.get(pk=int(pcard_id))
 						cr_db.test = test
 						cr_db.format = format
- 						card_lmd[str(pcard_id)] = datetime.datetime.now()
+ 						card_lmd[str(pcard_id)] = timezone.now()
 						card_battled[str(pcard_id)] = True
 
 					if str(pcard_id) in card_battled and card_battled[str(pcard_id)]:
