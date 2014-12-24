@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 from datetime import datetime
+from django.utils import timezone
 
 from mtgdbapp.view_utils import convertSymbolsToHTML
 from django.utils.safestring import mark_safe
@@ -149,8 +150,8 @@ class BaseCard(models.Model):
 	power = models.CharField(max_length=4, null=True, blank=True)
 	toughness = models.CharField(max_length=4, null=True, blank=True)
 	loyalty = models.CharField(max_length=4, null=True, blank=True)
-	created_at = models.DateTimeField(default=datetime.now, null=False, blank=True, auto_now_add=True)
-	updated_at = models.DateTimeField(default=datetime.now, null=False, blank=True, auto_now=True)
+	created_at = models.DateTimeField(default=timezone.now, null=False, blank=True, auto_now_add=True)
+	updated_at = models.DateTimeField(default=timezone.now, null=False, blank=True, auto_now=True)
 	cardposition = models.CharField(max_length=1, null=False, default='F')
 	types = models.ManyToManyField(Type, through='CardType')
 	subtypes = models.ManyToManyField(Subtype, through='CardSubtype')
@@ -210,8 +211,8 @@ class Card(models.Model):
 	flavor_text = models.CharField(max_length=1000, blank=True, null=True)
 	card_number = models.CharField(max_length=6, blank=True, null=True)
 	mark = models.ForeignKey('Mark', blank=True, null=True)
-	created_at = models.DateTimeField(default=datetime.now, null=False, blank=True, auto_now_add=True)
-	updated_at = models.DateTimeField(default=datetime.now, null=False, blank=True, auto_now=True)
+	created_at = models.DateTimeField(default=timezone.now, null=False, blank=True, auto_now_add=True)
+	updated_at = models.DateTimeField(default=timezone.now, null=False, blank=True, auto_now=True)
 	def img_url(self):
 		return '/img/' + str(self.multiverseid) + '.jpg'
 	def mana_cost_html(self):
@@ -303,7 +304,7 @@ class CardRating(models.Model):
 	sigma = models.FloatField(default=25.0/3.0, null=False)
 	test = models.ForeignKey('BattleTest')
 	format = models.ForeignKey('Format')
-	updated_at = models.DateTimeField(default=datetime.now, auto_now=True, null=False)
+	updated_at = models.DateTimeField(default=timezone.now, auto_now=True, null=False)
 	def cardninjaRating(self):
 		return self.mu * 20.0
 	def confidence(self):
