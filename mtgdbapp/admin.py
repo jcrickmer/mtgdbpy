@@ -6,6 +6,7 @@ class CardModelForm(forms.ModelForm):
     flavor_text = forms.CharField(widget=forms.Textarea)
     class Meta:
         model = Card
+        fields = '__all__'
 
 class CardAdmin(admin.ModelAdmin):
 	readonly_fields = ('id',)
@@ -16,6 +17,7 @@ class BaseCardModelForm(forms.ModelForm):
     rules_text = forms.CharField(widget=forms.Textarea)
     class Meta:
         model = BaseCard
+        fields = '__all__'
 
 class ExpansionSetAdmin(admin.ModelAdmin):
 	readonly_fields = ('id',)
