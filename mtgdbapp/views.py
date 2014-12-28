@@ -54,7 +54,7 @@ def index(request):
 	context = {}
 	try:
 		request.session['query_pred_array'] is None
-	except IndexError:
+	except KeyError:
 		request.session['query_pred_array'] = []
 
 	context['predicates'] = request.session.get('query_pred_array')
