@@ -1,6 +1,6 @@
 from django.test import TestCase, TransactionTestCase
 
-from mtgdbapp.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating
+from mtgdbapp.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 
@@ -149,7 +149,41 @@ class BaseCardTestCase(TestCase):
 		# I REALLY DON'T LIKE THIS. REVISIT - Color is required. How do I enforce this requirement?
 		self.assertEquals(len(bc.colors.all()), 0)
 
+class CardCreateTestCase(TestCase):
+	def test_card_all_one_cards(self):
+		self.assertEquals(Card.objects.get_queryset().all().count(), 0)
+
+		# add expansion set
+		es = ExpansionSet(name="Alpha",abbr="aaa")
+		es.save()
+
+		# add a rarity
+		rc = Rarity(id='c',rarity='Common',sortorder=1)
+		rc.save()
+		
+		# add a card
+		pc = PhysicalCard()
+		pc.save()
+		bc = BaseCard()
+		bc.physicalcard = pc
+
+		bc.name = 'Test Name'
+		bc.clean()
+		bc.save()
+		self.assertEquals(bc.physicalcard.layout, PhysicalCard.NORMAL)
+		c = Card(basecard=bc, rarity=rc, expansionset=es, multiverseid=100,card_number='99')
+		c.save()
+		
+		self.assertEquals(Card.objects.get_queryset().all().count(), 1)
+
+class CardManagerTestCase(TestCase):
+	fixtures = ['mtgdbapp_testdata',]
+	def test_basic_addition(self):
+		self.assertEqual(1 + 1, 2)
 		
 class ViewsTestCase(TestCase):
 	def test_basic_addition(self):
+		self.assertEqual(1 + 1, 2)
+
+	def test_cards_paginated_default_sort(self):
 		self.assertEqual(1 + 1, 2)
