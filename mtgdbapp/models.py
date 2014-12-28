@@ -17,6 +17,8 @@ from django.core.exceptions import ValidationError
 from mtgdbapp.view_utils import convertSymbolsToHTML
 from django.utils.safestring import mark_safe
 
+from django.db.models import Max, Min, Count
+
 class Color(models.Model):
     id = models.CharField(primary_key=True, max_length=1)
     color = models.CharField(max_length=9)
@@ -173,6 +175,23 @@ class Mark(models.Model):
 	def __unicode__(self):
 		return self.mark
 
+class CardManager(models.Manager):
+	def get_queryset(self):
+		# Not sure of the performance in here. Basically, I needed to
+		# do a GROUP BY to get the max multiverseid and only display
+		# that card. The first query here is getting the max
+		# multiverseid for the given query. The second query then uses
+		# that "mid_max" value to get back a list of all of the cards.
+		card_listP = super(CardManager, self).get_queryset()
+		card_listP = card_listP.values('basecard__id').annotate(mid_max=Max('multiverseid'))
+		card_list = super(CardManager, self).get_queryset()
+		card_list = card_list.filter(multiverseid__in=[g['mid_max'] for g in card_listP]).order_by('basecard__filing_name')
+
+		# Filer out the non-playing cards for now
+		card_list = card_list.filter(basecard__physicalcard__layout__in = ('normal','double-faced','split','flip','leveler'))
+
+		return card_list
+
 class Card(models.Model):
 	#	id = models.IntegerField(primary_key=True)
 	expansionset = models.ForeignKey('ExpansionSet')
@@ -184,6 +203,8 @@ class Card(models.Model):
 	mark = models.ForeignKey('Mark', blank=True, null=True)
 	created_at = models.DateTimeField(default=timezone.now, null=False, auto_now_add=True)
 	updated_at = models.DateTimeField(default=timezone.now, null=False, auto_now=True)
+	objects = models.Manager()
+	playables = CardManager()
 	def img_url(self):
 		return '/img/' + str(self.multiverseid) + '.jpg'
 	def mana_cost_html(self):
@@ -197,7 +218,7 @@ class Card(models.Model):
 	class Meta:
 		managed = True
 		db_table = 'cards'
-		unique_together = ('expansionset', 'card_number',)
+		unique_together = ('expansionset', 'card_number','multiverseid')
 	def __unicode__(self):
 		return self.basecard.name + "(" + self.expansionset.abbr + ") [" + str(self.multiverseid) + "]"
 
