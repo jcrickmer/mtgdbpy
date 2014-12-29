@@ -1,8 +1,9 @@
 from django.test import TestCase, TransactionTestCase
-
+from django_nose import FastFixtureTestCase
 from mtgdbapp.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
+from django.db import transaction
 
 # Create your tests here.
 
@@ -109,19 +110,20 @@ class PhysicalCardTestCase(TestCase):
 		self.assertEquals(PhysicalCard.LEVELER, 'leveler')
 		self.assertEquals(PhysicalCard.VANGUARD, 'vanguard')
 
-	def test_phsyicalcard_cardrating_none(self):
+	def test_physicalcard_cardrating_none(self):
 		pc = PhysicalCard()
 		pc.save()
 
-		self.assertRaises(CardRating.DoesNotExist, pc.getCardRating, None, None)
-		self.assertRaises(CardRating.DoesNotExist, pc.getCardRating, 35432, 4652)
+		self.assertRaises(CardRating.DoesNotExist, pc.get_cardrating, None, None)
+		self.assertRaises(CardRating.DoesNotExist, pc.get_cardrating, 35432, 4652)
 
 class BaseCardTestCase(TestCase):
 
 	def test_basecard_create_basic(self):
 		bc = BaseCard()
 		self.assertIsNone(bc.id)
-		self.assertRaises(IntegrityError, bc.save)
+		with transaction.atomic():
+			self.assertRaises(IntegrityError, bc.save)
 
 		pc = PhysicalCard()
 		pc.save()
@@ -176,11 +178,84 @@ class CardCreateTestCase(TestCase):
 		
 		self.assertEquals(Card.objects.get_queryset().all().count(), 1)
 
-class CardManagerTestCase(TestCase):
+class CardManagerROTestCase(FastFixtureTestCase):
 	fixtures = ['mtgdbapp_testdata',]
-	def test_basic_addition(self):
-		self.assertEqual(1 + 1, 2)
+	def test_all_cards_search(self):
+		self.assertEquals(Card.objects.get_queryset().all().count(), 2015)
+		allCards = Card.objects.get_queryset().all().order_by('basecard__filing_name')
+		first = allCards[0]
+		self.assertEquals(first.basecard.filing_name, 'abrupt decay')
+		second = allCards[1]
+		self.assertEquals(second.basecard.filing_name, 'abzan charm')
+		sixtythird = allCards[62]
+		self.assertEquals(sixtythird.basecard.filing_name, 'bojuka bog')
+
+	def test_latest_printing(self):
+		tower_qs = Card.playables.get_latest_printing().filter(basecard__filing_name__exact='urzas tower')
+		self.assertEquals(tower_qs.count(), 1)
+		self.assertEquals(tower_qs[0].basecard.name, 'Urza\'s Tower')
+		self.assertEquals(tower_qs[0].multiverseid, 220958L)
 		
+	def test_get_double_faced_card(self):		
+		delver_qs = Card.playables.get_latest_printing().filter(basecard__filing_name__exact='delver of secrets')
+		self.assertEquals(delver_qs.count(), 1)
+		self.assertEquals(delver_qs[0].basecard.name, 'Delver of Secrets')
+		self.assertEquals(delver_qs[0].multiverseid, 226749L)
+
+	def test_standard_cards_sort_rating(self):
+		all_cards = Card.playables.get_queryset()
+		allCards = Card.playables.in_cardrating_order(all_cards, format_id=4, test_id=1, sort_order=-1)
+		first = allCards[0]
+		self.assertEquals(first.basecard.name, 'Elspeth, Sun\'s Champion')
+		self.assertEquals(first.basecard.id, 6004)
+		self.assertGreaterEqual(first.basecard.physicalcard.get_cardrating(4,1).mu, allCards[1].basecard.physicalcard.get_cardrating(4,1).mu)
+		self.assertGreaterEqual(allCards[1].basecard.physicalcard.get_cardrating(4,1).mu, allCards[2].basecard.physicalcard.get_cardrating(4,1).mu)
+		self.assertGreaterEqual(allCards[2].basecard.physicalcard.get_cardrating(4,1).mu, allCards[3].basecard.physicalcard.get_cardrating(4,1).mu)
+		self.assertGreaterEqual(allCards[3].basecard.physicalcard.get_cardrating(4,1).mu, allCards[4].basecard.physicalcard.get_cardrating(4,1).mu)
+		self.assertGreaterEqual(allCards[4].basecard.physicalcard.get_cardrating(4,1).mu, allCards[5].basecard.physicalcard.get_cardrating(4,1).mu)
+
+	def test_modern_cards_sort_rating_desc(self):
+		all_cards = Card.playables.get_queryset()
+		allCards = Card.playables.in_cardrating_order(all_cards, format_id=1, test_id=1, sort_order=-1)
+		first = allCards[0]
+		self.assertEquals(first.basecard.name, 'Lightning Bolt')
+		self.assertEquals(first.id, 68647)
+		self.assertEquals(first.basecard.physicalcard.get_cardrating(1, 1).mu, 44.5023075558582)
+
+	def test_modern_cards_sort_rating_asc(self):
+		all_cards = Card.playables.get_queryset()
+		allCards = Card.playables.in_cardrating_order(all_cards, format_id=1, test_id=1, sort_order=1)
+		first = allCards[0]
+		self.assertEquals(first.basecard.name, 'Abzan Charm')
+		self.assertEquals(first.id, 64961)
+		self.assertEquals(first.basecard.physicalcard.get_cardrating(1, 1).mu, 25)
+
+class CardTestCase(TestCase):
+	fixtures = ['mtgdbapp_testdata',]
+	def test_get_double_faced_card(self):
+		delver = Card.playables.get_latest_printing().filter(basecard__filing_name__exact='delver of secrets').first()
+		self.assertEquals(delver.basecard.name, 'Delver of Secrets')
+		aberration = delver.get_double_faced_card()
+		self.assertIsNotNone(aberration)
+		self.assertEquals(aberration.basecard.name, 'Insectile Aberration')
+		self.assertEquals(delver.basecard.physicalcard.id, aberration.basecard.physicalcard.id)
+		
+	def test_get_double_faced_card_reverse(self):
+		aberration = Card.playables.get_latest_printing().filter(basecard__name__exact='Insectile Aberration').first()
+		self.assertEquals(aberration.basecard.filing_name, 'insectile aberration')
+		self.assertEquals(aberration.basecard.cmc, 0)
+		delver = aberration.get_double_faced_card()
+		self.assertIsNotNone(delver)
+		self.assertEquals(delver.basecard.name, 'Delver of Secrets')
+		self.assertEquals(delver.basecard.cmc, 1)
+		self.assertEquals(delver.basecard.physicalcard.id, aberration.basecard.physicalcard.id)
+
+	def test_get_double_faced_card_not(self):
+		mss = Card.playables.get_latest_printing().filter(basecard__filing_name__exact='monastery swiftspear').first()
+		self.assertEquals(mss.basecard.name, 'Monastery Swiftspear')
+		foo = mss.get_double_faced_card()
+		self.assertIsNone(foo)
+
 class ViewsTestCase(TestCase):
 	def test_basic_addition(self):
 		self.assertEqual(1 + 1, 2)
