@@ -27,18 +27,18 @@ LOGGING = {
         #    'filename': '/tmp/debug.log',
         #},
         'applogfile': {
-            'level':'DEBUG',
-            'class':'logging.handlers.RotatingFileHandler',
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join('/tmp/', 'mtgdbpy_debug.log'),
-            'maxBytes': 1024*1024*15, # 15MB
+            'maxBytes': 1024 * 1024 * 15,  # 15MB
             'backupCount': 10,
         },
-        'console':{
+        'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             #'formatter': 'simple'
         },
-        },
+    },
     'loggers': {
         'django.request': {
             'handlers': ['console'],
@@ -51,7 +51,7 @@ LOGGING = {
             'propagate': True,
         },
         'APPNAME': {
-            'handlers': ['applogfile',],
+            'handlers': ['applogfile', ],
             'level': 'DEBUG',
         },
     },

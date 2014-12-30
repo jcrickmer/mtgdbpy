@@ -27,7 +27,15 @@ TEMPLATE_DEBUG = True
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 ALLOWED_HOSTS = []
-INTERNAL_IPS = ('127.0.0.1', 'localhost', '192.168.1.6','192.168.1.7','192.168.1.11','192.168.1.18','192.168.1.19','smoker')
+INTERNAL_IPS = (
+    '127.0.0.1',
+    'localhost',
+    '192.168.1.6',
+    '192.168.1.7',
+    '192.168.1.11',
+    '192.168.1.18',
+    '192.168.1.19',
+    'smoker')
 
 # Application definition
 
@@ -62,11 +70,11 @@ WSGI_APPLICATION = 'mtgdb.wsgi.application'
 
 DATABASES = {
     'default': {
-		'ENGINE': 'django.db.backends.mysql',
-		'NAME': 'mtgdbpy',
-		'USER': 'mtgdb',
-		'PASSWORD': 'password'
-		},
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'mtgdbpy',
+                'USER': 'mtgdb',
+                'PASSWORD': 'password'
+    },
 }
 
 # Internationalization
@@ -83,20 +91,20 @@ USE_L10N = True
 USE_TZ = True
 
 LOGGING = {
-	'version': 1,
-	'disable_existing_loggers': False,
-	'handlers': {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
         #'file': {
         #    'level': 'DEBUG',
         #    'class': 'logging.FileHandler',
         #    'filename': '/tmp/debug.log',
         #},
-		'console':{
-			'level': 'DEBUG',
-			'class': 'logging.StreamHandler',
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
             #'formatter': 'simple'
         },
-	},
+    },
     'loggers': {
         'mtgdbapp.views': {
             'handlers': ['console'],
@@ -111,4 +119,3 @@ LOGGING = {
 
 STATIC_URL = '/static/'
 STATIC_ROOT = "/home/jason/projects/mtgdbpy/cstatic/"
-

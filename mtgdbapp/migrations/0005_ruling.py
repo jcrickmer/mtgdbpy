@@ -14,14 +14,25 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Ruling',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('ruling_text', models.TextField()),
-                ('ruling_date', models.DateField()),
-                ('basecard', models.ForeignKey(to='mtgdbapp.BaseCard')),
+                ('id',
+                 models.AutoField(
+                     verbose_name='ID',
+                     serialize=False,
+                     auto_created=True,
+                     primary_key=True)),
+                ('ruling_text',
+                 models.TextField()),
+                ('ruling_date',
+                 models.DateField()),
+                ('basecard',
+                 models.ForeignKey(
+                     to='mtgdbapp.BaseCard')),
             ],
             options={
                 'verbose_name_plural': 'Rulings',
             },
-            bases=(models.Model,),
+            bases=(
+                models.Model,
+            ),
         ),
     ]

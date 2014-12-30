@@ -14,13 +14,21 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='battle',
             name='id',
-            field=models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True),
+            field=models.AutoField(
+                verbose_name='ID',
+                serialize=False,
+                auto_created=True,
+                primary_key=True),
             preserve_default=True,
         ),
         migrations.AlterField(
             model_name='battletest',
             name='id',
-            field=models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True),
+            field=models.AutoField(
+                verbose_name='ID',
+                serialize=False,
+                auto_created=True,
+                primary_key=True),
             preserve_default=True,
         ),
     ]

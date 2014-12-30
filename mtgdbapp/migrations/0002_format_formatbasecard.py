@@ -12,27 +12,17 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Format',
-            fields=[
-                ('id', models.IntegerField(serialize=False, primary_key=True)),
-                ('formatname', models.CharField(max_length=60)),
-                ('format', models.CharField(unique=True, max_length=60)),
-                ('start_date', models.DateField(null=True)),
-                ('end_date', models.DateField(null=True)),
-            ],
-            options={
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='FormatBasecard',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('basecard', models.ForeignKey(to='mtgdbapp.BaseCard')),
-                ('format', models.ForeignKey(to='mtgdbapp.Format')),
-            ],
-            options={
-            },
-            bases=(models.Model,),
-        ),
-    ]
+            name='Format', fields=[
+                ('id', models.IntegerField(
+                    serialize=False, primary_key=True)), ('formatname', models.CharField(
+                        max_length=60)), ('format', models.CharField(
+                            unique=True, max_length=60)), ('start_date', models.DateField(
+                                null=True)), ('end_date', models.DateField(
+                                    null=True)), ], options={}, bases=(
+                models.Model,), ), migrations.CreateModel(
+            name='FormatBasecard', fields=[
+                ('id', models.AutoField(
+                    verbose_name='ID', serialize=False, auto_created=True, primary_key=True)), ('basecard', models.ForeignKey(
+                        to='mtgdbapp.BaseCard')), ('format', models.ForeignKey(
+                            to='mtgdbapp.Format')), ], options={}, bases=(
+                models.Model,), ), ]
