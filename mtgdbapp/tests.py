@@ -1,6 +1,6 @@
 from django.test import TestCase, TransactionTestCase
 from django_nose import FastFixtureTestCase
-from mtgdbapp.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet
+from mtgdbapp.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, FormatBasecard
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -229,6 +229,17 @@ class CardManagerROTestCase(FastFixtureTestCase):
 		self.assertEquals(first.basecard.name, 'Abzan Charm')
 		self.assertEquals(first.id, 64961)
 		self.assertEquals(first.basecard.physicalcard.get_cardrating(1, 1).mu, 25)
+
+	def test_modern_cards_name_term_sort_rating_desc(self):
+		card_list = Card.playables.get_queryset().filter(basecard__filing_name__icontains='th')
+		bc_vals = FormatBasecard.objects.filter(format__format__exact='Modern_2014-09-26').values_list('basecard', flat=True)
+		card_list = card_list.filter(basecard__pk__in=bc_vals)
+		cards = Card.playables.in_cardrating_order(card_list, format_id=1, test_id=1, sort_order=-1)
+		first = cards[0]
+		self.assertEquals(first.basecard.name, 'Path to Exile')
+		self.assertEquals(first.basecard.id, 2047)
+		self.assertEquals(first.basecard.physicalcard.get_cardrating(1, 1).mu, 34.0947162161112)
+
 
 class CardTestCase(TestCase):
 	fixtures = ['mtgdbapp_testdata',]
