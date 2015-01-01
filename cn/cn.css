@@ -281,3 +281,23 @@ ul#search_terms {
 ul#search_terms li {
 
 }
+
+/* no-gutters Class Rules - http://julienmelissas.com/no-gutter-column-trick-for-bootstrap/ */
+.row.no-gutters {
+   margin-right: 0px;
+   margin-left: 0px;
+}
+.row.no-gutters [class^="col-"],
+.row.no-gutters [class*=" col-"]{
+   padding-right: 0px;
+   padding-left: 0px;
+}
+.row.xs-gutters {
+   margin-right: 5px;
+   margin-left: 0px;
+}
+.row.xs-gutters [class^="col-xs-"],
+.row.xs-gutters [class*=" col-xs-"]{
+   padding-right: 5px;
+   padding-left: 0px;
+}

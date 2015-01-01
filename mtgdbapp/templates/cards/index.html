@@ -4,26 +4,26 @@
 {% block pagetitle %}Card Search{% endblock %}
 
 {% block content %}
-<form action="{% url 'cards:search' %}" method="get">
+<form action="{% url 'cards:search' %}" method="get" role="form">
 	<div class="row">
 	  <div class="col-xs-12 col-sm-6">
-	    <div class="row term_input">
-        <div class="col-xs-2 searchlabel"><label for="cardname">Name</label></div>
-        <div class="col-xs-2"><select id="cardname_op" name="cardname_op"><option value="and" selected>and</option><option value="not">not</option></select></div>
-        <div class="col-xs-6"><input id="cardname" type="text" name="cardname" /></div>
-        <div class="col-xs-2"><button name="cardname_add">Add</button></div>
+	    <div class="row term_input form-group xs-gutters"> <!-- nesting columns -->
+        <div class="col-xs-2 searchlabel"><label for="cardname" class="control-label">Name</label></div>
+        <div class="col-xs-2"><select id="cardname_op" name="cardname_op" class="form-control input-sm"><option value="and" selected>and</option><option value="not">not</option></select></div>
+        <div class="col-xs-6"><input id="cardname" type="text" name="cardname" class="form-control input-sm"/></div>
+        <div class="col-xs-2"><button name="cardname_add" class="btn btn-default btn-sm">Add</button></div>
       </div>
-      <div class="row term_input">
-        <div class="col-xs-2 searchlabel"><label for="rules">Rules</label></div>
-        <div class="col-xs-2"><select id="rules_op" name="rules_op"><option value="and" selected>and</option><option value="not">not</option></select></div>
-        <div class="col-xs-6"><input id="rules" type="text" name="rules" /></div>
-        <div class="col-xs-2"><button name="rules_add">Add</button></div>
+      <div class="row term_input form-group xs-gutters">
+        <div class="col-xs-2 searchlabel"><label for="rules" class="control-label">Rules</label></div>
+        <div class="col-xs-2"><select id="rules_op" name="rules_op" class="form-control input-sm"><option value="and" selected>and</option><option value="not">not</option></select></div>
+        <div class="col-xs-6"><input id="rules" type="text" name="rules" class="form-control input-sm"/></div>
+        <div class="col-xs-2"><button class="btn btn-default btn-sm" name="rules_add">Add</button></div>
       </div>
-      <div class="row term_input">
-        <div class="col-xs-2 searchlabel"><label for="color">Color</label></div>
-        <div class="col-xs-2"><select id="color_op" name="color_op"><option value="and" selected>and</option><option value="not">not</option></select></div>
+      <div class="row term_input form-group xs-gutters">
+        <div class="col-xs-2 searchlabel"><label for="color" class="control-label">Color</label></div>
+        <div class="col-xs-2"><select id="color_op" name="color_op" class="form-control input-sm"><option value="and" selected>and</option><option value="not">not</option></select></div>
         <div class="col-xs-6">
-          <select id="color" name="color">
+          <select id="color" name="color" class="form-control input-sm">
             <option value="w">white</option>
             <option value="u">blue</option>
             <option value="b">black</option>
@@ -32,39 +32,39 @@
             <option value="c">colorless</option>
           </select>
         </div>
-        <div class="col-xs-2"><button name="color_add">Add</button></div>
+        <div class="col-xs-2"><button class="btn btn-default btn-sm" name="color_add">Add</button></div>
       </div>
-      <div class="row term_input">
-        <div class="col-xs-2"><label for="cmc">CMC</label></div>
-        <div class="col-xs-2"><select id="cmc_op" name="cmc_op"><option value="eq" selected>==</option><option value="ne">!=</option><option value="lt">&lt;</option><option value="gt">&gt;</option></select></div>
-        <div class="col-xs-6"><input id="cmc" name="cmc" type="number" min="0" max="20"/></div>
-        <div class="col-xs-2"><button name="cmc_add">Add</button></div>
+      <div class="row term_input form-group xs-gutters">
+        <div class="col-xs-2"><label for="cmc" class="control-label">CMC</label></div>
+        <div class="col-xs-2"><select id="cmc_op" name="cmc_op" class="form-control input-sm"><option value="eq" selected>==</option><option value="ne">!=</option><option value="lt">&lt;</option><option value="gt">&gt;</option></select></div>
+        <div class="col-xs-6"><input id="cmc" name="cmc" type="number" min="0" max="20" class="form-control input-sm"/></div>
+        <div class="col-xs-2"><button class="btn btn-default btn-sm" name="cmc_add">Add</button></div>
       </div>
-      <div class="row term_input">
-        <div class="col-xs-2 searchlabel"><label for="type">Type</label></div>
-        <div class="col-xs-2"><select id="type_op" name="type_op"><option value="and" selected>and</option><option value="not">not</option></select></div>
-        <div class="col-xs-6"><input id="type" name="type" type="text" /></div>
+      <div class="row term_input form-group xs-gutters">
+        <div class="col-xs-2 searchlabel"><label for="type" class="control-label">Type</label></div>
+        <div class="col-xs-2"><select id="type_op" name="type_op" class="form-control input-sm"><option value="and" selected>and</option><option value="not">not</option></select></div>
+        <div class="col-xs-6"><input id="type" name="type" type="text" class="form-control input-sm"/></div>
         <script>$(function() { var types = [{% for type in types %}"{{ type }}",{% endfor %}]; $("#type").autocomplete({source : types}); });</script>
-        <div class="col-xs-2"><button name="type_add">Add</button></div>
+        <div class="col-xs-2"><button class="btn btn-default btn-sm" name="type_add">Add</button></div>
       </div>
-      <div class="row term_input">
-        <div class="col-xs-2 searchlabel"><label for="subtype">Subtype</label></div>
-        <div class="col-xs-2"><select id="subtype_op" name="subtype_op"><option value="and" selected>and</option><option value="not">not</option></select></div>
-        <div class="col-xs-6"><input id="subtype" name="subtype" type="text" /></div>
+      <div class="row term_input form-group xs-gutters">
+        <div class="col-xs-2 searchlabel"><label for="subtype" class="control-label">Subtype</label></div>
+        <div class="col-xs-2"><select id="subtype_op" name="subtype_op" class="form-control input-sm"><option value="and" selected>and</option><option value="not">not</option></select></div>
+        <div class="col-xs-6"><input id="subtype" name="subtype" type="text" class="form-control input-sm"/></div>
         <script>$(function() { var subtypes = [{% for subtype in subtypes %}"{{ subtype }}",{% endfor %}]; $("#subtype").autocomplete({source : subtypes}); });</script>
-        <div class="col-xs-2"><button name="subtype_add">Add</button></div>
+        <div class="col-xs-2"><button class="btn btn-default btn-sm" name="subtype_add">Add</button></div>
       </div>
-      <div class="row term_input">
-        <div class="col-xs-2"><label for="rarity">Rarity</label></div>
-        <div class="col-xs-2"><select id="rarity_op" name="rarity_op"><option value="or" selected>or</option><option value="not">not</option></select></div>
-        <div class="col-xs-6"><select id="rarity" name="rarity"><option></option>
+      <div class="row term_input form-group xs-gutters">
+        <div class="col-xs-2"><label for="rarity" class="control-label">Rarity</label></div>
+        <div class="col-xs-2"><select id="rarity_op" name="rarity_op" class="form-control input-sm"><option value="or" selected>or</option><option value="not">not</option></select></div>
+        <div class="col-xs-6"><select id="rarity" name="rarity" class="form-control input-sm"><option></option>
 {% for rarity in rarities %}<option value="{{ rarity.id }}">{{ rarity.rarity }}</option>{% endfor %}
         </select></div>
-        <div class="col-xs-2"><button name="rarity_add">Add</button></div>
+        <div class="col-xs-2"><button class="btn btn-default btn-sm" name="rarity_add">Add</button></div>
       </div>
-      <div class="row term_input">
-        <div class="col-xs-2"><label for="format">Format</label></div>
-        <div class="col-xs-10"><select id="format" name="format">
+      <div class="row term_input form-group xs-gutters">
+        <div class="col-xs-2"><label for="format" class="control-label">Format</label></div>
+        <div class="col-xs-10"><select id="format" name="format" class="form-control input-sm">
           <option></option>
           <option value="Standard_2014-09-26">Standard (Current)</option>
           <option value="Modern_2014-09-26">Modern (Current)</option>
@@ -83,7 +83,7 @@
         <div class="text-right"><a id="clear_terms" href="#">Clear all terms</a></div>
         <ul id="search_terms"></ul>
       </div>
-      <div class="text-right"><button name="sendQuery">Search</button></div>
+      <div class="text-right"><button class="btn btn-primary" name="sendQuery">Search</button></div>
     </div>
 <!-- end query column -->
   </div>

@@ -38,7 +38,7 @@ $(function() {
 			if (doNotShowRemove) {
 				parent_jq.append($(childTag).append(result));
 			} else {
-				parent_jq.append($(childTag).append(result, "<a class=\"pred_remove\" href=\"#\" onclick=\"cdb.removeSearchPredicate('" + rule.hint + "','" + parent_jqs + "');\">x</a>")); 
+				parent_jq.append($(childTag).append(result, "<a class=\"pred_remove\" href=\"#\" onclick=\"cdb.removeSearchPredicate('" + rule.hint + "','" + parent_jqs + "');\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Remove</span></a>"));
 			}
 		}
     };

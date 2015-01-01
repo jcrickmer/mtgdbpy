@@ -19,7 +19,14 @@ $(function() {
 
   {% include "cards/card_pagination.html" %}
 
-  <table>
+  <!-- <div class="table-responsive"> -->
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th colspan="2"></th><th style="width: 100px;">card.ninja Rating</th>
+      </tr>
+    </thead>
+    <tbody>
     {% for card in cards %}
       <tr>
         <td><a href="{% url 'cards:detail' card.multiverseid card.url_slug %}"><img class="list_cardimage" src="{{ card.img_url }}" alt="{{ card.basecard.name }}"/></a></td></td>
@@ -28,9 +35,29 @@ $(function() {
           <div class="list_cardtype">{% for ttype in card.basecard.types.all %}{{ ttype.type }} {% endfor %} {% if card.basecard.subtypes.all %}&mdash; {% for tsubtype in card.basecard.subtypes.all %}{{ tsubtype.subtype }} {% endfor %}{%endif%}</div>
           <div class="list_rules">{{card.rules_text_html}}</div>
         </td>
+        <td>
+          <div class="cn_r_std">Std:&nbsp;<span id="cr_{{card.multiverseid}}_4"></span></div>
+          <div class="cn_r_mod">Mod:&nbsp;<span id="cr_{{card.multiverseid}}_1"></span></div>
+          <div class="cn_r_edh">EDH:&nbsp;<span id="cr_{{card.multiverseid}}_13"></span></div>
+        {% for cardrating in card.basecard.physicalcard.cardrating_set.all %}
+          {% if cardrating.test.id == 1 %}
+            {% if cardrating.format.id == 4 %}
+              <script>$("#cr_{{card.multiverseid}}_4").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
+            {% endif %}
+            {% if cardrating.format.id == 1 %}
+              <script>$("#cr_{{card.multiverseid}}_1").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
+            {% endif %}
+            {% if cardrating.format.id == 13 %}
+              <script>$("#cr_{{card.multiverseid}}_13").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
+            {% endif %}
+          {% endif %}
+        {% endfor%}
+        </td>
       </tr>
     {% endfor %}
+    </tbody>
   </table>
+  <!-- </div> -->
 
   {% include "cards/card_pagination.html" %}
   <div>{{cards.paginator.count}} results.</div>

@@ -79,15 +79,15 @@
         {% for cardrating in working.card.basecard.physicalcard.cardrating_set.all %}
           {% if cardrating.test.id == 1 %}
             {% if cardrating.format.id == 4 %}
-              {{cardrating.format.formatname}}: {{cardrating.cardninjaRating|floatformat:3 }} (confidence {{cardrating.confidence|floatformat:2 }})<br>
+              <span class="hidden-xs">{{cardrating.format.formatname}}</span><span class="visible-xs-inline">Std</span>: {{cardrating.cardninjaRating|floatformat:3 }}<!-- (confidence {{cardrating.confidence|floatformat:2 }})--><br>
 
             {% endif %}
             {% if cardrating.format.id == 1 %}
-              {{cardrating.format.formatname}}: {{cardrating.cardninjaRating|floatformat:3 }} (confidence {{cardrating.confidence|floatformat:2 }})<br>
+              <span class="hidden-xs">{{cardrating.format.formatname}}</span><span class="visible-xs-inline">Mod</span>: {{cardrating.cardninjaRating|floatformat:3 }}<!-- (confidence {{cardrating.confidence|floatformat:2 }})--><br>
 
             {% endif %}
             {% if cardrating.format.id == 13 %}
-              {{cardrating.format.formatname}}: {{cardrating.cardninjaRating|floatformat:3 }} (confidence {{cardrating.confidence|floatformat:2 }})<br>
+              <span class="hidden-xs">{{cardrating.format.formatname}}</span><span class="visible-xs-inline">EDH</span>: {{cardrating.cardninjaRating|floatformat:3 }}<!-- (confidence {{cardrating.confidence|floatformat:2 }})--><br>
             {% endif %}
           {% endif %}
         {% endfor%}
