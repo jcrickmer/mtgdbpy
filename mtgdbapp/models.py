@@ -369,6 +369,10 @@ class CardManager(models.Manager):
                 sql_p = sql_p + str(arg.value / 20.0) + ' '
 
                 terms.append(sql_p)
+            elif arg.term == 'rarity':
+                sql_p = ' c.rarity '
+                sql_p = sql_p + arg.text_sql_operator_and_value()
+                terms.append(sql_p)
                 
         sql_s = sql_s + ' AND '.join(terms)
         sql_s = sql_s + ' GROUP BY pc.id'
@@ -402,6 +406,21 @@ class SearchPredicate():
                 res_s = res_s + ' <> '
             else:
                 res_s = res_s + ' = '
+        return res_s
+    def text_sql_operator_and_value(self):
+        res_s = ''
+        # assume equals
+        if self.value is None:
+            if self.negative:
+                res_s = res_s + ' IS NOT NULL '
+            else:
+                res_s = res_s + ' IS NULL '
+        else:
+            if self.negative:
+                res_s = res_s + ' NOT LIKE '
+            else:
+                res_s = res_s + ' LIKE '
+            res_s = res_s + " '%%" + self.value + "%%' " 
         return res_s
 
 

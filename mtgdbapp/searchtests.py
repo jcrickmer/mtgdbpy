@@ -1204,3 +1204,72 @@ class CardManagerROTestCase(FastFixtureTestCase):
         self.assertEquals(len(list(cards)), 381)
 
 
+    ''' Rarity equality '''
+
+    def test_rarity_e_u(self):
+        a = SearchPredicate()
+        a.term = 'rarity'
+        a.value = 'u'
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 101)
+
+    def test_rarity_e_z(self):
+        a = SearchPredicate()
+        a.term = 'rarity'
+        a.value = 'z'
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 0)
+
+    def test_rarity_e_b(self):
+        a = SearchPredicate()
+        a.term = 'rarity'
+        a.value = 'b'
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 9)
+
+    def test_rarity_e_null(self):
+        a = SearchPredicate()
+        a.term = 'rarity'
+        a.value = None
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 0)
+
+    def test_rarity_ne_u(self):
+        a = SearchPredicate()
+        a.term = 'rarity'
+        a.value = 'u'
+        a.negative = True
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 300)
+
+    def test_rarity_ne_z(self):
+        a = SearchPredicate()
+        a.term = 'rarity'
+        a.value = 'z'
+        a.negative = True
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 381)
+
+    def test_rarity_ne_b(self):
+        a = SearchPredicate()
+        a.term = 'rarity'
+        a.value = 'b'
+        a.negative = True
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 375)
+
+    def test_rarity_ne_null(self):
+        a = SearchPredicate()
+        a.term = 'rarity'
+        a.value = None
+        a.negative = True
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 381)
