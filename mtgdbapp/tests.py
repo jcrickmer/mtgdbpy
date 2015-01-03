@@ -1,9 +1,10 @@
 from django.test import TestCase, TransactionTestCase
 from django_nose import FastFixtureTestCase
-from mtgdbapp.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, FormatBasecard
+from mtgdbapp.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, FormatBasecard, SearchPredicate
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.db import transaction
+import sys; err = sys.stderr
 
 # Create your tests here.
 

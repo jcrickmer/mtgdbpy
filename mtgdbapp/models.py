@@ -309,6 +309,110 @@ class CardManager(models.Manager):
             ', bc.filing_name')
         return cards
 
+    def search(self, *args, **kwargs):
+        sort='filing_name'
+        sort_dir='ASC'
+        format_id = 4
+        test_id = 1
+
+        sql_s = '''SELECT c.id FROM physicalcards AS pc JOIN basecards AS bc ON pc.id = bc.physicalcard_id
+ JOIN cards AS c ON c.basecard_id = bc.id
+ JOIN cardtypes AS ct ON ct.basecard_id = bc.id
+ LEFT JOIN cardsubtypes cst ON cst.basecard_id = bc.id
+ LEFT JOIN cardcolors AS cc ON cc.basecard_id = bc.id
+ LEFT JOIN mtgdbapp_formatbasecard AS f ON f.basecard_id = bc.id 
+ LEFT JOIN mtgdbapp_cardrating AS cr ON cr.physicalcard_id = pc.id '''
+
+        if len(args) > 0:
+            sql_s = sql_s + ' WHERE '
+
+        terms = []
+        specified_format = 1
+        for arg in args:
+            # REVISIT - I should insure that these objects are SearchPredicates
+            if (arg.term == 'name'):
+                orc = []
+                for fieldname in ['bc.name','bc.filing_name']:
+                    sql_p = fieldname
+                    if arg.operator == arg.CONTAINS:
+                        if arg.negative:
+                            sql_p = sql_p + ' NOT '
+                        sql_p = sql_p + ' LIKE \'%%' + arg.value + '%%\' '
+                    else: # if arg.operator == arg.EQUALS:
+                        if arg.negative:
+                            sql_p = sql_p + ' != '
+                        else:
+                            sql_p = sql_p + ' = '
+                        sql_p = sql_p + ' \'' + arg.value + '\' '
+                    orc.append(sql_p)
+                terms.append('(' + ' OR '.join(orc) + ')')
+            elif arg.term in ['cmc', 'toughness', 'power', 'loyalty']:
+                sql_p = ' bc.' + arg.term + ' '
+                if arg.operator == arg.LESS_THAN:
+                    if arg.negative:
+                        sql_p = sql_p + ' >= '
+                    else:
+                        sql_p = sql_p + ' < '
+                elif arg.operator == arg.GREATER_THAN:
+                    if arg.negative:
+                        sql_p = sql_p + ' <= '
+                    else:
+                        sql_p = sql_p + ' > '
+                else: # assume equals
+                    if arg.negative:
+                        sql_p = sql_p + ' <> '
+                    else:
+                        sql_p = sql_p + ' = '
+                sql_p = sql_p + str(arg.value) + ' '
+                terms.append(sql_p)
+            elif arg.term == 'format':
+                pass
+            elif arg.term == 'cardrating':
+                # NOTE! A singular format must ALSO be provided!!
+                #REVISIT! This is a HACK
+                terms.append(' cr.format_id = ' + str(specified_format) + ' ')
+                terms.append(' f.format_id = ' + str(specified_format) + ' ')
+
+                # NOTE! Assuming test 1 (the "subjective" test)
+                terms.append(' cr.test_id = 1 ')
+
+                sql_p = ' ROUND(cr.mu,5) '
+                if arg.operator == arg.LESS_THAN:
+                    if arg.negative:
+                        sql_p = sql_p + ' >= '
+                    else:
+                        sql_p = sql_p + ' < '
+                elif arg.operator == arg.GREATER_THAN:
+                    if arg.negative:
+                        sql_p = sql_p + ' <= '
+                    else:
+                        sql_p = sql_p + ' > '
+                else: # assume equals
+                    if arg.negative:
+                        sql_p = sql_p + ' <> '
+                    else:
+                        sql_p = sql_p + ' = '
+
+                # remember that the database stores it on a scale from 0 to 50, but it is presented to users as 0 to 1000
+                sql_p = sql_p + str(arg.value / 20.0) + ' '
+
+                terms.append(sql_p)
+                
+        sql_s = sql_s + ' AND '.join(terms)
+        sql_s = sql_s + ' GROUP BY pc.id'
+        cards = self.raw(sql_s)
+
+        return cards
+
+class SearchPredicate():
+    EQUALS = 0
+    CONTAINS = 1
+    LESS_THAN = 2
+    GREATER_THAN = 3
+    term = None
+    negative = False
+    operator = EQUALS
+    value = None
 
 class Card(models.Model):
     #id = models.IntegerField(primary_key=True)
