@@ -348,21 +348,7 @@ class CardManager(models.Manager):
                 terms.append('(' + ' OR '.join(orc) + ')')
             elif arg.term in ['cmc', 'toughness', 'power', 'loyalty']:
                 sql_p = ' bc.' + arg.term + ' '
-                if arg.operator == arg.LESS_THAN:
-                    if arg.negative:
-                        sql_p = sql_p + ' >= '
-                    else:
-                        sql_p = sql_p + ' < '
-                elif arg.operator == arg.GREATER_THAN:
-                    if arg.negative:
-                        sql_p = sql_p + ' <= '
-                    else:
-                        sql_p = sql_p + ' > '
-                else: # assume equals
-                    if arg.negative:
-                        sql_p = sql_p + ' <> '
-                    else:
-                        sql_p = sql_p + ' = '
+                sql_p = sql_p + arg.numeric_sql_operator()
                 sql_p = sql_p + str(arg.value) + ' '
                 terms.append(sql_p)
             elif arg.term == 'format':
@@ -377,21 +363,7 @@ class CardManager(models.Manager):
                 terms.append(' cr.test_id = 1 ')
 
                 sql_p = ' ROUND(cr.mu,5) '
-                if arg.operator == arg.LESS_THAN:
-                    if arg.negative:
-                        sql_p = sql_p + ' >= '
-                    else:
-                        sql_p = sql_p + ' < '
-                elif arg.operator == arg.GREATER_THAN:
-                    if arg.negative:
-                        sql_p = sql_p + ' <= '
-                    else:
-                        sql_p = sql_p + ' > '
-                else: # assume equals
-                    if arg.negative:
-                        sql_p = sql_p + ' <> '
-                    else:
-                        sql_p = sql_p + ' = '
+                sql_p = sql_p + arg.numeric_sql_operator()
 
                 # remember that the database stores it on a scale from 0 to 50, but it is presented to users as 0 to 1000
                 sql_p = sql_p + str(arg.value / 20.0) + ' '
@@ -413,6 +385,25 @@ class SearchPredicate():
     negative = False
     operator = EQUALS
     value = None
+    def numeric_sql_operator(self):
+        res_s = ''
+        if self.operator == self.LESS_THAN:
+            if self.negative:
+                res_s = res_s + ' >= '
+            else:
+                res_s = res_s + ' < '
+        elif self.operator == self.GREATER_THAN:
+            if self.negative:
+                res_s = res_s + ' <= '
+            else:
+                res_s = res_s + ' > '
+        else: # assume equals
+            if self.negative:
+                res_s = res_s + ' <> '
+            else:
+                res_s = res_s + ' = '
+        return res_s
+
 
 class Card(models.Model):
     #id = models.IntegerField(primary_key=True)
