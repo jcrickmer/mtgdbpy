@@ -41,6 +41,34 @@ class CardManagerROTestCase(FastFixtureTestCase):
             self.assertEquals(c.basecard.name, 'Delver of Secrets')
 
 
+    ''' Rules Text equality '''
+
+    def test_rules_e_flying(self):
+        a = SearchPredicate()
+        a.term = 'rules'
+        a.value = 'flying' # Delver double
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 1)
+
+    def test_rules_c_flying(self):
+        a = SearchPredicate()
+        a.term = 'rules'
+        a.value = 'flying'
+        a.operator = a.CONTAINS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 34)
+
+    def test_rules_c_foo(self):
+        a = SearchPredicate()
+        a.term = 'rules'
+        a.value = 'foobar rainbows'
+        a.operator = a.CONTAINS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 0)
+
+
+
     ''' CMC equality '''
 
     def test_cmc_e_0(self):
@@ -1268,6 +1296,94 @@ class CardManagerROTestCase(FastFixtureTestCase):
     def test_rarity_ne_null(self):
         a = SearchPredicate()
         a.term = 'rarity'
+        a.value = None
+        a.negative = True
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 381)
+
+
+    ''' Color equality '''
+
+    def test_color_e_w(self):
+        a = SearchPredicate()
+        a.term = 'color'
+        a.value = 'w'
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 63)
+
+    def test_color_e_z(self):
+        a = SearchPredicate()
+        a.term = 'color'
+        a.value = 'z'
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 0)
+
+    def test_color_e_b(self):
+        a = SearchPredicate()
+        a.term = 'color'
+        a.value = 'b'
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 41)
+
+    def test_color_e_c(self):
+        a = SearchPredicate()
+        a.term = 'color'
+        a.value = 'c'
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 134)
+
+    def test_color_e_null(self):
+        a = SearchPredicate()
+        a.term = 'color'
+        a.value = None
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 0)
+
+    def test_color_ne_u(self):
+        a = SearchPredicate()
+        a.term = 'color'
+        a.value = 'u'
+        a.negative = True
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 342)
+
+    def test_color_ne_z(self):
+        a = SearchPredicate()
+        a.term = 'color'
+        a.value = 'z'
+        a.negative = True
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 381)
+
+    def test_color_ne_b(self):
+        a = SearchPredicate()
+        a.term = 'color'
+        a.value = 'b'
+        a.negative = True
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 358)
+
+    def test_color_ne_c(self):
+        a = SearchPredicate()
+        a.term = 'color'
+        a.value = 'c'
+        a.negative = True
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 250)
+
+    def test_color_ne_null(self):
+        a = SearchPredicate()
+        a.term = 'color'
         a.value = None
         a.negative = True
         a.operator = a.EQUALS

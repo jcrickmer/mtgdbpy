@@ -334,18 +334,13 @@ class CardManager(models.Manager):
                 orc = []
                 for fieldname in ['bc.name','bc.filing_name']:
                     sql_p = fieldname
-                    if arg.operator == arg.CONTAINS:
-                        if arg.negative:
-                            sql_p = sql_p + ' NOT '
-                        sql_p = sql_p + ' LIKE \'%%' + arg.value + '%%\' '
-                    else: # if arg.operator == arg.EQUALS:
-                        if arg.negative:
-                            sql_p = sql_p + ' != '
-                        else:
-                            sql_p = sql_p + ' = '
-                        sql_p = sql_p + ' \'' + arg.value + '\' '
+                    sql_p = sql_p + arg.text_sql_operator_and_value()
                     orc.append(sql_p)
                 terms.append('(' + ' OR '.join(orc) + ')')
+            elif arg.term == 'rules':
+                sql_p = ' bc.rules_text '
+                sql_p = sql_p + arg.text_sql_operator_and_value()
+                terms.append(sql_p)
             elif arg.term in ['cmc', 'toughness', 'power', 'loyalty']:
                 sql_p = ' bc.' + arg.term + ' '
                 sql_p = sql_p + arg.numeric_sql_operator()
@@ -371,6 +366,10 @@ class CardManager(models.Manager):
                 terms.append(sql_p)
             elif arg.term == 'rarity':
                 sql_p = ' c.rarity '
+                sql_p = sql_p + arg.text_sql_operator_and_value()
+                terms.append(sql_p)
+            elif arg.term == 'color':
+                sql_p = ' cc.color_id '
                 sql_p = sql_p + arg.text_sql_operator_and_value()
                 terms.append(sql_p)
                 
@@ -416,11 +415,18 @@ class SearchPredicate():
             else:
                 res_s = res_s + ' IS NULL '
         else:
-            if self.negative:
-                res_s = res_s + ' NOT LIKE '
-            else:
-                res_s = res_s + ' LIKE '
-            res_s = res_s + " '%%" + self.value + "%%' " 
+            if self.operator == self.CONTAINS:
+                if self.negative:
+                    res_s = res_s + ' NOT LIKE '
+                else:
+                    res_s = res_s + ' LIKE '
+                res_s = res_s + " '%%" + self.value + "%%' " 
+            else: # equality
+                if self.negative:
+                    res_s = res_s + ' != '
+                else:
+                    res_s = res_s + ' = '
+                res_s = res_s + " '" + self.value + "' " 
         return res_s
 
 
