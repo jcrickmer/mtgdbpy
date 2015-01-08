@@ -309,13 +309,13 @@ class CardManager(models.Manager):
             ', bc.filing_name')
         return cards
 
+
     def search(self, *args, **kwargs):
         sort='filing_name'
         sort_dir='ASC'
-        format_id = 4
         test_id = 1
 
-        sql_s = '''SELECT c.id FROM physicalcards AS pc JOIN basecards AS bc ON pc.id = bc.physicalcard_id
+        sql_s = '''SELECT c.id, c.basecard_id FROM physicalcards AS pc JOIN basecards AS bc ON pc.id = bc.physicalcard_id
  JOIN cards AS c ON c.basecard_id = bc.id
  JOIN cardtypes AS ct ON ct.basecard_id = bc.id
  LEFT JOIN cardsubtypes cst ON cst.basecard_id = bc.id
@@ -323,11 +323,17 @@ class CardManager(models.Manager):
  LEFT JOIN mtgdbapp_formatbasecard AS f ON f.basecard_id = bc.id 
  LEFT JOIN mtgdbapp_cardrating AS cr ON cr.physicalcard_id = pc.id '''
 
-        if len(args) > 0:
-            sql_s = sql_s + ' WHERE '
-
         terms = []
-        specified_format = 1
+        not_terms = []
+        specified_format = None
+        # We must grab the format first
+        for arg in args:
+            if arg.term == 'format':
+                specified_format = arg.value
+                sql_p = ' f.format_id = ' + str(arg.value) + ' '
+                terms.append(sql_p)
+        
+        # Now we can process all of the other terms
         for arg in args:
             # REVISIT - I should insure that these objects are SearchPredicates
             if (arg.term == 'name'):
@@ -336,7 +342,10 @@ class CardManager(models.Manager):
                     sql_p = fieldname
                     sql_p = sql_p + arg.text_sql_operator_and_value()
                     orc.append(sql_p)
-                terms.append('(' + ' OR '.join(orc) + ')')
+                if arg.negative:
+                    terms.append('(' + ' AND '.join(orc) + ')')
+                else:
+                    terms.append('(' + ' OR '.join(orc) + ')')
             elif arg.term == 'rules':
                 sql_p = ' bc.rules_text '
                 sql_p = sql_p + arg.text_sql_operator_and_value()
@@ -346,13 +355,11 @@ class CardManager(models.Manager):
                 sql_p = sql_p + arg.numeric_sql_operator()
                 sql_p = sql_p + str(arg.value) + ' '
                 terms.append(sql_p)
-            elif arg.term == 'format':
-                pass
             elif arg.term == 'cardrating':
+                if specified_format is None:
+                    raise self.FormatNotSpecifiedException()
                 # NOTE! A singular format must ALSO be provided!!
-                #REVISIT! This is a HACK
                 terms.append(' cr.format_id = ' + str(specified_format) + ' ')
-                terms.append(' f.format_id = ' + str(specified_format) + ' ')
 
                 # NOTE! Assuming test 1 (the "subjective" test)
                 terms.append(' cr.test_id = 1 ')
@@ -369,15 +376,70 @@ class CardManager(models.Manager):
                 sql_p = sql_p + arg.text_sql_operator_and_value()
                 terms.append(sql_p)
             elif arg.term == 'color':
-                sql_p = ' cc.color_id '
-                sql_p = sql_p + arg.text_sql_operator_and_value()
-                terms.append(sql_p)
+                if arg.negative:
+                    not_terms.append(arg)
+                else:
+                    sql_p = ' cc.color_id '
+                    sql_p = sql_p + arg.text_sql_operator_and_value()
+                    terms.append(sql_p)
+            elif arg.term == 'type':
+                if arg.negative:
+                    not_terms.append(arg)
+                else:
+                    sql_p = ' ct.type_id = ' + str(arg.value)
+                    terms.append(sql_p)
+            elif arg.term == 'subtype':
+                if arg.negative:
+                    not_terms.append(arg)
+                else:
+                    sql_p = ' cst.subtype_id = ' + str(arg.value)
+                    terms.append(sql_p)
                 
-        sql_s = sql_s + ' AND '.join(terms)
+        if len(terms) > 0:
+            sql_s = sql_s + ' WHERE ' + ' AND '.join(terms)
+
         sql_s = sql_s + ' GROUP BY pc.id'
+
+        if len(not_terms) > 0: # If we have to pull out some types and subtypes, we better do it now.
+            # Let's execute the SQL we have (sql_s) but do it with cursor so that we do not instantiate any objects
+            cursor = connection.cursor()
+            cursor.execute(sql_s)
+            card_ids = cursor.fetchall()
+            bc_ids = [row[1] for row in card_ids]
+
+            # REVISIT - this sql will need to have all of the same joins on it as the big one up top so that sorting can be applied.
+            sql_s = 'SELECT c.id FROM cards AS c JOIN basecards AS bc ON c.basecard_id = bc.id WHERE bc.id IN (' + ','.join(str(i) for i in bc_ids) + ') '
+            for arg in not_terms:
+                # Now that we have all of these ids, let's use them to filter out those types that we do not want.
+                if arg.term == 'color':
+                    sql_not = 'SELECT cc.basecard_id FROM cardcolors AS cc WHERE cc.color_id = \'' + str(arg.value) + '\' AND cc.basecard_id IN (' + ','.join(str(i) for i in bc_ids) + ')'
+                    cursor.execute(sql_not)
+                    not_basecard_ids = cursor.fetchall()
+                    if len(not_basecard_ids) > 0:
+                        sql_s = sql_s + ' AND bc.id NOT IN (' + ','.join(str(n[0]) for n in not_basecard_ids) + ') '
+                elif arg.term == 'type':
+                    sql_not = 'SELECT ct.basecard_id FROM cardtypes AS ct WHERE ct.type_id = ' + str(arg.value) + ' AND ct.basecard_id IN (' + ','.join(str(i) for i in bc_ids) + ')'
+                    cursor.execute(sql_not)
+                    not_basecard_ids = cursor.fetchall()
+                    if len(not_basecard_ids) > 0:
+                        sql_s = sql_s + ' AND bc.id NOT IN (' + ','.join(str(n[0]) for n in not_basecard_ids) + ') '
+                elif arg.term == 'subtype':
+                    sql_not = 'SELECT cst.basecard_id FROM cardsubtypes AS cst WHERE cst.subtype_id = ' + str(arg.value) + ' AND cst.basecard_id IN (' + ','.join(str(i) for i in bc_ids) + ')'
+                    cursor.execute(sql_not)
+                    not_basecard_ids = cursor.fetchall()
+                    if len(not_basecard_ids) > 0:
+                        sql_s = sql_s + ' AND bc.id NOT IN (' + ','.join(str(n[0]) for n in not_basecard_ids) + ') '
+
+            sql_s = sql_s + ' GROUP BY bc.id HAVING max(c.multiverseid)'
+
+        # BOOKMARK - we need to add the sorting to this thing!
+
         cards = self.raw(sql_s)
 
         return cards
+
+    class FormatNotSpecifiedException(Exception):
+        pass
 
 class SearchPredicate():
     EQUALS = 0
@@ -406,6 +468,7 @@ class SearchPredicate():
             else:
                 res_s = res_s + ' = '
         return res_s
+
     def text_sql_operator_and_value(self):
         res_s = ''
         # assume equals
