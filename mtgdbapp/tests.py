@@ -4,7 +4,8 @@ from mtgdbapp.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, Ba
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.db import transaction
-import sys; err = sys.stderr
+import sys
+err = sys.stderr
 
 # Create your tests here.
 

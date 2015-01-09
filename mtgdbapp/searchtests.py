@@ -1,14 +1,17 @@
 from django.test import TestCase, TransactionTestCase
 from django_nose import FastFixtureTestCase
-from mtgdbapp.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, FormatBasecard, SearchPredicate, CardManager
+from mtgdbapp.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, FormatBasecard, SearchPredicate, CardManager, SortDirective
 FormatNotSpecifiedException = CardManager.FormatNotSpecifiedException
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.db import transaction
-import sys; err = sys.stderr
+import sys
+err = sys.stderr
+
 
 class CardManagerROTestCase(FastFixtureTestCase):
     fixtures = ['mtgdbapp_testdata', ]
+
     def test_all(self):
         cards = Card.playables.search()
         self.assertEquals(len(list(cards)), 381)
@@ -67,14 +70,14 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         #err.write(str(cards.query) + "\n")
-        self.assertEquals(len(list(cards)), 381-3)
+        self.assertEquals(len(list(cards)), 381 - 3)
 
     ''' Rules Text equality '''
 
     def test_rules_e_flying(self):
         a = SearchPredicate()
         a.term = 'rules'
-        a.value = 'flying' # Delver double
+        a.value = 'flying'  # Delver double
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 1)
@@ -103,7 +106,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         # Delver/Insectile throws this off. The correct answer is 381
-        self.assertEquals(len(list(cards)), 381-0)
+        self.assertEquals(len(list(cards)), 381 - 0)
 
     def test_rules_nc_flying(self):
         a = SearchPredicate()
@@ -113,9 +116,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         # Delver/Insectile throws this off. The correct answer is 348
-        self.assertEquals(len(list(cards)), 381-33)
-
-
+        self.assertEquals(len(list(cards)), 381 - 33)
 
     ''' CMC equality '''
 
@@ -186,7 +187,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 381)
-        
 
     ''' CMC less than '''
 
@@ -257,7 +257,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 0)
-        
 
     ''' CMC greater than '''
 
@@ -328,7 +327,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 381)
-        
 
     ''' Toughness equality '''
 
@@ -399,7 +397,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 115)
-        
 
     ''' Toughness less than '''
 
@@ -470,7 +467,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 0)
-        
 
     ''' Toughness greater than '''
 
@@ -541,7 +537,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 115)
-        
 
     ''' Power equality '''
 
@@ -612,7 +607,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 115)
-        
 
     ''' Power less than '''
 
@@ -683,7 +677,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 0)
-        
 
     ''' Power greater than '''
 
@@ -754,7 +747,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 115)
-        
 
     ''' Loyalty equality '''
 
@@ -825,7 +817,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 9)
-        
 
     ''' Loyalty less than '''
 
@@ -896,7 +887,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 0)
-        
 
     ''' Loyalty greater than '''
 
@@ -967,8 +957,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 9)
-        
-
 
     ''' Cardrating equality '''
 
@@ -983,7 +971,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
             self.assertEquals(1, 1)
             pass
         #self.assertRaises(Exception, Card.playables.search(a))
-
 
     def test_cardrating_e_0(self):
         a = SearchPredicate()
@@ -1012,7 +999,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
     def test_cardrating_e_29(self):
         a = SearchPredicate()
         a.term = 'cardrating'
-        a.value = round(29.9267473817879 * 20.0,3)
+        a.value = round(29.9267473817879 * 20.0, 3)
         a.operator = a.EQUALS
         b = SearchPredicate()
         b.term = 'format'
@@ -1063,7 +1050,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
     def test_cardrating_ne_29(self):
         a = SearchPredicate()
         a.term = 'cardrating'
-        a.value = round(29.9267473817879 * 20.0,3)
+        a.value = round(29.9267473817879 * 20.0, 3)
         a.operator = a.EQUALS
         a.negative = True
         b = SearchPredicate()
@@ -1085,7 +1072,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         b.operator = a.EQUALS
         cards = Card.playables.search(a, b)
         self.assertEquals(len(list(cards)), 381)
-        
 
     ''' Cardrating less than '''
 
@@ -1116,7 +1102,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
     def test_cardrating_lt_29(self):
         a = SearchPredicate()
         a.term = 'cardrating'
-        a.value = round(29.9267473817879 * 20.0,3)
+        a.value = round(29.9267473817879 * 20.0, 3)
         a.operator = a.LESS_THAN
         b = SearchPredicate()
         b.term = 'format'
@@ -1166,7 +1152,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
     def test_cardrating_nlt_29(self):
         a = SearchPredicate()
         a.term = 'cardrating'
-        a.value = round(29.9267473817879 * 20.0,3)
+        a.value = round(29.9267473817879 * 20.0, 3)
         a.operator = a.LESS_THAN
         a.negative = True
         b = SearchPredicate()
@@ -1188,7 +1174,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         b.operator = a.EQUALS
         cards = Card.playables.search(a, b)
         self.assertEquals(len(list(cards)), 0)
-        
 
     ''' Cardrating greater than '''
 
@@ -1219,7 +1204,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
     def test_cardrating_gt_29(self):
         a = SearchPredicate()
         a.term = 'cardrating'
-        a.value = round(29.9267473817879 * 20.0,3)
+        a.value = round(29.9267473817879 * 20.0, 3)
         a.operator = a.GREATER_THAN
         b = SearchPredicate()
         b.term = 'format'
@@ -1269,7 +1254,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
     def test_cardrating_ngt_29(self):
         a = SearchPredicate()
         a.term = 'cardrating'
-        a.value = round(29.9267473817879 * 20.0,3)
+        a.value = round(29.9267473817879 * 20.0, 3)
         a.operator = a.GREATER_THAN
         a.negative = True
         b = SearchPredicate()
@@ -1293,11 +1278,11 @@ class CardManagerROTestCase(FastFixtureTestCase):
         self.assertEquals(len(list(cards)), 381)
 
     ''' Cardrating format out of order '''
-        
+
     def test_cardrating_ff(self):
         a = SearchPredicate()
         a.term = 'cardrating'
-        a.value = round(29.9267473817879 * 20.0,3)
+        a.value = round(29.9267473817879 * 20.0, 3)
         a.operator = a.GREATER_THAN
         b = SearchPredicate()
         b.term = 'format'
@@ -1309,7 +1294,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
     def test_cardrating_fl(self):
         a = SearchPredicate()
         a.term = 'cardrating'
-        a.value = round(29.9267473817879 * 20.0,3)
+        a.value = round(29.9267473817879 * 20.0, 3)
         a.operator = a.GREATER_THAN
         b = SearchPredicate()
         b.term = 'format'
@@ -1317,7 +1302,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         b.operator = a.EQUALS
         cards = Card.playables.search(a, b)
         self.assertEquals(len(list(cards)), 215)
-
 
     ''' Rarity equality '''
 
@@ -1389,7 +1373,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 381)
 
-
     ''' Color equality '''
 
     def test_color_e_w(self):
@@ -1440,8 +1423,11 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
         #err.write(str(cards.query) + "\n")
-        # NOTE that if you look at all of the blue cards, Insectile Aberation is in that list. But when you reduce it to the physical cards, it elides with Delver of Secrets (as it should). Thus, we are looking at 57 cards, not 58.
-        self.assertEquals(len(list(cards)), 381-57)
+        # NOTE that if you look at all of the blue cards, Insectile Aberation is
+        # in that list. But when you reduce it to the physical cards, it elides
+        # with Delver of Secrets (as it should). Thus, we are looking at 57 cards,
+        # not 58.
+        self.assertEquals(len(list(cards)), 381 - 57)
 
     def test_color_ne_z(self):
         a = SearchPredicate()
@@ -1459,7 +1445,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381-41)
+        self.assertEquals(len(list(cards)), 381 - 41)
 
     def test_color_ne_c(self):
         a = SearchPredicate()
@@ -1468,7 +1454,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381-134)
+        self.assertEquals(len(list(cards)), 381 - 134)
 
     def test_color_ne_null(self):
         a = SearchPredicate()
@@ -1478,8 +1464,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 381)
-
-
 
     ''' Format equality '''
 
@@ -1499,7 +1483,6 @@ class CardManagerROTestCase(FastFixtureTestCase):
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 379)
 
-
     def test_format_not_std(self):
         a = SearchPredicate()
         a.term = 'format'
@@ -1507,9 +1490,8 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        ## NOT CURRENTLY SUPPORTED
+        # NOT CURRENTLY SUPPORTED
         #self.assertEquals(len(list(cards)), 136)
-
 
     ''' Type equality '''
 
@@ -1544,10 +1526,10 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381-115)
+        self.assertEquals(len(list(cards)), 381 - 115)
 
     # REVISIT - need test for enchantment creature
-        
+
     ''' Subtype equality '''
 
     def test_subtype_e_warrior(self):
@@ -1590,7 +1572,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
         #err.write(str(cards.query) + "\n")
-        self.assertEquals(len(list(cards)), 381-9)
+        self.assertEquals(len(list(cards)), 381 - 9)
 
     def test_subtype_ne_artificer(self):
         a = SearchPredicate()
@@ -1600,5 +1582,133 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         cards = Card.playables.search(a)
         #err.write(str(cards.query) + "\n")
-        self.assertEquals(len(list(cards)), 381-0)
+        self.assertEquals(len(list(cards)), 381 - 0)
 
+    ''' Multiple Fields '''
+
+    def test_name_cmc_1(self):
+        a = SearchPredicate()
+        a.term = 'name'
+        a.value = 'el'
+        a.operator = a.CONTAINS
+        a.negative = False
+        b = SearchPredicate()
+        b.term = 'cmc'
+        b.value = 6
+        b.operator = a.EQUALS
+        b.negative = False
+        cards = Card.playables.search(a, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 1)
+
+    def test_name_type_multi(self):
+        a = SearchPredicate()
+        a.term = 'name'
+        a.value = 'urz'
+        a.operator = a.CONTAINS
+        a.negative = False
+        b = SearchPredicate()
+        b.term = 'type'
+        b.value = 6
+        b.operator = a.EQUALS
+        b.negative = False
+        cards = Card.playables.search(a, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 3)
+
+    def test_ne_name_type_multi(self):
+        a = SearchPredicate()
+        a.term = 'name'
+        a.value = 'urz'
+        a.operator = a.CONTAINS
+        a.negative = True
+        b = SearchPredicate()
+        b.term = 'type'
+        b.value = 6
+        b.operator = a.EQUALS
+        b.negative = False
+        cards = Card.playables.search(a, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 90)
+
+    def test_type_cmc_0(self):
+        a = SearchPredicate()
+        a.term = 'rules'
+        a.value = 'strangelove'
+        a.operator = a.CONTAINS
+        a.negative = False
+        b = SearchPredicate()
+        b.term = 'type'
+        b.value = 3
+        b.operator = a.EQUALS
+        b.negative = False
+        cards = Card.playables.search(a, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 0)
+
+    def test_subtype_cmc_multi(self):
+        a = SearchPredicate()
+        a.term = 'cmc'
+        a.value = 2
+        a.operator = a.LESS_THAN
+        a.negative = False
+        b = SearchPredicate()
+        b.term = 'subtype'
+        b.value = 109
+        b.operator = a.EQUALS
+        b.negative = False
+        cards = Card.playables.search(a, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 5)
+
+    def test_subtype_cmc_multi(self):
+        a = SearchPredicate()
+        a.term = 'cmc'
+        a.value = 2
+        a.operator = a.LESS_THAN
+        a.negative = False
+        b = SearchPredicate()
+        b.term = 'subtype'
+        b.value = 109
+        b.operator = a.EQUALS
+        b.negative = False
+        c = SearchPredicate()
+        c.term = 'format'
+        c.value = 4
+        c.operator = a.EQUALS
+        cards = Card.playables.search(a, b, c)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 2)
+
+    ''' Sort '''
+
+    def test_sort_name_multi(self):
+        a = SearchPredicate()
+        a.term = 'cmc'
+        a.value = 3
+        a.operator = a.LESS_THAN
+        a.negative = False
+        b = SortDirective()
+        b.term = 'name'
+        cards = Card.playables.search(a, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 255)
+        self.assertEquals(cards[0].basecard.name, 'Abrupt Decay')
+        self.assertEquals(cards[1].basecard.name, "Ajani's Presence")
+        self.assertEquals(cards[254].basecard.name, 'Young Pyromancer')
+
+    def test_sort_name_multi_desc(self):
+        a = SearchPredicate()
+        a.term = 'cmc'
+        a.value = 3
+        a.operator = a.LESS_THAN
+        a.negative = False
+        b = SortDirective()
+        b.term = 'name'
+        b.direction = b.DESC
+        cards = Card.playables.search(a, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 255)
+        self.assertEquals(cards[254].basecard.name, 'Abrupt Decay')
+        self.assertEquals(cards[253].basecard.name, "Ajani's Presence")
+        self.assertEquals(cards[0].basecard.name, 'Young Pyromancer')
