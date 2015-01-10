@@ -99,42 +99,24 @@ def cardlist(request):
         query_pred_array = request.session.get('query_pred_array')
 
     spreds = []
-    rlist = []
     for pred in query_pred_array:
+        spred = SearchPredicate()
+        spred.term = pred['field']
+        spred.value = pred['value']
+        spred.operator = spred.EQUALS
+        spred.negative = pred['op'] == 'not'
         if pred['field'] == 'cardname':
-            spred = SearchPredicate()
             spred.operator = spred.CONTAINS
             spred.term = 'name'
-            spred.value = pred['value']
-            spred.negative = pred['op'] == 'not'
-            spreds.append(spred)
-
-        if pred['field'] == 'rules':
-            spred = SearchPredicate()
+        elif pred['field'] == 'rules':
             spred.operator = spred.CONTAINS
-            spred.term = 'rules'
-            spred.value = pred['value']
-            spred.negative = pred['op'] == 'not'
-            spreds.append(spred)
-
-        if pred['field'] == 'color':
-            spred = SearchPredicate()
-            spred.operator = spred.EQUALS
-            spred.term = 'color'
-            spred.value = pred['value']
-            spred.negative = pred['op'] == 'not'
-            spreds.append(spred)
-
-        if pred['field'] == 'rarity':
-            spred = SearchPredicate()
-            spred.operator = spred.EQUALS
-            spred.term = 'rarity'
-            spred.value = pred['value']
-            spred.negative = pred['op'] == 'not'
-            spreds.append(spred)
+        elif pred['field'] == 'color':
+            pass
+        elif pred['field'] == 'rarity':
             # REVISIT - need to handle 'or'
-
-        if pred['field'] == 'cmc':
+            pass
+        elif pred['field'] == 'cmc':
+            spred.negative = False
             # If it isn't an int, then skip it.
             try:
                 pred['value'] = int(pred['value'])
@@ -142,43 +124,32 @@ def cardlist(request):
                 # we should remove this predicate. it is bogus
                 query_pred_array.remove(pred)
                 break
-            spred = SearchPredicate()
-            spred.operator = spred.EQUALS
             if pred['op'] == 'lt':
                 spred.operator = spred.LESS_THAN
             if pred['op'] == 'gt':
                 spred.operator = spred.GREATER_THAN
             if pred['op'] == 'ne':
                 spred.negative = True
-            spred.term = 'cmc'
-            spred.value = pred['value']
-            spreds.append(spred)
-
-        if pred['field'] == 'type':
+        elif pred['field'] == 'type':
             type_lookup = Type.objects.filter(type__iexact=pred['value']).first()
-            spred = SearchPredicate()
-            spred.operator = spred.EQUALS
-            spred.term = 'type'
-            spred.value = type_lookup.id
-            spred.negative = pred['op'] == 'not'
-            spreds.append(spred)
-
-        if pred['field'] == 'subtype':
+            if type_lookup is None:
+                spred.value = -1
+            else:
+                spred.value = type_lookup.id
+        elif pred['field'] == 'subtype':
             subtype_lookup = Subtype.objects.filter(subtype__iexact=pred['value']).first()
-            spred = SearchPredicate()
-            spred.operator = spred.EQUALS
-            spred.term = 'subtype'
-            spred.value = subtype_lookup.id
-            spred.negative = pred['op'] == 'not'
-            spreds.append(spred)
-
-        if pred['field'] == 'format':
+            if subtype_lookup is None:
+                spred.value = -1
+            else:
+                spred.value = subtype_lookup.id
+        elif pred['field'] == 'format':
+            logger.error("format is " + str(pred['value']))
             format_lookup = Format.objects.filter(format__iexact=pred['value']).first()
-            spred = SearchPredicate()
-            spred.operator = spred.EQUALS
-            spred.term = 'format'
-            spred.value = format_lookup.id
-            spreds.append(spred)
+            if format_lookup is None:
+                spred.value = -1
+            else:
+                spred.value = format_lookup.id
+        spreds.append(spred)
 
     card_list = Card.playables.search(spreds)
 

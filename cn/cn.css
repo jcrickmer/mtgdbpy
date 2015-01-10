@@ -269,17 +269,18 @@ padding-top: 11px;
 }
 
 .termsbox {
-  border: 1px solid #c0c0c0;
-  background-color: #d0d0d0;
+  background-color: #fff;
   margin-bottom: 7px;
+  padding: 20px;
+  margin: 20px 0;
+  border: 1px solid #eee;
+  border-left-width: 5px;
+  border-radius: 3px;
 }
 ul#search_terms {
-  margin-left: 11px;
-  padding-left: 11px;
-  list-style-type: square;
 }
 ul#search_terms li {
-
+  padding-bottom: 7px;
 }
 
 /* no-gutters Class Rules - http://julienmelissas.com/no-gutter-column-trick-for-bootstrap/ */

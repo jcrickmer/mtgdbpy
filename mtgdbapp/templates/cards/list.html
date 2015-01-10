@@ -1,12 +1,12 @@
 {% extends "cards/base.html" %}
 
-{% block pagetitle %}Search Results{% endblock %}
+{% block pagetitle %}Search Results ({{cards.paginator.count}}){% endblock %}
 {% block title %}Search Results{% endblock %}
 
 {% block content %}
-  <div>
-    <a href="{% url 'cards:index' %}">Search query is</a>
-    <div id="search_terms"></div>
+  <div class="termsbox">
+    <a href="{% url 'cards:index' %}">Query: </a>
+    <ul id="search_terms" style="display: inline;" class="list-inline list-unstyled"></ul>
   </div>
   <script>
 window.predicates = {{ predicates_js|safe }};
@@ -14,18 +14,20 @@ $(function() {
     cdb.searchPredicatesDisplay(window.predicates, "#search_terms", true);
 });
   </script>
-  <div>Found {{cards.paginator.count}} results.</div>
+  <!-- <div>Found {{cards.paginator.count}} results.</div> -->
 {% if cards %}
 
   {% include "cards/card_pagination.html" %}
 
   <!-- <div class="table-responsive"> -->
   <table class="table table-striped">
+<!--
     <thead>
       <tr>
         <th colspan="2"></th><th style="width: 100px;">card.ninja Rating</th>
       </tr>
     </thead>
+ -->
     <tbody>
     {% for card in cards %}
       <tr>

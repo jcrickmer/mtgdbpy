@@ -320,6 +320,14 @@ class CardManager(models.Manager):
         specified_format = None
 
         all_args = []
+
+        for restriction in [PhysicalCard.TOKEN, PhysicalCard.PLANE, PhysicalCard.SCHEME, PhysicalCard.PHENOMENON, PhysicalCard.VANGUARD]:
+            no_s = SearchPredicate()
+            no_s.term = 'layout'
+            no_s.negative = True
+            no_s.value = restriction
+            all_args.append(no_s)
+
         for arg in args:
             if isinstance(arg, list):
                 for subarg in arg:
@@ -398,6 +406,9 @@ class CardManager(models.Manager):
                     else:
                         sql_p = ' cst.subtype_id = ' + str(arg.value)
                         terms.append(sql_p)
+                elif arg.term == 'layout':
+                    sql_p = ' pc.layout ' + arg.text_sql_operator_and_value()
+                    terms.append(sql_p)
 
         if len(terms) > 0:
             sql_s = sql_s + ' WHERE ' + ' AND '.join(terms)

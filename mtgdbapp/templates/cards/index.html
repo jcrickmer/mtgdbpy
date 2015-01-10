@@ -11,13 +11,13 @@
         <div class="col-xs-2 searchlabel"><label for="cardname" class="control-label">Name</label></div>
         <div class="col-xs-2"><select id="cardname_op" name="cardname_op" class="form-control input-sm"><option value="and" selected>and</option><option value="not">not</option></select></div>
         <div class="col-xs-6"><input id="cardname" type="text" name="cardname" class="form-control input-sm"/></div>
-        <div class="col-xs-2"><button name="cardname_add" class="btn btn-default btn-sm">Add</button></div>
+        <div class="col-xs-2"><button name="cardname_add" class="btn btn-default btn-sm add-btn">Add</button></div>
       </div>
       <div class="row term_input form-group xs-gutters">
         <div class="col-xs-2 searchlabel"><label for="rules" class="control-label">Rules</label></div>
         <div class="col-xs-2"><select id="rules_op" name="rules_op" class="form-control input-sm"><option value="and" selected>and</option><option value="not">not</option></select></div>
         <div class="col-xs-6"><input id="rules" type="text" name="rules" class="form-control input-sm"/></div>
-        <div class="col-xs-2"><button class="btn btn-default btn-sm" name="rules_add">Add</button></div>
+        <div class="col-xs-2"><button class="btn btn-default btn-sm add-btn" name="rules_add">Add</button></div>
       </div>
       <div class="row term_input form-group xs-gutters">
         <div class="col-xs-2 searchlabel"><label for="color" class="control-label">Color</label></div>
@@ -32,27 +32,27 @@
             <option value="c">colorless</option>
           </select>
         </div>
-        <div class="col-xs-2"><button class="btn btn-default btn-sm" name="color_add">Add</button></div>
+        <div class="col-xs-2"><button class="btn btn-default btn-sm add-btn" name="color_add">Add</button></div>
       </div>
       <div class="row term_input form-group xs-gutters">
         <div class="col-xs-2"><label for="cmc" class="control-label">CMC</label></div>
         <div class="col-xs-2"><select id="cmc_op" name="cmc_op" class="form-control input-sm"><option value="eq" selected>==</option><option value="ne">!=</option><option value="lt">&lt;</option><option value="gt">&gt;</option></select></div>
         <div class="col-xs-6"><input id="cmc" name="cmc" type="number" min="0" max="20" class="form-control input-sm"/></div>
-        <div class="col-xs-2"><button class="btn btn-default btn-sm" name="cmc_add">Add</button></div>
+        <div class="col-xs-2"><button class="btn btn-default btn-sm add-btn" name="cmc_add">Add</button></div>
       </div>
       <div class="row term_input form-group xs-gutters">
         <div class="col-xs-2 searchlabel"><label for="type" class="control-label">Type</label></div>
         <div class="col-xs-2"><select id="type_op" name="type_op" class="form-control input-sm"><option value="and" selected>and</option><option value="not">not</option></select></div>
         <div class="col-xs-6"><input id="type" name="type" type="text" class="form-control input-sm"/></div>
         <script>$(function() { var types = [{% for type in types %}"{{ type }}",{% endfor %}]; $("#type").autocomplete({source : types}); });</script>
-        <div class="col-xs-2"><button class="btn btn-default btn-sm" name="type_add">Add</button></div>
+        <div class="col-xs-2"><button class="btn btn-default btn-sm add-btn" name="type_add">Add</button></div>
       </div>
       <div class="row term_input form-group xs-gutters">
         <div class="col-xs-2 searchlabel"><label for="subtype" class="control-label">Subtype</label></div>
         <div class="col-xs-2"><select id="subtype_op" name="subtype_op" class="form-control input-sm"><option value="and" selected>and</option><option value="not">not</option></select></div>
         <div class="col-xs-6"><input id="subtype" name="subtype" type="text" class="form-control input-sm"/></div>
         <script>$(function() { var subtypes = [{% for subtype in subtypes %}"{{ subtype }}",{% endfor %}]; $("#subtype").autocomplete({source : subtypes}); });</script>
-        <div class="col-xs-2"><button class="btn btn-default btn-sm" name="subtype_add">Add</button></div>
+        <div class="col-xs-2"><button class="btn btn-default btn-sm add-btn" name="subtype_add">Add</button></div>
       </div>
       <div class="row term_input form-group xs-gutters">
         <div class="col-xs-2"><label for="rarity" class="control-label">Rarity</label></div>
@@ -60,7 +60,7 @@
         <div class="col-xs-6"><select id="rarity" name="rarity" class="form-control input-sm"><option></option>
 {% for rarity in rarities %}<option value="{{ rarity.id }}">{{ rarity.rarity }}</option>{% endfor %}
         </select></div>
-        <div class="col-xs-2"><button class="btn btn-default btn-sm" name="rarity_add">Add</button></div>
+        <div class="col-xs-2"><button class="btn btn-default btn-sm add-btn" name="rarity_add">Add</button></div>
       </div>
       <div class="row term_input form-group xs-gutters">
         <div class="col-xs-2"><label for="format" class="control-label">Format</label></div>
@@ -68,7 +68,7 @@
           <option></option>
           <option value="Standard_2014-09-26">Standard (Current)</option>
           <option value="Modern_2014-09-26">Modern (Current)</option>
-          <option value="Command_2014-11-07">Comander (Current)</option>
+          <option value="Commander_2014-11-07">Commander (Current)</option>
           <option value="" disabled="disabled">───────────────</option>
 {% for format in formats %}
           <option value="{{format.format}}">{{format.formatname}} ({{format.start_date}})</option>
@@ -81,73 +81,66 @@
     <div class="col-xs-12 col-sm-6">
       <div class="termsbox">
         <div class="text-right"><a id="clear_terms" href="#">Clear all terms</a></div>
-        <ul id="search_terms"></ul>
+        <ul id="search_terms" class="list-unstyled"></ul>
       </div>
-      <div class="text-right"><button class="btn btn-primary" name="sendQuery">Search</button></div>
+      <div class="text-right"><button class="btn btn-primary send-query-btn" name="sendQuery">Search</button></div>
     </div>
 <!-- end query column -->
   </div>
   <script>
-window.rules = {{ predicates_js|safe }};
+window.predicates = {{ predicates_js|safe }};
 $(function() {
-    cdb.searchPredicatesDisplay(window.rules, "#search_terms");
+    cdb.searchPredicatesDisplay(window.predicates, "#search_terms");
 });
       </script>
       <script>
-function sendQuery() {
-    var form_jq = $("<form action=\"{% url 'cards:search' %}\" method=\"get\">")
-    $(document.body).append(form_jq);
-    form_jq.append("<input id=\"subform_q\" type=\"hidden\" name=\"query\">");
-    $("#subform_q").val(JSON.stringify(rules));
-    form_jq.submit();
-    return false; //event.preventDefault();
-}
-
   $(function() {
     $("#format").on('change',function(event) {
         var match = false;
-        for (var g = 0; g < window.rules.length ; g++) {
-            if (window.rules[g].field == "format") {
-                window.rules[g].value = $("#format option:selected").attr("value");
+        for (var g = 0; g < window.predicates.length ; g++) {
+            if (window.predicates[g].field == "format") {
+                window.predicates[g].value = $("#format option:selected").attr("value");
                 match = true;
             }
         }
         if (! match) {
-            window.rules.push({"field" : "format", "op" : "and", "value" : $("#format option:selected").attr("value"), "hint" : "format"});
+            window.predicates.push({"field" : "format", "op" : "and", "value" : $("#format option:selected").attr("value"), "hint" : "format"});
         }
-        cdb.searchPredicatesDisplay(window.rules, "#search_terms");
+        cdb.searchPredicatesDisplay(window.predicates, "#search_terms");
     });
     $("#clear_terms").click(function() {
-        window.rules = [];
-        cdb.searchPredicatesDisplay(window.rules, "#search_terms");
+        window.predicates = [];
+        cdb.searchPredicatesDisplay(window.predicates, "#search_terms");
         return false;
     });
-    $( "button" )
+    $("button.send-query-btn").button().click(function(event) {
+        if (event.target.name == "sendQuery") {
+            return cdb.sendQuery();
+        }
+     });
+    $( "button.add-btn" )
       .button()
       .click(function( event ) {
-        //console.dir(event);
-        //console.log("You clicked it! " + event.target.name);
-        if (event.target.name == "sendQuery") {
-            return sendQuery();
-        }
+        console.dir(event);
+        console.log("You clicked it! " + event.target.name);
         var field_name = event.target.name.replace("_add","");
         var form_field = $("#" + field_name);
         var input_type = form_field.prop("tagName").toLowerCase();
         var op = $("#" + field_name + "_op option:selected").attr("value");
         if (input_type == "input") {
-            //console.log(field_name + " is an input");
-            //console.log(field_name + " is " + op + " value \"" + form_field.val() + "\"");
+            console.log(field_name + " is an input");
+            console.log(field_name + " is " + op + " value \"" + form_field.val() + "\"");
             var plops = form_field.val().split(" ");
             for (var p = 0; p < plops.length ; p++) {
-                window.rules.push({"field" : field_name, "op" : op, "value" : plops[p], "hint" : field_name + op + plops[p]});
+                window.predicates.push({"field" : field_name, "op" : op, "value" : plops[p], "hint" : field_name + op + plops[p]});
             }
             form_field.val("");
         } else if (input_type == "select") {
-            //console.log(field_name + " is a select");
+            console.log(field_name + " is a select");
             var op = $("#" + field_name + "_op option:selected").attr("value");
-            window.rules.push({"field" : field_name, "op" : op, "value" : $("#" + field_name + " option:selected").attr("value"), "hint" : field_name + op + $("#" + field_name + " option:selected").attr("value")});
+            window.predicates.push({"field" : field_name, "op" : op, "value" : $("#" + field_name + " option:selected").attr("value"), "hint" : field_name + op + $("#" + field_name + " option:selected").attr("value")});
         } else { alert("I do not yet understand this query type."); }
-        cdb.searchPredicatesDisplay(window.rules, "#search_terms");
+        cdb.searchPredicatesDisplay(window.predicates, "#search_terms");
         event.preventDefault();
       });
   });
