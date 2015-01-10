@@ -1445,6 +1445,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
+        #err.write(str(cards.query) + "\n")
         self.assertEquals(len(list(cards)), 381 - 41)
 
     def test_color_ne_c(self):
@@ -1454,6 +1455,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.negative = True
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
+        #err.write(str(cards.query) + "\n")
         self.assertEquals(len(list(cards)), 381 - 134)
 
     def test_color_ne_null(self):
@@ -1712,3 +1714,33 @@ class CardManagerROTestCase(FastFixtureTestCase):
         self.assertEquals(cards[254].basecard.name, 'Abrupt Decay')
         self.assertEquals(cards[253].basecard.name, "Ajani's Presence")
         self.assertEquals(cards[0].basecard.name, 'Young Pyromancer')
+
+    def test_sort_cr_multi(self):
+        a = SearchPredicate()
+        a.term = 'cmc'
+        a.value = 3
+        a.operator = a.LESS_THAN
+        a.negative = False
+        b = SortDirective()
+        b.term = 'cardrating'
+        b.direction = b.DESC
+        b.crs_format_id = 4
+        cards = Card.playables.search(a, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 255)
+        self.assertEquals(cards[0].basecard.name, 'Shivan Reef')
+        self.assertEquals(cards[1].basecard.name, 'Urborg, Tomb of Yawgmoth')
+
+    def test_sort_color_ne_b(self):
+        # see test_color_ne_b - count result should be the same!
+        a = SearchPredicate()
+        a.term = 'color'
+        a.value = 'b'
+        a.negative = True
+        a.operator = a.EQUALS
+        b = SortDirective()
+        b.term = 'cardrating'
+        b.crs_format_id = 4
+        cards = Card.playables.search(a, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 381 - 41)

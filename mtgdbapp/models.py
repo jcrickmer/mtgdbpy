@@ -308,11 +308,10 @@ class CardManager(models.Manager):
         return cards
 
     def search(self, *args, **kwargs):
-        sort = 'filing_name'
-        sort_dir = 'ASC'
         test_id = 1
 
-        sql_s = '''SELECT c.id, c.basecard_id FROM physicalcards AS pc JOIN basecards AS bc ON pc.id = bc.physicalcard_id JOIN cards AS c ON c.basecard_id = bc.id JOIN cardtypes AS ct ON ct.basecard_id = bc.id LEFT JOIN cardsubtypes cst ON cst.basecard_id = bc.id LEFT JOIN cardcolors AS cc ON cc.basecard_id = bc.id LEFT JOIN mtgdbapp_formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN mtgdbapp_cardrating AS cr ON cr.physicalcard_id = pc.id '''
+        pre_where_clause = ''
+        sql_s = '''SELECT c.id, c.basecard_id FROM physicalcards AS pc JOIN basecards AS bc ON pc.id = bc.physicalcard_id JOIN cards AS c ON c.basecard_id = bc.id JOIN cardtypes AS ct ON ct.basecard_id = bc.id LEFT JOIN cardsubtypes cst ON cst.basecard_id = bc.id LEFT JOIN cardcolors AS cc ON cc.basecard_id = bc.id LEFT JOIN mtgdbapp_formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN mtgdbapp_cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 '''
 
         terms = []
         not_terms = []
@@ -337,17 +336,28 @@ class CardManager(models.Manager):
 
         # We must grab the format first
         for arg in all_args:
-            if isinstance(arg, SearchPredicate):
+            if isinstance(arg, SortDirective):
+                sortds.append(arg)
+            elif isinstance(arg, SearchPredicate):
                 if arg.term == 'format':
                     specified_format = arg.value
                     sql_p = ' f.format_id = ' + str(arg.value) + ' '
                     terms.append(sql_p)
 
+        if len(sortds) == 0:
+            namesort = SortDirective()
+            namesort.term = 'name'
+            sortds.append(namesort)
+        else:
+            # go through the sort directives and andle card rating sorting, if needed
+            for sd in sortds:
+                # If we are sorting for card rating, we need to inject into the search criteria the format that we care about.
+                if sd.term == 'cardrating':
+                    pre_where_clause = ' LEFT JOIN mtgdbapp_cardrating AS crs ON crs.physicalcard_id = pc.id AND crs.test_id = 1 AND crs.format_id = ' + str(sd.crs_format_id)
+
         # Now we can process all of the other terms
         for arg in all_args:
-            if isinstance(arg, SortDirective):
-                sortds.append(arg)
-            elif isinstance(arg, SearchPredicate):
+            if isinstance(arg, SearchPredicate):
                 if (arg.term == 'name'):
                     orc = []
                     for fieldname in ['bc.name', 'bc.filing_name']:
@@ -372,9 +382,6 @@ class CardManager(models.Manager):
                         raise self.FormatNotSpecifiedException()
                     # NOTE! A singular format must ALSO be provided!!
                     terms.append(' cr.format_id = ' + str(specified_format) + ' ')
-
-                    # NOTE! Assuming test 1 (the "subjective" test)
-                    terms.append(' cr.test_id = 1 ')
 
                     sql_p = ' ROUND(cr.mu,5) '
                     sql_p = sql_p + arg.numeric_sql_operator()
@@ -410,6 +417,7 @@ class CardManager(models.Manager):
                     sql_p = ' pc.layout ' + arg.text_sql_operator_and_value()
                     terms.append(sql_p)
 
+        sql_s = sql_s + pre_where_clause
         if len(terms) > 0:
             sql_s = sql_s + ' WHERE ' + ' AND '.join(terms)
 
@@ -422,8 +430,8 @@ class CardManager(models.Manager):
             card_ids = cursor.fetchall()
             bc_ids = [row[1] for row in card_ids]
 
-            sql_s = 'SELECT c.id FROM physicalcards AS pc JOIN basecards AS bc ON pc.id = bc.physicalcard_id JOIN cards AS c ON c.basecard_id = bc.id JOIN cardtypes AS ct ON ct.basecard_id = bc.id LEFT JOIN cardsubtypes cst ON cst.basecard_id = bc.id LEFT JOIN cardcolors AS cc ON cc.basecard_id = bc.id LEFT JOIN mtgdbapp_formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN mtgdbapp_cardrating AS cr ON cr.physicalcard_id = pc.id WHERE bc.id IN (' + ','.join(
-                str(i) for i in bc_ids) + ') '
+            sql_s = 'SELECT c.id FROM physicalcards AS pc JOIN basecards AS bc ON pc.id = bc.physicalcard_id JOIN cards AS c ON c.basecard_id = bc.id JOIN cardtypes AS ct ON ct.basecard_id = bc.id LEFT JOIN cardsubtypes cst ON cst.basecard_id = bc.id LEFT JOIN cardcolors AS cc ON cc.basecard_id = bc.id LEFT JOIN mtgdbapp_formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN mtgdbapp_cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 ' + \
+                pre_where_clause + ' WHERE bc.id IN (' + ','.join(str(i) for i in bc_ids) + ') '
             for arg in not_terms:
                 # Now that we have all of these ids, let's use them to filter out those types that we do not want.
                 if arg.term == 'color':
@@ -450,11 +458,6 @@ class CardManager(models.Manager):
 
             sql_s = sql_s + ' GROUP BY bc.id HAVING max(c.multiverseid)'
 
-        if len(sortds) == 0:
-            namesort = SortDirective()
-            namesort.term = 'name'
-            sortds.append(namesort)
-
         sql_s = sql_s + ' ORDER BY '
         sql_s = sql_s + ', '.join(str(str(arg.sqlname()) + ' ' + arg.direction) for arg in sortds)
 
@@ -470,6 +473,7 @@ class SortDirective():
     ASC = 'ASC'
     DESC = 'DESC'
     term = None
+    crs_format_id = None
     direction = ASC
 
     def sqlname(self):
@@ -478,7 +482,7 @@ class SortDirective():
         elif self.term == 'cmc':
             return 'bc.cmc'
         elif self.term == 'cardrating':
-            return 'cr.mu'
+            return 'crs.mu'
         else:
             return self.term
 

@@ -4,6 +4,12 @@
 {% block title %}Search Results{% endblock %}
 
 {% block content %}
+  <style>
+div.page-header {
+  padding-bottom: 0px;
+  border-bottom: none;
+}
+</style>
   <div class="termsbox">
     <a href="{% url 'cards:index' %}">Query: </a>
     <ul id="search_terms" style="display: inline;" class="list-inline list-unstyled"></ul>
@@ -17,8 +23,52 @@ $(function() {
   <!-- <div>Found {{cards.paginator.count}} results.</div> -->
 {% if cards %}
 
-  {% include "cards/card_pagination.html" %}
-
+  <div class="row">
+    <div class="col-xs-12 col-sm-6">
+      {% include "cards/card_pagination.html" %}
+    </div>
+    <div class="col-xs-offset-3 col-xs-9 col-sm-offset-1 col-sm-5 text-right">
+      <form class="form-inline" style="margin: 20px 0px;">
+        Sort by:
+        <select id="sort_order" name="sort_order" class="form-control input-sm">
+          <option value="name">Name</option>
+          <option value="cmc">CMC</option>
+        </select>
+      </form>
+      <script>
+$(function() {
+  var addedFromPreds = false;
+  for (var p = 0; p < cdb.predicates.length; p++) {
+    var pred = cdb.predicates[p];
+    if (pred.field == 'format') {
+      addedFromPreds = true;
+      $("#sort_order").append($('<option/>', { 
+        value: 'rating-' + pred.value,
+        text : 'Rating in ' + pred.value
+      }));
+    }
+  }
+  if (! addedFromPreds) {
+    var fs = ['Standard_2014-09-26','Modern_2014-09-26','Commander_2014-11-07'];
+    for (var p = 0; p < fs.length; p++) {
+      $("#sort_order").append($('<option/>', { 
+        value: 'rating-' + fs[p],
+        text : 'Rating in ' + fs[p],
+        selected : 'rating-' + fs[p] == "{{sort_order}}"
+      }));
+    }
+  }
+  $("#sort_order option").each(function() { if ($(this).val() == "{{sort_order}}") { $(this).attr('selected','selected'); } } );
+  $("#sort_order").change(
+    function(){
+      //window.predicates.push({'sort':$("#sort_order option:selected").val()})
+      cdb.sort = $("#sort_order option:selected").val();
+      cdb.sendQuery();
+    });
+});
+      </script>
+    </div>
+  </div>
   <!-- <div class="table-responsive"> -->
   <table class="table table-striped">
 <!--

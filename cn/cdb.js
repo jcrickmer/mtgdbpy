@@ -93,11 +93,16 @@ $(function() {
         }
 		return false;
 	};
+    cdb.sort = undefined;
     cdb.sendQuery = function() {
         var form_jq = $("<form action=\"_search\" method=\"get\">");
         $(document.body).append(form_jq);
         form_jq.append("<input id=\"subform_q\" type=\"hidden\" name=\"query\">");
         $("#subform_q").val(JSON.stringify(window.predicates));
+        if (cdb.sort != null) {
+            form_jq.append("<input id=\"subform_s\" type=\"hidden\" name=\"sort\">");
+            $("#subform_s").val(cdb.sort);
+        }
         form_jq.submit();
         return false; //event.preventDefault();
     };

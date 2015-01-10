@@ -6,11 +6,15 @@
 
 {% block subsearchnav %}
 <div class="row">
-  <ul>
-    <li><a href="{% url 'cards:index' %}">Search Terms</a></li>
-    <li><a href="{% url 'cards:list' %}">Search Results</a></li>
-  </ul>
+  <button id="return-terms" class="btn btn-default"><span class="glyphicon glyphicon-search"></span>&nbsp;Search Terms</button>
+  <button id="return-results" class="btn btn-default"><span class="glyphicon glyphicon-list"></span>&nbsp;Search Results</button>
 </div>
+<script>
+$(function() {
+$("#return-terms").button().click(function(event) { document.location = "{% url 'cards:index' %}"; });
+$("#return-results").button().click(function(event) { document.location = "{% url 'cards:list' %}"; });
+});
+</script>
 {% endblock %}
 {% block content %}
 {% for working in cards %}

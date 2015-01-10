@@ -76,14 +76,18 @@ def index(request):
 
 
 def search(request):
+    logger = logging.getLogger(__name__)
     if request.session.get('query_pred_array', False):
         request.session["curpage"] = 1
         del request.session['query_pred_array']
     if request.GET.get('query', False):
         q_array = json.loads(request.GET.get('query', ''))
-        logger = logging.getLogger(__name__)
         logger.error(q_array)
         request.session['query_pred_array'] = q_array
+    if request.GET.get('sort', False):
+        sort_order = request.GET.get('sort', 'name')
+        logger.error(sort_order)
+        request.session['sort_order'] = sort_order
 
     return redirect('cards:list')
 
@@ -100,6 +104,11 @@ def cardlist(request):
 
     spreds = []
     for pred in query_pred_array:
+        # check to see if it is a sort order or a search predicate
+        if 'field' not in pred:
+            query_pred_array.remove(pred)
+            break
+
         spred = SearchPredicate()
         spred.term = pred['field']
         spred.value = pred['value']
@@ -151,6 +160,21 @@ def cardlist(request):
                 spred.value = format_lookup.id
         spreds.append(spred)
 
+    if request.session.get('sort_order', False):
+        sort_order = request.session.get('sort_order')
+        sd = SortDirective()
+        sd.term = 'name'
+        if sort_order == 'cmc':
+            sd.term = 'cmc'
+        elif sort_order.startswith('rating-'):
+            ffff = Format.objects.filter(format__iexact=sort_order.replace('rating-', '')).first()
+            if ffff is not None:
+                sd.term = 'cardrating'
+                sd.direction = sd.DESC
+                sd.crs_format_id = ffff.id
+
+        spreds.append(sd)
+
     card_list = Card.playables.search(spreds)
 
     paginator = Paginator(list(card_list), 25)
@@ -168,147 +192,7 @@ def cardlist(request):
         'ellided_prev_page': max(0, int(page) - 4),
         'ellided_next_page': min(paginator.num_pages, int(page) + 4),
         'cards': cards,
-        'predicates': query_pred_array,
-        'predicates_js': json.dumps(query_pred_array),
-    }
-    return render(request, 'cards/list.html', context)
-
-
-def oldlist(request):
-
-    # Get an instance of a logger
-    logger = logging.getLogger(__name__)
-    # logger.error(request)
-
-    # Not sure of the performance in here. Basically, I needed to
-    # do a GROUP BY to get the max multiverseid and only display
-    # that card. The first query here is getting the max
-    # multiverseid for the given query. The second query then uses
-    # that "mid_max" value to get back a list of all of the cards.
-    card_listP = Card.objects.values(
-        'basecard__id').annotate(mid_max=Max('multiverseid'))
-    card_list = Card.objects.filter(
-        multiverseid__in=[
-            g['mid_max'] for g in card_listP]).order_by('basecard__filing_name')
-
-    # Filer out the non-playing cards for now
-    card_list = card_list.filter(
-        basecard__physicalcard__layout__in=(
-            'normal',
-            'double-faced',
-            'split',
-            'flip',
-            'leveler'))
-
-    # Let's get the array of predicates from the session
-    query_pred_array = []
-    if request.session.get('query_pred_array', False):
-        query_pred_array = request.session.get('query_pred_array')
-
-    rlist = []
-    for pred in query_pred_array:
-        if pred['field'] == 'cardname':
-            if pred['op'] == 'not':
-                card_list = card_list.exclude(
-                    basecard__name__icontains=pred['value'])
-                card_list = card_list.exclude(
-                    basecard__filing_name__icontains=pred['value'])
-            else:
-                card_list = card_list.filter(Q(basecard__name__icontains=pred['value']) | Q(
-                    basecard__filing_name__icontains=pred['value']))
-
-        if pred['field'] == 'rules':
-            if pred['op'] == 'not':
-                card_list = card_list.exclude(
-                    basecard__rules_text__icontains=pred['value'])
-            else:
-                card_list = card_list.filter(
-                    basecard__rules_text__icontains=pred['value'])
-
-        if pred['field'] == 'color':
-            if pred['op'] == 'not':
-                card_list = card_list.exclude(
-                    basecard__colors__in=pred['value'])
-            else:
-                card_list = card_list.filter(
-                    basecard__colors__in=pred['value'])
-
-        if pred['field'] == 'rarity':
-            if pred['op'] == 'not':
-                card_list = card_list.exclude(rarity__in=pred['value'])
-            else:
-                rlist.append(('rarity__exact', pred['value']))
-
-        if pred['field'] == 'cmc':
-            # If it isn't an int, then skip it.
-            try:
-                pred['value'] = int(pred['value'])
-            except ValueError:
-                # we should remove this predicate. it is bogus
-                query_pred_array.remove(pred)
-                break
-            if pred['op'] == 'lt':
-                card_list = card_list.filter(basecard__cmc__lt=pred['value'])
-            elif pred['op'] == 'gt':
-                card_list = card_list.filter(basecard__cmc__gt=pred['value'])
-            elif pred['op'] == 'ne':
-                card_list = card_list.exclude(
-                    basecard__cmc__exact=pred['value'])
-            else:
-                # Assume equals
-                card_list = card_list.filter(
-                    basecard__cmc__exact=pred['value'])
-
-        if pred['field'] == 'type':
-            if pred['op'] == 'not':
-                card_list = card_list.exclude(
-                    basecard__types__type__icontains=pred['value'])
-            else:
-                card_list = card_list.filter(
-                    basecard__types__type__icontains=pred['value'])
-
-        if pred['field'] == 'subtype':
-            if pred['op'] == 'not':
-                card_list = card_list.exclude(
-                    basecard__subtypes__subtype__icontains=pred['value'])
-            else:
-                card_list = card_list.filter(
-                    basecard__subtypes__subtype__icontains=pred['value'])
-
-        if pred['field'] == 'format':
-            bc_vals = FormatBasecard.objects.filter(
-                format__format__exact=pred['value']).values_list(
-                'basecard',
-                flat=True)
-            # Note that one example from Django said that I needed to do
-            # list(bc_vals). But that TOTALLY bombed, probably because list()
-            # is defined in this file. That was hard to debug.
-            card_list = card_list.filter(basecard__pk__in=bc_vals)
-
-    if len(rlist) > 0:
-        card_list = card_list.filter(
-            reduce(
-                operator.or_, [
-                    Q(x) for x in rlist]))
-
-    # logger.error(card_list)
-    # logger.error(card_list.query)
-
-    paginator = Paginator(card_list, 25)
-    page = request.GET.get('page', request.session.get("curpage", 1))
-    try:
-        cards = paginator.page(page)
-        request.session["curpage"] = page
-    except PageNotAnInteger:
-        cards = paginator.page(1)
-        request.session["curpage"] = 1
-    except EmptyPage:
-        cards = paginator.page(paginator.num_pages)
-        request.session["curpage"] = paginator.num_pages
-    context = {
-        'ellided_prev_page': max(0, int(page) - 4),
-        'ellided_next_page': min(paginator.num_pages, int(page) + 4),
-        'cards': cards,
+        'sort_order': request.session.get('sort_order', 'name'),
         'predicates': query_pred_array,
         'predicates_js': json.dumps(query_pred_array),
     }
