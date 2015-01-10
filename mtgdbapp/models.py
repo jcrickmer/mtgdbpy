@@ -318,8 +318,17 @@ class CardManager(models.Manager):
         not_terms = []
         sortds = []
         specified_format = None
-        # We must grab the format first
+
+        all_args = []
         for arg in args:
+            if isinstance(arg, list):
+                for subarg in arg:
+                    all_args.append(subarg)
+            else:
+                all_args.append(arg)
+
+        # We must grab the format first
+        for arg in all_args:
             if isinstance(arg, SearchPredicate):
                 if arg.term == 'format':
                     specified_format = arg.value
@@ -327,7 +336,7 @@ class CardManager(models.Manager):
                     terms.append(sql_p)
 
         # Now we can process all of the other terms
-        for arg in args:
+        for arg in all_args:
             if isinstance(arg, SortDirective):
                 sortds.append(arg)
             elif isinstance(arg, SearchPredicate):

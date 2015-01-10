@@ -7,8 +7,8 @@ urlpatterns = patterns('',
                        # ex: /cards/_search
                        url(r'^_search$', views.search, name='search'),
                        url(r'^ratings/$', views.ratings, name='ratings'),
-                       url(r'^list/$', views.list, name='list'),
-                       url(r'^_list$', views.list, name='list'),
+                       url(r'^list/$', views.cardlist, name='list'),
+                       url(r'^_list$', views.cardlist, name='list'),
                        # ex: /cards/5/
                        url(r'^(?P<multiverseid>\d+)/$',
                            views.detail,

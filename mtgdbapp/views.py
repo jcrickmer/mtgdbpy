@@ -13,7 +13,7 @@ from django.db import IntegrityError
 import random
 import operator
 
-from mtgdbapp.models import Card
+from mtgdbapp.models import Card, CardManager, SearchPredicate, SortDirective
 from mtgdbapp.models import Mark
 from mtgdbapp.models import Type
 from mtgdbapp.models import Subtype
@@ -88,7 +88,122 @@ def search(request):
     return redirect('cards:list')
 
 
-def list(request):
+def cardlist(request):
+    # Get an instance of a logger
+    logger = logging.getLogger(__name__)
+    # logger.error(request)
+
+    # Let's get the array of predicates from the session
+    query_pred_array = []
+    if request.session.get('query_pred_array', False):
+        query_pred_array = request.session.get('query_pred_array')
+
+    spreds = []
+    rlist = []
+    for pred in query_pred_array:
+        if pred['field'] == 'cardname':
+            spred = SearchPredicate()
+            spred.operator = spred.CONTAINS
+            spred.term = 'name'
+            spred.value = pred['value']
+            spred.negative = pred['op'] == 'not'
+            spreds.append(spred)
+
+        if pred['field'] == 'rules':
+            spred = SearchPredicate()
+            spred.operator = spred.CONTAINS
+            spred.term = 'rules'
+            spred.value = pred['value']
+            spred.negative = pred['op'] == 'not'
+            spreds.append(spred)
+
+        if pred['field'] == 'color':
+            spred = SearchPredicate()
+            spred.operator = spred.EQUALS
+            spred.term = 'color'
+            spred.value = pred['value']
+            spred.negative = pred['op'] == 'not'
+            spreds.append(spred)
+
+        if pred['field'] == 'rarity':
+            spred = SearchPredicate()
+            spred.operator = spred.EQUALS
+            spred.term = 'rarity'
+            spred.value = pred['value']
+            spred.negative = pred['op'] == 'not'
+            spreds.append(spred)
+            # REVISIT - need to handle 'or'
+
+        if pred['field'] == 'cmc':
+            # If it isn't an int, then skip it.
+            try:
+                pred['value'] = int(pred['value'])
+            except ValueError:
+                # we should remove this predicate. it is bogus
+                query_pred_array.remove(pred)
+                break
+            spred = SearchPredicate()
+            spred.operator = spred.EQUALS
+            if pred['op'] == 'lt':
+                spred.operator = spred.LESS_THAN
+            if pred['op'] == 'gt':
+                spred.operator = spred.GREATER_THAN
+            if pred['op'] == 'ne':
+                spred.negative = True
+            spred.term = 'cmc'
+            spred.value = pred['value']
+            spreds.append(spred)
+
+        if pred['field'] == 'type':
+            type_lookup = Type.objects.filter(type__iexact=pred['value']).first()
+            spred = SearchPredicate()
+            spred.operator = spred.EQUALS
+            spred.term = 'type'
+            spred.value = type_lookup.id
+            spred.negative = pred['op'] == 'not'
+            spreds.append(spred)
+
+        if pred['field'] == 'subtype':
+            subtype_lookup = Subtype.objects.filter(subtype__iexact=pred['value']).first()
+            spred = SearchPredicate()
+            spred.operator = spred.EQUALS
+            spred.term = 'subtype'
+            spred.value = subtype_lookup.id
+            spred.negative = pred['op'] == 'not'
+            spreds.append(spred)
+
+        if pred['field'] == 'format':
+            format_lookup = Format.objects.filter(format__iexact=pred['value']).first()
+            spred = SearchPredicate()
+            spred.operator = spred.EQUALS
+            spred.term = 'format'
+            spred.value = format_lookup.id
+            spreds.append(spred)
+
+    card_list = Card.playables.search(spreds)
+
+    paginator = Paginator(list(card_list), 25)
+    page = request.GET.get('page', request.session.get("curpage", 1))
+    try:
+        cards = paginator.page(page)
+        request.session["curpage"] = page
+    except PageNotAnInteger:
+        cards = paginator.page(1)
+        request.session["curpage"] = 1
+    except EmptyPage:
+        cards = paginator.page(paginator.num_pages)
+        request.session["curpage"] = paginator.num_pages
+    context = {
+        'ellided_prev_page': max(0, int(page) - 4),
+        'ellided_next_page': min(paginator.num_pages, int(page) + 4),
+        'cards': cards,
+        'predicates': query_pred_array,
+        'predicates_js': json.dumps(query_pred_array),
+    }
+    return render(request, 'cards/list.html', context)
+
+
+def oldlist(request):
 
     # Get an instance of a logger
     logger = logging.getLogger(__name__)
