@@ -26,6 +26,7 @@ from mtgdbapp.models import BattleTest
 from mtgdbapp.models import CardRating
 
 from django.db.models import Q
+from datetime import datetime, timedelta
 
 # import the logging library
 import logging
@@ -71,7 +72,11 @@ def index(request):
             'format': f.format,
             'formatname': f.formatname,
             'start_date': f.start_date} for f in Format.objects.all().order_by('format')]
-
+    context['current_formats'] = [
+        {
+            'format': f.format,
+            'formatname': f.formatname,
+            'start_date': f.start_date} for f in Format.objects.filter(start_date__lte=datetime.today(), end_date__gte=datetime.today()).order_by('format')]
     return render(request, 'cards/index.html', context)
 
 
@@ -196,16 +201,23 @@ def cardlist(request):
         'predicates': query_pred_array,
         'predicates_js': json.dumps(query_pred_array),
     }
+    context['current_formats'] = [
+        {
+            'format': f.format,
+            'formatname': f.formatname,
+            'start_date': f.start_date} for f in Format.objects.filter(start_date__lte=datetime.today(), end_date__gte=datetime.today()).order_by('format')]
     return render(request, 'cards/list.html', context)
 
 
 def detail(request, multiverseid=None, slug=None):
     logger = logging.getLogger(__name__)
     cards = []
+    primary_basecard_id = None
     try:
         if multiverseid is not None:
             cards = Card.objects.filter(
                 multiverseid=multiverseid).order_by('card_number')
+            primary_basecard_id = cards[0].basecard.id
         elif slug is not None:
             slugws = slug.lower().replace('-', ' ')
             cards = Card.objects.filter(
@@ -309,10 +321,38 @@ def detail(request, multiverseid=None, slug=None):
             json.dumps(response_dict),
             content_type='application/javascript')
     else:
+        formats = Format.cards.current_legal_formats(cards[0])
+        card_format_details = {}
+        for ff in formats:
+            dets = {}
+            card_format_details[ff.format] = dets
+            dets['format'] = ff
+            if ff.format == 'Standard':
+                dets['format_abbr'] = 'Std'
+            elif ff.format == 'Modern':
+                dets['format_abbr'] = 'Mod'
+            elif ff.format == 'Commander':
+                dets['format_abbr'] = 'EDH'
+            dets['rating'] = cards[0].basecard.physicalcard.cardrating_set.filter(test_id=1,format_id=ff.id).first()
+            dets['wincount'] = Battle.objects.filter(winner_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).count()
+            dets['losecount'] = Battle.objects.filter(loser_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).count()
+            dets['battlecount'] = dets['wincount'] + dets['losecount']
+            if dets['battlecount'] > 0:
+                dets['winpercentage'] = 100 * float(dets['wincount']) / float(dets['battlecount'])
+                dets['losepercentage'] = 100 * float(dets['losecount']) / float(dets['battlecount'])
+            else:
+                dets['winpercentage'] = 'n/a'
+                dets['losepercentage'] = 'n/a'
+            won_battles = Battle.objects.filter(winner_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).values('loser_pcard_id').annotate(num_wins=Count('loser_pcard_id')).order_by('-num_wins')[:6]
+            dets['card_wins'] = [Card.objects.filter(basecard__physicalcard__id=battle['loser_pcard_id']).order_by('-multiverseid').first() for battle in won_battles]
+            lost_battles = Battle.objects.filter(loser_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).values('winner_pcard_id').annotate(num_losses=Count('winner_pcard_id')).order_by('-num_losses')[:6]
+            dets['card_losses'] = [Card.objects.filter(basecard__physicalcard__id=battle['winner_pcard_id']).order_by('-multiverseid').first() for battle in lost_battles]
         response = render(request, 'cards/detail.html', {'request_muid': multiverseid,
+                                                         'primary_basecard_id': primary_basecard_id,
                                                          'cards': card_list,
                                                          'other_versions': twinCards,
                                                          'physicalCardTitle': " // ".join(card_titles),
+                                                         'card_format_details': card_format_details
                                                          #'rules_text_html': mark_safe(card.basecard.rules_text),
                                                          #'flavor_text_html': mark_safe(card.flavor_text),
                                                          #'mana_cost_html': mana_cost_html,

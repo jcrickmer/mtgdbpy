@@ -33,35 +33,16 @@ $(function() {
         <select id="sort_order" name="sort_order" class="form-control input-sm">
           <option value="name">Name</option>
           <option value="cmc">CMC</option>
+{% for format in current_formats %}
+          <option value="rating-{{format.format}}">Rating in {{format.formatname}} (Current)</option>
+{% endfor %}
         </select>
       </form>
       <script>
 $(function() {
-  var addedFromPreds = false;
-  for (var p = 0; p < cdb.predicates.length; p++) {
-    var pred = cdb.predicates[p];
-    if (pred.field == 'format') {
-      addedFromPreds = true;
-      $("#sort_order").append($('<option/>', { 
-        value: 'rating-' + pred.value,
-        text : 'Rating in ' + pred.value
-      }));
-    }
-  }
-  if (! addedFromPreds) {
-    var fs = ['Standard_2014-09-26','Modern_2014-09-26','Commander_2014-11-07'];
-    for (var p = 0; p < fs.length; p++) {
-      $("#sort_order").append($('<option/>', { 
-        value: 'rating-' + fs[p],
-        text : 'Rating in ' + fs[p],
-        selected : 'rating-' + fs[p] == "{{sort_order}}"
-      }));
-    }
-  }
   $("#sort_order option").each(function() { if ($(this).val() == "{{sort_order}}") { $(this).attr('selected','selected'); } } );
   $("#sort_order").change(
     function(){
-      //window.predicates.push({'sort':$("#sort_order option:selected").val()})
       cdb.sort = $("#sort_order option:selected").val();
       cdb.sendQuery();
     });

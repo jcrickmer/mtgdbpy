@@ -66,9 +66,9 @@
         <div class="col-xs-2"><label for="format" class="control-label">Format</label></div>
         <div class="col-xs-10"><select id="format" name="format" class="form-control input-sm">
           <option></option>
-          <option value="Standard_2014-09-26">Standard (Current)</option>
-          <option value="Modern_2014-09-26">Modern (Current)</option>
-          <option value="Commander_2014-11-07">Commander (Current)</option>
+{% for format in current_formats %}
+          <option value="{{format.format}}">{{format.formatname}} (Current)</option>
+{% endfor %}
           <option value="" disabled="disabled">───────────────</option>
 {% for format in formats %}
           <option value="{{format.format}}">{{format.formatname}} ({{format.start_date}})</option>

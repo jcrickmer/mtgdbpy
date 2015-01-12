@@ -655,6 +655,17 @@ class CardType(models.Model):
                 self.position) + "]"
 
 
+class FormatManager(models.Manager):
+    def current_legal_formats(self, card):
+        # Look up all of the formats where this card is currently legal.
+        #formats = FormatBasecard.objects.filter(basecard__id=card.basecard.id,
+        #                                        format__start_date__lte=datetime.today(),
+        #                                        format__end_date__gte=datetime.today())
+        formats = Format.objects.filter(formatbasecard__basecard_id=card.basecard.id,
+                                        start_date__lte=datetime.today(),
+                                        end_date__gte=datetime.today())
+        return formats
+
 class Format(models.Model):
     id = models.IntegerField(primary_key=True)
     formatname = models.CharField(max_length=60, null=False)
@@ -665,6 +676,9 @@ class Format(models.Model):
         null=True)
     end_date = models.DateField(auto_now=False, auto_now_add=False, null=True)
 
+    objects = models.Manager()
+    cards = FormatManager()
+    
     def __unicode__(self):
         return str(
             self.id) + " [Format: " + str(self.formatname) + " (" + self.format + ")]"

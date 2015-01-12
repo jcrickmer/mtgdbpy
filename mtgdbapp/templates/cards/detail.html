@@ -142,5 +142,44 @@ $("#return-results").button().click(function(event) { document.location = "{% ur
   <div class="col-sm-1 col-md-3 col-lg-3"></div>
 </div>
 {% endfor %}
+<div class="row">
+  <div class="col-xs-12">
+    <h3>Current Legal Formats</h3>
+  </div>
+</div>
+{% for format, details in card_format_details.items %}
+<div class="row">
+  <div class="col-xs-12">
+    <h4>{{details.format.formatname}} - card.ninja Rating {{details.rating.cardninjaRating|floatformat:3 }}</h4>
+    <div>Rating Confidence: {{details.rating.confidence|floatformat:3 }}</div>
+    <div><b>Wins</b> - {{details.wincount}} ({{details.winpercentage|floatformat:1}}%)</div>
+{% if details.wincount > 0 %}
+    <div>{{ physicalCardTitle }} has beaten these cards in card.ninja Battles:</div>
+    <div class="row">
+      {% for woncard in details.card_wins %}
+        <div class="col-xs-6 col-sm-4 col-md-2">
+          <a href="{% url 'cards:detail' woncard.multiverseid woncard.url_slug %}"><img class="list_cardimage" src="{{ woncard.img_url }}" alt="{{ woncard.basecard.name }}"/></a>
+          <div class="text-center"><a href="{% url 'cards:detail' woncard.multiverseid woncard.url_slug %}">{{woncard.basecard.name}}</a></div>
+        </div>
+      {% endfor %}
+    </div>
+{% endif %}
+    <div><b>Losses</b> - {{details.losecount}} ({{details.losepercentage|floatformat:1}}%)</div>
+{% if details.losecount > 0 %}
+    <div>{{ physicalCardTitle }} has lost to these cards in card.ninja Battles:</div>
+    <div class="row">
+      {% for lostcard in details.card_losses %}
+        <div class="col-xs-6 col-sm-4 col-md-2">
+          <a href="{% url 'cards:detail' lostcard.multiverseid lostcard.url_slug %}"><img class="list_cardimage" src="{{ lostcard.img_url }}" alt="{{ lostcard.basecard.name }}"/></a>
+          <div class="text-center"><a href="{% url 'cards:detail' lostcard.multiverseid lostcard.url_slug %}">{{lostcard.basecard.name}}</a></div>
+        </div>
+      {% endfor %}
+    </div>
+{% endif %}
+    <div><a href="{% url 'cards:battle' format=details.format.formatname %}?bcid={{primary_basecard_id}}">Battle in Current {{details.format.formatname}}</a></div>
+  </div>
+</div>
+{% endfor %}
+
 <div class="row"><div class="col-xs-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_muid}}" target="_blank">View on Gatherer</a></div></div>
 {% endblock %}
