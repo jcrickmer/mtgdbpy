@@ -72,11 +72,10 @@ def index(request):
             'format': f.format,
             'formatname': f.formatname,
             'start_date': f.start_date} for f in Format.objects.all().order_by('format')]
-    context['current_formats'] = [
-        {
-            'format': f.format,
-            'formatname': f.formatname,
-            'start_date': f.start_date} for f in Format.objects.filter(start_date__lte=datetime.today(), end_date__gte=datetime.today()).order_by('format')]
+    context['current_formats'] = [{'format': f.format,
+                                   'formatname': f.formatname,
+                                   'start_date': f.start_date} for f in Format.objects.filter(start_date__lte=datetime.today(),
+                                                                                              end_date__gte=datetime.today()).order_by('format')]
     return render(request, 'cards/index.html', context)
 
 
@@ -201,11 +200,10 @@ def cardlist(request):
         'predicates': query_pred_array,
         'predicates_js': json.dumps(query_pred_array),
     }
-    context['current_formats'] = [
-        {
-            'format': f.format,
-            'formatname': f.formatname,
-            'start_date': f.start_date} for f in Format.objects.filter(start_date__lte=datetime.today(), end_date__gte=datetime.today()).order_by('format')]
+    context['current_formats'] = [{'format': f.format,
+                                   'formatname': f.formatname,
+                                   'start_date': f.start_date} for f in Format.objects.filter(start_date__lte=datetime.today(),
+                                                                                              end_date__gte=datetime.today()).order_by('format')]
     return render(request, 'cards/list.html', context)
 
 
@@ -333,7 +331,7 @@ def detail(request, multiverseid=None, slug=None):
                 dets['format_abbr'] = 'Mod'
             elif ff.format == 'Commander':
                 dets['format_abbr'] = 'EDH'
-            dets['rating'] = cards[0].basecard.physicalcard.cardrating_set.filter(test_id=1,format_id=ff.id).first()
+            dets['rating'] = cards[0].basecard.physicalcard.cardrating_set.filter(test_id=1, format_id=ff.id).first()
             dets['wincount'] = Battle.objects.filter(winner_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).count()
             dets['losecount'] = Battle.objects.filter(loser_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).count()
             dets['battlecount'] = dets['wincount'] + dets['losecount']
@@ -343,10 +341,16 @@ def detail(request, multiverseid=None, slug=None):
             else:
                 dets['winpercentage'] = 'n/a'
                 dets['losepercentage'] = 'n/a'
-            won_battles = Battle.objects.filter(winner_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).values('loser_pcard_id').annotate(num_wins=Count('loser_pcard_id')).order_by('-num_wins')[:6]
-            dets['card_wins'] = [Card.objects.filter(basecard__physicalcard__id=battle['loser_pcard_id']).order_by('-multiverseid').first() for battle in won_battles]
-            lost_battles = Battle.objects.filter(loser_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).values('winner_pcard_id').annotate(num_losses=Count('winner_pcard_id')).order_by('-num_losses')[:6]
-            dets['card_losses'] = [Card.objects.filter(basecard__physicalcard__id=battle['winner_pcard_id']).order_by('-multiverseid').first() for battle in lost_battles]
+            won_battles = Battle.objects.filter(winner_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).values(
+                'loser_pcard_id').annotate(num_wins=Count('loser_pcard_id')).order_by('-num_wins')[:6]
+            dets['card_wins'] = [
+                Card.objects.filter(
+                    basecard__physicalcard__id=battle['loser_pcard_id']).order_by('-multiverseid').first() for battle in won_battles]
+            lost_battles = Battle.objects.filter(loser_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).values(
+                'winner_pcard_id').annotate(num_losses=Count('winner_pcard_id')).order_by('-num_losses')[:6]
+            dets['card_losses'] = [
+                Card.objects.filter(
+                    basecard__physicalcard__id=battle['winner_pcard_id']).order_by('-multiverseid').first() for battle in lost_battles]
         response = render(request, 'cards/detail.html', {'request_muid': multiverseid,
                                                          'primary_basecard_id': primary_basecard_id,
                                                          'cards': card_list,
@@ -370,12 +374,14 @@ def battle(request, format="redirect"):
     if format == "redirect":
         return redirect('cards:battle', format="standard")
 
-    format_id = 4
-    test_id = 1
-
-    format_obj = get_object_or_404(Format.objects.filter(
-        formatname__iexact=format.lower()).order_by('-start_date')[0:1])
+    # REVISIT - need real exception handling here!!
+    format_obj = Format.objects.filter(
+        formatname__iexact=format,
+        start_date__lte=datetime.today(),
+        end_date__gte=datetime.today()).order_by('-end_date').first()
     format_id = format_obj.id
+
+    test_id = 1
 
     # Going straight to the DB on this...
     cursor = connection.cursor()
@@ -385,59 +391,33 @@ def battle(request, format="redirect"):
         'mu': 25.0,
         'sigma': 25.0 / 3.0,
     }
+    card_b = None
     second_card = {
         'mu': 25.0,
         'sigma': 25.0 / 3.0,
     }
-    if request.GET.get(
-            'muid',
-            False) or request.session.get(
-            'battle_cont_muid',
-            False):
-        # this is a BATTLE CHEAT so that you can battle a specific card
-        cheat_list = Card.objects.filter(
-            multiverseid__exact=request.GET.get(
-                'muid',
-                request.session.get(
-                    'battle_cont_muid',
-                    100)))
-        card_a = cheat_list[0]
+    find_iterations = 0
+
+    # this is a BATTLE CHEAT so that you can battle a specific card
+    if request.GET.get('muid', False) or request.session.get('battle_cont_muid', False) or request.GET.get('bcid', False):
+        if request.GET.get('bcid', False):
+            card_a = Card.objects.filter(basecard__id__exact=int(request.GET.get('bcid', 1))).order_by('-multiverseid').first()
+        else:
+            card_a = Card.objects.filter(multiverseid__exact=request.GET.get('muid', request.session.get('battle_cont_muid'))).first()
         first_card['basecard_id'] = card_a.basecard.id
         crsdb = CardRating.objects.filter(
-            physicalcard__id__exact=card_a.basecard.physicalcard.id,
+            physicalcard=card_a.basecard.physicalcard,
             test__id__exact=test_id,
-            format__id__exact=format_id)
+            format=format_obj)
         try:
             crdb = crsdb[0]
             first_card['mu'] = crdb.mu
             first_card['sigma'] = crdb.sigma
         except IndexError:
             # no op
-            logger.error(
-                "Battle: bad ju-ju finding card ratings for basecard id " + str(card_a.basecard.id))
-    elif request.GET.get('bcid', False):
-        # they passed us a basecard id
-        cheat_list = Card.objects.filter(
-            basecard__id__exact=int(
-                request.GET.get(
-                    'bcid',
-                    1))).order_by('-multiverseid')
-        card_a = cheat_list[0]
-        first_card['basecard_id'] = card_a.basecard.id
-        crsdb = CardRating.objects.filter(
-            physicalcard__id__exact=card_a.basecard.physicalcard.id,
-            test__id__exact=test_id,
-            format__id__exact=format_id)
-        try:
-            crdb = crsdb[0]
-            first_card['mu'] = crdb.mu
-            first_card['sigma'] = crdb.sigma
-        except IndexError:
-            # no op
-            logger.error(
-                "Battle: bad ju-ju finding card ratings for basecard id " + str(card_a.basecard.id))
+            logger.error("Battle: bad ju-ju finding card ratings for basecard id " + str(card_a.basecard.id))
+            pass
     else:
-        #cursor.execute('SELECT basecard_id, RAND() r FROM mtgdbapp_formatbasecard WHERE format_id = ' + str(format_id) + ' ORDER BY r ASC LIMIT 100')
         fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + \
             str(format_id) + ' ORDER BY r ASC LIMIT 1'
         logger.error("First Card SQL: " + fcsqls)
@@ -448,124 +428,44 @@ def battle(request, format="redirect"):
             'mu': rows[0][1],
             'sigma': rows[0][2],
         }
-        card_a_list = Card.objects.filter(
-            basecard__id__exact=rows[0][0]).order_by('-multiverseid')
-        card_a = card_a_list[0]
+        card_a = Card.objects.filter(basecard__id__exact=rows[0][0]).order_by('-multiverseid').first()
 
-    # now let's get a card of similar level - make it a real battle
-    sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + \
-        str(format_id) + ' AND fbc.basecard_id <> ' + str(first_card['basecard_id']) + ' AND cr.mu > ' + str(first_card['mu'] - (1.5 * first_card['sigma'])) + ' AND cr.mu < ' + str(first_card['mu'] + (1.5 * first_card['sigma'])) + ' ORDER BY r ASC LIMIT 1'
-    logger.error("Second Card SQL: " + sqls)
-    cursor.execute(sqls)
-    rows = cursor.fetchall()
-    try:
-        second_card = {
-            'basecard_id': rows[0][0],
-            'mu': rows[0][1],
-            'sigma': rows[0][2],
-        }
-    except IndexError:
-        logger.error(
-            "Battle: UGH. IndexError. This SQL returned no result: " +
-            sqls)
-        # There is always a chance that we do not get a card. That would be
-        # bad. Just fill in one of these for now.
-        faked_id = random.sample([8642,
-                                  2239,
-                                  4644,
-                                  695,
-                                  6636,
-                                  8621,
-                                  4376,
-                                  8733,
-                                  933,
-                                  5842,
-                                  7897,
-                                  5557,
-                                  5553,
-                                  8550,
-                                  6217,
-                                  8601,
-                                  8530,
-                                  5864,
-                                  7442,
-                                  8531,
-                                  1764,
-                                  6004,
-                                  8636,
-                                  1273,
-                                  1704,
-                                  6256,
-                                  8625,
-                                  108,
-                                  1543,
-                                  8396,
-                                  6124,
-                                  8664,
-                                  8392,
-                                  33,
-                                  5766,
-                                  8666,
-                                  8523,
-                                  8435,
-                                  5999,
-                                  7914,
-                                  2450,
-                                  1167,
-                                  690,
-                                  123,
-                                  8568,
-                                  8684,
-                                  475,
-                                  8373,
-                                  8731,
-                                  8734,
-                                  4976,
-                                  26,
-                                  8602,
-                                  5345,
-                                  5191,
-                                  6345,
-                                  8447,
-                                  8681,
-                                  4466,
-                                  8714,
-                                  3948,
-                                  8732,
-                                  8637,
-                                  8739,
-                                  8411,
-                                  8397,
-                                  7552,
-                                  41,
-                                  7666,
-                                  2059,
-                                  4511,
-                                  2699,
-                                  878,
-                                  7894,
-                                  3751,
-                                  3770,
-                                  60,
-                                  8680,
-                                  8362,
-                                  1381,
-                                  8556,
-                                  7173,
-                                  8727,
-                                  8520,
-                                  1268],
-                                 1)
-        second_card = {
-            'basecard_id': faked_id,
-            'mu': 25.0,
-            'sigma': 8.35,
-        }
+    while card_b is None:
+        # now let's get a card of similar level - make it a real battle
+        sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + \
+            ' AND fbc.basecard_id <> ' + str(first_card['basecard_id']) + ' AND cr.mu > ' + str(first_card['mu'] - ((1 + find_iterations) * first_card['sigma'])) + ' AND cr.mu < ' + str(first_card['mu'] + ((1 + find_iterations) * first_card['sigma'])) + ' ORDER BY r ASC LIMIT 1'
+        logger.error("Second Card SQL: " + sqls)
+        cursor.execute(sqls)
+        rows = cursor.fetchall()
+        try:
+            second_card = {
+                'basecard_id': rows[0][0],
+                'mu': rows[0][1],
+                'sigma': rows[0][2],
+            }
+        except IndexError:
+            logger.error("Battle: UGH. IndexError. This SQL returned no result: " + sqls)
+            pass
 
-    #card_b_list = Card.objects.filter(basecard__id__exact=rows[1][0]).order_by('-multiverseid')
-    card_b_list = Card.objects.filter(
-        basecard__id__exact=second_card['basecard_id']).order_by('-multiverseid')
-    card_b = card_b_list[0]
+        #card_b_list = Card.objects.filter(basecard__id__exact=rows[1][0]).order_by('-multiverseid')
+        card_b = Card.objects.filter(basecard__id__exact=second_card['basecard_id']).order_by('-multiverseid').first()
+
+        # lastly, let's check to make sure that this battle has not already occured
+        sqls = "SELECT 1 FROM mtgdbapp_battle WHERE session_key = '" + str(
+            request.session.session_key) + "' AND ((winner_pcard_id = " + str(
+            card_a.basecard.physicalcard.id) + " AND loser_pcard_id = " + str(
+            card_b.basecard.physicalcard.id) + ") OR (winner_pcard_id = " + str(
+                card_b.basecard.physicalcard.id) + " AND loser_pcard_id = " + str(
+                    card_a.basecard.physicalcard.id) + "))"
+        #'request.session.fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' AND fbc.basecard_id <> ' + str(first_card['basecard_id']) + ' AND cr.mu > ' + str(first_card['mu'] - ((1 + find_iterations) * first_card['sigma'])) + ' AND cr.mu < ' + str(first_card['mu'] + ((1 + find_iterations) * first_card['sigma'])) + ' ORDER BY r ASC LIMIT 1'
+        logger.error("Check battle SQL: " + sqls)
+        cursor.execute(sqls)
+        rows = cursor.fetchall()
+        if len(rows) > 0 and find_iterations < 9:
+            # we have done this battle before! Oops!
+            card_b = None
+            find_iterations = find_iterations + 1
+
     context = {'card_a': card_a,
                'card_b': card_b,
                'first_card': first_card,
@@ -574,6 +474,14 @@ def battle(request, format="redirect"):
                'format_id': format_id,
                'format': format_obj,
                }
+    if random.random() > 0.5:
+        y_a = context['card_a']
+        context['card_a'] = context['card_b']
+        context['card_b'] = y_a
+        y_c = context['first_card']
+        context['first_card'] = context['second_card']
+        context['second_card'] = y_c
+
     if request.GET.get(
             'c',
             False) or request.session.get(

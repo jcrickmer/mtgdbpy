@@ -353,7 +353,8 @@ class CardManager(models.Manager):
             for sd in sortds:
                 # If we are sorting for card rating, we need to inject into the search criteria the format that we care about.
                 if sd.term == 'cardrating':
-                    pre_where_clause = ' LEFT JOIN mtgdbapp_cardrating AS crs ON crs.physicalcard_id = pc.id AND crs.test_id = 1 AND crs.format_id = ' + str(sd.crs_format_id)
+                    pre_where_clause = ' LEFT JOIN mtgdbapp_cardrating AS crs ON crs.physicalcard_id = pc.id AND crs.test_id = 1 AND crs.format_id = ' + \
+                        str(sd.crs_format_id)
 
         # Now we can process all of the other terms
         for arg in all_args:
@@ -656,15 +657,17 @@ class CardType(models.Model):
 
 
 class FormatManager(models.Manager):
+
     def current_legal_formats(self, card):
         # Look up all of the formats where this card is currently legal.
-        #formats = FormatBasecard.objects.filter(basecard__id=card.basecard.id,
+        # formats = FormatBasecard.objects.filter(basecard__id=card.basecard.id,
         #                                        format__start_date__lte=datetime.today(),
         #                                        format__end_date__gte=datetime.today())
         formats = Format.objects.filter(formatbasecard__basecard_id=card.basecard.id,
                                         start_date__lte=datetime.today(),
                                         end_date__gte=datetime.today())
         return formats
+
 
 class Format(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -678,7 +681,7 @@ class Format(models.Model):
 
     objects = models.Manager()
     cards = FormatManager()
-    
+
     def __unicode__(self):
         return str(
             self.id) + " [Format: " + str(self.formatname) + " (" + self.format + ")]"

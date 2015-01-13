@@ -10,14 +10,9 @@ urlpatterns = patterns('',
                        url(r'^list/$', views.cardlist, name='list'),
                        url(r'^_list$', views.cardlist, name='list'),
                        # ex: /cards/5/
-                       url(r'^(?P<multiverseid>\d+)/$',
-                           views.detail,
-                           name='detail'),
+                       url(r'^(?P<multiverseid>\d+)/$', views.detail, name='detail'),
                        # ex: /cards/376251-augur-of-bolas/
-                       url(
-                           r'^(?P<multiverseid>\d+)-(?P<slug>[a-zA-Z-]+)/$',
-                           views.detail,
-                           name='detail'),
+                       url(r'^(?P<multiverseid>\d+)-(?P<slug>[a-zA-Z-]+)/$', views.detail, name='detail'),
                        # ex: /cards/battle/
                        url(r'^battle/$', views.battle, name='battle'),
                        url(r'^battle/(?P<format>[a-zA-Z-]+)/$',
@@ -25,9 +20,7 @@ urlpatterns = patterns('',
                            name='battle'),
                        url(r'^_winbattle$', views.winbattle, name='winbattle'),
                        # ex: /cards/augur-of-bolas/
-                       url(r'^(?P<slug>[a-zA-Z-]+)/$',
-                           views.detail,
-                           name='detail'),
+                       url(r'^(?P<slug>[a-zA-Z-]+)/$', views.detail, name='detail'),
                        # ex: /polls/results/
                        # ex: /polls/5/vote/
                        url(r'^(?P<multiverseid>\d+)/vote/$',
