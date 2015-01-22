@@ -164,6 +164,7 @@ def cardlist(request):
                 spred.value = format_lookup.id
         spreds.append(spred)
 
+    sort_by_filing_name_added = False
     if request.session.get('sort_order', False):
         sort_order = request.session.get('sort_order')
         sd = SortDirective()
@@ -176,7 +177,22 @@ def cardlist(request):
                 sd.term = 'cardrating'
                 sd.direction = sd.DESC
                 sd.crs_format_id = ffff.id
+        else:
+            sort_by_filing_name_added = True
+        spreds.append(sd)
 
+    # Let's make sure to always sort by filing_name as the last
+    # condition. If we do not, then MySQL (and any SQL RDBMS, I
+    # imagine) will return an undefined sort order when order by
+    # values that have multiple records that are equal. For instance,
+    # if we sort by CMC, there could be pages and pages of CMC=3, and
+    # the sort order within that set is undefined, thus paginating
+    # within the list (which makes another SQL query) may return the
+    # same results over and over again. Adding a secondary sort that
+    # we know is unique in value will solve that.
+    if not sort_by_filing_name_added:
+        sd = SortDirective()
+        sd.term = 'name'
         spreds.append(sd)
 
     card_list = Card.playables.search(spreds)

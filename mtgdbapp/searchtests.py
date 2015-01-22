@@ -1744,3 +1744,14 @@ class CardManagerROTestCase(FastFixtureTestCase):
         cards = Card.playables.search(a, b)
         #err.write(str(cards.query) + "\n")
         self.assertEquals(len(list(cards)), 381 - 41)
+
+    # some random bug tests
+    def test_name_g_sql(self):
+        a = SearchPredicate()
+        a.term = 'name'
+        a.operator = a.CONTAINS
+        a.value = 'g'
+        cards = Card.playables.search(a)
+        #err.write(str(cards.query) + "\n")
+        # I am not sure that this is the right answer or not. It returns Ravager of the Fells, which matches. But Huntmaster of the Fells is the front of the card. Is this right? I think that I need users to play with it and offer feedback.
+        self.assertEquals(len(list(cards)), 140)

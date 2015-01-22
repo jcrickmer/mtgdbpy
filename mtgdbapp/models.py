@@ -20,6 +20,7 @@ from django.utils.safestring import mark_safe
 from django.db.models import Max, Min, Count
 from django.db import connection
 
+import logging
 
 class Color(models.Model):
     id = models.CharField(primary_key=True, max_length=1)
@@ -422,7 +423,8 @@ class CardManager(models.Manager):
         if len(terms) > 0:
             sql_s = sql_s + ' WHERE ' + ' AND '.join(terms)
 
-        sql_s = sql_s + ' GROUP BY pc.id'
+        group_by_added = True
+        sql_s = sql_s + ' GROUP BY pc.id '
 
         if len(not_terms) > 0:  # If we have to pull out some types and subtypes, we better do it now.
             # Let's execute the SQL we have (sql_s) but do it with cursor so that we do not instantiate any objects
@@ -456,11 +458,21 @@ class CardManager(models.Manager):
                     not_basecard_ids = cursor.fetchall()
                     if len(not_basecard_ids) > 0:
                         sql_s = sql_s + ' AND bc.id NOT IN (' + ','.join(str(n[0]) for n in not_basecard_ids) + ') '
+            group_by_added = False
 
-            sql_s = sql_s + ' GROUP BY bc.id HAVING max(c.multiverseid)'
+        if group_by_added:
+            #sql_s = sql_s + ' , '
+            pass
+        else:
+            sql_s = sql_s + ' GROUP BY ' + 'pc.id '
+        #sql_s = sql_s + ' bc.id HAVING max(c.multiverseid) '
+        sql_s = sql_s + ' HAVING max(c.multiverseid) '
 
         sql_s = sql_s + ' ORDER BY '
         sql_s = sql_s + ', '.join(str(str(arg.sqlname()) + ' ' + arg.direction) for arg in sortds)
+
+        logger = logging.getLogger(__name__)
+        #logger.error("Card Search SQL: " + sql_s)
 
         cards = self.raw(sql_s)
 

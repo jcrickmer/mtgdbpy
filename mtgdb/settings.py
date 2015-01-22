@@ -112,6 +112,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
+        'mtgdbapp.models': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
     },
 }
 
