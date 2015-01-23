@@ -626,7 +626,7 @@ def vote(request, multiverseid):
 
 def ratings(request):
     logger = logging.getLogger(__name__)
-    format_id = 4
+    format_id = 14
     test_id = 1
     # dummy test harness to just get some ratings...
     context = {}
