@@ -1753,5 +1753,134 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.value = 'g'
         cards = Card.playables.search(a)
         #err.write(str(cards.query) + "\n")
-        # I am not sure that this is the right answer or not. It returns Ravager of the Fells, which matches. But Huntmaster of the Fells is the front of the card. Is this right? I think that I need users to play with it and offer feedback.
+        # I am not sure that this is the right answer or not. It returns Ravager
+        # of the Fells, which matches. But Huntmaster of the Fells is the front of
+        # the card. Is this right? I think that I need users to play with it and
+        # offer feedback.
         self.assertEquals(len(list(cards)), 140)
+
+    def test_legendary_creatures(self):
+        a = SearchPredicate()
+        a.term = 'type'
+        a.operator = a.EQUALS
+        a.value = 7
+        b = SearchPredicate()
+        b.term = 'type'
+        b.operator = b.EQUALS
+        b.value = 3
+        cards = Card.playables.search(a, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 19)
+        self.assertEquals(cards[0].basecard.filing_name, 'anafenza the foremost')
+        self.assertEquals(cards[1].basecard.filing_name, 'azusa lost but seeking')
+        self.assertEquals(cards[18].basecard.filing_name, 'vendilion clique')
+
+    def test_warrior_goblins(self):
+        a = SearchPredicate()
+        a.term = 'subtype'
+        a.operator = a.EQUALS
+        a.value = 269
+        b = SearchPredicate()
+        b.term = 'subtype'
+        b.operator = b.EQUALS
+        b.value = 94
+        cards = Card.playables.search(a, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 5)
+        self.assertEquals(cards[0].basecard.filing_name, 'akki avalanchers')
+        self.assertEquals(cards[1].basecard.filing_name, u'foundry street denizen')
+        self.assertEquals(cards[4].basecard.filing_name, 'mogg war marshal')
+
+    def test_white_green(self):
+        a = SearchPredicate()
+        a.term = 'color'
+        a.operator = a.EQUALS
+        a.value = 'w'
+        b = SearchPredicate()
+        b.term = 'color'
+        b.operator = b.EQUALS
+        b.value = 'g'
+        cards = Card.playables.search(a, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 11)
+        self.assertEquals(cards[0].basecard.filing_name, u'abzan charm')
+        self.assertEquals(cards[1].basecard.filing_name, u'anafenza the foremost')
+        self.assertEquals(cards[4].basecard.filing_name, u'kitchen finks')
+
+    def test_white_green_legendary_creatures(self):
+        a = SearchPredicate()
+        a.term = 'color'
+        a.operator = a.EQUALS
+        a.value = 'w'
+        b = SearchPredicate()
+        b.term = 'color'
+        b.operator = b.EQUALS
+        b.value = 'g'
+        c = SearchPredicate()
+        c.term = 'type'
+        c.operator = c.EQUALS
+        c.value = 7
+        d = SearchPredicate()
+        d.term = 'type'
+        d.operator = d.EQUALS
+        d.value = 3
+        cards = Card.playables.search(a, d, c, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 2)
+        self.assertEquals(cards[0].basecard.filing_name, u'anafenza the foremost')
+        self.assertEquals(cards[1].basecard.filing_name, 'sigarda host of herons')
+
+    def test_white_green_legendary_creatures_not_black(self):
+        e = SearchPredicate()
+        e.term = 'color'
+        e.operator = e.EQUALS
+        e.negative = True
+        e.value = 'b'
+        a = SearchPredicate()
+        a.term = 'color'
+        a.operator = a.EQUALS
+        a.value = 'w'
+        b = SearchPredicate()
+        b.term = 'color'
+        b.operator = b.EQUALS
+        b.value = 'g'
+        c = SearchPredicate()
+        c.term = 'type'
+        c.operator = c.EQUALS
+        c.value = 7
+        d = SearchPredicate()
+        d.term = 'type'
+        d.operator = d.EQUALS
+        d.value = 3
+        cards = Card.playables.search(e, a, d, c, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 1)
+        self.assertEquals(cards[0].basecard.filing_name, 'sigarda host of herons')
+
+    def test_white_green_legendary_creatures_not_red(self):
+        e = SearchPredicate()
+        e.term = 'color'
+        e.operator = e.EQUALS
+        e.negative = True
+        e.value = 'r'
+        a = SearchPredicate()
+        a.term = 'color'
+        a.operator = a.EQUALS
+        a.value = 'w'
+        b = SearchPredicate()
+        b.term = 'color'
+        b.operator = b.EQUALS
+        b.value = 'g'
+        c = SearchPredicate()
+        c.term = 'type'
+        c.operator = c.EQUALS
+        c.value = 7
+        d = SearchPredicate()
+        d.term = 'type'
+        d.operator = d.EQUALS
+        d.value = 3
+        cards = Card.playables.search(e, a, d, c, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 2)
+        self.assertEquals(cards[0].basecard.filing_name, u'anafenza the foremost')
+        self.assertEquals(cards[1].basecard.filing_name, 'sigarda host of herons')

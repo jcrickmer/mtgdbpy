@@ -22,6 +22,7 @@ from django.db import connection
 
 import logging
 
+
 class Color(models.Model):
     id = models.CharField(primary_key=True, max_length=1)
     color = models.CharField(max_length=9)
@@ -311,8 +312,11 @@ class CardManager(models.Manager):
     def search(self, *args, **kwargs):
         test_id = 1
 
+        # use this to create unique table aliases as we add joins
+        jcounter = 0
+
         pre_where_clause = ''
-        sql_s = '''SELECT c.id, c.basecard_id FROM physicalcards AS pc JOIN basecards AS bc ON pc.id = bc.physicalcard_id JOIN cards AS c ON c.basecard_id = bc.id JOIN cardtypes AS ct ON ct.basecard_id = bc.id LEFT JOIN cardsubtypes cst ON cst.basecard_id = bc.id LEFT JOIN cardcolors AS cc ON cc.basecard_id = bc.id LEFT JOIN mtgdbapp_formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN mtgdbapp_cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 '''
+        sql_s = '''SELECT c.id, c.basecard_id FROM physicalcards AS pc JOIN basecards AS bc ON pc.id = bc.physicalcard_id JOIN cards AS c ON c.basecard_id = bc.id LEFT JOIN mtgdbapp_formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN mtgdbapp_cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 '''
 
         terms = []
         not_terms = []
@@ -400,20 +404,31 @@ class CardManager(models.Manager):
                     if arg.negative:
                         not_terms.append(arg)
                     else:
-                        sql_p = ' cc.color_id '
-                        sql_p = sql_p + arg.text_sql_operator_and_value()
+                        tab_alias = 'cc' + str(jcounter)
+                        jcounter = jcounter + 1
+                        pre_where_clause = pre_where_clause + ' JOIN cardcolors AS ' + \
+                            tab_alias + ' ON bc.id = ' + tab_alias + '.basecard_id '
+                        sql_p = ' ' + tab_alias + '.color_id ' + arg.text_sql_operator_and_value()
                         terms.append(sql_p)
                 elif arg.term == 'type':
                     if arg.negative:
                         not_terms.append(arg)
                     else:
-                        sql_p = ' ct.type_id = ' + str(arg.value)
+                        tab_alias = 'ct' + str(jcounter)
+                        jcounter = jcounter + 1
+                        pre_where_clause = pre_where_clause + ' JOIN cardtypes AS ' + \
+                            tab_alias + ' ON bc.id = ' + tab_alias + '.basecard_id '
+                        sql_p = ' ' + tab_alias + '.type_id = ' + str(arg.value)
                         terms.append(sql_p)
                 elif arg.term == 'subtype':
                     if arg.negative:
                         not_terms.append(arg)
                     else:
-                        sql_p = ' cst.subtype_id = ' + str(arg.value)
+                        tab_alias = 'cst' + str(jcounter)
+                        jcounter = jcounter + 1
+                        pre_where_clause = pre_where_clause + ' JOIN cardsubtypes AS ' + \
+                            tab_alias + ' ON bc.id = ' + tab_alias + '.basecard_id '
+                        sql_p = ' ' + tab_alias + '.subtype_id = ' + str(arg.value)
                         terms.append(sql_p)
                 elif arg.term == 'layout':
                     sql_p = ' pc.layout ' + arg.text_sql_operator_and_value()
@@ -433,7 +448,7 @@ class CardManager(models.Manager):
             card_ids = cursor.fetchall()
             bc_ids = [row[1] for row in card_ids]
 
-            sql_s = 'SELECT c.id FROM physicalcards AS pc JOIN basecards AS bc ON pc.id = bc.physicalcard_id JOIN cards AS c ON c.basecard_id = bc.id JOIN cardtypes AS ct ON ct.basecard_id = bc.id LEFT JOIN cardsubtypes cst ON cst.basecard_id = bc.id LEFT JOIN cardcolors AS cc ON cc.basecard_id = bc.id LEFT JOIN mtgdbapp_formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN mtgdbapp_cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 ' + \
+            sql_s = 'SELECT c.id FROM physicalcards AS pc JOIN basecards AS bc ON pc.id = bc.physicalcard_id JOIN cards AS c ON c.basecard_id = bc.id LEFT JOIN cardcolors AS cc ON cc.basecard_id = bc.id LEFT JOIN mtgdbapp_formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN mtgdbapp_cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 ' + \
                 pre_where_clause + ' WHERE bc.id IN (' + ','.join(str(i) for i in bc_ids) + ') '
             for arg in not_terms:
                 # Now that we have all of these ids, let's use them to filter out those types that we do not want.
