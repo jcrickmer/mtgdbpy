@@ -26,59 +26,59 @@ $("#return-results").button().click(function(event) { document.location = "{% ur
     <table>
       <tbody>
         <tr>
-          <td style="width: 130px;">Name</td>
+          <td style="width: 130px;" class="cardattr">Name</td>
           <td>{{ working.card.basecard.name }}</td>
         </tr>
         <tr>
-          <td>Mana Cost</td>
+          <td class="cardattr">Mana Cost</td>
           <td>{{ working.card.mana_cost_html }}</td>
         </tr>
     <tr>
-      <td>Type</td>
+      <td class="cardattr">Type</td>
       <td>{% for ttype in working.card.basecard.types.all %}{{ ttype.type }} {% endfor %}</td>
     </tr>
 {% if working.card.basecard.subtypes.all %}
     <tr>
-      <td>Subtype</td>
+      <td class="cardattr">Subtype</td>
       <td>{% for tsubtype in working.card.basecard.subtypes.all %}{{ tsubtype.subtype }} {% endfor %}</td>
     </tr>
 {% endif %}
     <tr>
-      <td>Text</td>
+      <td class="cardattr">Text</td>
       <td>{{ working.card.rules_text_html|escape }}</td>
     </tr>
 {% if working.card.basecard.power %}
     <tr>
-      <td>Power</td>
+      <td class="cardattr">Power</td>
       <td>{{ working.card.basecard.power }}</td>
     </tr>
 {% endif %}
 {% if working.card.basecard.toughness %}
     <tr>
-      <td>Toughness</td>
+      <td class="cardattr">Toughness</td>
       <td>{{ working.card.basecard.toughness }}</td>
     </tr>
 {% endif %}
 {% if working.card.basecard.loyalty %}
     <tr>
-      <td>Loyalty</td>
+      <td class="cardattr">Loyalty</td>
       <td>{{ working.card.basecard.loyalty }}</td>
     </tr>
 {% endif %}
     <tr>
-      <td>CMC</td>
+      <td class="cardattr">CMC</td>
       <td>{{ working.card.basecard.cmc }}</td>
     </tr>
     <tr>
-      <td>Color</td>
+      <td class="cardattr">Color</td>
       <td>{% for tcolor in working.card.basecard.colors.all %}{{ tcolor.color }} {% endfor %}{% if working.card.basecard.colors.all|length == 0 %}Colorless{% endif %}</td>
     </tr>
     <tr>
-      <td>Multiverse Id</td>
+      <td class="cardattr">Multiverse Id</td>
       <td>{{ working.card.multiverseid }}</td>
     </tr>
     <tr>
-      <td>card.ninja Card&nbsp;Rating</td>
+      <td class="cardattr">card.ninja Card&nbsp;Rating</td>
       <td>
         {% for cardrating in working.card.basecard.physicalcard.cardrating_set.all %}
           {% if cardrating.test.id == 1 %}
@@ -98,43 +98,37 @@ $("#return-results").button().click(function(event) { document.location = "{% ur
       </td>
     </tr>
     <tr>
-      <td>Expansion Set</td>
+      <td class="cardattr">Expansion Set</td>
       <td>{{ working.card.expansionset.name }}</td>
     </tr>
     <tr>
-      <td>Flavor Text</td>
+      <td class="cardattr">Flavor Text</td>
       <td>{{ working.card.flavor_text_html }}</td>
     </tr>
 {% if working.card.mark.mark %}
     <tr>
-      <td>Mark</td>
+      <td class="cardattr">Mark</td>
       <td>{{ working.card.mark.mark }}</td>
     </tr>
 {% endif %}
     <tr>
-      <td>Rarity</td>
+      <td class="cardattr">Rarity</td>
       <td>{{ working.card.rarity.rarity }}</td>
     </tr>
     <tr>
-      <td>Card Number</td>
+      <td class="cardattr">Card Number</td>
       <td>{{ working.card.card_number }}</td>
     </tr>
+<!--    <tr>
+      <td class="cardattr">Keywords</td>
+      <td>
+        {% for kw in keywords %}
+{{ kw.keyword }}, 
+{% endfor %}</td>
+    </tr> -->
         <tr>
-          <td>All Versions</td>
+          <td class="cardattr">All Versions</td>
           <td>{% for ocard in other_versions %}<a href="{% url 'cards:detail' multiverseid=ocard.multiverseid slug=ocard.url_slug %}">{{ ocard.expansionset.abbr }}</a> {% endfor %}</td>
-        </tr>
-        <tr>
-          <td colspan="2">Rulings</td>
-        </tr>
-        <tr>
-          <td colspan="2">
-            <table>{% for ruling in working.card.basecard.get_rulings %}
-              <tr>
-                <td class="rulingdate">{{ruling.ruling_date|date:"Y-m-d"}}</td>
-                <td class="cardruling">{{ruling.ruling_text}}</td>
-              </tr>{% endfor %}
-            </table>
-          </td>
         </tr>
       </tbody>
     </table>
@@ -142,6 +136,7 @@ $("#return-results").button().click(function(event) { document.location = "{% ur
   <div class="col-sm-1 col-md-3 col-lg-3"></div>
 </div>
 {% endfor %}
+<div class="battles-block">
 <div class="row">
   <div class="col-xs-12">
     <h3>Current Legal Formats</h3>
@@ -157,8 +152,8 @@ $("#return-results").button().click(function(event) { document.location = "{% ur
     <div>{{ physicalCardTitle }} has beaten these cards in card.ninja Battles:</div>
     <div class="row">
       {% for woncard in details.card_wins %}
-        <div class="col-xs-6 col-sm-4 col-md-2">
-          <a href="{% url 'cards:detail' woncard.multiverseid woncard.url_slug %}"><img class="list_cardimage" src="{{ woncard.img_url }}" alt="{{ woncard.basecard.name }}"/></a>
+        <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
+          <div class="text-center"><a href="{% url 'cards:detail' woncard.multiverseid woncard.url_slug %}"><img class="list_cardimage" src="{{ woncard.img_url }}" alt="{{ woncard.basecard.name }}"/></a></div>
           <div class="text-center"><a href="{% url 'cards:detail' woncard.multiverseid woncard.url_slug %}">{{woncard.basecard.name}}</a></div>
         </div>
       {% endfor %}
@@ -169,8 +164,8 @@ $("#return-results").button().click(function(event) { document.location = "{% ur
     <div>{{ physicalCardTitle }} has lost to these cards in card.ninja Battles:</div>
     <div class="row">
       {% for lostcard in details.card_losses %}
-        <div class="col-xs-6 col-sm-4 col-md-2">
-          <a href="{% url 'cards:detail' lostcard.multiverseid lostcard.url_slug %}"><img class="list_cardimage" src="{{ lostcard.img_url }}" alt="{{ lostcard.basecard.name }}"/></a>
+        <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
+          <div class="text-center"><a href="{% url 'cards:detail' lostcard.multiverseid lostcard.url_slug %}"><img class="list_cardimage" src="{{ lostcard.img_url }}" alt="{{ lostcard.basecard.name }}"/></a></div>
           <div class="text-center"><a href="{% url 'cards:detail' lostcard.multiverseid lostcard.url_slug %}">{{lostcard.basecard.name}}</a></div>
         </div>
       {% endfor %}
@@ -180,6 +175,40 @@ $("#return-results").button().click(function(event) { document.location = "{% ur
   </div>
 </div>
 {% endfor %}
+</div>
+<div class="similiar-block">
+  <div class="row">
+    <div class="col-xs-12">
+      <h3>Similar Cards to {{physicalCardTitle}}</h3>
+    </div>
+  </div>
+  <div class="row">
+    {% for sim in similars %}
+      <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
+        <div class="text-center"><a href="{% url 'cards:detail' sim.multiverseid sim.url_slug %}"><img class="list_cardimage" src="{{ sim.img_url }}" alt="{{ sim.basecard.name }}"/></a></div>
+        <div class="text-center"><a href="{% url 'cards:detail' sim.multiverseid sim.url_slug %}">{{sim.basecard.name}}</a></div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
 
-<div class="row"><div class="col-xs-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_muid}}" target="_blank">View on Gatherer</a></div></div>
+<div class="rulings-block">
+  <div class="row">
+    <div class="col-xs-12">
+      <h3>Rulings</h3>
+    </div>
+  </div>
+  <div class="row well">
+    <div class="col-xs-12">
+      <dl class="dl-horizontal">
+        {% for ruling in rulings %}
+          <dt class="rulingdate">{{ruling.ruling_date|date:"Y-m-d"}}</dt>
+          <dd class="cardruling">{{ruling.ruling_text}}</dd>
+        {% endfor %}
+      </dl>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 20px;" class="row"><div class="col-xs-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_muid}}" target="_blank">View on Gatherer</a></div></div>
 {% endblock %}

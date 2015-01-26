@@ -367,12 +367,18 @@ def detail(request, multiverseid=None, slug=None):
             dets['card_losses'] = [
                 Card.objects.filter(
                     basecard__physicalcard__id=battle['winner_pcard_id']).order_by('-multiverseid').first() for battle in lost_battles]
+        simliars = []
+        for sim in cards[0].basecard.physicalcard.physicalcard.all().order_by('-score')[:18]:
+            simliars.append(Card.objects.filter(basecard__physicalcard=sim.sim_physicalcard).order_by('-multiverseid').first())
         response = render(request, 'cards/detail.html', {'request_muid': multiverseid,
                                                          'primary_basecard_id': primary_basecard_id,
                                                          'cards': card_list,
+                                                         'keywords': cards[0].basecard.physicalcard.cardkeyword_set.all().order_by('-kwscore'),
+                                                         'similars': simliars,
                                                          'other_versions': twinCards,
                                                          'physicalCardTitle': " // ".join(card_titles),
-                                                         'card_format_details': card_format_details
+                                                         'card_format_details': card_format_details,
+                                                         'rulings': cards[0].basecard.get_rulings(),
                                                          #'rules_text_html': mark_safe(card.basecard.rules_text),
                                                          #'flavor_text_html': mark_safe(card.flavor_text),
                                                          #'mana_cost_html': mana_cost_html,

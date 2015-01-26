@@ -782,3 +782,22 @@ class CardRating(models.Model):
     def __unicode__(self):
         return "[CardRating " + str(self.id) + ": " + str(self.physicalcard.id) + " mu=" + str(self.mu) + " sigma=" + str(
             self.sigma) + " for format \"" + str(self.format.format) + ", test \"" + str(self.test.name) + "\"]"
+
+class CardKeyword(models.Model):
+    #id = models.IntegerField(primary_key=True)
+    physicalcard = models.ForeignKey(PhysicalCard)
+    keyword = models.CharField(max_length=60, null=False)
+    kwscore = models.FloatField(null=False)
+
+    class Meta:
+        managed = True
+
+class SimilarPhysicalCard(models.Model):
+    #id = models.IntegerField(primary_key=True)
+    score = models.FloatField(null=False)
+    physicalcard = models.ForeignKey(PhysicalCard, related_name='physicalcard')
+    sim_physicalcard = models.ForeignKey(PhysicalCard, related_name='simphysicalcard')
+
+    class Meta:
+        managed = True
+

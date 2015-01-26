@@ -301,3 +301,7 @@ ul#search_terms li {
    padding-right: 5px;
    padding-left: 0px;
 }
+
+div.card-tile {
+  height: 250px;
+}
