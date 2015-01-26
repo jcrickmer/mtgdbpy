@@ -43,18 +43,18 @@ class Command(BaseCommand):
 
             for basecard in pcard.basecard_set.all():
                 rules = basecard.rules_text
-                rules = rules.replace(basecard.name,'cardselfreference')
+                rules = rules.replace(basecard.name, 'cardselfreference')
                 rules = rules.lower()
-                rules = rules.replace('{t}',' tap ')
-                rules = rules.replace('{q}',' untap ')
-                rules = rules.replace('{w}',' manawhite ')
-                rules = rules.replace('{u}',' manablue ')
-                rules = rules.replace('{b}',' manablack ')
-                rules = rules.replace('{r}',' manared ')
-                rules = rules.replace('{g}',' managreen ')
-                rules = rules.replace('{x}',' manax ')
-                for numm in range(0,20):
-                    rules = rules.replace('{' + str(numm) + '}','mana' + str(numm))
+                rules = rules.replace('{t}', ' tap ')
+                rules = rules.replace('{q}', ' untap ')
+                rules = rules.replace('{w}', ' manawhite ')
+                rules = rules.replace('{u}', ' manablue ')
+                rules = rules.replace('{b}', ' manablack ')
+                rules = rules.replace('{r}', ' manared ')
+                rules = rules.replace('{g}', ' managreen ')
+                rules = rules.replace('{x}', ' manax ')
+                for numm in range(0, 20):
+                    rules = rules.replace('{' + str(numm) + '}', 'mana' + str(numm))
                 rules = rules.replace("{wp}", ' mamawhite manaphyrexian ')
                 rules = rules.replace("{up}", ' mamablue manaphyrexian ')
                 rules = rules.replace("{bp}", ' mamawhite manaphyrexian ')
@@ -86,11 +86,11 @@ class Command(BaseCommand):
                         fileout.write(basecard.filing_name + "\n")
                     fileout.write(rules + "\n")
                     fileout.write(basecard.mana_cost + "\n")
-                    strippedcost = str(basecard.mana_cost).replace('{','')
-                    strippedcost = strippedcost.replace('}','')
-                    strippedcost = strippedcost.replace('/p','')
-                    strippedcost = strippedcost.replace('2/','')
-                    strippedcost = strippedcost.replace('/','')
+                    strippedcost = str(basecard.mana_cost).replace('{', '')
+                    strippedcost = strippedcost.replace('}', '')
+                    strippedcost = strippedcost.replace('/p', '')
+                    strippedcost = strippedcost.replace('2/', '')
+                    strippedcost = strippedcost.replace('/', '')
                     fileout.write(strippedcost.lower() + "\n")
                     uses_pmana = False
                     try:
@@ -107,23 +107,23 @@ class Command(BaseCommand):
                         fileout.write('phyrexianmana\n')
                     fileout.write('cmc' + str(basecard.cmc) + "\n")
                     if basecard.power is not None:
-                        fileout.write('power' + str(basecard.power) + "\n")                
+                        fileout.write('power' + str(basecard.power) + "\n")
                     if basecard.toughness is not None:
-                        fileout.write('toughness' + str(basecard.toughness) + "\n")                
+                        fileout.write('toughness' + str(basecard.toughness) + "\n")
                     if basecard.loyalty is not None:
-                        fileout.write('loyalty' + str(basecard.loyalty) + "\n")                
+                        fileout.write('loyalty' + str(basecard.loyalty) + "\n")
                     colors = basecard.colors.all()
                     if len(colors) > 1:
                         fileout.write('multicolored\n')
                     else:
                         fileout.write('notmulticolored\n')
-                    allcolors = ['white','blue','black','red','green','colorless']
+                    allcolors = ['white', 'blue', 'black', 'red', 'green', 'colorless']
                     for color in colors:
                         fileout.write('cardcolor' + color.color.lower() + "\n")
                         allcolors.remove(color.color.lower())
                     for notcolor in allcolors:
                         fileout.write('notcardcolor' + notcolor + "\n")
-                        
+
                     fileout.write(' '.join('type' + ctype.type for ctype in basecard.types.all()) + "\n")
                     fileout.write(' '.join('subtype' + cstype.subtype for cstype in basecard.subtypes.all()) + "\n")
 

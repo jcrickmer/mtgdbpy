@@ -783,6 +783,7 @@ class CardRating(models.Model):
         return "[CardRating " + str(self.id) + ": " + str(self.physicalcard.id) + " mu=" + str(self.mu) + " sigma=" + str(
             self.sigma) + " for format \"" + str(self.format.format) + ", test \"" + str(self.test.name) + "\"]"
 
+
 class CardKeyword(models.Model):
     #id = models.IntegerField(primary_key=True)
     physicalcard = models.ForeignKey(PhysicalCard)
@@ -792,6 +793,7 @@ class CardKeyword(models.Model):
     class Meta:
         managed = True
 
+
 class SimilarPhysicalCard(models.Model):
     #id = models.IntegerField(primary_key=True)
     score = models.FloatField(null=False)
@@ -800,4 +802,3 @@ class SimilarPhysicalCard(models.Model):
 
     class Meta:
         managed = True
-
