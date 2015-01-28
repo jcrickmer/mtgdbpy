@@ -38,7 +38,7 @@ class Command(BaseCommand):
         # connect to bitly
         conn_bitly = bitly_api.Connection(access_token='9708cb7d50550b6409cd93b796990bebdde3edb0')
 
-        for counter in range(0, 5):
+        for counter in range(0, 1):
             format_count = len(list(cur_formats))
             format_index = int(random.random() * format_count)
             cur_format = cur_formats[format_index]
@@ -72,4 +72,6 @@ class Command(BaseCommand):
             tweet = tweet + ' in ' + format_hashtags[cur_format.formatname] + ' '
             url_raw = 'http://card.ninja/cards/battle/' + cur_format.formatname + '/?bcid=' + str(first_card.basecard.id)
             url_raw = url_raw + '&utm_source=Social&utm_medium=post&utm_campaign=calltobattle'
-            url = out.write(tweet + "\n")
+            bitly = conn_bitly.shorten(url_raw)
+            url = out.write(tweet + " " + str(bitly['url']) + "\n[[" + str(url_raw) + "]]\n\n")
+            
