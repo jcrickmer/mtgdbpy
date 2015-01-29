@@ -93,6 +93,9 @@ $("#return-results").button().click(function(event) { document.location = "{% ur
             {% if cardrating.format.id == 15 %}
               <span class="hidden-xs">{{cardrating.format.formatname}}</span><span class="visible-xs-inline">EDH</span>: {{cardrating.cardninjaRating|floatformat:3 }}<!-- (confidence {{cardrating.confidence|floatformat:2 }})--><br>
             {% endif %}
+            {% if cardrating.format.id == 17 %}
+              <span class="hidden-xs">{{cardrating.format.formatname}}</span><span class="visible-xs-inline">TL</span>: {{cardrating.cardninjaRating|floatformat:3 }}<!-- (confidence {{cardrating.confidence|floatformat:2 }})--><br>
+            {% endif %}
           {% endif %}
         {% endfor%}
       </td>

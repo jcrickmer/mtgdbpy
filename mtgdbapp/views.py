@@ -345,6 +345,8 @@ def detail(request, multiverseid=None, slug=None):
                 dets['format_abbr'] = 'Std'
             elif ff.format == 'Modern':
                 dets['format_abbr'] = 'Mod'
+            elif ff.format == 'TinyLeaders':
+                dets['format_abbr'] = 'TL'
             elif ff.format == 'Commander':
                 dets['format_abbr'] = 'EDH'
             dets['rating'] = cards[0].basecard.physicalcard.cardrating_set.filter(test_id=1, format_id=ff.id).first()

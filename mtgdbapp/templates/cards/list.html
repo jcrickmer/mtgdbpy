@@ -72,6 +72,7 @@ $(function() {
           <div class="cn_r_std">Std:&nbsp;<span id="cr_{{card.multiverseid}}_14"></span></div>
           <div class="cn_r_mod">Mod:&nbsp;<span id="cr_{{card.multiverseid}}_16"></span></div>
           <div class="cn_r_edh">EDH:&nbsp;<span id="cr_{{card.multiverseid}}_15"></span></div>
+          <div class="cn_r_tl">TL:&nbsp;<span id="cr_{{card.multiverseid}}_17"></span></div>
         {% for cardrating in card.basecard.physicalcard.cardrating_set.all %}
           {% if cardrating.test.id == 1 %}
             {% if cardrating.format.id == 14 %}
@@ -82,6 +83,9 @@ $(function() {
             {% endif %}
             {% if cardrating.format.id == 15 %}
               <script>$("#cr_{{card.multiverseid}}_15").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
+            {% endif %}
+            {% if cardrating.format.id == 17 %}
+              <script>$("#cr_{{card.multiverseid}}_17").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
             {% endif %}
           {% endif %}
         {% endfor%}
