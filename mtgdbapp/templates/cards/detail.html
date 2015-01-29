@@ -86,7 +86,7 @@ $("#return-results").button().click(function(event) { document.location = "{% ur
               <span class="hidden-xs">{{cardrating.format.formatname}}</span><span class="visible-xs-inline">Std</span>: {{cardrating.cardninjaRating|floatformat:3 }}<!-- (confidence {{cardrating.confidence|floatformat:2 }})--><br>
 
             {% endif %}
-            {% if cardrating.format.id == 0 %}
+            {% if cardrating.format.id == 16 %}
               <span class="hidden-xs">{{cardrating.format.formatname}}</span><span class="visible-xs-inline">Mod</span>: {{cardrating.cardninjaRating|floatformat:3 }}<!-- (confidence {{cardrating.confidence|floatformat:2 }})--><br>
 
             {% endif %}

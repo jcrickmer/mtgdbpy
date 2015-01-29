@@ -697,7 +697,7 @@ class FormatManager(models.Manager):
 
 
 class Format(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     formatname = models.CharField(max_length=60, null=False)
     format = models.CharField(max_length=60, unique=True, null=False)
     start_date = models.DateField(

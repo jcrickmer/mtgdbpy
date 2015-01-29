@@ -1,5 +1,6 @@
 from django.contrib import admin
 from mtgdbapp.models import Color, Rarity, Card, BaseCard, Mark, ExpansionSet, Subtype, Type, CardType, CardSubtype, PhysicalCard
+from mtgdbapp.models import Format
 from django import forms
 
 
@@ -86,9 +87,11 @@ class CardColorInline(admin.TabularInline):
 
 class PhysicalCardAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
-    fields = ['id', ]
+    fields = ['id', 'layout']
 
-
+class FormatAdmin(admin.ModelAdmin):
+    readonly_fields = ('id',)
+    
 class BaseCardAdmin(admin.ModelAdmin):
     search_fields = ['name', ]
     readonly_fields = ('id', 'cmc')
@@ -117,3 +120,4 @@ admin.site.register(Type, TypeAdmin)
 admin.site.register(CardType, CardTypeAdmin)
 admin.site.register(Subtype, SubtypeAdmin)
 admin.site.register(CardSubtype, CardSubtypeAdmin)
+admin.site.register(Format, FormatAdmin)
