@@ -89,9 +89,11 @@ class PhysicalCardAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
     fields = ['id', 'layout']
 
+
 class FormatAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
-    
+
+
 class BaseCardAdmin(admin.ModelAdmin):
     search_fields = ['name', ]
     readonly_fields = ('id', 'cmc')

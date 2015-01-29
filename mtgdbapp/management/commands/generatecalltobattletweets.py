@@ -74,4 +74,3 @@ class Command(BaseCommand):
             url_raw = url_raw + '&utm_source=Social&utm_medium=post&utm_campaign=calltobattle'
             bitly = conn_bitly.shorten(url_raw)
             url = out.write(tweet + " " + str(bitly['url']) + "\n[[" + str(url_raw) + "]]\n\n")
-            
