@@ -6,43 +6,30 @@
 {% block content %}
 <div class="row">
   <div class="col-xs-12">
+    <h2>Format: {{format.format}}</h2>
+  </div>
+  <div class="col-xs-12">
 	<div>Total Battles: {{battle_count}}</div>
+	<div>Total Battle Goal for 3% Coverage: {{goal}} ({{percent_to_goal|floatformat:2}}%)</div>
 	<div>Total Cards in this format: {{cards_count}}</div>
 	<div>Total Battlers (Sessions): {{battlers_count}}</div>
-	<div>Total Battles / Possible Battles: {{battle_percentage|floatformat:2}}%</div>
+	<div>Total Battles / Possible Battles: {{battle_percentage|floatformat:6}}%</div>
+
+    <h3>Battle Distribution</h3>
     <table>
-      <tr>
-        <th>Rating</td>
-        <th>Card</td>
-        <th>Score Quality</td>
-        <th>battles</td>
-        <th>wins</td>
-        <th>losses</td>
-        <th><em>mu</em></td>
-        <th><em>sigma</em></td>
-        <th>Fight!</td>
-      </tr>
-      {% for rating_dict in ratings %}
-        <tr>
-          <td>{{rating_dict.rating.cardninjaRating}}</td>
-          <td>{{rating_dict.basecard.name}}</td>
-          <td>{{rating_dict.rating.confidence}}</td>
-          <td>{{rating_dict.battles}}</td>
-          <td>{{rating_dict.wins}}</td>
-          <td>{{rating_dict.losses}}</td>
-          <td>{{rating_dict.rating.mu}}</td>
-          <td>{{rating_dict.rating.sigma}}</td>
-          <td><a href="{% url 'cards:battle' %}?bcid={{rating_dict.basecard.id}}&c=yes" target="_blank">Battle</a></td>
-        </tr>
+      <tr><th>Battle Count</th><th>Cards</th><th>% of Total Cards</th></tr>
+      {% for key,value in tester.items %}
+        <tr><td>{{key}}</td><td>{{value.count}}</td><td>{{value.percent|floatformat:2}}%</td></tr>
       {% endfor %}
     </table>
-    <p>
-      Note that <em>lower</em> Quality of Score means that the ranking is more accurate.
-    </p>
-    <p>
-      This table is a list of cards that have been rated in the current Standard format. The cards that were choosen for rating were weighted so that the top ~110 cards being played in decks were presented about 50% of the time, and all cards in standard were presented about 50% of the time. Thus, cards that are not seeing much play in tournament-level play are (a) not this list, or (b) liekly to have a worse Quality of Score (a higher number).
-    </p>
+
+    <h3>Recent Battling</h3>
+    <table>
+      <tr><th>Date and Hour</th><th>Battles</th></tr>
+      {% for a in activity %}
+        <tr><td>{{a.datehour|date:"M d, h"}}:00</td><td>{{a.count}}<td></tr>
+      {% endfor %}
+    </table>
   </div>
 </div>
-
 {% endblock %}

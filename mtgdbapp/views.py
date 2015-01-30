@@ -9,6 +9,7 @@ from django.shortcuts import redirect
 from django.http import Http404
 from django.db import connection
 from django.db import IntegrityError
+import collections
 
 import random
 import operator
@@ -634,21 +635,59 @@ def vote(request, multiverseid):
     return HttpResponse("You're voting on card %s." % multiverseid)
 
 
-def ratings(request):
+def ratings(request, format_id=0):
     logger = logging.getLogger(__name__)
-    format_id = 14
+    if format_id is None or format_id == 0:
+        return redirect(
+            'cards:ratings',
+            permanent=True,
+            format_id=1)
+
+    format = get_object_or_404(Format, pk=format_id)
+
     test_id = 1
     # dummy test harness to just get some ratings...
     context = {}
-    # REVISIT - hard coded! to subjective tet in Standard
-    card_ratings = CardRating.objects.filter(
-        format__id__exact=format_id,
-        test__id__exact=test_id).order_by('-mu')
+    context['format'] = format
+
+    context['cards_count'] = FormatBasecard.objects.filter(
+        format=format_id).count()
+
+    cursor = connection.cursor()
+    wbattle_sql = 'SELECT bc.physicalcard_id AS physicalcard_id, count(b.id) FROM mtgdbapp_formatbasecard AS fbc JOIN basecards AS bc ON fbc.basecard_id = bc.id LEFT JOIN mtgdbapp_battle AS b ON b.winner_pcard_id = bc.physicalcard_id AND fbc.format_id = b.format_id WHERE fbc.format_id = ' + \
+        format_id + ' GROUP by physicalcard_id ORDER BY physicalcard_id'
+    cursor.execute(wbattle_sql)
+    wrows = cursor.fetchall()
+    lbattle_sql = 'SELECT bc.physicalcard_id AS physicalcard_id, count(b.id) FROM mtgdbapp_formatbasecard AS fbc JOIN basecards AS bc ON fbc.basecard_id = bc.id LEFT JOIN mtgdbapp_battle AS b ON b.loser_pcard_id = bc.physicalcard_id AND fbc.format_id = b.format_id WHERE fbc.format_id = ' + \
+        format_id + ' GROUP by physicalcard_id ORDER BY physicalcard_id'
+    cursor.execute(lbattle_sql)
+    lrows = cursor.fetchall()
+    battle_results = []
+    itcount = 0
+    battles_histo = dict()
+    for wrow in wrows:
+        bat_count = wrow[1] + lrows[itcount][1]
+        battle_results.append([wrow[0], wrow[1] + lrows[itcount][1], wrow[1], lrows[itcount][1]])
+        if str(bat_count) in battles_histo:
+            battles_histo[
+                str(bat_count)] = {
+                'count': battles_histo[
+                    str(bat_count)]['count'] +
+                1,
+                'percent': 100.0 *
+                float(
+                    battles_histo[
+                        str(bat_count)]['count'] +
+                    1) /
+                context['cards_count']}
+        else:
+            battles_histo[str(bat_count)] = {'count': 1, 'percent': 100.0 * 1.0 / context['cards_count']}
+
+    context['tester'] = collections.OrderedDict(sorted(battles_histo.items(), key=lambda t: int(t[0])))
+
     context['battle_count'] = Battle.objects.filter(
         format__id__exact=format_id,
         test__id__exact=test_id).count()
-    context['cards_count'] = FormatBasecard.objects.filter(
-        format=format_id).count()
     bc = Battle.objects.filter(
         format__id__exact=format_id,
         test__id__exact=test_id).aggregate(
@@ -656,45 +695,48 @@ def ratings(request):
             'session_key',
             distinct=True))
     context['battlers_count'] = bc['session_key__count']
+    context['goal'] = int(context['cards_count'] * 1.5)
+    context['percent_to_goal'] = 100 * float(context['battle_count']) / context['goal']
     context['battle_possibilities'] = context[
         'cards_count'] * (context['cards_count'] - 1)
     context['battle_percentage'] = float(
         100) * float(context['battle_count']) / float(context['battle_possibilities'])
     context['ratings'] = []
-    for rating in card_ratings:
-        context['ratings'].append({'rating': rating})
 
-    cursor = connection.cursor()
-    winnerss = 'SELECT winner_pcard_id, count(id) FROM mtgdbapp_battle WHERE format_id = ' + str(
-        format_id) + ' AND test_id = ' + str(test_id) + ' GROUP BY winner_pcard_id'
-    cursor.execute(winnerss)
-    context['winners'] = cursor.fetchall()
+    current = datetime.now()
+    ago = current - timedelta(days=7)
+    ago = ago.replace(minute=0, second=0, microsecond=0)
+    hour = timedelta(hours=1)
+    parts = []
+    zero_datetimes = []
+    for hit in range(0, 7 * 24 - 1):
+        parts.append("SELECT '" + str(ago.year) + '-' + str(ago.month) + '-' + str(ago.day) + ' ' + str(ago.hour) + ":00:00' hh ")
+        ago = ago + hour
+        zero_datetimes.append([ago, 0])
 
-    loserss = 'SELECT loser_pcard_id, count(id) FROM mtgdbapp_battle WHERE format_id = ' + str(
-        format_id) + ' AND test_id = ' + str(test_id) + ' GROUP BY loser_pcard_id'
-    cursor.execute(loserss)
-    context['losers'] = cursor.fetchall()
-
-    fbcards = FormatBasecard.objects.filter(format=format_id)
-    for fbcard in fbcards:
-        for meta in context['ratings']:
-            if meta[
-                    'rating'].physicalcard.id == fbcard.basecard.physicalcard.id:
-                meta['basecard'] = fbcard.basecard
-                for win in context['winners']:
-                    if win[0] == fbcard.basecard.physicalcard.id:
-                        meta['wins'] = win[1]
-                        break
-                for loss in context['losers']:
-                    if loss[0] == fbcard.basecard.physicalcard.id:
-                        meta['losses'] = loss[1]
-                        break
-                if 'losses' not in meta:
-                    meta['losses'] = 0
-                if 'wins' not in meta:
-                    meta['wins'] = 0
-                meta['battles'] = meta['wins'] + meta['losses']
-                break
+    activity_sql = 'SELECT h.*, count(b.id) FROM ('
+    activity_sql = activity_sql + ' UNION ALL '.join(parts) + ') AS h'
+    activity_sql = activity_sql + ' LEFT JOIN  mtgdbapp_battle b '
+    activity_sql = activity_sql + "ON CONVERT(DATE_FORMAT(b.battle_date,'%Y-%m-%d-%H:00:00'),DATETIME) = h.hh "
+    activity_sql = activity_sql + "AND b.format_id = " + format_id
+    activity_sql = activity_sql + " GROUP BY CONVERT(DATE_FORMAT(b.battle_date,'%Y-%m-%d-%H:00:00'),DATETIME)"
+    # logger.error(activity_sql)
+    cursor.execute(activity_sql)
+    acts = cursor.fetchall()
+    db_results_datetime = []
+    mysql_f = '%Y-%m-%d %H:%M:%S'
+    for row in acts:
+        db_results_datetime.append([datetime.strptime(row[0], mysql_f), row[1]])
+    big_result = []
+    for zero_row in zero_datetimes:
+        result = zero_row
+        for val_row in db_results_datetime:
+            if val_row[0] == zero_row[0]:
+                result = val_row
+        big_result.append({'datehour': result[0], 'count': result[1]})
+    # for gg in big_result:
+    #    logger.error(str(gg))
+    context['activity'] = big_result
 
     response = render(request, 'cards/ratings.html', context)
     return response

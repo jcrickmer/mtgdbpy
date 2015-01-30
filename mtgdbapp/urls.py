@@ -6,7 +6,8 @@ urlpatterns = patterns('',
                        url(r'^$', views.index, name='index'),
                        # ex: /cards/_search
                        url(r'^_search$', views.search, name='search'),
-                       url(r'^ratings/$', views.ratings, name='ratings'),
+                       url(r'^_ratings/$', views.ratings, name='ratings'),
+                       url(r'^_ratings/(?P<format_id>[0-9]+)/$', views.ratings, name='ratings'),
                        url(r'^list/$', views.cardlist, name='list'),
                        url(r'^_list$', views.cardlist, name='list'),
                        # ex: /cards/5/
