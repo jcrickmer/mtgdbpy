@@ -1884,3 +1884,43 @@ class CardManagerROTestCase(FastFixtureTestCase):
         self.assertEquals(len(list(cards)), 2)
         self.assertEquals(cards[0].basecard.filing_name, u'anafenza the foremost')
         self.assertEquals(cards[1].basecard.filing_name, 'sigarda host of herons')
+
+    def test_rules_sql_inject1(self):
+        a = SearchPredicate()
+        a.term = 'rules'
+        a.value = "fo'foo"
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 0)
+
+    def test_rules_sql_inject2(self):
+        a = SearchPredicate()
+        a.term = 'rules'
+        a.value = "';;DROP DB mtgdbpy_test;"
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 0)
+
+    def test_rules_sql_inject3(self):
+        a = SearchPredicate()
+        a.term = 'rules'
+        a.value = "%%%%%%"
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 0)
+
+    def test_rules_sql_inject4(self):
+        a = SearchPredicate()
+        a.term = 'rules'
+        a.value = "%%%%%%"
+        a.operator = a.CONTAINS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 381) # matches all cards, of course
+
+    def test_rules_sql_inject5(self):
+        a = SearchPredicate()
+        a.term = 'rules'
+        a.value = "doesn't"
+        a.operator = a.CONTAINS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 2) 

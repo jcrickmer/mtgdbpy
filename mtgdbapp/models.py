@@ -324,7 +324,7 @@ class CardManager(models.Manager):
         specified_format = None
 
         safelocker = dict()
-        safecounter = 0
+        safelocker['_counter'] = 0
 
         all_args = []
 
@@ -349,9 +349,9 @@ class CardManager(models.Manager):
             elif isinstance(arg, SearchPredicate):
                 if arg.term == 'format':
                     specified_format = arg.value
-                    sql_p = ' f.format_id = %(sarg' + str(safecounter) + ')s '
-                    safelocker['sarg' + str(safecounter)] = specified_format
-                    safecounter = safecounter + 1
+                    sql_p = ' f.format_id = %(sarg' + str(safelocker['_counter']) + ')s '
+                    safelocker['sarg' + str(safelocker['_counter'])] = specified_format
+                    safelocker['_counter'] = safelocker['_counter'] + 1
                     terms.append(sql_p)
 
         if len(sortds) == 0:
@@ -373,7 +373,7 @@ class CardManager(models.Manager):
                     orc = []
                     for fieldname in ['bc.name', 'bc.filing_name']:
                         sql_p = fieldname
-                        sql_p = sql_p + arg.text_sql_operator_and_value()
+                        sql_p = sql_p + arg.text_sql_operator_and_value(safelocker)
                         orc.append(sql_p)
                     if arg.negative:
                         terms.append('(' + ' AND '.join(orc) + ')')
@@ -381,7 +381,7 @@ class CardManager(models.Manager):
                         terms.append('(' + ' OR '.join(orc) + ')')
                 elif arg.term == 'rules':
                     sql_p = ' bc.rules_text '
-                    sql_p = sql_p + arg.text_sql_operator_and_value()
+                    sql_p = sql_p + arg.text_sql_operator_and_value(safelocker)
                     terms.append(sql_p)
                 elif arg.term in ['cmc', 'toughness', 'power', 'loyalty']:
                     sql_p = ' bc.' + arg.term + ' '
@@ -403,7 +403,7 @@ class CardManager(models.Manager):
                     terms.append(sql_p)
                 elif arg.term == 'rarity':
                     sql_p = ' c.rarity '
-                    sql_p = sql_p + arg.text_sql_operator_and_value()
+                    sql_p = sql_p + arg.text_sql_operator_and_value(safelocker)
                     terms.append(sql_p)
                 elif arg.term == 'color':
                     if arg.negative:
@@ -413,7 +413,7 @@ class CardManager(models.Manager):
                         jcounter = jcounter + 1
                         pre_where_clause = pre_where_clause + ' JOIN cardcolors AS ' + \
                             tab_alias + ' ON bc.id = ' + tab_alias + '.basecard_id '
-                        sql_p = ' ' + tab_alias + '.color_id ' + arg.text_sql_operator_and_value()
+                        sql_p = ' ' + tab_alias + '.color_id ' + arg.text_sql_operator_and_value(safelocker)
                         terms.append(sql_p)
                 elif arg.term == 'type':
                     if arg.negative:
@@ -436,7 +436,7 @@ class CardManager(models.Manager):
                         sql_p = ' ' + tab_alias + '.subtype_id = ' + str(arg.value)
                         terms.append(sql_p)
                 elif arg.term == 'layout':
-                    sql_p = ' pc.layout ' + arg.text_sql_operator_and_value()
+                    sql_p = ' pc.layout ' + arg.text_sql_operator_and_value(safelocker)
                     terms.append(sql_p)
 
         sql_s = sql_s + pre_where_clause
@@ -549,7 +549,7 @@ class SearchPredicate():
                 res_s = res_s + ' = '
         return res_s
 
-    def text_sql_operator_and_value(self):
+    def text_sql_operator_and_value(self, param_bag):
         res_s = ''
         # assume equals
         if self.value is None:
@@ -558,18 +558,22 @@ class SearchPredicate():
             else:
                 res_s = res_s + ' IS NULL '
         else:
+            ptoken = 'sarg' + str(param_bag['_counter'])
             if self.operator == self.CONTAINS:
                 if self.negative:
                     res_s = res_s + ' NOT LIKE '
                 else:
                     res_s = res_s + ' LIKE '
-                res_s = res_s + " '%%" + self.value + "%%' "
+                #res_s = res_s + " '%%" + self.value + "%%' "
+                param_bag[ptoken] = '%' + str(self.value) + '%'
             else:  # equality
                 if self.negative:
                     res_s = res_s + ' != '
                 else:
                     res_s = res_s + ' = '
-                res_s = res_s + " '" + self.value + "' "
+                param_bag[ptoken] = str(self.value)
+            res_s = res_s + ' %(' + ptoken + ')s '
+            param_bag['_counter'] = param_bag['_counter'] + 1
         return res_s
 
 
