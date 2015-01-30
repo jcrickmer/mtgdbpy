@@ -323,6 +323,9 @@ class CardManager(models.Manager):
         sortds = []
         specified_format = None
 
+        safelocker = dict()
+        safecounter = 0
+
         all_args = []
 
         for restriction in [PhysicalCard.TOKEN, PhysicalCard.PLANE, PhysicalCard.SCHEME, PhysicalCard.PHENOMENON, PhysicalCard.VANGUARD]:
@@ -346,7 +349,9 @@ class CardManager(models.Manager):
             elif isinstance(arg, SearchPredicate):
                 if arg.term == 'format':
                     specified_format = arg.value
-                    sql_p = ' f.format_id = ' + str(arg.value) + ' '
+                    sql_p = ' f.format_id = %(sarg' + str(safecounter) + ')s '
+                    safelocker['sarg' + str(safecounter)] = specified_format
+                    safecounter = safecounter + 1
                     terms.append(sql_p)
 
         if len(sortds) == 0:
@@ -444,7 +449,7 @@ class CardManager(models.Manager):
         if len(not_terms) > 0:  # If we have to pull out some types and subtypes, we better do it now.
             # Let's execute the SQL we have (sql_s) but do it with cursor so that we do not instantiate any objects
             cursor = connection.cursor()
-            cursor.execute(sql_s)
+            cursor.execute(sql_s, params=safelocker)
             card_ids = cursor.fetchall()
             bc_ids = [row[1] for row in card_ids]
 
@@ -489,7 +494,7 @@ class CardManager(models.Manager):
         logger = logging.getLogger(__name__)
         #logger.error("Card Search SQL: " + sql_s)
 
-        cards = self.raw(sql_s)
+        cards = self.raw(sql_s, params=safelocker)
 
         return cards
 
