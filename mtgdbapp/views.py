@@ -129,7 +129,7 @@ def cardlist(request):
         elif pred['field'] == 'rarity':
             # REVISIT - need to handle 'or'
             pass
-        elif pred['field'] == 'cmc':
+        elif pred['field'] == 'cmc' or pred['field'] == 'power' or pred['field'] == 'toughness':
             spred.negative = False
             # If it isn't an int, then skip it.
             try:

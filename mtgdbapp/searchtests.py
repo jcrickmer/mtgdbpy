@@ -1915,7 +1915,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.value = "%%%%%%"
         a.operator = a.CONTAINS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381) # matches all cards, of course
+        self.assertEquals(len(list(cards)), 381)  # matches all cards, of course
 
     def test_rules_sql_inject5(self):
         a = SearchPredicate()
@@ -1923,4 +1923,4 @@ class CardManagerROTestCase(FastFixtureTestCase):
         a.value = "doesn't"
         a.operator = a.CONTAINS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 2) 
+        self.assertEquals(len(list(cards)), 2)

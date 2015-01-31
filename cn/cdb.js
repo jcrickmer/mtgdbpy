@@ -14,6 +14,8 @@ $(function() {
                       'rules':'Rules Text',
                       'color':'Color',
                       'cmc':'CMC',
+                      'power':'Power',
+                      'toughness':'Toughness',
                       'type':'Type',
                       'subtype':'Subtype',
                       'rarity':'Rarity',
@@ -67,7 +69,7 @@ $(function() {
 				result = result + " &gt; " + rule.value;
 			}
             var resButton_html = "<button class=\"btn btn-default\" onclick=\"cdb.removeSearchPredicate('";
-            resButton_html = resButton_html + rule.hint + "','" + parent_jqs + "'";
+            resButton_html = resButton_html + cdb.cleanHint(rule.hint) + "','" + parent_jqs + "'";
 			if (autoSearchOnRemove) {
 				resButton_html = resButton_html + ',true';
             } else {
@@ -77,10 +79,13 @@ $(function() {
 			parent_jq.append($(childTag).append(resButton_html));
 		}
     };
+	cdb.cleanHint = function(hint) {
+		return hint.replace(/[^a-zA-Z0-9_]/, "_");
+	};
 	cdb.removeSearchPredicate = function(hint, parent_jqs, autoSubmitQuery) {
 		for (var h = 0 ; h < cdb.predicates.length ; h++) {
 			var pred = cdb.predicates[h];
-			if (pred.hint == hint) {
+			if (cdb.cleanHint(pred.hint) == cdb.cleanHint(hint)) {
 				// remove it
 				cdb.predicates.splice(h, 1);
 				break;
