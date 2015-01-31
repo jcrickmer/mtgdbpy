@@ -1,10 +1,10 @@
 from django.core.management.base import BaseCommand, CommandError
-from mtgdbapp.models import Card, CardManager, SearchPredicate, SortDirective
-from mtgdbapp.models import CardRating
-from mtgdbapp.models import Format
-from mtgdbapp.models import FormatBasecard
-from mtgdbapp.models import PhysicalCard
-from mtgdbapp.models import BaseCard
+from cards.models import Card, CardManager, SearchPredicate, SortDirective
+from cards.models import CardRating
+from cards.models import Format
+from cards.models import FormatBasecard
+from cards.models import PhysicalCard
+from cards.models import BaseCard
 
 import random
 import logging

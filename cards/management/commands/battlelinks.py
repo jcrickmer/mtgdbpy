@@ -1,8 +1,8 @@
 from django.core.management.base import BaseCommand, CommandError
-from mtgdbapp.models import Card
-from mtgdbapp.models import Battle
-from mtgdbapp.models import Format
-from mtgdbapp.models import FormatBasecard
+from cards.models import Card
+from cards.models import Battle
+from cards.models import Format
+from cards.models import FormatBasecard
 
 import re
 

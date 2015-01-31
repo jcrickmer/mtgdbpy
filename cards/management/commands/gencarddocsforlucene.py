@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
-from mtgdbapp.models import Card
-from mtgdbapp.models import PhysicalCard
+from cards.models import Card
+from cards.models import PhysicalCard
 
 import re
 

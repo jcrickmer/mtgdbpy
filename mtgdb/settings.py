@@ -40,7 +40,7 @@ INTERNAL_IPS = (
 
 # Application definition
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,8 +48,8 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_nose',
-    'mtgdbapp',
-)
+    'cards',
+]
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -107,12 +107,12 @@ LOGGING = {
         },
     },
     'loggers': {
-        'mtgdbapp.views': {
+        'cards.views': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'mtgdbapp.models': {
+        'cards.models': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
@@ -124,4 +124,4 @@ LOGGING = {
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = "/home/jason/projects/mtgdbpy/cstatic/"
+STATIC_ROOT = "/home/jason/projects/mtgdb/cstatic/"

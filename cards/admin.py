@@ -1,6 +1,6 @@
 from django.contrib import admin
-from mtgdbapp.models import Color, Rarity, Card, BaseCard, Mark, ExpansionSet, Subtype, Type, CardType, CardSubtype, PhysicalCard
-from mtgdbapp.models import Format
+from cards.models import Color, Rarity, Card, BaseCard, Mark, ExpansionSet, Subtype, Type, CardType, CardSubtype, PhysicalCard
+from cards.models import Format
 from django import forms
 
 

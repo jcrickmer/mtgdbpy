@@ -14,17 +14,17 @@ import collections
 import random
 import operator
 
-from mtgdbapp.models import Card, CardManager, SearchPredicate, SortDirective
-from mtgdbapp.models import Mark
-from mtgdbapp.models import Type
-from mtgdbapp.models import Subtype
-from mtgdbapp.models import Format
-from mtgdbapp.models import FormatBasecard
-from mtgdbapp.models import Ruling
-from mtgdbapp.models import Rarity
-from mtgdbapp.models import Battle
-from mtgdbapp.models import BattleTest
-from mtgdbapp.models import CardRating
+from cards.models import Card, CardManager, SearchPredicate, SortDirective
+from cards.models import Mark
+from cards.models import Type
+from cards.models import Subtype
+from cards.models import Format
+from cards.models import FormatBasecard
+from cards.models import Ruling
+from cards.models import Rarity
+from cards.models import Battle
+from cards.models import BattleTest
+from cards.models import CardRating
 
 from django.db.models import Q
 from datetime import datetime, timedelta
@@ -445,7 +445,7 @@ def battle(request, format="redirect"):
             logger.error("Battle: bad ju-ju finding card ratings for basecard id " + str(card_a.basecard.id))
             pass
     else:
-        fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + \
+        fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + \
             str(format_id) + ' ORDER BY r ASC LIMIT 1'
         logger.error("First Card SQL: " + fcsqls)
         cursor.execute(fcsqls)
@@ -459,8 +459,8 @@ def battle(request, format="redirect"):
 
     while card_b is None:
         # now let's get a card of similar level - make it a real battle
-        sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + \
-            ' AND fbc.basecard_id <> ' + str(first_card['basecard_id']) + ' AND cr.mu > ' + str(first_card['mu'] - ((1 + find_iterations) * first_card['sigma'])) + ' AND cr.mu < ' + str(first_card['mu'] + ((1 + find_iterations) * first_card['sigma'])) + ' ORDER BY r ASC LIMIT 1'
+        sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' AND fbc.basecard_id <> ' + \
+            str(first_card['basecard_id']) + ' AND cr.mu > ' + str(first_card['mu'] - ((1 + find_iterations) * first_card['sigma'])) + ' AND cr.mu < ' + str(first_card['mu'] + ((1 + find_iterations) * first_card['sigma'])) + ' ORDER BY r ASC LIMIT 1'
         logger.error("Second Card SQL: " + sqls)
         cursor.execute(sqls)
         rows = cursor.fetchall()
@@ -478,13 +478,13 @@ def battle(request, format="redirect"):
         card_b = Card.objects.filter(basecard__id__exact=second_card['basecard_id']).order_by('-multiverseid').first()
 
         # lastly, let's check to make sure that this battle has not already occured
-        sqls = "SELECT 1 FROM mtgdbapp_battle WHERE session_key = '" + str(
+        sqls = "SELECT 1 FROM battle WHERE session_key = '" + str(
             request.session.session_key) + "' AND ((winner_pcard_id = " + str(
             card_a.basecard.physicalcard.id) + " AND loser_pcard_id = " + str(
             card_b.basecard.physicalcard.id) + ") OR (winner_pcard_id = " + str(
                 card_b.basecard.physicalcard.id) + " AND loser_pcard_id = " + str(
                     card_a.basecard.physicalcard.id) + "))"
-        #'request.session.fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM mtgdbapp_formatbasecard fbc JOIN basecards bc ON bc.id = fbc.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' AND fbc.basecard_id <> ' + str(first_card['basecard_id']) + ' AND cr.mu > ' + str(first_card['mu'] - ((1 + find_iterations) * first_card['sigma'])) + ' AND cr.mu < ' + str(first_card['mu'] + ((1 + find_iterations) * first_card['sigma'])) + ' ORDER BY r ASC LIMIT 1'
+        #'request.session.fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' AND fbc.basecard_id <> ' + str(first_card['basecard_id']) + ' AND cr.mu > ' + str(first_card['mu'] - ((1 + find_iterations) * first_card['sigma'])) + ' AND cr.mu < ' + str(first_card['mu'] + ((1 + find_iterations) * first_card['sigma'])) + ' ORDER BY r ASC LIMIT 1'
         logger.error("Check battle SQL: " + sqls)
         cursor.execute(sqls)
         rows = cursor.fetchall()
@@ -654,11 +654,11 @@ def ratings(request, format_id=0):
         format=format_id).count()
 
     cursor = connection.cursor()
-    wbattle_sql = 'SELECT bc.physicalcard_id AS physicalcard_id, count(b.id) FROM mtgdbapp_formatbasecard AS fbc JOIN basecards AS bc ON fbc.basecard_id = bc.id LEFT JOIN mtgdbapp_battle AS b ON b.winner_pcard_id = bc.physicalcard_id AND fbc.format_id = b.format_id WHERE fbc.format_id = ' + \
+    wbattle_sql = 'SELECT bc.physicalcard_id AS physicalcard_id, count(b.id) FROM formatbasecard AS fbc JOIN basecard AS bc ON fbc.basecard_id = bc.id LEFT JOIN battle AS b ON b.winner_pcard_id = bc.physicalcard_id AND fbc.format_id = b.format_id WHERE fbc.format_id = ' + \
         format_id + ' GROUP by physicalcard_id ORDER BY physicalcard_id'
     cursor.execute(wbattle_sql)
     wrows = cursor.fetchall()
-    lbattle_sql = 'SELECT bc.physicalcard_id AS physicalcard_id, count(b.id) FROM mtgdbapp_formatbasecard AS fbc JOIN basecards AS bc ON fbc.basecard_id = bc.id LEFT JOIN mtgdbapp_battle AS b ON b.loser_pcard_id = bc.physicalcard_id AND fbc.format_id = b.format_id WHERE fbc.format_id = ' + \
+    lbattle_sql = 'SELECT bc.physicalcard_id AS physicalcard_id, count(b.id) FROM formatbasecard AS fbc JOIN basecard AS bc ON fbc.basecard_id = bc.id LEFT JOIN battle AS b ON b.loser_pcard_id = bc.physicalcard_id AND fbc.format_id = b.format_id WHERE fbc.format_id = ' + \
         format_id + ' GROUP by physicalcard_id ORDER BY physicalcard_id'
     cursor.execute(lbattle_sql)
     lrows = cursor.fetchall()
@@ -716,7 +716,7 @@ def ratings(request, format_id=0):
 
     activity_sql = 'SELECT h.*, count(b.id) FROM ('
     activity_sql = activity_sql + ' UNION ALL '.join(parts) + ') AS h'
-    activity_sql = activity_sql + ' LEFT JOIN  mtgdbapp_battle b '
+    activity_sql = activity_sql + ' LEFT JOIN  battle b '
     activity_sql = activity_sql + "ON CONVERT(DATE_FORMAT(b.battle_date,'%Y-%m-%d-%H:00:00'),DATETIME) = h.hh "
     activity_sql = activity_sql + "AND b.format_id = " + format_id
     activity_sql = activity_sql + " GROUP BY CONVERT(DATE_FORMAT(b.battle_date,'%Y-%m-%d-%H:00:00'),DATETIME)"

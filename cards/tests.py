@@ -1,6 +1,6 @@
 from django.test import TestCase, TransactionTestCase
 from django_nose import FastFixtureTestCase
-from mtgdbapp.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, FormatBasecard, SearchPredicate
+from cards.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, FormatBasecard, SearchPredicate
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -11,6 +11,7 @@ err = sys.stderr
 
 
 class MigrationTestCase(TransactionTestCase):
+    fixtures = ['mtgdbapp_testdata', ]
     serialized_rollback = True
     # def test_basic_addition(self):
     #	serialized_rollback = True

@@ -14,7 +14,7 @@ from datetime import datetime
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
-from mtgdbapp.view_utils import convertSymbolsToHTML
+from cards.view_utils import convertSymbolsToHTML
 from django.utils.safestring import mark_safe
 
 from django.db.models import Max, Min, Count
@@ -29,7 +29,7 @@ class Color(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'colors'
+        db_table = 'color'
 
     def __unicode__(self):
         return self.color
@@ -42,7 +42,7 @@ class Rarity(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'rarities'
+        db_table = 'rarity'
         verbose_name_plural = 'Rarities'
 
     def __unicode__(self):
@@ -55,7 +55,7 @@ class Type(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'types'
+        db_table = 'type'
 
     def __unicode__(self):
         return self.type
@@ -67,7 +67,7 @@ class Subtype(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'subtypes'
+        db_table = 'subtype'
 
     def __unicode__(self):
         return self.subtype
@@ -127,7 +127,7 @@ class PhysicalCard(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'physicalcards'
+        db_table = 'physicalcard'
         verbose_name_plural = 'Physical Cards'
 
     def __unicode__(self):
@@ -179,7 +179,7 @@ class BaseCard(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'basecards'
+        db_table = 'basecard'
         verbose_name_plural = 'Base Cards'
         unique_together = ('physicalcard', 'cardposition',)
 
@@ -208,6 +208,7 @@ class Ruling(models.Model):
 
     class Meta:
         verbose_name_plural = 'Rulings'
+        db_table = 'ruling'
 
     def __unicode__(self):
         return "Ruling " + str(self.id) + " for " + self.basecard.name
@@ -220,7 +221,7 @@ class ExpansionSet(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'expansionsets'
+        db_table = 'expansionset'
         verbose_name_plural = 'Expansion Sets'
 
     def __unicode__(self):
@@ -233,7 +234,7 @@ class Mark(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'marks'
+        db_table = 'mark'
 
     def __unicode__(self):
         return self.mark
@@ -276,7 +277,7 @@ class CardManager(models.Manager):
             test_id=1,
             sort_order=1):
         #cursor = connection.cursor()
-        #sql = 'SELECT bc.name, max(c.multiverseid), pc.id, cr.mu FROM physicalcards pc JOIN basecards bc ON pc.id = bc.physicalcard_id JOIN cards c ON bc.id = c.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = pc.id WHERE cr.format_id = ' + str(format_id) + ' AND cr.test_id = ' + str(test_id) + ' GROUP BY pc.id ORDER BY cr.mu'
+        #sql = 'SELECT bc.name, max(c.multiverseid), pc.id, cr.mu FROM physicalcard pc JOIN basecard bc ON pc.id = bc.physicalcard_id JOIN card c ON bc.id = c.basecard_id JOIN cardrating cr ON cr.physicalcard_id = pc.id WHERE cr.format_id = ' + str(format_id) + ' AND cr.test_id = ' + str(test_id) + ' GROUP BY pc.id ORDER BY cr.mu'
         # cursor.execute(sql)
         #context['winners'] = cursor.fetchall()
 
@@ -298,7 +299,7 @@ class CardManager(models.Manager):
             sql_ord = 'DESC'
 
         cards = self.raw(
-            'SELECT c.id FROM physicalcards pc JOIN basecards bc ON pc.id = bc.physicalcard_id JOIN cards c ON bc.id = c.basecard_id JOIN mtgdbapp_cardrating cr ON cr.physicalcard_id = pc.id WHERE cr.format_id = ' +
+            'SELECT c.id FROM physicalcard pc JOIN basecard bc ON pc.id = bc.physicalcard_id JOIN card c ON bc.id = c.basecard_id JOIN cardrating cr ON cr.physicalcard_id = pc.id WHERE cr.format_id = ' +
             str(format_id) +
             ' AND cr.test_id = ' +
             str(test_id) +
@@ -316,7 +317,7 @@ class CardManager(models.Manager):
         jcounter = 0
 
         pre_where_clause = ''
-        sql_s = '''SELECT c.id, c.basecard_id FROM physicalcards AS pc JOIN basecards AS bc ON pc.id = bc.physicalcard_id JOIN cards AS c ON c.basecard_id = bc.id LEFT JOIN mtgdbapp_formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN mtgdbapp_cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 '''
+        sql_s = '''SELECT c.id, c.basecard_id FROM physicalcard AS pc JOIN basecard AS bc ON pc.id = bc.physicalcard_id JOIN card AS c ON c.basecard_id = bc.id LEFT JOIN formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 '''
 
         terms = []
         not_terms = []
@@ -363,7 +364,7 @@ class CardManager(models.Manager):
             for sd in sortds:
                 # If we are sorting for card rating, we need to inject into the search criteria the format that we care about.
                 if sd.term == 'cardrating':
-                    pre_where_clause = ' LEFT JOIN mtgdbapp_cardrating AS crs ON crs.physicalcard_id = pc.id AND crs.test_id = 1 AND crs.format_id = ' + \
+                    pre_where_clause = ' LEFT JOIN cardrating AS crs ON crs.physicalcard_id = pc.id AND crs.test_id = 1 AND crs.format_id = ' + \
                         str(sd.crs_format_id)
 
         # Now we can process all of the other terms
@@ -411,7 +412,7 @@ class CardManager(models.Manager):
                     else:
                         tab_alias = 'cc' + str(jcounter)
                         jcounter = jcounter + 1
-                        pre_where_clause = pre_where_clause + ' JOIN cardcolors AS ' + \
+                        pre_where_clause = pre_where_clause + ' JOIN cardcolor AS ' + \
                             tab_alias + ' ON bc.id = ' + tab_alias + '.basecard_id '
                         sql_p = ' ' + tab_alias + '.color_id ' + arg.text_sql_operator_and_value(safelocker)
                         terms.append(sql_p)
@@ -421,7 +422,7 @@ class CardManager(models.Manager):
                     else:
                         tab_alias = 'ct' + str(jcounter)
                         jcounter = jcounter + 1
-                        pre_where_clause = pre_where_clause + ' JOIN cardtypes AS ' + \
+                        pre_where_clause = pre_where_clause + ' JOIN cardtype AS ' + \
                             tab_alias + ' ON bc.id = ' + tab_alias + '.basecard_id '
                         sql_p = ' ' + tab_alias + '.type_id = ' + str(arg.value)
                         terms.append(sql_p)
@@ -431,7 +432,7 @@ class CardManager(models.Manager):
                     else:
                         tab_alias = 'cst' + str(jcounter)
                         jcounter = jcounter + 1
-                        pre_where_clause = pre_where_clause + ' JOIN cardsubtypes AS ' + \
+                        pre_where_clause = pre_where_clause + ' JOIN cardsubtype AS ' + \
                             tab_alias + ' ON bc.id = ' + tab_alias + '.basecard_id '
                         sql_p = ' ' + tab_alias + '.subtype_id = ' + str(arg.value)
                         terms.append(sql_p)
@@ -453,26 +454,26 @@ class CardManager(models.Manager):
             card_ids = cursor.fetchall()
             bc_ids = [row[1] for row in card_ids]
 
-            sql_s = 'SELECT c.id FROM physicalcards AS pc JOIN basecards AS bc ON pc.id = bc.physicalcard_id JOIN cards AS c ON c.basecard_id = bc.id LEFT JOIN cardcolors AS cc ON cc.basecard_id = bc.id LEFT JOIN mtgdbapp_formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN mtgdbapp_cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 ' + \
+            sql_s = 'SELECT c.id FROM physicalcard AS pc JOIN basecard AS bc ON pc.id = bc.physicalcard_id JOIN card AS c ON c.basecard_id = bc.id LEFT JOIN cardcolor AS cc ON cc.basecard_id = bc.id LEFT JOIN formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 ' + \
                 pre_where_clause + ' WHERE bc.id IN (' + ','.join(str(i) for i in bc_ids) + ') '
             for arg in not_terms:
                 # Now that we have all of these ids, let's use them to filter out those types that we do not want.
                 if arg.term == 'color':
-                    sql_not = 'SELECT cc.basecard_id FROM cardcolors AS cc WHERE cc.color_id = \'' + \
+                    sql_not = 'SELECT cc.basecard_id FROM cardcolor AS cc WHERE cc.color_id = \'' + \
                         str(arg.value) + '\' AND cc.basecard_id IN (' + ','.join(str(i) for i in bc_ids) + ')'
                     cursor.execute(sql_not)
                     not_basecard_ids = cursor.fetchall()
                     if len(not_basecard_ids) > 0:
                         sql_s = sql_s + ' AND bc.id NOT IN (' + ','.join(str(n[0]) for n in not_basecard_ids) + ') '
                 elif arg.term == 'type':
-                    sql_not = 'SELECT ct.basecard_id FROM cardtypes AS ct WHERE ct.type_id = ' + \
+                    sql_not = 'SELECT ct.basecard_id FROM cardtype AS ct WHERE ct.type_id = ' + \
                         str(arg.value) + ' AND ct.basecard_id IN (' + ','.join(str(i) for i in bc_ids) + ')'
                     cursor.execute(sql_not)
                     not_basecard_ids = cursor.fetchall()
                     if len(not_basecard_ids) > 0:
                         sql_s = sql_s + ' AND bc.id NOT IN (' + ','.join(str(n[0]) for n in not_basecard_ids) + ') '
                 elif arg.term == 'subtype':
-                    sql_not = 'SELECT cst.basecard_id FROM cardsubtypes AS cst WHERE cst.subtype_id = ' + \
+                    sql_not = 'SELECT cst.basecard_id FROM cardsubtype AS cst WHERE cst.subtype_id = ' + \
                         str(arg.value) + ' AND cst.basecard_id IN (' + ','.join(str(i) for i in bc_ids) + ')'
                     cursor.execute(sql_not)
                     not_basecard_ids = cursor.fetchall()
@@ -642,7 +643,7 @@ class Card(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'cards'
+        db_table = 'card'
         unique_together = ('expansionset', 'card_number', 'multiverseid')
 
     def __unicode__(self):
@@ -657,7 +658,7 @@ class CardColor(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'cardcolors'
+        db_table = 'cardcolor'
         unique_together = ('basecard', 'color',)
 
 
@@ -669,7 +670,7 @@ class CardSubtype(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'cardsubtypes'
+        db_table = 'cardsubtype'
         unique_together = ('basecard', 'position',)
 
 
@@ -681,7 +682,7 @@ class CardType(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'cardtypes'
+        db_table = 'cardtype'
         unique_together = ('basecard', 'position',)
 
     def __unicode__(self):
@@ -718,6 +719,10 @@ class Format(models.Model):
     objects = models.Manager()
     cards = FormatManager()
 
+    class Meta:
+        verbose_name_plural = 'Formats'
+        db_table = 'format'
+
     def __unicode__(self):
         return str(
             self.id) + " [Format: " + str(self.formatname) + " (" + self.format + ")]"
@@ -730,6 +735,7 @@ class FormatBasecard(models.Model):
     class Meta:
         verbose_name_plural = 'Format Base Cards'
         unique_together = ('format', 'basecard',)
+        db_table = 'formatbasecard'
 
     def __unicode__(self):
         return "[Format: " + str(self.format.format) + " - " + \
@@ -750,6 +756,7 @@ class Battle(models.Model):
 
     class Meta:
         verbose_name_plural = 'Battles'
+        db_table = 'battle'
         unique_together = (
             'format',
             'winner_pcard',
@@ -764,6 +771,10 @@ class Battle(models.Model):
 class BattleTest(models.Model):
     #id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name_plural = 'Battle Tests'
+        db_table = 'battletest'
 
 
 class CardRating(models.Model):
@@ -787,6 +798,7 @@ class CardRating(models.Model):
     class Meta:
         verbose_name_plural = 'Card Ratings'
         unique_together = ('physicalcard', 'format', 'test')
+        db_table = 'cardrating'
 
     def __unicode__(self):
         return "[CardRating " + str(self.id) + ": " + str(self.physicalcard.id) + " mu=" + str(self.mu) + " sigma=" + str(
@@ -801,6 +813,7 @@ class CardKeyword(models.Model):
 
     class Meta:
         managed = True
+        db_table = 'cardkeyword'
 
 
 class SimilarPhysicalCard(models.Model):
@@ -811,3 +824,4 @@ class SimilarPhysicalCard(models.Model):
 
     class Meta:
         managed = True
+        db_table = 'similarphysicalcard'
