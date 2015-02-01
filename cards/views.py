@@ -16,6 +16,7 @@ import operator
 
 from cards.models import Card, CardManager, SearchPredicate, SortDirective
 from cards.models import Mark
+from cards.models import PhysicalCard
 from cards.models import Type
 from cards.models import Subtype
 from cards.models import Format
@@ -397,7 +398,7 @@ def battle(request, format="redirect"):
     # this shows two cards at random and then let's the user decide which one
     # is better.
 
-    # force current standard
+    # If there was no format on the URL, then let's push it to Standard.
     if format == "redirect":
         return redirect('cards:battle', format="standard")
 
@@ -408,10 +409,15 @@ def battle(request, format="redirect"):
         end_date__gte=datetime.today()).order_by('-end_date').first()
     format_id = format_obj.id
 
+    # Only contemplating one test right now. This is the id of the battletest table in the database.
     test_id = 1
 
     # Going straight to the DB on this...
     cursor = connection.cursor()
+
+    # this is a set of parameters that are going to be common among queries that select for cards.
+    query_params = {'formatid':str(format_id),
+                    'layouts':[PhysicalCard.NORMAL, PhysicalCard.SPLIT, PhysicalCard.FLIP, PhysicalCard.DOUBLE, PhysicalCard.LEVELER]}
 
     card_a = None
     first_card = {
@@ -445,10 +451,9 @@ def battle(request, format="redirect"):
             logger.error("Battle: bad ju-ju finding card ratings for basecard id " + str(card_a.basecard.id))
             pass
     else:
-        fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + \
-            str(format_id) + ' ORDER BY r ASC LIMIT 1'
-        logger.error("First Card SQL: " + fcsqls)
-        cursor.execute(fcsqls)
+        fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE pc.layout IN %(layouts)s AND fbc.format_id = %(formatid)s ORDER BY r ASC LIMIT 1'
+        #logger.error("First Card SQL: " + fcsqls)
+        cursor.execute(fcsqls, params=query_params)
         rows = cursor.fetchall()
         first_card = {
             'basecard_id': rows[0][0],
@@ -457,12 +462,14 @@ def battle(request, format="redirect"):
         }
         card_a = Card.objects.filter(basecard__id__exact=rows[0][0]).order_by('-multiverseid').first()
 
+    query_params['cardabcid'] = first_card['basecard_id']
     while card_b is None:
+        query_params['lowermu'] = first_card['mu'] - ((1 + find_iterations) * first_card['sigma'])
+        query_params['uppermu'] = first_card['mu'] + ((1 + find_iterations) * first_card['sigma'])
         # now let's get a card of similar level - make it a real battle
-        sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' AND fbc.basecard_id <> ' + \
-            str(first_card['basecard_id']) + ' AND cr.mu > ' + str(first_card['mu'] - ((1 + find_iterations) * first_card['sigma'])) + ' AND cr.mu < ' + str(first_card['mu'] + ((1 + find_iterations) * first_card['sigma'])) + ' ORDER BY r ASC LIMIT 1'
-        logger.error("Second Card SQL: " + sqls)
-        cursor.execute(sqls)
+        sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE fbc.format_id = %(formatid)s AND fbc.basecard_id <> %(cardabcid)s AND cr.mu > %(lowermu)s AND cr.mu < %(uppermu)s AND pc.layout IN %(layouts)s ORDER BY r ASC LIMIT 1'
+        #logger.error("Second Card SQL: " + sqls)
+        cursor.execute(sqls, params=query_params)
         rows = cursor.fetchall()
         try:
             second_card = {
@@ -471,8 +478,11 @@ def battle(request, format="redirect"):
                 'sigma': rows[0][2],
             }
         except IndexError:
-            logger.error("Battle: UGH. IndexError. This SQL returned no result: " + sqls)
-            pass
+            logger.error("Battle iteration " + str(find_iterations) + ": UGH. IndexError. This SQL returned no result: " + sqls)
+            logger.error("Battle: params were: " + str(query_params))
+            # so let's just iterate this one again...
+            find_iterations = find_iterations + 1
+            continue
 
         #card_b_list = Card.objects.filter(basecard__id__exact=rows[1][0]).order_by('-multiverseid')
         card_b = Card.objects.filter(basecard__id__exact=second_card['basecard_id']).order_by('-multiverseid').first()
@@ -492,6 +502,12 @@ def battle(request, format="redirect"):
             # we have done this battle before! Oops!
             card_b = None
             find_iterations = find_iterations + 1
+
+        if find_iterations > 10:
+            logger.error("Battle iteration " + str(find_iterations) + ": Unable to continue looking for a valid card. Let's give up and let the user know. basecard.id = " + str(query_params['cardabcid']) + ", sessions_key = " + str(request.session.session_key))
+            break
+
+    # REVISIT - we need to handle the fact that card_b may be None!!!
 
     context = {'card_a': card_a,
                'card_b': card_b,
