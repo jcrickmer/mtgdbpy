@@ -125,3 +125,6 @@ LOGGING = {
 
 STATIC_URL = '/static/'
 STATIC_ROOT = "/home/jason/projects/mtgdb/cstatic/"
+
+STATIC_ROOT_CN = '/home/jason/projects/mtgdb/cn'
+STATIC_ROOT_CARD_IMAGES = '/home/jason/projects/mtgstats/card_images'
