@@ -91,6 +91,12 @@ USE_L10N = True
 
 USE_TZ = True
 
+TEMPLATE_DIRS = (
+    os.path.join(BASE_DIR, 'cards', 'templates'),
+    os.path.join(BASE_DIR, 'decks', 'templates'),
+    os.path.join(BASE_DIR, 'mtgdb', 'templates'),
+)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
