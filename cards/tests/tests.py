@@ -4,6 +4,8 @@ from cards.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseC
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from cards.tests.helper import TestLoadHelper
+
 import sys
 err = sys.stderr
 

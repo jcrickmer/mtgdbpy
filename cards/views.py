@@ -416,8 +416,8 @@ def battle(request, format="redirect"):
     cursor = connection.cursor()
 
     # this is a set of parameters that are going to be common among queries that select for cards.
-    query_params = {'formatid':str(format_id),
-                    'layouts':[PhysicalCard.NORMAL, PhysicalCard.SPLIT, PhysicalCard.FLIP, PhysicalCard.DOUBLE, PhysicalCard.LEVELER]}
+    query_params = {'formatid': str(format_id),
+                    'layouts': [PhysicalCard.NORMAL, PhysicalCard.SPLIT, PhysicalCard.FLIP, PhysicalCard.DOUBLE, PhysicalCard.LEVELER]}
 
     card_a = None
     first_card = {
@@ -504,7 +504,12 @@ def battle(request, format="redirect"):
             find_iterations = find_iterations + 1
 
         if find_iterations > 10:
-            logger.error("Battle iteration " + str(find_iterations) + ": Unable to continue looking for a valid card. Let's give up and let the user know. basecard.id = " + str(query_params['cardabcid']) + ", sessions_key = " + str(request.session.session_key))
+            logger.error("Battle iteration " +
+                         str(find_iterations) +
+                         ": Unable to continue looking for a valid card. Let's give up and let the user know. basecard.id = " +
+                         str(query_params['cardabcid']) +
+                         ", sessions_key = " +
+                         str(request.session.session_key))
             break
 
     # REVISIT - we need to handle the fact that card_b may be None!!!
