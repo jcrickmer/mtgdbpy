@@ -1,5 +1,6 @@
 from cards.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, Format, FormatBasecard, SearchPredicate, CardType, CardSubtype, CardColor
 from datetime import datetime
+from cards.management.commands import initcardsdatabase
 
 import sys
 err = sys.stderr
@@ -7,59 +8,17 @@ err = sys.stderr
 
 class TestLoadHelper():
 
+    initer = initcardsdatabase.Command()
+
     def basics_loader(self):
-        self.color_loader()
-        self.rarity_loader()
+        self.initer.init_colors()
+        self.initer.init_rarities()
+
         self.type_loader()
         self.subtype_loader()
         self.expansionset_example_loader()
         self.format_example_loader()
         self.basic_lands_loader()
-
-    def color_loader(self):
-        white = Color()
-        white.id = 'W'
-        white.color = 'white'
-        white.save()
-
-        blue = Color()
-        blue.id = 'U'
-        blue.color = 'blue'
-        blue.save()
-
-        black = Color()
-        black.id = 'B'
-        black.color = 'black'
-        black.save()
-
-        red = Color()
-        red.id = 'R'
-        red.color = 'red'
-        red.save()
-
-        green = Color()
-        green.id = 'G'
-        green.color = 'green'
-        green.save()
-
-        colorless = Color()
-        colorless.id = 'c'
-        colorless.color = 'colorless'
-        colorless.save()
-
-    def rarity_loader(self):
-        rarities = [['b', 'Basic Land', 0],
-                    ['c', 'Common', 1],
-                    ['u', 'Uncommon', 2],
-                    ['r', 'Rare', 3],
-                    ['m', 'Mythic Rare', 4],
-                    ['s', 'Special', 5]]
-        for rarity in rarities:
-            rr = Rarity()
-            rr.id = rarity[0]
-            rr.rarity = rarity[1]
-            rr.sortorder = rarity[2]
-            rr.save()
 
     def type_loader(self):
         types = (
