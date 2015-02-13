@@ -135,6 +135,12 @@ class PhysicalCard(models.Model):
 
 
 class BaseCard(models.Model):
+    FRONT = 'F'
+    BACK = 'B'
+    LEFT = 'L'
+    RIGHT = 'R'
+    UP = 'U'
+    DOWN = 'D'
     #id = models.IntegerField(primary_key=True)
     physicalcard = models.ForeignKey(PhysicalCard)
     name = models.CharField(max_length=128, unique=True, blank=False)
@@ -153,7 +159,7 @@ class BaseCard(models.Model):
         default=timezone.now,
         null=False,
         auto_now=True)
-    cardposition = models.CharField(max_length=1, null=False, default='F')
+    cardposition = models.CharField(max_length=1, null=False, default=FRONT)
     types = models.ManyToManyField(Type, through='CardType')
     subtypes = models.ManyToManyField(Subtype, through='CardSubtype')
     colors = models.ManyToManyField(Color, through='CardColor')
@@ -165,6 +171,7 @@ class BaseCard(models.Model):
             self.filing_name = self.make_filing_name(val)
 
         if attrname == 'mana_cost':
+            super(BaseCard, self).__setattr__(attrname, str(val).lower())
             # REVISIT!
             self.cmc = 1
 
@@ -175,6 +182,8 @@ class BaseCard(models.Model):
         # REVISIT- Currently filing name logic is in Perl. See
         # MTG::Util::makeFilingName in the mtgstats project. We need
         # to get that moved to Python
+        name = name.replace("'",'')
+        name = name.replace("-",' ')
         return name.lower()
 
     class Meta:
@@ -710,6 +719,13 @@ class Format(models.Model):
     id = models.AutoField(primary_key=True)
     formatname = models.CharField(max_length=60, null=False)
     format = models.CharField(max_length=60, unique=True, null=False)
+    min_cards_main = models.IntegerField(null=False, default=60)
+    max_cards_main = models.IntegerField(null=False, default=60)
+    min_cards_side = models.IntegerField(null=False, default=0)
+    max_cards_side = models.IntegerField(null=False, default=15)
+    max_nonbl_card_count = models.IntegerField(null=False, default=4)
+    uses_command_zone = models.BooleanField(default=False)
+    validator = models.CharField(max_length=100, null=True)
     start_date = models.DateField(
         auto_now=False,
         auto_now_add=False,
