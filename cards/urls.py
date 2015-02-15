@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import patterns, url, include
 
 from cards import views
 
@@ -20,4 +20,5 @@ urlpatterns = patterns('',
                        url(r'^_winbattle$', views.winbattle, name='winbattle'),
                        # ex: /cards/augur-of-bolas/
                        url(r'^(?P<slug>[a-zA-Z-]+)/$', views.detail, name='detail'),
-                       )
+                       (r'^_textsearch/', include('haystack.urls')),
+    )

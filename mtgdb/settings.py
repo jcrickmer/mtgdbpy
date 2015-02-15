@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_nose',
+    'haystack',
     'cards',
     'decks',
 ]
@@ -76,6 +77,15 @@ DATABASES = {
         'NAME': 'mtgdbpy',
                 'USER': 'mtgdb',
                 'PASSWORD': 'password'
+    },
+}
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
+        'URL': 'http://127.0.0.1:8983/solr'
+        # ...or for multicore...
+        # 'URL': 'http://127.0.0.1:8983/solr/mysite',
     },
 }
 
