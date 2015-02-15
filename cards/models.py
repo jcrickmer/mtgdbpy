@@ -123,6 +123,119 @@ class PhysicalCard(models.Model):
             # , format=Format.objects.get(pk=format_id), test=BattleTest.objects.get(pk=test_id))
             return CardRating(physicalcard=self)
 
+    def get_last_updated(self):
+        return max(bc.updated_at for bc in self.basecard_set.all())
+    
+    def get_card_name(self):
+        return ' // '.join(bc.name for bc in self.basecard_set.all())
+        
+    def get_card_filing_name(self):
+        return ' // '.join(bc.filing_name for bc in self.basecard_set.all())
+        
+    def get_latest_card(self):
+        bc = self.basecard_set.filter(cardposition__in=['F','L','U']).first()
+        card = bc.card_set.all().order_by('-multiverseid').first()
+        return card
+
+    def get_latest_url_part(self):
+        card = self.get_latest_card()
+        return str(card.multiverseid) + '-' + card.url_slug()
+    
+    def get_searchable_document(self, include_names=True):
+        result = ''
+        for basecard in self.basecard_set.all():
+            rules = basecard.rules_text
+            rules = rules.replace(basecard.name, 'cardselfreference')
+            rules = rules.lower()
+            rules = rules.replace('{t}', ' tap ')
+            rules = rules.replace('{q}', ' untap ')
+            rules = rules.replace('{w}', ' manawhite ')
+            rules = rules.replace('{u}', ' manablue ')
+            rules = rules.replace('{b}', ' manablack ')
+            rules = rules.replace('{r}', ' manared ')
+            rules = rules.replace('{g}', ' managreen ')
+            rules = rules.replace('{x}', ' manax ')
+            for numm in range(0, 20):
+                rules = rules.replace('{' + str(numm) + '}', 'mana' + str(numm))
+            rules = rules.replace("{wp}", ' mamawhite manaphyrexian ')
+            rules = rules.replace("{up}", ' mamablue manaphyrexian ')
+            rules = rules.replace("{bp}", ' mamawhite manaphyrexian ')
+            rules = rules.replace("{rp}", ' mamawhite manaphyrexian ')
+            rules = rules.replace("{gp}", ' mamawhite manaphyrexian ')
+            rules = rules.replace("{2w}", ' manaalt2 manawhite ')
+            rules = rules.replace("{2u}", ' manaalt2 manablue ')
+            rules = rules.replace("{2b}", ' manaalt2 manablack ')
+            rules = rules.replace("{2r}", ' manaalt2 manared ')
+            rules = rules.replace("{2g}", ' manaalt2 managreen ')
+            rules = rules.replace("{wu}", ' manawhite manablue ')
+            rules = rules.replace("{wb}", ' manawhite manablack ')
+            rules = rules.replace("{ub}", ' manablue manablack ')
+            rules = rules.replace("{ur}", ' manablue manared ')
+            rules = rules.replace("{br}", ' manablack manared ')
+            rules = rules.replace("{bg}", ' manablack managreen ')
+            rules = rules.replace("{rg}", ' manared managreen ')
+            rules = rules.replace("{rw}", ' manared manawhite ')
+            rules = rules.replace("{gw}", ' managreen manawhite ')
+            rules = rules.replace("{gu}", ' managreen manablue ')
+
+            # need to add something that does a regexp match on hybrid mana in mana cost and rules text and adds a term for 'manahybrid'
+
+            if include_names:
+                result = result + basecard.name + '\n'
+                result = result + basecard.filing_name + '\n'
+            result = result + rules + '\n'
+            result = result + basecard.mana_cost + '\n'
+            strippedcost = str(basecard.mana_cost).replace('{', '')
+            strippedcost = strippedcost.replace('}', '')
+            strippedcost = strippedcost.replace('/p', '')
+            strippedcost = strippedcost.replace('2/', '')
+            strippedcost = strippedcost.replace('/', '')
+            result = result + strippedcost.lower() + '\n'
+            uses_pmana = False
+            try:
+                basecard.rules_text.lower().index('/p}')
+                uses_pmana = True
+            except ValueError:
+                pass
+            try:
+                basecard.mana_cost.lower().index('/p}')
+                uses_pmana = True
+            except ValueError:
+                pass
+            if uses_pmana:
+                result = result + 'phyrexianmana\n'
+
+            result = result + 'cmc' + str(basecard.cmc) + '\n'
+            if basecard.power is not None:
+                result = result + 'power' + str(basecard.power) + "\n"
+            if basecard.toughness is not None:
+                result = result + 'toughness' + str(basecard.toughness) + "\n"
+            if basecard.loyalty is not None:
+                result = result + 'loyalty' + str(basecard.loyalty) + "\n"
+            colors = basecard.colors.all()
+            if len(colors) > 1:
+                result = result + 'multicolored\n'
+            else:
+                result = result + 'notmulticolored\n'
+            allcolors = ['white', 'blue', 'black', 'red', 'green', 'colorless']
+            for color in colors:
+                result = result + 'cardcolor' + color.color.lower() + "\n"
+                allcolors.remove(color.color.lower())
+            for notcolor in allcolors:
+                result = result + 'notcardcolor' + notcolor + "\n"
+
+            result = result + ' '.join('type' + ctype.type for ctype in basecard.types.all()) + "\n"
+            result = result + ' '.join('subtype' + cstype.subtype for cstype in basecard.subtypes.all()) + "\n"
+            result = result + ' '.join(ctype.type for ctype in basecard.types.all()) + "\n"
+            result = result + ' '.join(cstype.subtype for cstype in basecard.subtypes.all()) + "\n"
+
+            result = result + '\n'
+
+        if self.basecard_set.all().count() > 1:
+            result = 'multicard\n' + result
+
+        return result
+            
     pass
 
     class Meta:
