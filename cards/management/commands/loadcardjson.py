@@ -16,6 +16,7 @@ import sys
 
 import json
 
+
 class Command(BaseCommand):
 
     help = '''Load up some JSON and add it to the database, if needed.'''
@@ -44,10 +45,10 @@ class Command(BaseCommand):
             card_number = jcard['card_number']
         except KeyError:
             pass
-        card = Card.objects.filter(expansionset=expset, card_number=card_number, multiverseid=jcard['multiverseid'],basecard=bc).first()
+        card = Card.objects.filter(expansionset=expset, card_number=card_number, multiverseid=jcard['multiverseid'], basecard=bc).first()
         if card is None:
             card = self.add_card(jcard, expset, bc)
- 
+
         # REVISIT - what about updates to Card?
 
         #sys.stderr.write("Name: " + jcard['name'] + '\n')
@@ -65,7 +66,7 @@ class Command(BaseCommand):
 
         pc = PhysicalCard()
         pc.layout = pc.NORMAL
-        cardposition = 'F' #FRONT
+        cardposition = 'F'  # FRONT
 
         card_number = ''
         try:
@@ -76,7 +77,8 @@ class Command(BaseCommand):
         try:
             pc.layout = jcard['layout']
             if pc.layout in [pc.DOUBLE, pc.SPLIT, pc.FLIP]:
-                # We need to see if we already have a PhysicalCard of the other half of this card. We will leverage the 'names' array to figure this out.
+                # We need to see if we already have a PhysicalCard of the other half of
+                # this card. We will leverage the 'names' array to figure this out.
                 for other_name in jcard['names']:
                     if other_name == jcard['name']:
                         # this is us. skip us.
@@ -100,7 +102,7 @@ class Command(BaseCommand):
                                 cardposition = 'U'
                             if 'b' in card_number or 'B' in card_number:
                                 cardposition = 'D'
-                
+
         except Error:
             # don't care much...
             pass
@@ -131,7 +133,7 @@ class Command(BaseCommand):
             #raise KeyError('JSON is missing attribute "cmc".')
             # let's assume that there is no mana cost sometimes. Like on lands. But maybe we should double-check... REVISIT
             pass
-        
+
         try:
             bc.rules_text = jcard['text']
         except KeyError:
@@ -144,7 +146,7 @@ class Command(BaseCommand):
             raise KeyError('JSON is missing "types".')
 
         type_counter = 0
-        for jsontype in ['supertypes','types']:
+        for jsontype in ['supertypes', 'types']:
             if jsontype not in jcard:
                 continue
             for ctype in jcard[jsontype]:
@@ -190,7 +192,6 @@ class Command(BaseCommand):
         result.type = cardtype
         result.save()
         return result
-
 
     def add_subtype(self, cardsubtype):
         result = Subtype.objects.create()

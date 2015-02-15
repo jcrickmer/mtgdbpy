@@ -13,12 +13,11 @@ class Command(BaseCommand):
     help = '''Checks to see if the cards database is blank, and if it is, then it adds the very basics to allow to get the database initialized. Adds colors and rarities.'''
 
     def handle(self, *args, **options):
-        #logger = logging.getLogger(__name__)                                                                                                                 
- 
+        #logger = logging.getLogger(__name__)
+
         self.init_colors()
 
         self.init_rarities()
-
 
     def init_colors(self):
         colors = [['W', 'white'],
@@ -39,7 +38,6 @@ class Command(BaseCommand):
             dbc.color = color[1]
             dbc.save()
 
-
     def init_rarities(self):
         rarities = [['b', 'Basic Land', 0],
                     ['c', 'Common', 1],
@@ -59,4 +57,3 @@ class Command(BaseCommand):
             dbr.rarity = rarity[1]
             dbr.sortorder = rarity[2]
             dbr.save()
-

@@ -125,22 +125,22 @@ class PhysicalCard(models.Model):
 
     def get_last_updated(self):
         return max(bc.updated_at for bc in self.basecard_set.all())
-    
+
     def get_card_name(self):
         return ' // '.join(bc.name for bc in self.basecard_set.all())
-        
+
     def get_card_filing_name(self):
         return ' // '.join(bc.filing_name for bc in self.basecard_set.all())
-        
+
     def get_latest_card(self):
-        bc = self.basecard_set.filter(cardposition__in=['F','L','U']).first()
+        bc = self.basecard_set.filter(cardposition__in=['F', 'L', 'U']).first()
         card = bc.card_set.all().order_by('-multiverseid').first()
         return card
 
     def get_latest_url_part(self):
         card = self.get_latest_card()
         return str(card.multiverseid) + '-' + card.url_slug()
-    
+
     def get_searchable_document(self, include_names=True):
         result = ''
         for basecard in self.basecard_set.all():
@@ -235,7 +235,7 @@ class PhysicalCard(models.Model):
             result = 'multicard\n' + result
 
         return result
-            
+
     pass
 
     class Meta:
@@ -295,8 +295,8 @@ class BaseCard(models.Model):
         # REVISIT- Currently filing name logic is in Perl. See
         # MTG::Util::makeFilingName in the mtgstats project. We need
         # to get that moved to Python
-        name = name.replace("'",'')
-        name = name.replace("-",' ')
+        name = name.replace("'", '')
+        name = name.replace("-", ' ')
         return name.lower()
 
     class Meta:

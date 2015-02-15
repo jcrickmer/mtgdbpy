@@ -11,6 +11,7 @@ from cards.management.commands.loadcardjson import Command
 import sys
 err = sys.stderr
 
+
 class LoaderTestCase(TestCase):
 
     huntmaster_json = '''{"layout":"double-faced","type":"Creature — Human Werewolf","types":["Creature"],"colors":["Red","Green"],"multiverseid":262875,"names":["Huntmaster of the Fells","Ravager of the Fells"],"name":"Huntmaster of the Fells","subtypes":["Human","Werewolf"],"originalType":"Creature — Human Werewolf","cmc":4,"rarity":"Mythic Rare","artist":"Chris Rahn","power":"2","toughness":"2","manaCost":"{2}{R}{G}","text":"Whenever this creature enters the battlefield or transforms into Huntmaster of the Fells, put a 2/2 green Wolf creature token onto the battlefield and you gain 2 life.\\nAt the beginning of each upkeep, if no spells were cast last turn, transform Huntmaster of the Fells.","originalText":"Whenever this creature enters the battlefield or transforms into Huntmaster of the Fells, put a 2/2 green Wolf creature token onto the battlefield and you gain 2 life.\\nAt the beginning of each upkeep, if no spells were cast last turn, transform Huntmaster of the Fells.","number":"140a","imageName":"huntmaster of the fells","foreignNames":[{"language":"Chinese Traditional","name":"墮者獵師"},{"language":"Chinese Simplified","name":"堕者猎师"},{"language":"French","name":"Maître-chasseur de la lande"},{"language":"German","name":"Jagdmeister vom Kahlenberg"},{"language":"Italian","name":"Capocaccia delle Colline"},{"language":"Japanese","name":"高原の狩りの達人"},{"language":"Korean","name":"산지의 사냥꾼"},{"language":"Portuguese (Brazil)","name":"Mestre de Caça da Derrubada"},{"language":"Russian","name":"Ловчий Каменистых Холмов"},{"language":"Spanish","name":"Maestro de caza de las colinas"}],"legalities":{"Modern":"Legal","Innistrad Block":"Legal","Legacy":"Legal","Vintage":"Legal","Freeform":"Legal","Prismatic":"Legal","Tribal Wars Legacy":"Legal","Tribal Wars Standard":"Legal","Singleton 100":"Legal","Commander":"Legal"},"printings":["Dark Ascension"]}'''
@@ -66,7 +67,7 @@ class LoaderTestCase(TestCase):
     arcbond_json = '''{"layout":"normal","type":"Instant","types":["Instant"],"colors":["Red"],"multiverseid":391793,"name":"Arcbond","originalType":"Instant","cmc":3,"rarity":"Rare","artist":"Slawomir Maniak","manaCost":"{2}{R}","text":"Choose target creature. Whenever that creature is dealt damage this turn, it deals that much damage to each other creature and each player.","originalText":"Choose target creature. Whenever that creature is dealt damage this turn, it deals that much damage to each other creature and each player.","flavor":"\\"If you must die today, make your death worthy of legend.\\"\\n—Alesha, Who Smiles at Death","number":"91","imageName":"arcbond","foreignNames":[{"language":"Chinese Traditional","name":"電弧連心"},{"language":"Chinese Simplified","name":"电弧连心"},{"language":"French","name":"Arc enchaîneur"},{"language":"German","name":"Überspringender Lichtbogen"},{"language":"Italian","name":"Vincolo Elettrico"},{"language":"Japanese","name":"電弧連鎖"},{"language":"Korean","name":"번개묶기"},{"language":"Portuguese (Brazil)","name":"Propagação Elétrica"},{"language":"Russian","name":"Громовая Дуга"},{"language":"Spanish","name":"Electrizarco"}],"printings":["Fate Reforged"],"legalities":{"Vintage":"Legal"}}'''
 
     cached_defenses_json = '''{"layout":"normal","type":"Sorcery","types":["Sorcery"],"colors":["Green"],"multiverseid":391807,"name":"Cached Defenses","originalType":"Sorcery","cmc":3,"rarity":"Uncommon","artist":"Zack Stella","manaCost":"{2}{G}","text":"Bolster 3. (Choose a creature with the least toughness among creatures you control and put three +1/+1 counters on it.)","originalText":"Bolster 3. (Choose a creature with the least toughness among creatures you control and put three +1/+1 counters on it.)","flavor":"The glittering scales in the Abzan vaults represent mighty deeds of the past and protection for generations to come.","number":"126","watermark":"Temur","imageName":"cached defenses","foreignNames":[{"language":"Chinese Traditional","name":"密儲防衛"},{"language":"Chinese Simplified","name":"密储防卫"},{"language":"French","name":"Défenses en réserve"},{"language":"German","name":"Gelagerte Verteidigung"},{"language":"Italian","name":"Difese Occulte"},{"language":"Japanese","name":"隠匿物の防衛"},{"language":"Korean","name":"숨겨진 방어구"},{"language":"Portuguese (Brazil)","name":"Defesas Acumuladas"},{"language":"Russian","name":"Оборонительные Запасы"},{"language":"Spanish","name":"Defensas ocultas"}],"printings":["Fate Reforged"],"legalities":{"Vintage":"Legal"}}'''
-    
+
     island_json = '''{"layout":"normal","supertypes":["Basic"],"type":"Basic Land — Island","types":["Land"],"multiverseid":391859,"name":"Island","subtypes":["Island"],"originalType":"Basic Land — Island","rarity":"Basic Land","artist":"Florian de Gesincourt","originalText":"U","number":"178","variations":[391860],"imageName":"island1","foreignNames":[{"language":"Chinese Simplified","name":"海岛"},{"language":"Chinese Traditional","name":"海島"},{"language":"French","name":"Île"},{"language":"German","name":"Insel"},{"language":"Italian","name":"Isola"},{"language":"Japanese","name":"島"},{"language":"Korean","name":"섬"},{"language":"Portuguese (Brazil)","name":"Ilha"},{"language":"Russian","name":"Остров"},{"language":"Spanish","name":"Isla"}],"legalities":{"Standard":"Legal","Modern":"Legal","Theros Block":"Legal","Return to Ravnica Block":"Legal","Innistrad Block":"Legal","Scars of Mirrodin Block":"Legal","Zendikar Block":"Legal","Shards of Alara Block":"Legal","Lorwyn-Shadowmoor Block":"Legal","Time Spiral Block":"Legal","Ravnica Block":"Legal","Kamigawa Block":"Legal","Mirrodin Block":"Legal","Onslaught Block":"Legal","Odyssey Block":"Legal","Invasion Block":"Legal","Masques Block":"Legal","Urza Block":"Legal","Tempest Block":"Legal","Mirage Block":"Legal","Ice Age Block":"Legal","Un-Sets":"Legal","Legacy":"Legal","Vintage":"Legal","Freeform":"Legal","Prismatic":"Legal","Tribal Wars Legacy":"Legal","Tribal Wars Standard":"Legal","Singleton 100":"Legal","Commander":"Legal"},"printings":["Limited Edition Alpha","Limited Edition Beta","Unlimited Edition","Revised Edition","Fourth Edition","Ice Age","Rivals Quick Start Set","Arena League","Mirage","Introductory Two-Player Set","Fifth Edition","Portal","Tempest","Judge Gift Program","Portal Second Age","Unglued","Asia Pacific Land Program","Urza's Saga","Classic Sixth Edition","Portal Three Kingdoms","Starter 1999","Guru","Mercadian Masques","Battle Royale Box Set","European Land Program","Starter 2000","Beatdown Box Set","Invasion","Seventh Edition","Odyssey","Onslaught","Eighth Edition","Mirrodin","Champions of Kamigawa","Unhinged","Ninth Edition","Ravnica: City of Guilds","Coldsnap Theme Decks","Time Spiral","Tenth Edition","Masters Edition","Lorwyn","Shadowmoor","Shards of Alara","Duel Decks: Jace vs. Chandra","Magic 2010","Planechase","Masters Edition III","Zendikar","Premium Deck Series: Slivers","Duel Decks: Phyrexia vs. the Coalition","Rise of the Eldrazi","Duels of the Planeswalkers","Archenemy","Magic 2011","Duel Decks: Elspeth vs. Tezzeret","Scars of Mirrodin","Mirrodin Besieged","New Phyrexia","Magic: The Gathering-Commander","Magic 2012","Duel Decks: Ajani vs. Nicol Bolas","Innistrad","Duel Decks: Venser vs. Koth","Avacyn Restored","Planechase 2012 Edition","Magic 2013","Duel Decks: Izzet vs. Golgari","Return to Ravnica","Magic 2014 Core Set","Theros","Commander 2013 Edition","Duel Decks: Jace vs. Vraska","Magic 2015 Core Set","Duel Decks: Speed vs. Cunning","Khans of Tarkir","Commander 2014","Fate Reforged"]}'''
 
     crucible_land_json = '''{"layout":"normal","type":"Land","types":["Land"],"multiverseid":391812,"name":"Crucible of the Spirit Dragon","originalType":"Land","rarity":"Rare","artist":"Jung Park","text":"{T}: Add {1} to your mana pool.\\n{1}, {T}: Put a storage counter on Crucible of the Spirit Dragon.\\n{T}, Remove X storage counters from Crucible of the Spirit Dragon: Add X mana in any combination of colors to your mana pool. Spend this mana only to cast Dragon spells or activate abilities of Dragons.","originalText":"{T}: Add {1} to your mana pool.\\n{1}, {T}: Put a storage counter on Crucible of the Spirit Dragon.\\n{T}, Remove X storage counters from Crucible of the Spirit Dragon: Add X mana in any combination of colors to your mana pool. Spend this mana only to cast Dragon spells or activate abilities of Dragons.","number":"167","imageName":"crucible of the spirit dragon","foreignNames":[{"language":"Chinese Traditional","name":"靈龍蟄居"},{"language":"Chinese Simplified","name":"灵龙蛰居"},{"language":"French","name":"Creuset du dragon-esprit"},{"language":"German","name":"Hort des Geisterdrachen"},{"language":"Italian","name":"Crogiolo dello Spirito Drago"},{"language":"Japanese","name":"精霊龍のるつぼ"},{"language":"Korean","name":"신령 용의 유폐지"},{"language":"Portuguese (Brazil)","name":"Crisol do Dragão Espírito"}{"language":"Russian","name":"Горнило Духа Дракона"},{"language":"Spanish","name":"Crisol del dragón espíritu"}],"printings":["Fate Reforged"],"legalities":{"Vintage":"Legal"}}'''
@@ -92,7 +93,7 @@ class LoaderTestCase(TestCase):
         tool.handle_card_json(json, expset)
         card = BaseCard.objects.filter(name=name).first()
         return card
-    
+
     def test_type_single_artifact(self):
         card = self.load_card(self.black_lotus_json, 'Black Lotus')
         self.assertEquals(card.types.count(), 1)
@@ -117,7 +118,6 @@ class LoaderTestCase(TestCase):
         card = self.load_card(self.arcbond_json, 'Arcbond')
         self.assertEquals(card.types.count(), 1)
         self.assertEquals(card.types.all().first().type, 'Instant')
-
 
     def test_type_single_sorcery(self):
         card = self.load_card(self.cached_defenses_json, 'Cached Defenses')
@@ -190,7 +190,7 @@ class LoaderTestCase(TestCase):
 
 #    def test_to_make_sure_types_are_being_reused(self):
 #        self.assertTrue(False)
-        
+
     def test_types_legendary(self):
         card = self.load_card(self.alesha_json, "Alesha, Who Smiles at Death")
         self.assertGreater(card.types.count(), 1)
@@ -319,10 +319,7 @@ class LoaderTestCase(TestCase):
     #     self.assertEquals(hunt, ravager.get_double_faced_card())
     #     self.assertEquals(ravager, hunt.get_double_faced_card())
 
-
     def test_leveler_card(self):
         card = self.load_card(self.ikiral_outrider_json, "Ikiral Outrider")
         pcard = card.physicalcard
         self.assertEquals(pcard.layout, pcard.LEVELER)
-
-
