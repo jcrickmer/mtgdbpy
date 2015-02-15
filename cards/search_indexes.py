@@ -8,7 +8,7 @@ class CardIndex(indexes.SearchIndex, indexes.Indexable):
     name = indexes.CharField(model_attr='get_card_name')
     updated_date = indexes.DateTimeField(model_attr='get_last_updated')
     name_auto = indexes.EdgeNgramField(model_attr='get_card_filing_name')
-    
+
     def get_model(self):
         return PhysicalCard
 

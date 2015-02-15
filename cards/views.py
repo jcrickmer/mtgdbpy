@@ -11,6 +11,8 @@ from django.db import connection
 from django.db import IntegrityError
 import collections
 
+from haystack.query import SearchQuerySet
+
 import random
 import operator
 
@@ -96,6 +98,20 @@ def search(request):
         request.session['sort_order'] = sort_order
 
     return redirect('cards:list')
+
+
+def autocomplete(request):
+    sqs = SearchQuerySet().autocomplete(name_auto=request.GET.get('q', ''))[:15]
+    suggestions = [result.name for result in sqs]
+    # Make sure you return a JSON object, not a bare list.
+    # Otherwise, you could be vulnerable to an XSS attack.
+    the_data = json.dumps(suggestions)
+    if 'callback' in request.REQUEST:
+        # a jsonp response!
+        the_data = '%s(%s);' % (request.REQUEST['callback'], the_data)
+        return HttpResponse(the_data, "text/javascript")
+    else:
+        return HttpResponse(the_data, content_type='application/json')
 
 
 def cardlist(request):

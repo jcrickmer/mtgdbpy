@@ -21,4 +21,5 @@ urlpatterns = patterns('',
                        # ex: /cards/augur-of-bolas/
                        url(r'^(?P<slug>[a-zA-Z-]+)/$', views.detail, name='detail'),
                        (r'^_textsearch/', include('haystack.urls')),
-    )
+                       url(r'^_nameauto/', views.autocomplete, name='autocomplete'),
+                       )
