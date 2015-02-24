@@ -702,24 +702,19 @@ def ratings(request, format_id=0):
     battle_results = []
     itcount = 0
     battles_histo = dict()
+    for zoo in range(0, 24):
+        battles_histo[zoo] = {'count': 0, 'percent': 0.0}
     for wrow in wrows:
         bat_count = wrow[1] + lrows[itcount][1]
         battle_results.append([wrow[0], wrow[1] + lrows[itcount][1], wrow[1], lrows[itcount][1]])
-        if str(bat_count) in battles_histo:
-            battles_histo[
-                str(bat_count)] = {
-                'count': battles_histo[
-                    str(bat_count)]['count'] +
-                1,
-                'percent': 100.0 *
-                float(
-                    battles_histo[
-                        str(bat_count)]['count'] +
-                    1) /
-                context['cards_count']}
+        if bat_count in battles_histo:
+            newcount = battles_histo[bat_count]['count'] + 1
+            battles_histo[bat_count] = {
+                'count': newcount,
+                'percent': 100.0 * float(newcount) / context['cards_count']}
         else:
-            battles_histo[str(bat_count)] = {'count': 1, 'percent': 100.0 * 1.0 / context['cards_count']}
-
+            battles_histo[bat_count] = {'count': 1, 'percent': 100.0 * 1.0 / context['cards_count']}
+        itcount = itcount + 1
     context['tester'] = collections.OrderedDict(sorted(battles_histo.items(), key=lambda t: int(t[0])))
 
     context['battle_count'] = Battle.objects.filter(
