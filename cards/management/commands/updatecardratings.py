@@ -34,10 +34,6 @@ class Command(BaseCommand):
 
             # iterate through each format
             for format in formats:
-                # REVISIT - forcing format 4
-                if not (format.id == 4 or format.id == 1 or format.id == 13):
-                    continue
-
                 # Let's get all of the battles that have taken place. After the
                 # initial run of this for a given format and test, this will be
                 # the normal path.
@@ -98,10 +94,12 @@ class Command(BaseCommand):
                     # calculate!
                     if card_lmd[str(battle.winner_pcard.id)] is None or card_lmd[
                             str(battle.winner_pcard.id)] < battle.battle_date:
-                        self.stdout.write("updating battles for cards " +
-                                          str(battle.winner_pcard.id) +
-                                          " and " +
-                                          str(battle.loser_pcard.id))
+                        self.stdout.write(
+                            "format {}: updating battles for cards {} and {}".format(
+                                str(
+                                    format.id), str(
+                                    battle.winner_pcard.id), str(
+                                    battle.loser_pcard.id)))
                         card_ratings[str(battle.winner_pcard.id)], card_ratings[
                             str(battle.loser_pcard.id)] = rate_1vs1(card_a, card_b, env=ts)
                         card_battled[str(battle.winner_pcard.id)] = True
@@ -150,7 +148,5 @@ class Command(BaseCommand):
                             str(pcard_id)]:
                         cr_db.mu = card_rating.mu
                         cr_db.sigma = card_rating.sigma
-                        self.stdout.write(
-                            "saving to db pcard_id " +
-                            str(pcard_id))
+                        self.stdout.write("format {}: saving to db pcard_id {}".format(str(format.id), str(pcard_id)))
                         cr_db.save()
