@@ -62,9 +62,9 @@ $(function() {
     <tbody>
     {% for card in cards %}
       <tr>
-        <td><a href="{% url 'cards:detail' card.multiverseid card.url_slug %}"><img class="list_cardimage" src="{{ card.img_url }}" alt="{{ card.basecard.name }}"/></a></td></td>
+        <td><a href="{% url 'cards:detail' card.basecard.physicalcard.get_latest_card.multiverseid card.url_slug %}"><img class="list_cardimage" src="{{ card.basecard.physicalcard.get_latest_card.img_url }}" alt="{{ card.basecard.name }}"/></a></td></td>
         <td>
-          <div><span class="list_cardname"><a href="{% url 'cards:detail' card.multiverseid card.url_slug %}">{{ card.basecard.name }}</a></span> <span class="list_mana_cost">{{card.mana_cost_html }}</span> <span class="list_cmc">({{card.basecard.cmc}})</span></div>
+          <div><span class="list_cardname"><a href="{% url 'cards:detail' card.basecard.physicalcard.get_latest_card.multiverseid card.url_slug %}">{{ card.basecard.name }}</a></span> <span class="list_mana_cost">{{card.mana_cost_html }}</span> <span class="list_cmc">({{card.basecard.cmc}})</span></div>
           <div class="list_cardtype">{% for ttype in card.basecard.types.all %}{{ ttype.type }} {% endfor %} {% if card.basecard.subtypes.all %}&mdash; {% for tsubtype in card.basecard.subtypes.all %}{{ tsubtype.subtype }} {% endfor %}{%endif%}</div>
           <div class="list_rules">{{card.rules_text_html}}</div>
         </td>

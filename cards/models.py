@@ -439,6 +439,8 @@ class CardManager(models.Manager):
         jcounter = 0
 
         pre_where_clause = ''
+        # This version gets the one with the last multiverseid (ostinsibly, the latest one), but it is really, really slow. And take the HAVING clause out if you are using this one.
+        #sql_s = '''SELECT c.id, c.basecard_id FROM physicalcard AS pc JOIN basecard AS bc ON pc.id = bc.physicalcard_id JOIN card AS c ON c.basecard_id = bc.id INNER JOIN (SELECT basecard_id, MAX(multiverseid) AS multiverseid FROM card GROUP BY basecard_id) AS cm ON cm.basecard_id = c.basecard_id AND cm.multiverseid = c.multiverseid LEFT JOIN formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 '''
         sql_s = '''SELECT c.id, c.basecard_id FROM physicalcard AS pc JOIN basecard AS bc ON pc.id = bc.physicalcard_id JOIN card AS c ON c.basecard_id = bc.id LEFT JOIN formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 '''
 
         terms = []
@@ -609,7 +611,7 @@ class CardManager(models.Manager):
         else:
             sql_s = sql_s + ' GROUP BY ' + 'pc.id '
         #sql_s = sql_s + ' bc.id HAVING max(c.multiverseid) '
-        sql_s = sql_s + ' HAVING max(c.multiverseid) '
+        #sql_s = sql_s + ' HAVING max(c.multiverseid) '
 
         sql_s = sql_s + ' ORDER BY '
         sql_s = sql_s + ', '.join(str(str(arg.sqlname()) + ' ' + arg.direction) for arg in sortds)

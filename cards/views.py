@@ -16,7 +16,7 @@ from haystack.query import SearchQuerySet
 import random
 import operator
 
-from cards.models import Card, CardManager, SearchPredicate, SortDirective
+from cards.models import Card, CardManager, SearchPredicate, SortDirective, BaseCard
 from cards.models import Mark
 from cards.models import PhysicalCard
 from cards.models import Type
@@ -529,6 +529,12 @@ def battle(request, format="redirect"):
             break
 
     # REVISIT - we need to handle the fact that card_b may be None!!!
+
+    # Let's insure that we are looking at the right part of the physical card...
+    if card_a.basecard.cardposition not in [BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP]:
+        card_a = PhysicalCard.objects.get(pk=card_a.basecard.physicalcard.id).get_latest_card()
+    if card_b.basecard.cardposition not in [BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP]:
+        card_b = PhysicalCard.objects.get(pk=card_b.basecard.physicalcard.id).get_latest_card()
 
     context = {'card_a': card_a,
                'card_b': card_b,
