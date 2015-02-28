@@ -61,3 +61,4 @@ STATIC_ROOT = "/opt/mtgdbpy/cstatic/"
 
 STATIC_ROOT_CN = '/opt/mtgdb/cn'
 STATIC_ROOT_CARD_IMAGES = '/var/mtgdb/card_images'
+DYNAMIC_IMAGE_FILE_ROOT = '/var/mtgdb/cn_dyn_root'

@@ -16,5 +16,6 @@ This is what I added to Apache's configs:
 
    Alias /cn /home/jason/projects/mtgdbpy/cn
    Alias /static /home/jason/projects/mtgdbpy/cstatic
+   Alias /d /var/mtgdb/cn_dyn_root
 
 </VirtualHost>

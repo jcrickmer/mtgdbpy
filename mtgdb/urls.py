@@ -8,6 +8,7 @@ urlpatterns = patterns('',
                        url(r'^decks/', include('decks.urls', namespace="decks")),
                        (r'^cn/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT_CN}),
                        (r'^img/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT_CARD_IMAGES}),
+                       (r'^d/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.DYNAMIC_IMAGE_FILE_ROOT}),
                        # Examples:
                        # url(r'^$', 'mtgdb.views.home', name='home'),
                        # url(r'^blog/', include('blog.urls')),

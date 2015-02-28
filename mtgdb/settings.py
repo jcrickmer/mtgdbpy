@@ -145,3 +145,9 @@ STATIC_ROOT = "/home/jason/projects/mtgdb/cstatic/"
 
 STATIC_ROOT_CN = '/home/jason/projects/mtgdb/cn'
 STATIC_ROOT_CARD_IMAGES = '/home/jason/projects/mtgstats/card_images'
+
+BITLY_API_USER = 'o_l7vkb4uv0'
+BITLY_API_KEY = 'R_3cbf22413b0d49b487b71db6b3b4e722'
+BITLY_ACCESS_TOKEN = '9708cb7d50550b6409cd93b796990bebdde3edb0'
+USE_BITLY = False
+DYNAMIC_IMAGE_FILE_ROOT = '/tmp/cn_dyn_root'
