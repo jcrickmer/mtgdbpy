@@ -10,7 +10,7 @@ from django.http import Http404
 from django.db import connection
 from django.db import IntegrityError
 import collections
-
+from django.core.urlresolvers import reverse
 from haystack.query import SearchQuerySet
 
 import random
@@ -102,7 +102,17 @@ def search(request):
 
 def autocomplete(request):
     sqs = SearchQuerySet().autocomplete(name_auto=request.GET.get('q', ''))[:15]
-    suggestions = [result.name for result in sqs]
+    #suggestions = [result.name for result in sqs]
+    suggestions = []
+    for result in sqs:
+        cardname = result.name
+        if cardname is not None and len(cardname) > 0:
+            cn_bc = BaseCard.objects.filter(name__iexact=cardname).first()
+            result = {'name': cardname}
+            if cn_bc is not None:
+                the_card = cn_bc.physicalcard.get_latest_card()
+                result['url'] = reverse('cards:detail', kwargs={'multiverseid': str(the_card.multiverseid), 'slug': the_card.url_slug()})
+                suggestions.append(result)
     # Make sure you return a JSON object, not a bare list.
     # Otherwise, you could be vulnerable to an XSS attack.
     the_data = json.dumps(suggestions)
