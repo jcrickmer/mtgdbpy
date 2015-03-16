@@ -305,3 +305,13 @@ ul#search_terms li {
 div.card-tile {
   height: 250px;
 }
+ol.rules {
+  list-style-type: none;
+}
+li.rule {
+  padding-left: 40px ;
+  text-indent: -40px ;
+}
+.rules-section-number {
+  font-weight: bold;
+}

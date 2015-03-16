@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'haystack',
     'cards',
     'decks',
+    'rules',
 ]
 
 MIDDLEWARE_CLASSES = (
@@ -105,6 +106,7 @@ USE_TZ = True
 TEMPLATE_DIRS = (
     os.path.join(BASE_DIR, 'cards', 'templates'),
     os.path.join(BASE_DIR, 'decks', 'templates'),
+    os.path.join(BASE_DIR, 'rules', 'templates'),
     os.path.join(BASE_DIR, 'mtgdb', 'templates'),
 )
 

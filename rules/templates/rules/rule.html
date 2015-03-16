@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Magic: The Gathering Rules, {{doc_title}}{% endblock %}
+{% block pagetitle %}{{rule.section}}. {{rule.rule_text | safe}}{% endblock %}
+
+{% block content %}
+<ul>
+<li><a href="{% url 'rules:index' %}">Table of Contents</a></li>
+{% if previous_rule %}
+<li><a href="{% url 'rules:showsection' previous_rule.section %}">Previous Rule: {{previous_rule.section}}. {{previous_rule.rule_text | safe}}</a></li>
+{% endif %}
+{% if next_rule %}
+<li><a href="{% url 'rules:showsection' next_rule.section %}">Next Rule: {{next_rule.section}}. {{next_rule.rule_text | safe}}</a></li>
+{% endif %}
+<ul>
+<ol class="rules">
+{% for child in rule.children %}
+<li class="rule"><span class="rules-section-number">{{child.section}}.</span> <span class="rule-text">{{child.marked_up_text | safe}}</span></li>
+{% endfor %}
+</ol>
+<div>
+<p>
+Source: <a href="{{meta.source_url}}">{{meta.source_url}}</a>, effective {{meta.effective_date}}. Imported into card.ninja on {{meta.import_date}}. <i>Magic: The Gathering</i> rules are the copyright Wizards of the Coast.
+</p>
+</div>
+{% endblock %}

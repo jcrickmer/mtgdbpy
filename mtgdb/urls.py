@@ -5,6 +5,7 @@ from django.conf import settings
 urlpatterns = patterns('',
                        url(r'^cards/admin/', include(admin.site.urls)),
                        url(r'^cards/', include('cards.urls', namespace="cards")),
+                       url(r'^rules/', include('rules.urls', namespace="rules")),
                        url(r'^decks/', include('decks.urls', namespace="decks")),
                        (r'^cn/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT_CN}),
                        (r'^img/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT_CARD_IMAGES}),
