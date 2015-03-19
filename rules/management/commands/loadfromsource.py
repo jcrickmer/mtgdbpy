@@ -76,7 +76,7 @@ class Command(BaseCommand):
                             rule_match = rule_re.match(stringback)
                             if rule_match:
                                 current_rule = rule_match.group(1)
-                                dfg = u'RULE {}, {} {} {}: {}\n'.format(
+                                dfg = u'RULE {}, 1"{}" 3"{}" 4"{}": {}\n'.format(
                                     current_header,
                                     rule_match.group(1),
                                     rule_match.group(3),
@@ -88,23 +88,30 @@ class Command(BaseCommand):
                                 part2 = rule_match.group(3)
                                 part3 = rule_match.group(4)
                                 combined = part1
+                                sorty = part1
                                 dParent = None
                                 if part2 is None and part3 is None:
                                     # parent is a header
                                     dParent = part1[0]  # hard coded to first character for now
                                 else:
                                     combined = u'{}.{}'.format(part1, part2)
+                                    sorty = u'{0:0>3}.{1:0>3}'.format(part1, part2)
                                     dParent = part1
                                     if part3 is not None:
                                         dParent = u'{}.{}'.format(part1, part2)
                                         combined = u'{}{}'.format(combined, part3)
+                                        sorty = u'{0}{1: >2}'.format(sorty, part3)
                                 sys.stdout.write('Looking for parent ' + dParent + "\n")
                                 parent_q = Rule.objects.filter(section__iexact=dParent)
                                 parent_r = parent_q.first()
                                 if parent_r is None:
                                     sys.stdout.write("SQL: " + str(parent_q.query) + "\n")
                                     quit()
-                                rRule = Rule(parent=parent_r, section=combined.encode('utf8'), rule_text=rule_match.group(5).encode('utf8'))
+                                rRule = Rule(
+                                    parent=parent_r,
+                                    section=combined.encode('utf8'),
+                                    sortsection=sorty.encode('utf8'),
+                                    rule_text=rule_match.group(5).encode('utf8'))
                                 rRule.save()
                                 current_rule_r = rRule
                                 example_position = 0

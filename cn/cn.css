@@ -307,11 +307,43 @@ div.card-tile {
 }
 ol.rules {
   list-style-type: none;
+  padding-left: 0px;
 }
 li.rule {
-  padding-left: 40px ;
-  text-indent: -40px ;
+  padding-left: 60px;
+  text-indent: -60px;
+  margin-top: 11px;
 }
 .rules-section-number {
+  font-weight: bold;
+}
+li.rule ol.rules li.rule {
+  padding-left: 72px;
+  text-indent: -72px;
+}
+li.rule span.rules-section-number {
+  float:left;
+  width: 60px;
+}
+li.rule ol.rules li.rule span.rules-section-number {
+  float:left;
+  width: 72px;
+}
+
+li.example {
+  padding-left: 0px;
+  text-indent: 0px;
+  margin-top: 11px;
+  font-style: italic;
+}
+li.rule ol.rules li.example {
+  padding-left: 0px;
+  text-indent: 0px;
+}
+ol.examples {
+  list-style-type: none;
+  padding-left: 20px;
+}
+span.example-label {
   font-weight: bold;
 }
