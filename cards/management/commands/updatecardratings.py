@@ -55,6 +55,10 @@ class Command(BaseCommand):
                     card_b_date = None
                     try:
                         card_a = card_ratings[str(battle.winner_pcard.id)]
+                    except PhysicalCard.DoesNotExist:
+                        # card is no longer in the system? skip this I guess.
+                        self.stdout.write('Skipping a rating because the winner PhysicalCard does not exist.')
+                        continue
                     except KeyError:
                         # let's try to get the rating from the database
                         crsdb = CardRating.objects.filter(
@@ -74,6 +78,10 @@ class Command(BaseCommand):
 
                     try:
                         card_b = card_ratings[str(battle.loser_pcard.id)]
+                    except PhysicalCard.DoesNotExist:
+                        # card is no longer in the system? skip this I guess.
+                        self.stdout.write('Skipping a rating because the winner LoserCard does not exist.')
+                        continue
                     except KeyError:
                         # let's try to get the rating from the database
                         crsdb = CardRating.objects.filter(
@@ -92,14 +100,13 @@ class Command(BaseCommand):
                         card_ratings[str(battle.loser_pcard.id)] = card_b
 
                     # calculate!
-                    if card_lmd[str(battle.winner_pcard.id)] is None or card_lmd[
-                            str(battle.winner_pcard.id)] < battle.battle_date:
+                    if card_lmd[str(battle.winner_pcard.id)] is None\
+                            or card_lmd[str(battle.winner_pcard.id)] < battle.battle_date:
                         self.stdout.write(
                             "format {}: updating battles for cards {} and {}".format(
-                                str(
-                                    format.id), str(
-                                    battle.winner_pcard.id), str(
-                                    battle.loser_pcard.id)))
+                                str(format.id),
+                                str(battle.winner_pcard.id),
+                                str(battle.loser_pcard.id)))
                         card_ratings[str(battle.winner_pcard.id)], card_ratings[
                             str(battle.loser_pcard.id)] = rate_1vs1(card_a, card_b, env=ts)
                         card_battled[str(battle.winner_pcard.id)] = True
