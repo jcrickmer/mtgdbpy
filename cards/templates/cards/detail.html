@@ -82,18 +82,18 @@ $("#return-results").button().click(function(event) { document.location = "{% ur
       <td>
         {% for cardrating in working.card.basecard.physicalcard.cardrating_set.all %}
           {% if cardrating.test.id == 1 %}
-            {% if cardrating.format.id == 14 %}
+            {% if cardrating.format.id == 21 %}
               <span class="hidden-xs">{{cardrating.format.formatname}}</span><span class="visible-xs-inline">Std</span>: {{cardrating.cardninjaRating|floatformat:3 }}<!-- (confidence {{cardrating.confidence|floatformat:2 }})--><br>
 
             {% endif %}
-            {% if cardrating.format.id == 16 %}
+            {% if cardrating.format.id == 20 %}
               <span class="hidden-xs">{{cardrating.format.formatname}}</span><span class="visible-xs-inline">Mod</span>: {{cardrating.cardninjaRating|floatformat:3 }}<!-- (confidence {{cardrating.confidence|floatformat:2 }})--><br>
 
             {% endif %}
-            {% if cardrating.format.id == 15 %}
+            {% if cardrating.format.id == 18 %}
               <span class="hidden-xs">{{cardrating.format.formatname}}</span><span class="visible-xs-inline">EDH</span>: {{cardrating.cardninjaRating|floatformat:3 }}<!-- (confidence {{cardrating.confidence|floatformat:2 }})--><br>
             {% endif %}
-            {% if cardrating.format.id == 17 %}
+            {% if cardrating.format.id == 19 %}
               <span class="hidden-xs">{{cardrating.format.formatname}}</span><span class="visible-xs-inline">TL</span>: {{cardrating.cardninjaRating|floatformat:3 }}<!-- (confidence {{cardrating.confidence|floatformat:2 }})--><br>
             {% endif %}
           {% endif %}
