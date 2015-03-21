@@ -1,0 +1,104 @@
+Adding cards is still tricky and laborious
+
+Step 1:
+Get the latest card set json from mtgjson.com.
+
+Step 2:
+Load those cards into the database with the loadcardjson Django command.
+
+./manage.py loadcardjson DDO-x.json
+
+Step 3:
+Create new formats. You will need to know the start and end dates for the new formats. Here are some examples.
+
+INSERT INTO format (formatname, format, start_date, end_date, max_cards_main, max_cards_side, max_nonbl_card_count, min_cards_main, min_cards_side, uses_command_zone) VALUES ('Commander','Commander_2015-03-21','2015-03-21','2015-07-10',100,0,1,100,0,1);
+INSERT INTO format (formatname, format, start_date, end_date, max_cards_main, max_cards_side, max_nonbl_card_count, min_cards_main, min_cards_side, uses_command_zone) VALUES ('TinyLeaders','Tiny Leaders_2015-03-21','2015-03-21','2015-07-10',50,15,1,50,0,1);
+INSERT INTO format (formatname, format, start_date, end_date, max_cards_main, max_cards_side, max_nonbl_card_count, min_cards_main, min_cards_side, uses_command_zone) VALUES ('Modern','Modern_2015-03-27','2015-03-27','2015-07-17',1000,15,4,60,0,0);
+INSERT INTO format (formatname, format, start_date, end_date, max_cards_main, max_cards_side, max_nonbl_card_count, min_cards_main, min_cards_side, uses_command_zone) VALUES ('Standard','Standard_2015-03-27','2015-03-27','2015-07-17',1000,15,4,60,0,0);
+
+Step 4:
+With the cards loaded, and with formats created, you now need to populate the new cards into the new formats. For the eternal formats, it is easy enough to just copy all of the existing formatbasecard entries for the previous format into a temp table, add the new cards, and then push them back into the formatbasecard table
+
+CREATE TEMPORARY TABLE foo AS (SELECT basecard_id AS basecard_id, 18 AS format_id FROM formatbasecard WHERE format_id = 15);
+INSERT INTO foo (SELECT basecard_id, 18 as format_id FROM card WHERE expansionset_id = 184);
+
+INSERT INTO foo (SELECT basecard_id AS basecard_id, 19 AS format_id FROM formatbasecard WHERE format_id = 17);
+INSERT INTO foo (SELECT basecard_id, 19 as format_id FROM card WHERE expansionset_id = 184);
+
+INSERT IGNORE INTO formatbasecard (basecard_id, format_id) SELECT basecard_id, format_id FROM foo;
+DROP TABLE foo;
+
+For TinyLeaders, you will need to be more selective and just do CMC < 3.
+
+Also, you will need to figure out the ban list updates and remove those, as necessary.
+
+For standard rotations, it is probably best to just start over and load all 4 previous expansions in individually, then the new expansion set.
+
+Step 5:
+Now bring over all of the battles.
+
+CREATE TEMPORARY TABLE fooy AS (SELECT battle_date, 18 AS format_id, loser_pcard_id, session_key, winner_pcard_id, test_id FROM battle WHERE format_id = 15);
+INSERT INTO fooy (SELECT battle_date, 19 AS format_id, loser_pcard_id, session_key, winner_pcard_id, test_id FROM battle WHERE format_id = 17);
+INSERT INTO fooy (SELECT battle_date, 20 AS format_id, loser_pcard_id, session_key, winner_pcard_id, test_id FROM battle WHERE format_id = 16);
+INSERT INTO fooy (SELECT battle_date, 21 AS format_id, loser_pcard_id, session_key, winner_pcard_id, test_id FROM battle WHERE format_id = 14);
+
+And then push them into battle again.
+
+INSERT IGNORE INTO battle (battle_date, format_id, loser_pcard_id, session_key, winner_pcard_id, test_id) SELECT battle_date, format_id, loser_pcard_id, session_key, winner_pcard_id, test_id FROM fooy;
+DROP TABLE fooy;
+
+Again, you will probably need to do something a little bit different for Standard set rotations and possibly for bannings.
+
+Step 6:
+Update all of the card ratings based on the new formats and recently copied-over battles into the new formats:
+
+./manage updatecardratings
+
+Step 7:
+Need to update all of the Similiar Physical Cards.
+
+Step 7a:
+Generate all of the search docs.
+
+rm /tmp/cards_for_lucene/*
+./manage.py gencarddocsforlucene --outdir /tmp/cards_for_lucene
+
+Step 7b:
+Now move over to the Lucene 4.6.1 instance that we are using on smoker (the dev box), and forgood measure, recompile the Java classes we are using:
+
+cd ../clustering/lucene-4.6.1
+javac -cp core/lucene-core-4.6.1.jar:queryparser/lucene-queryparser-4.6.1.jar:analysis/common/lucene-analyzers-common-4.6.1.jar:demo/lucene-demo-4.6.1.jar:. MTG*.java
+
+Step 7c:
+Index all of the documents:
+
+java -cp core/lucene-core-4.6.1.jar:queryparser/lucene-queryparser-4.6.1.jar:analysis/common/lucene-analyzers-common-4.6.1.jar:demo/lucene-demo-4.6.1.jar:. MTGIndexer -docs /tmp/cards_for_lucene/
+
+Step 7d:
+Run the search algo on the documents. NOTE that the MTGSearch class is currently just looking at te the forst 25000 phsyicalcard.ids. This needs to be improved in the future.
+
+java -cp core/lucene-core-4.6.1.jar:queryparser/lucene-queryparser-4.6.1.jar:analysis/common/lucene-analyzers-common-4.6.1.jar:demo/lucene-demo-4.6.1.jar:. MTGSearch > sims.sql
+
+Step 7e:
+Delete all of the current similarphysicalcard entries and stick our new entries in there:
+
+mysql -u root -p -e 'DELETE FROM similarphsyicalcard;' mtgdbpy
+mysql -u root -p mtgdbpy < sims.sql
+
+Step 8:
+Back in the main mtgdb directory, update the Solr index so that tutoring works correctly.
+
+./manage rebuild_index
+
+Note that since this is not stored in the MySQL database, if the data updates are being staged on a dev box and then being mysqldumped to be moved back to production, this command will need to be run in dev and production.
+
+
+Appendix:
+
+Are there cards in Tinyleaders that shouldn't be there? You can see with:
+
+SELECT bc.id, bc.name, bc.cmc FROM formatbasecard As fbc JOIN basecard AS bc on bc.id = fbc.basecard_id WHERE format_id IN (17, 19) AND bc.cmc > 3;
+
+and then you can remove them:
+
+DELETE FROM formatbasecard WHERE format_id IN (17,19) AND basecard_id IN (SELECT id FROM basecard AS bc WHERE bc.cmc > 3);
