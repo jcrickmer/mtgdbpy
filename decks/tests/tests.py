@@ -35,7 +35,6 @@ class DecksTestCase(TestCase):
 
         tdeck.save()
 
-        self.assertEquals(tdeck.id, 1)
         self.assertEquals(tdeck.format.id, tformat.id)
 
         c1 = Card.objects.filter(multiverseid=1002).first()
@@ -61,3 +60,87 @@ class DecksTestCase(TestCase):
         dc2.save()
 
         self.assertEquals(tdeck.get_card_count(), 11)
+
+    def test_deck_60mountains(self):
+        tlh = TestLoadHelper()
+        tlh.basics_loader()
+
+        tformat = Format.objects.filter(format='Standard_2015-01-23').first()
+
+        tdeck = Deck()
+        tdeck.name = 'My Deck Name'
+        tdeck.url = 'http://card.ninja/'
+        tdeck.visibility = tdeck.VISIBLE
+        tdeck.authorname = 'Test Dude'
+        tdeck.format = tformat
+
+        tdeck.save()
+
+        c1 = Card.objects.filter(multiverseid=1004).first()
+
+        dc1 = DeckCard()
+        dc1.physicalcard = c1.basecard.physicalcard
+        dc1.deck = tdeck
+        dc1.cardcount = 60
+        dc1.board = dc1.MAIN
+        dc1.save()
+
+        self.assertEquals(tdeck.get_card_count(), 60)
+
+        self.assertTrue(tdeck.is_legal())
+
+    def test_deck_61mountains(self):
+        tlh = TestLoadHelper()
+        tlh.basics_loader()
+
+        tformat = Format.objects.filter(format='Standard_2015-01-23').first()
+
+        tdeck = Deck()
+        tdeck.name = 'My Deck Name'
+        tdeck.url = 'http://card.ninja/'
+        tdeck.visibility = tdeck.VISIBLE
+        tdeck.authorname = 'Test Dude'
+        tdeck.format = tformat
+
+        tdeck.save()
+
+        c1 = Card.objects.filter(multiverseid=1004).first()
+
+        dc1 = DeckCard()
+        dc1.physicalcard = c1.basecard.physicalcard
+        dc1.deck = tdeck
+        dc1.cardcount = 61
+        dc1.board = dc1.MAIN
+        dc1.save()
+
+        self.assertEquals(tdeck.get_card_count(), 61)
+
+        self.assertTrue(tdeck.is_legal())
+
+    def test_deck_59mountains(self):
+        tlh = TestLoadHelper()
+        tlh.basics_loader()
+
+        tformat = Format.objects.filter(format='Standard_2015-01-23').first()
+
+        tdeck = Deck()
+        tdeck.name = 'My Deck Name'
+        tdeck.url = 'http://card.ninja/'
+        tdeck.visibility = tdeck.VISIBLE
+        tdeck.authorname = 'Test Dude'
+        tdeck.format = tformat
+
+        tdeck.save()
+
+        c1 = Card.objects.filter(multiverseid=1004).first()
+
+        dc1 = DeckCard()
+        dc1.physicalcard = c1.basecard.physicalcard
+        dc1.deck = tdeck
+        dc1.cardcount = 59
+        dc1.board = dc1.MAIN
+        dc1.save()
+
+        self.assertEquals(tdeck.get_card_count(), 59)
+
+        self.assertFalse(tdeck.is_legal())

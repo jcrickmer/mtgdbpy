@@ -30,8 +30,8 @@ class Deck(models.Model):
             result = result + dc.cardcount
         return result
 
-    def test_legality(self):
-        pass
+    def is_legal(self):
+        return True
 
     class Meta:
         managed = True
