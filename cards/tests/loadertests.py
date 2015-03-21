@@ -87,6 +87,7 @@ class LoaderTestCase(TestCase):
     def load_card(self, json, name, loadhelper=True, set_abbr='BAR'):
         helper = TestLoadHelper()
         if loadhelper:
+            helper.color_loader()
             helper.expansionset_example_loader()
         expset = ExpansionSet.objects.filter(abbr=set_abbr).first()
         tool = Command()
@@ -323,3 +324,14 @@ class LoaderTestCase(TestCase):
         card = self.load_card(self.ikiral_outrider_json, "Ikiral Outrider")
         pcard = card.physicalcard
         self.assertEquals(pcard.layout, pcard.LEVELER)
+
+    def test_rulings_basic(self):
+        card = self.load_card(self.cavern_of_souls_json, 'Cavern of Souls')
+        rulings = card.get_rulings()
+        self.assertEquals(rulings.count(), 2)
+        self.assertEquals(
+            rulings[0].ruling_text,
+            "You must choose an existing _Magic_ creature type, such as Zombie or Warrior. Card types such as artifact can't be chosen.")
+        self.assertEquals(
+            rulings[1].ruling_text,
+            'The spell can\'t be countered if the mana produced by Cavern of Souls is spent to cover any cost of the spell, even an additional cost such as a kicker cost. This is true even if you use the mana to pay an additional cost while casting a spell "without paying its mana cost."')

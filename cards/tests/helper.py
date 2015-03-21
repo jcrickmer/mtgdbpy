@@ -10,9 +10,15 @@ class TestLoadHelper():
 
     initer = initcardsdatabase.Command()
 
-    def basics_loader(self):
+    def color_loader(self):
         self.initer.init_colors()
+
+    def rarity_loader(self):
         self.initer.init_rarities()
+
+    def basics_loader(self):
+        self.color_loader()
+        self.rarity_loader()
 
         self.type_loader()
         self.subtype_loader()

@@ -2,18 +2,19 @@ from django.core.management.base import BaseCommand, CommandError
 from cards.models import PhysicalCard
 from cards.models import BaseCard
 from cards.models import Card
-from cards.models import Color
+from cards.models import Color, CardColor
 from cards.models import Rarity
 from cards.models import Type
 from cards.models import Subtype
 from cards.models import CardType
 from cards.models import CardSubtype
 from cards.models import Mark
-
+from cards.models import ExpansionSet
+from cards.models import Ruling
 
 import logging
 import sys
-
+import os
 import json
 
 
@@ -23,16 +24,44 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         #logger = logging.getLogger(__name__)
+        # the first (and only) arg should be a filename
+        if len(args) < 1:
+            sys.stderr.write("No filename given.\n")
+            return
+        filename = args[0]
+        if not os.access(filename, os.R_OK):
+            sys.stderr.write("Cannot read file '{}'.\n".format(filename))
+            return
+
+        filehandler = open(filename)
+        jblob = json.load(filehandler)
+
+        # let's test if jblob is a set JSON
+        if 'name' in jblob and 'code' in jblob and 'cards' in jblob:
+            sys.stdout.write("File is a set JSON for '{}' ({}) with {} cards.\n".format(jblob['name'], jblob['code'], len(jblob['cards'])))
+
+            expset = self.get_expset(jblob['name'], jblob['code'])
+            for jcard in jblob['cards']:
+                self.handle_card(jcard, expset)
         pass
 
+    def get_expset(self, name, code):
+        expset = ExpansionSet.objects.filter(abbr=code).first()
+        if expset is None:
+            expset = ExpansionSet(name=name, abbr=code)
+            expset.save()
+        return expset
+
     def handle_card_json(self, card_string, expset):
-
         jcard = json.loads(card_string)
+        return self.handle_card(jcard, expset)
 
+    def handle_card(self, jcard, expset):
         # First, let's see if we have this basecard
         bc = None
         try:
             bc = BaseCard.objects.get(name=jcard['name'])
+            self.update_basecard(jcard, bc)
         except BaseCard.DoesNotExist:
             bc = self.add_basecard(jcard)
 
@@ -45,15 +74,26 @@ class Command(BaseCommand):
             card_number = jcard['card_number']
         except KeyError:
             pass
+        if card_number is None:
+            try:
+                card_number = jcard['number']
+            except KeyError:
+                pass
+
+        #sys.stderr.write("Name: " + jcard['name'] + '\n')
+        #sys.stderr.write("MUID: " + str(jcard['multiverseid']) + '\n')
+        # sys.stderr.write(" card #: " + str(card_number) + '\n')
+        #sys.stderr.write(str(bc) + "\n")
+
         card = Card.objects.filter(expansionset=expset, card_number=card_number, multiverseid=jcard['multiverseid'], basecard=bc).first()
         if card is None:
             card = self.add_card(jcard, expset, bc)
+        else:
+            # let's update the card
+            card = self.update_card(jcard, card)
 
-        # REVISIT - what about updates to Card?
-
-        #sys.stderr.write("Name: " + jcard['name'] + '\n')
-        #sys.stderr.write("MUID: " + str(card.multiverseid) + '\n')
-        #sys.stderr.write(str(bc) + "\n")
+        # and now rulings
+        self.set_rulings(bc, jcard)
 
     def add_basecard(self, jcard):
         # Initially, I had tried to put all of the objecst into a
@@ -145,7 +185,34 @@ class Command(BaseCommand):
             # What, no type?
             raise KeyError('JSON is missing "types".')
 
+        self.update_basecard(jcard, bc)
+
+        return bc
+
+    def update_basecard(self, jcard, bc):
+
+        try:
+            bc.rules_text = jcard['text']
+        except KeyError:
+            bc.rules_text = ''
+
+        try:
+            bc.power = jcard['power']
+        except KeyError:
+            pass
+        try:
+            bc.toughness = jcard['toughness']
+        except KeyError:
+            pass
+        try:
+            bc.loyalty = jcard['loyalty']
+        except KeyError:
+            pass
+
+        bc.save()
+
         type_counter = 0
+        CardType.objects.filter(basecard=bc).delete()
         for jsontype in ['supertypes', 'types']:
             if jsontype not in jcard:
                 continue
@@ -166,6 +233,7 @@ class Command(BaseCommand):
                 type_counter = type_counter + 1
 
         try:
+            CardSubtype.objects.filter(basecard=bc).delete()
             subtype_counter = 0
             for csubtype in jcard['subtypes']:
                 # need to see if we know about this subtype
@@ -182,6 +250,17 @@ class Command(BaseCommand):
                 cst.position = subtype_counter
                 cst.save()
                 subtype_counter = subtype_counter + 1
+        except KeyError:
+            pass
+
+        try:
+            CardColor.objects.filter(basecard=bc).delete()
+            for ccolor in jcard['colors']:
+                dbcolor = Color.objects.get(color__iexact=ccolor)
+                cc = CardColor()
+                cc.basecard = bc
+                cc.color = dbcolor
+                cc.save()
         except KeyError:
             pass
 
@@ -207,8 +286,16 @@ class Command(BaseCommand):
         except KeyError:
             pass
         card.expansionset = expset
-        card.rarity = Rarity.objects.filter(rarity__iexact=jcard['rarity']).first()
         card.multiverseid = int(jcard['multiverseid'])
+        card.save()
+
+        card = self.update_card(jcard, card)
+        return card
+
+    def update_card(self, jcard, card):
+
+        card.rarity = Rarity.objects.filter(rarity__iexact=jcard['rarity']).first()
+
         try:
             card.flavor_text = jcard['flavor']
         except KeyError:
@@ -231,3 +318,21 @@ class Command(BaseCommand):
         result.mark = mark_s
         result.save()
         return result
+
+    def set_rulings(self, basecard, jcard):
+        # delete everything that this there now
+        Ruling.objects.filter(basecard=basecard).delete()
+        jrulings = list()
+        try:
+            jrulings = jcard['rulings']
+        except KeyError:
+            pass
+        for jruling in jrulings:
+            try:
+                ruling = Ruling()
+                ruling.basecard = basecard
+                ruling.ruling_date = jruling['date']
+                ruling.ruling_text = jruling['text']
+                ruling.save()
+            except KeyError:
+                pass
