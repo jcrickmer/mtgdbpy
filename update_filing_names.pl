@@ -16,7 +16,7 @@ $dbh->do(qq{SET NAMES 'utf8';});
 # First, load in all of the basecards
 my $basecards_hash;
 {
-    my $testSQL = "SELECT id, name FROM basecards;";# WHERE name LIKE '%therlin%' OR name LIKE '%Avenan% 'OR name LIKE '%0%' OR name LIKE '%1%' OR name LIKE '%.%' OR name LIKE '%''%' OR name LIKE '%,%';";
+    my $testSQL = "SELECT id, name FROM basecard;";# WHERE name LIKE '%therlin%' OR name LIKE '%Avenan% 'OR name LIKE '%0%' OR name LIKE '%1%' OR name LIKE '%.%' OR name LIKE '%''%' OR name LIKE '%,%';";
     my $sth = $dbh->prepare($testSQL);
     $sth->execute;
     $basecards_hash = $sth->fetchall_hashref('id');
@@ -642,7 +642,7 @@ foreach my $id (keys %{$basecards_hash} ) {
 #print Dumper($basecards_hash);
 foreach my $id (keys %{$basecards_hash} ) {
 	eval {
-		my $updateSQL = 'UPDATE basecards SET filing_name = ? WHERE id = ?';
+		my $updateSQL = 'UPDATE basecard SET filing_name = ? WHERE id = ?';
 		my $sth = $dbh->prepare($updateSQL);
 		$sth->execute(
 			$basecards_hash->{$id}->{filing_name},
