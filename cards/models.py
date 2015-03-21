@@ -133,7 +133,12 @@ class PhysicalCard(models.Model):
         return ' // '.join(bc.filing_name for bc in self.basecard_set.all())
 
     def get_latest_card(self):
+        logger = logging.getLogger(__name__)
+        #logger.error("PhysicalCard.get_latest_card: self is {}".format(str(self)))
         bc = self.basecard_set.filter(cardposition__in=['F', 'L', 'U']).first()
+        if bc is None:
+            logger.error("PhysicalCard.get_latest_card: ouch. bc is None")
+
         card = bc.card_set.all().order_by('-multiverseid').first()
         return card
 
@@ -154,6 +159,7 @@ class PhysicalCard(models.Model):
             rules = rules.replace('{b}', ' manablack ')
             rules = rules.replace('{r}', ' manared ')
             rules = rules.replace('{g}', ' managreen ')
+            rules = rules.replace('{s}', ' snowsymbol ')
             rules = rules.replace('{x}', ' manax ')
             for numm in range(0, 20):
                 rules = rules.replace('{' + str(numm) + '}', 'mana' + str(numm))
@@ -167,16 +173,16 @@ class PhysicalCard(models.Model):
             rules = rules.replace("{2b}", ' manaalt2 manablack ')
             rules = rules.replace("{2r}", ' manaalt2 manared ')
             rules = rules.replace("{2g}", ' manaalt2 managreen ')
-            rules = rules.replace("{wu}", ' manawhite manablue ')
-            rules = rules.replace("{wb}", ' manawhite manablack ')
-            rules = rules.replace("{ub}", ' manablue manablack ')
-            rules = rules.replace("{ur}", ' manablue manared ')
-            rules = rules.replace("{br}", ' manablack manared ')
-            rules = rules.replace("{bg}", ' manablack managreen ')
-            rules = rules.replace("{rg}", ' manared managreen ')
-            rules = rules.replace("{rw}", ' manared manawhite ')
-            rules = rules.replace("{gw}", ' managreen manawhite ')
-            rules = rules.replace("{gu}", ' managreen manablue ')
+            rules = rules.replace("{wu}", ' manawhite manablue manahybrid ')
+            rules = rules.replace("{wb}", ' manawhite manablack manahybrid ')
+            rules = rules.replace("{ub}", ' manablue manablack manahybrid ')
+            rules = rules.replace("{ur}", ' manablue manared manahybrid ')
+            rules = rules.replace("{br}", ' manablack manared manahybrid ')
+            rules = rules.replace("{bg}", ' manablack managreen manahybrid ')
+            rules = rules.replace("{rg}", ' manared managreen manahybrid ')
+            rules = rules.replace("{rw}", ' manared manawhite manahybrid ')
+            rules = rules.replace("{gw}", ' managreen manawhite manahybrid ')
+            rules = rules.replace("{gu}", ' managreen manablue manahybrid ')
 
             # need to add something that does a regexp match on hybrid mana in mana cost and rules text and adds a term for 'manahybrid'
 
@@ -203,7 +209,7 @@ class PhysicalCard(models.Model):
             except ValueError:
                 pass
             if uses_pmana:
-                result = result + 'phyrexianmana\n'
+                result = result + ' manaphyrexian\n'
 
             result = result + 'cmc' + str(basecard.cmc) + '\n'
             if basecard.power is not None:
@@ -235,8 +241,6 @@ class PhysicalCard(models.Model):
             result = 'multicard\n' + result
 
         return result
-
-    pass
 
     class Meta:
         managed = True
@@ -339,7 +343,7 @@ class Ruling(models.Model):
 class ExpansionSet(models.Model):
     #id = models.IntegerField(primary_key=True)
     name = models.CharField(unique=True, max_length=128)
-    abbr = models.CharField(unique=False, max_length=6)
+    abbr = models.CharField(unique=False, max_length=10)
 
     class Meta:
         managed = True
