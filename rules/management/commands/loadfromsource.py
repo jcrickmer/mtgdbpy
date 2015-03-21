@@ -11,7 +11,12 @@ import sys
 import json
 import re
 import sys
+from operator import itemgetter
+
 from rules.models import Rule, Example, RulesMeta
+
+from cards.view_utils import convertSymbolsToHTML
+from cards.models import PhysicalCard, BaseCard
 
 
 class Command(BaseCommand):
@@ -37,6 +42,8 @@ class Command(BaseCommand):
         RulesMeta.objects.all().delete()
 
         rulesmeta = None
+
+        card_vals = self.init_cards()
 
         markers_passed = list()
         header_re = re.compile('^(\d{1,2})\\.\s+(\S.+)$', re.UNICODE)
@@ -107,11 +114,13 @@ class Command(BaseCommand):
                                 if parent_r is None:
                                     sys.stdout.write("SQL: " + str(parent_q.query) + "\n")
                                     quit()
+                                rule_text_html = self.markup_text(rule_match.group(5), card_vals)
                                 rRule = Rule(
                                     parent=parent_r,
                                     section=combined.encode('utf8'),
                                     sortsection=sorty.encode('utf8'),
-                                    rule_text=rule_match.group(5).encode('utf8'))
+                                    rule_text=rule_match.group(5).encode('utf8'),
+                                    rule_text_html=rule_text_html)
                                 rRule.save()
                                 current_rule_r = rRule
                                 example_position = 0
@@ -128,7 +137,8 @@ class Command(BaseCommand):
                                     example_db = Example(
                                         position=example_position,
                                         rule=current_rule_r,
-                                        example_text=example_match.group(1).encode('utf8'))
+                                        example_text=example_match.group(1).encode('utf8'),
+                                        example_text_html=self.markup_text(example_match.group(1), card_vals))
                                     example_db.save()
                                     example_position = example_position + 1
                                 else:
@@ -174,4 +184,69 @@ class Command(BaseCommand):
                         elif space_re.search(result):
                             #sys.stdout.write("SPACE MATCH YO\n")
                             result = space_re.sub(u' ', result)
+        return result
+
+    def markup_text(self, text, card_vals):
+        # First, let's look for rule references
+        ruleref_re = re.compile(r'((\d\d\d)\.(\d{1,3}[a-z]?))', re.U)
+        result = ruleref_re.sub(r'<a href="\2#\1">\1</a>', text)
+        ruleref2_re = re.compile(r'([Rr]ule) (\d\d\d)', re.U)
+        result = ruleref2_re.sub(r'\1 <a href="\2">\2</a>', result)
+
+        # Get all of the cards, and replace them!
+        for simplecard in card_vals:
+            nre = re.compile(u'([^>a-zA-Z]){}([^<a-zA-Z])'.format(simplecard['name']), re.U)
+            result = nre.sub(
+                u'\\1<a href="/cards/{}-{}/">{}</a>\\2'.format(simplecard['multiverseid'], simplecard['url_slug'], simplecard['cleanname']), result)
+            nre2 = re.compile(u'^{}'.format(simplecard['name']), re.U)
+            result = nre2.sub(
+                u'<a href="/cards/{}-{}/">{}</a>'.format(simplecard['multiverseid'], simplecard['url_slug'], simplecard['cleanname']), result)
+        result = convertSymbolsToHTML(result)
+        return result
+
+    def init_cards(self):
+        result = list()
+        #bcards = BaseCard.objects.filter(physicalcard_id__gt=7400, physicalcard_id__lt=7500).order_by('-filing_name')
+        bcards = BaseCard.objects.all().order_by('-filing_name')
+        for basecard in bcards:
+            card = basecard.physicalcard.get_latest_card()
+            simple = {'name': basecard.name,
+                      'cleanname': basecard.name,
+                      'url_slug': card.url_slug(),
+                      'name_len': len(basecard.name),
+                      'multiverseid': card.multiverseid}
+            result.append(simple)
+            try:
+                if basecard.name.index("'"):
+                    simple = {'name': basecard.name.replace(u"'", u"’"),
+                              'cleanname': basecard.name,
+                              'url_slug': card.url_slug(),
+                              'name_len': len(basecard.name),
+                              'multiverseid': card.multiverseid}
+                    result.append(simple)
+            except ValueError:
+                pass
+            for sillydash in [u'–', u'—', u'‒', u'-']:
+                try:
+                    if basecard.name.index(sillydash):
+                        simple = {'name': basecard.name.replace(sillydash, u'-'),
+                                  'cleanname': basecard.name,
+                                  'url_slug': card.url_slug(),
+                                  'name_len': len(basecard.name),
+                                  'multiverseid': card.multiverseid}
+                        result.append(simple)
+                except ValueError:
+                    pass
+                try:
+                    if simple['name'].index('-'):
+                        simple = {'name': basecard.name.replace('-', sillydash),
+                                  'cleanname': basecard.name,
+                                  'url_slug': card.url_slug(),
+                                  'name_len': len(basecard.name),
+                                  'multiverseid': card.multiverseid}
+                        result.append(simple)
+                except ValueError:
+                    pass
+
+        result = sorted(result, key=itemgetter('name_len'), reverse=True)
         return result
