@@ -25,6 +25,10 @@
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
     <script src="//code.jquery.com/jquery-1.10.2.js"></script>
     <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+    <script>
+/* fix bug with Bootstrap and JQuery-UI colliding: http://www.ryadel.com/2015/01/03/using-jquery-ui-bootstrap-togheter-web-page/ */
+$.widget.bridge('uitooltip', $.ui.tooltip);
+    </script>
     <script src="/cn/cn.js"></script>
     <script src="/cn/cdb.js"></script>
     <link rel="stylesheet" href="/cn/cn.css">

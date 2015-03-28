@@ -29,7 +29,7 @@ $(function() {
 		return card;
 	};
     cn.initToolTips = function() {  
-        $(document).tooltip({  
+        $(document).uitooltip({
             items: "[data-mid]", 
             tooltipClass:'preview-tip', 
             content: function(callback) {  
@@ -40,7 +40,7 @@ $(function() {
 				result = "<img src=\"" + card.img_url + "\" class=\"card\" alt=\""+ card.name + "\">";
 				return result;
             }
-        });  
+        });
     };  
     cn.init = function() {  
         cn.initToolTips(); 
