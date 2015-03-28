@@ -25,7 +25,7 @@
 
     <h3>Recent Battling</h3>
     <table>
-      <tr><th>Date and Hour</th><th>Battles</th></tr>
+      <tr><th>Date and Hour (GMT)</th><th>Battles</th></tr>
       {% for a in activity %}
         <tr><td>{{a.datehour|date:"M d, h"}}:00</td><td>{{a.count}}<td></tr>
       {% endfor %}

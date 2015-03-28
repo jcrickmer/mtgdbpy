@@ -757,7 +757,7 @@ def ratings(request, format_id=0):
     hour = timedelta(hours=1)
     parts = []
     zero_datetimes = []
-    for hit in range(0, 7 * 24 - 1):
+    for hit in range(0, 7 * 24 + 1):
         parts.append("SELECT '" + str(ago.year) + '-' + str(ago.month) + '-' + str(ago.day) + ' ' + str(ago.hour) + ":00:00' hh ")
         ago = ago + hour
         zero_datetimes.append([ago, 0])
