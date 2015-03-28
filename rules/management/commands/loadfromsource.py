@@ -30,7 +30,7 @@ class Command(BaseCommand):
         # opened it in Word, and then saved it as htm with the encoding set to UTF-8 in the Web Options settings.
         # Make it XML so that xml.dom can play with it
         # xmllint --html --xmlout MagicCompRules_20140601.htm  > fixed.html
-        infile = codecs.open('/home/jason/projects/mtgdb/fixed.html', 'r', 'utf-8')
+        infile = codecs.open('/home/jason/projects/mtgdb/rules.html', 'r', 'utf-8')
         bigstring = infile.read()
         dom = parseString(bigstring.encode('UTF-8'))
         divs = dom.getElementsByTagName('div')

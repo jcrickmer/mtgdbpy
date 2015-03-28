@@ -1,23 +1,39 @@
 {% extends "base.html" %}
 
-{% block title %}Magic: The Gathering Rules, {{doc_title}}{% endblock %}
-{% block pagetitle %}{{doc_title}}{% endblock %}
+{% block title %}Magic: The Gathering Comprehensive Rules{% endblock %}
+{% block pagetitle %}Magic: The Gathering Comprehensive Rules{% endblock %}
 
 {% block content %}
-<ol class="rules">
-{% for rule in rules %}
-<li class="rule">{{rule.section}} {{rule.rule_text | safe}}</li>
-<ol class="rules">
-{% for child in rule.children %}
-<li class="rule"><a href="{% url 'rules:showsection' child.section %}"><span class="rules-section-number">{{child.section}}.</span> <span class="rule-text">{{child.rule_text | safe}}</span></a></li>
-{% endfor %}
-</ol>
-{% endfor %}
-</ol>
-
-<div>
-<p>
-Source: <a href="{{meta.source_url}}">{{meta.source_url}}</a>, effective {{meta.effective_date}}. Imported into card.ninja on {{meta.import_date}}. <i>Magic: The Gathering</i> rules are the copyright Wizards of the Coast.
-</p>
-</div>
+<script>
+$('#top-menu-search').removeClass('active');
+$('#top-menu-rules').addClass('active');
+</script>
+  <div class="row">
+    <div class="col-xs-12 col-md-offset-1 col-md-10">
+      <h3>Table of Contents</h3>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 col-md-offset-1 col-md-10">
+      <ol class="rules">
+        {% for child in rules %}
+          <li class="rule">
+            <span class="rules-section-number" id="{{child.section}}">{{child.section}}.</span> <span class="rule-text">{{child.rule_text | safe}}</span><br/>
+            {% for child2 in child.children %}
+              <li class="rule">
+                <a href="{% url 'rules:showsection' child2.section %}"><span class="rules-section-number" id="{{child2.section}}">{{child2.section}}.</span> <span class="rule-text">{{child2.marked_up_text | safe}}</span></a>
+              </li>
+            {% endfor %}
+          </li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 col-md-offset-1 col-md-10">
+      <p style="margin-top:33px; font-size: 70%">
+        Source: <a href="{{meta.source_url}}">{{meta.source_url}}</a>, effective {{meta.effective_date}}. Imported into card.ninja on {{meta.import_date}}. <i>Magic: The Gathering</i> rules are the copyright Wizards of the Coast.
+      </p>
+    </div>
+  </div>
 {% endblock %}

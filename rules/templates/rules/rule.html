@@ -1,20 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}Magic: The Gathering Rules, {{doc_title}}{% endblock %}
-{% block pagetitle %}{{rule.section}}. {{rule.rule_text | safe}}{% endblock %}
+{% block title %}Magic: The Gathering Rules, {{rule.section}}. {{rule.rule_text | safe}}{% endblock %}
+{% block pagetitle %}Magic: The Gathering Comprehensive Rules{% endblock %}
 
 {% block content %}
+<script>
+$('#top-menu-search').removeClass('active');
+$('#top-menu-rules').addClass('active');
+</script>
   <div class="row">
     <div class="col-xs-12 col-md-offset-1 col-md-10">
-      <ul>
-        <li><a href="{% url 'rules:index' %}">Table of Contents</a></li>
-        {% if previous_rule %}
-          <li><a href="{% url 'rules:showsection' previous_rule.section %}">Previous Rule: {{previous_rule.section}}. {{previous_rule.rule_text | safe}}</a></li>
-        {% endif %}
-        {% if next_rule %}
-          <li><a href="{% url 'rules:showsection' next_rule.section %}">Next Rule: {{next_rule.section}}. {{next_rule.rule_text | safe}}</a></li>
-        {% endif %}
-      <ul>
+      <nav>
+        <ul class="pager">
+          <li><a href="{% url 'rules:index' %}"><span aria-hidden="true">&uarr;</span> Table of Contents</a></li>
+          {% if previous_rule %}
+            <li><a href="{% url 'rules:showsection' previous_rule.section %}"><span aria-hidden="true">&larr;</span> {{previous_rule.section}}. {{previous_rule.rule_text | safe}}</a></li>
+          {% endif %}
+          {% if next_rule %}
+            <li><a href="{% url 'rules:showsection' next_rule.section %}"><span aria-hidden="true">&rarr;</span> {{next_rule.section}}. {{next_rule.rule_text | safe}}</a></li>
+          {% endif %}
+        <ul>
+      </nav>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 col-md-offset-1 col-md-10">
+      <h3>{{rule.section}}. {{rule.rule_text | safe}}</h3>
     </div>
   </div>
   <div class="row">
@@ -53,6 +64,21 @@
           </li>
         {% endfor %}
       </ol>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 col-md-offset-1 col-md-10">
+      <nav>
+        <ul class="pager">
+          <li><a href="{% url 'rules:index' %}"><span aria-hidden="true">&uarr;</span> Table of Contents</a></li>
+          {% if previous_rule %}
+            <li><a href="{% url 'rules:showsection' previous_rule.section %}"><span aria-hidden="true">&larr;</span> {{previous_rule.section}}. {{previous_rule.rule_text | safe}}</a></li>
+          {% endif %}
+          {% if next_rule %}
+            <li><a href="{% url 'rules:showsection' next_rule.section %}"><span aria-hidden="true">&rarr;</span> {{next_rule.section}}. {{next_rule.rule_text | safe}}</a></li>
+          {% endif %}
+        <ul>
+      </nav>
     </div>
   </div>
   <div class="row">
