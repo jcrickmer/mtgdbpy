@@ -148,8 +148,8 @@ class Command(BaseCommand):
                     if ed_m and rulesmeta is None:
                         # more code goes in here...
                         rulesmeta = RulesMeta()
-                        rulesmeta.source_url = 'http://media.wizards.com/images/magic/tcg/resources/rules/MagicCompRules_20140601.pdf'
-                        rulesmeta.effective_date = datetime.date(2014, 6, 1)
+                        rulesmeta.source_url = 'http://media.wizards.com/images/magic/tcg/resources/rules/MagicCompRules_20150327.pdf'
+                        rulesmeta.effective_date = datetime.date(2015, 3, 27)
                         rulesmeta.import_date = timezone.now()
                         rulesmeta.save()
 
