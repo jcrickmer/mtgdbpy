@@ -212,7 +212,7 @@ class Command(BaseCommand):
         result = list()
         #bcards = BaseCard.objects.filter(physicalcard_id__gt=7400, physicalcard_id__lt=7500).order_by('-filing_name')
         # These are cards that pretty much aren't going to be referenced - there are more false positives than actual hits.
-        bcards = BaseCard.objects.exclude(name__in=['Order','Turn','Down','Life','Exile','Grand Melee','Conspiracy','Leveler']).order_by('-filing_name')
+        bcards = BaseCard.objects.exclude(name__in=['Order','Oracle','Turn','Down','Life','Exile','Grand Melee','Conspiracy','Leveler']).order_by('-filing_name')
         for basecard in bcards:
             card = basecard.physicalcard.get_latest_card()
             simple = {'name': basecard.name,
