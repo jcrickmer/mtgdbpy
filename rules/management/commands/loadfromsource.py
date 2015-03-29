@@ -44,7 +44,8 @@ class Command(BaseCommand):
         rulesmeta = None
 
         card_vals = self.init_cards()
-
+        #sys.stdout.write("cards are " + str(card_vals) + "\n\n")
+        
         markers_passed = list()
         header_re = re.compile('^(\d{1,2})\\.\s+(\S.+)$', re.UNICODE)
         rule_re = re.compile('^(\d\d\d)\\.?((\d{1,3})([a-z])?)?\\.?\s+(\S.+)$', re.UNICODE)
@@ -76,7 +77,10 @@ class Command(BaseCommand):
                             #dfg = match.group(0).encode('utf8')
                             sys.stdout.write(dfg)
                             # now the real work
-                            hRule = Rule(section=header_match.group(1).encode('utf8'), rule_text=header_match.group(2).encode('utf8'))
+                            hRule = Rule(section=header_match.group(1).encode('utf8'),
+                                         rule_text=header_match.group(2).encode('utf8'),
+                                         sortsection=header_match.group(1).encode('utf8'),
+                                )
                             hRule.save()
                             current_header_r = hRule
                         else:
@@ -197,17 +201,18 @@ class Command(BaseCommand):
         for simplecard in card_vals:
             nre = re.compile(u'([^>a-zA-Z]){}([^<a-zA-Z])'.format(simplecard['name']), re.U)
             result = nre.sub(
-                u'\\1<a href="/cards/{}-{}/">{}</a>\\2'.format(simplecard['multiverseid'], simplecard['url_slug'], simplecard['cleanname']), result)
+                u'\\1<a href="/cards/{}-{}/" data-mid="{}">{}</a>\\2'.format(simplecard['multiverseid'], simplecard['url_slug'], simplecard['multiverseid'], simplecard['cleanname']), result)
             nre2 = re.compile(u'^{}'.format(simplecard['name']), re.U)
             result = nre2.sub(
-                u'<a href="/cards/{}-{}/">{}</a>'.format(simplecard['multiverseid'], simplecard['url_slug'], simplecard['cleanname']), result)
+                u'<a href="/cards/{}-{}/" data-mid="{}">{}</a>'.format(simplecard['multiverseid'], simplecard['url_slug'], simplecard['multiverseid'], simplecard['cleanname']), result)
         result = convertSymbolsToHTML(result)
         return result
 
     def init_cards(self):
         result = list()
         #bcards = BaseCard.objects.filter(physicalcard_id__gt=7400, physicalcard_id__lt=7500).order_by('-filing_name')
-        bcards = BaseCard.objects.all().order_by('-filing_name')
+        # These are cards that pretty much aren't going to be referenced - there are more false positives than actual hits.
+        bcards = BaseCard.objects.exclude(name__in=['Order','Turn','Down','Life','Exile','Grand Melee','Conspiracy','Leveler']).order_by('-filing_name')
         for basecard in bcards:
             card = basecard.physicalcard.get_latest_card()
             simple = {'name': basecard.name,
