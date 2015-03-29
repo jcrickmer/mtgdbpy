@@ -111,6 +111,41 @@ $(function() {
         form_jq.submit();
         return false; //event.preventDefault();
     };
+    cdb.name_to_url_map = {};
+    cdb.getCardNames = function(request, response) {
+        $.ajax({
+            url: "/cards/_nameauto/",
+            dataType: "jsonp",
+            data: {
+                q: request.term
+            },
+            success: function( data ) {
+	    		vals = new Array()
+			    for(var cc = 0; cc < data.length; cc++) {
+			      vals.push(data[cc]['name'])
+			      cdb.name_to_url_map[data[cc]['name']] = data[cc]['url'];
+                }
+                response(vals);
+            }
+        });
+    };
+	cdb.makeFieldNameAuto = function(jqObj) {
+        /* Makes the given form field identified by the JQuery object into an autocomplete field for card names. */
+		jqObj.autocomplete({
+			source: cdb.getCardNames,
+			minLength: 3,
+			select: function( event, ui ) {
+				// Just go directly to that page
+				window.location.href = cdb.name_to_url_map[ui.item.label];
+			},
+			open: function() {
+				$( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
+			},
+			close: function() {
+				$( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
+			}
+		});
+	};
 });
 
 $(function() {cdb.init();});

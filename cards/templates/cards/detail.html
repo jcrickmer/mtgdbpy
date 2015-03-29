@@ -5,16 +5,19 @@
 {% block description %}Magic: The Gathering card {{ physicalCardTitle }} information and analysis{% endblock %}
 
 {% block subsearchnav %}
-<div class="row">
-  <button id="return-terms" class="btn btn-default"><span class="glyphicon glyphicon-search"></span>&nbsp;Search Terms</button>
-  <button id="return-results" class="btn btn-default"><span class="glyphicon glyphicon-list"></span>&nbsp;Search Results</button>
-</div>
-<script>
+<div class="row" style="padding-bottom: 8px; border-bottom: 1px solid #eee;">
+  <div class="col-xs-6 col-sm-3 col-md-2"><button id="return-terms" class="btn btn-default"><span class="glyphicon glyphicon-search"></span>&nbsp;Search Terms</button></div>
+  <div class="col-xs-6 col-sm-3 col-md-2"><button id="return-results" class="btn btn-default"><span class="glyphicon glyphicon-list"></span>&nbsp;Search Results</button></div>
+  <div class="col-xs-2 col-sm-2 col-md-1 searchlabel text-right" style="padding-top: 8px"><label for="cardname" class="control-label">Tutor</label></div>
+  <div class="col-xs-10 col-sm-4 col-md-5 col-lg-4" style="padding-top: 6px;"><input id="cardtutor" type="text" name="cardtutor" class="form-control input-sm"/></div>
+  <script>
 $(function() {
-$("#return-terms").button().click(function(event) { document.location = "{% url 'cards:index' %}"; });
-$("#return-results").button().click(function(event) { document.location = "{% url 'cards:list' %}"; });
+    $("#return-terms").button().click(function(event) { document.location = "{% url 'cards:index' %}"; });
+    $("#return-results").button().click(function(event) { document.location = "{% url 'cards:list' %}"; });
+	cdb.makeFieldNameAuto($("#cardtutor"));
 });
-</script>
+  </script>
+</div>
 {% endblock %}
 {% block content %}
 {% for working in cards %}

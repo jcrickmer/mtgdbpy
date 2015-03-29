@@ -9,40 +9,8 @@
       <div class="col-xs-2 col-xs-offset-1 searchlabel text-right"><label for="cardname" class="control-label">Tutor</label></div>
       <div class="col-xs-8"><input id="cardtutor" type="text" name="cardtutor" class="form-control input-sm"/></div>
 <script>
-window.name_to_url_map = {};
 $(function() {
-    window.getCardNames = function(request, response) {
-        $.ajax({
-            url: "/cards/_nameauto/",
-            dataType: "jsonp",
-            data: {
-                q: request.term
-            },
-            success: function( data ) {
-	    		vals = new Array()
-			    for(var cc = 0; cc < data.length; cc++) {
-			      vals.push(data[cc]['name'])
-			      window.name_to_url_map[data[cc]['name']] = data[cc]['url'];
-                }
-                response(vals);
-            }
-        });
-    };
-
-    $("#cardtutor").autocomplete({
-        source: getCardNames,
-        minLength: 3,
-        select: function( event, ui ) {
-            // Just go directly to that page
-		    window.location.href = window.name_to_url_map[ui.item.label];
-        },
-        open: function() {
-            $( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
-        },
-        close: function() {
-            $( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
-        }
-    });
+	cdb.makeFieldNameAuto($("#cardtutor"));
 });
 </script>
       <div class="col-xs-1"></div>
