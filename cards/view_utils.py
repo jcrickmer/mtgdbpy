@@ -89,6 +89,7 @@ def convertSymbolsToHTML(text):
         tag_open +
         'class="magic-symbol-small symbol_snow_small" alt="{s}"' +
         tag_close)
+    result = result.replace("{C}", tag_open + 'class="magic-symbol-small symbol_chaos_small" alt="{c}"' + tag_close)
     result = result.replace(
         "{untap}",
         tag_open +
@@ -146,6 +147,7 @@ def convertSymbolsToHTML(text):
         tag_open +
         'class="magic-symbol-small symbol_snow_small" alt="{s}"' +
         tag_close)
+    result = result.replace("{C}", tag_open + 'class="magic-symbol-small symbol_chaos_small" alt="{c}"' + tag_close)
     result = result.replace(
         "{UNTAP}",
         tag_open +
