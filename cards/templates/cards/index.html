@@ -10,7 +10,7 @@
       <div class="col-xs-8"><input id="cardtutor" type="text" name="cardtutor" class="form-control input-sm"/></div>
 <script>
 $(function() {
-	cdb.makeFieldNameAuto($("#cardtutor"));
+	cdb.makeFieldNameAuto($("#cardtutor"), cdb.AUTO_NAVIGATE);
 });
 </script>
       <div class="col-xs-1"></div>
@@ -23,20 +23,7 @@ $(function() {
         <div class="col-xs-6"><input id="cardname" type="text" name="cardname" class="form-control input-sm"/></div>
 <script>
 $(function() {
-$("#cardname").autocomplete({
-      source: getCardNames,
-      minLength: 3,
-      select: function( event, ui ) {
-        //console.log("is this where I am supposed to do someting?");
-        //console.log(ui.item ? ui.item.label : "Nothing selected, input was " + this.value);
-      },
-      open: function() {
-        $( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
-      },
-      close: function() {
-        $( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
-      }
-    });
+	cdb.makeFieldNameAuto($("#cardname"), cdb.STAY_ON_PAGE);
 });
 </script>
         <div class="col-xs-2"><button name="cardname_add" class="btn btn-default btn-sm add-btn">Add</button></div>

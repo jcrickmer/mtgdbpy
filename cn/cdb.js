@@ -129,14 +129,18 @@ $(function() {
             }
         });
     };
-	cdb.makeFieldNameAuto = function(jqObj) {
+	cdb.STAY_ON_PAGE = false;
+	cdb.AUTO_NAVIGATE = true;
+	cdb.makeFieldNameAuto = function(jqObj, navigationOption) {
         /* Makes the given form field identified by the JQuery object into an autocomplete field for card names. */
 		jqObj.autocomplete({
 			source: cdb.getCardNames,
 			minLength: 3,
 			select: function( event, ui ) {
-				// Just go directly to that page
-				window.location.href = cdb.name_to_url_map[ui.item.label];
+				if (navigationOption) {
+					// Just go directly to that page
+					window.location.href = cdb.name_to_url_map[ui.item.label];
+				}
 			},
 			open: function() {
 				$( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );

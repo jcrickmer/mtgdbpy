@@ -14,7 +14,7 @@
 $(function() {
     $("#return-terms").button().click(function(event) { document.location = "{% url 'cards:index' %}"; });
     $("#return-results").button().click(function(event) { document.location = "{% url 'cards:list' %}"; });
-	cdb.makeFieldNameAuto($("#cardtutor"));
+	cdb.makeFieldNameAuto($("#cardtutor"), cdb.AUTO_NAVIGATE);
 });
   </script>
 </div>
