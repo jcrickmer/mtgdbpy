@@ -36,7 +36,7 @@ class Command(BaseCommand):
             text = pcard.get_searchable_document(include_names=False)
             if len(text) < 1:
                 sys.stderr.write("Did not get anything valuable back from {}, {}\n".format(str(pcard), str(pcard.get_card_name())))
-            else :    
+            else:
                 fileout = codecs.open(options['outdir'] + '/' + str(pcard.id), 'w', 'utf-8')
                 fileout.write(text + "\n")
                 fileout.close()

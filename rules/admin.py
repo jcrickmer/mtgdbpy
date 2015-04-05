@@ -20,7 +20,7 @@ class RuleAdmin(admin.ModelAdmin):
         'sortsection',
         'rule_text',
         'rule_text_html',
-        'parent',]
+        'parent', ]
     form = RuleModelForm
 
 
@@ -40,9 +40,8 @@ class ExampleAdmin(admin.ModelAdmin):
         'rule',
         'position',
         'example_text',
-        'example_text_html',]
+        'example_text_html', ]
     form = ExampleModelForm
-
 
 
 class RulesMetaModelForm(forms.ModelForm):
@@ -58,7 +57,7 @@ class RulesMetaAdmin(admin.ModelAdmin):
         'id',
         'source_url',
         'effective_date',
-        'import_date',]
+        'import_date', ]
     form = RulesMetaModelForm
 
 

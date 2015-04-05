@@ -95,7 +95,7 @@ HAYSTACK_CONNECTIONS = {
 AJAX_LOOKUP_CHANNELS = {
     #  simple: search Person.objects.filter(name__icontains=q)
     #'deckcard'  : {'model': 'cards.PhysicalCard', 'search_field': 'id'},
-    'deckcard'  : ('cards.lookups','PhysicalCardLookup'),
+    'deckcard': ('cards.lookups', 'PhysicalCardLookup'),
 }
 
 # Internationalization
