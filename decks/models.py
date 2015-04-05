@@ -21,6 +21,7 @@ class Deck(models.Model):
     visibility = models.CharField(max_length=12, choices=VISIBILITY_CHOICES, default=VISIBLE)
     authorname = models.CharField(max_length=100)
     format = models.ForeignKey('cards.Format')
+    cards = models.ManyToManyField(PhysicalCard, through='DeckCard')
 
     # Returns the total number of cards in this deck.
     def get_card_count(self):

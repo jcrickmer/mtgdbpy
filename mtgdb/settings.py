@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_nose',
+    'ajax_select',
     'haystack',
     'cards',
     'decks',
@@ -88,6 +89,13 @@ HAYSTACK_CONNECTIONS = {
         # ...or for multicore...
         # 'URL': 'http://127.0.0.1:8983/solr/mysite',
     },
+}
+
+# define the lookup channels in use on the Admin for type-ahead autocomplete
+AJAX_LOOKUP_CHANNELS = {
+    #  simple: search Person.objects.filter(name__icontains=q)
+    #'deckcard'  : {'model': 'cards.PhysicalCard', 'search_field': 'id'},
+    'deckcard'  : ('cards.lookups','PhysicalCardLookup'),
 }
 
 # Internationalization

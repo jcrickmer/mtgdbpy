@@ -248,7 +248,7 @@ class PhysicalCard(models.Model):
         verbose_name_plural = 'Physical Cards'
 
     def __unicode__(self):
-        return "[PhysicalCard " + str(self.id) + "]"
+        return '{} [PC:{}]'.format(self.get_card_name(), str(self.id))
 
 
 class BaseCard(models.Model):
