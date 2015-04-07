@@ -89,6 +89,16 @@ class Deck(models.Model):
             for dc in new_deckcards:
                 dc.save()
 
+    def cards_as_text(self):
+        result = ''
+        cards = DeckCard.objects.filter(deck=self).order_by('board')
+        for card in cards:
+            sb = ''
+            if card.board == DeckCard.SIDE:
+                sb = 'SB: '
+            result = '{}{}{} {}\n'.format(result, sb, card.cardcount, card.physicalcard.get_card_name())
+        return result
+
     class Meta:
         managed = True
         db_table = 'deck'
@@ -110,7 +120,37 @@ class DeckCard(models.Model):
     class Meta:
         managed = True
         db_table = 'deckcard'
-        unique_together = ('deck', 'physicalcard')
+        unique_together = ('deck', 'physicalcard', 'board')
 
     def __unicode__(self):
         return '[' + str(self.deck.name) + ' (' + str(self.deck.id) + '): ' + str(self.cardcount) + ' ' + str(self.physicalcard.id) + ']'
+
+
+class Tournament(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, null=False)
+    url = models.CharField(max_length=500)
+    format = models.ForeignKey('cards.Format')
+    start_date = models.DateField(null=False, blank=False)
+
+    def __unicode__(self):
+        return 'Tournament {} ({}) [{}]'.format(str(self.name), str(self.start_date), str(self.id))
+
+    class Meta:
+        managed = True
+        db_table = 'tournament'
+
+
+class TournamentDeck(models.Model):
+    id = models.AutoField(primary_key=True)
+    deck = models.ForeignKey('Deck', null=False)
+    tournament = models.ForeignKey('Tournament', null=False)
+    place = models.IntegerField(null=False, default=1)
+
+    class Meta:
+        managed = True
+        db_table = 'tournamentdeck'
+        unique_together = ('deck', 'tournament')
+
+    def __unicode__(self):
+        return 'TournamentDeck ({}, {}, {}) [{}]'.format(str(self.tournament), str(self.deck), str(self.place), str(self.id))

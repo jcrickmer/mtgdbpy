@@ -5,8 +5,9 @@ from ajax_select import make_ajax_form
 from ajax_select.admin import AjaxSelectAdmin
 from ajax_select.fields import AutoCompleteSelectField
 
-from decks.models import Deck, DeckCard
+from decks.models import Deck, DeckCard, Tournament, TournamentDeck
 from cards.models import PhysicalCard
+import sys
 
 
 class DeckModelForm(forms.ModelForm):
@@ -14,15 +15,18 @@ class DeckModelForm(forms.ModelForm):
     #side_board = forms.CharField(widget=forms.Textarea)
 
     def __init__(self, *args, **kwargs):
-        #self.main_board = 'hello'
         super(DeckModelForm, self).__init__(*args, **kwargs)
-        #self.fields['main_board'].value = 'hello'
+        if self.instance is not None:
+            self.fields['main_board'].initial = self.instance.cards_as_text()
 
     def save(self, commit=True):
         main_board = self.cleaned_data.get('main_board', None)
         #side_board = self.cleaned_data.get('side_board', None)
-        # ...do something with extra_field here...
-        return super(DeckModelForm, self).save(commit=commit)
+        result = super(DeckModelForm, self).save(commit=commit)
+        # Something is broken. I shouldn't have to call save() here - the line above me should have done it.
+        result.save()
+        result.set_cards_from_text(main_board)
+        return result
 
     class Meta:
         model = Deck
@@ -42,7 +46,7 @@ class CardInline(admin.TabularInline):
 
 class DeckAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
-    inlines = [CardInline]
+    #inlines = [CardInline]
 
     form = DeckModelForm
 
@@ -52,6 +56,16 @@ class DeckCardAdmin(admin.ModelAdmin):
     form = make_ajax_form(DeckCard, {'physicalcard': 'deckcard'})
 
 
+class TournamentAdmin(admin.ModelAdmin):
+    readonly_fields = ('id',)
+
+
+class TournamentDeckAdmin(admin.ModelAdmin):
+    readonly_fields = ('id',)
+
+
 # Register your models here.
 admin.site.register(Deck, DeckAdmin)
 admin.site.register(DeckCard, DeckCardAdmin)
+admin.site.register(Tournament, TournamentAdmin)
+admin.site.register(TournamentDeck, TournamentDeckAdmin)
