@@ -10,7 +10,7 @@ from cards.models import PhysicalCard
 
 
 class DeckModelForm(forms.ModelForm):
-    #main_board = forms.CharField(widget=forms.Textarea)
+    main_board = forms.CharField(widget=forms.Textarea, required=False)
     #side_board = forms.CharField(widget=forms.Textarea)
 
     def __init__(self, *args, **kwargs):
@@ -19,7 +19,7 @@ class DeckModelForm(forms.ModelForm):
         #self.fields['main_board'].value = 'hello'
 
     def save(self, commit=True):
-        #main_board = self.cleaned_data.get('main_board', None)
+        main_board = self.cleaned_data.get('main_board', None)
         #side_board = self.cleaned_data.get('side_board', None)
         # ...do something with extra_field here...
         return super(DeckModelForm, self).save(commit=commit)

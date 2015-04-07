@@ -143,4 +143,4 @@ class DecksTestCase(TestCase):
 
         self.assertEquals(tdeck.get_card_count(), 59)
 
-        #self.assertFalse(tdeck.is_legal())
+        # self.assertFalse(tdeck.is_legal())

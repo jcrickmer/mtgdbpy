@@ -116,32 +116,34 @@ class Command(BaseCommand):
 
         try:
             pc.layout = jcard['layout']
+
             if pc.layout in [pc.DOUBLE, pc.SPLIT, pc.FLIP]:
                 # We need to see if we already have a PhysicalCard of the other half of
                 # this card. We will leverage the 'names' array to figure this out.
                 for other_name in jcard['names']:
                     if other_name == jcard['name']:
                         # this is us. skip us.
-                        continue
+                        # continue
+                        pass
                     other_bc = BaseCard.objects.filter(name=other_name).first()
                     if other_bc is not None:
                         pc = other_bc.physicalcard
                         pc.layout = jcard['layout']
-                        if pc.layout == pc.DOUBLE:
-                            if 'a' in card_number or 'A' in card_number:
-                                cardposition = 'F'
-                            if 'b' in card_number or 'B' in card_number:
-                                cardposition = 'B'
-                        if pc.layout == pc.SPLIT:
-                            if 'a' in card_number or 'A' in card_number:
-                                cardposition = 'L'
-                            if 'b' in card_number or 'B' in card_number:
-                                cardposition = 'R'
-                        if pc.layout == pc.FLIP:
-                            if 'a' in card_number or 'A' in card_number:
-                                cardposition = 'U'
-                            if 'b' in card_number or 'B' in card_number:
-                                cardposition = 'D'
+                    if pc.layout == pc.DOUBLE:
+                        if 'a' in card_number or 'A' in card_number:
+                            cardposition = 'F'
+                        if 'b' in card_number or 'B' in card_number:
+                            cardposition = 'B'
+                    if pc.layout == pc.SPLIT:
+                        if 'a' in card_number or 'A' in card_number:
+                            cardposition = BaseCard.LEFT
+                        if 'b' in card_number or 'B' in card_number:
+                            cardposition = BaseCard.RIGHT
+                    if pc.layout == pc.FLIP:
+                        if 'a' in card_number or 'A' in card_number:
+                            cardposition = 'U'
+                        if 'b' in card_number or 'B' in card_number:
+                            cardposition = 'D'
 
         except Error:
             # don't care much...
