@@ -205,13 +205,13 @@ class Command(BaseCommand):
         return result
 
     def init_cards(self):
-      return Card.playables.get_simple_cards_list([
-                'Order',
-                'Oracle',
-                'Turn',
-                'Down',
-                'Life',
-                'Exile',
-                'Grand Melee',
-                'Conspiracy',
-                'Leveler'])
+        return Card.playables.get_simple_cards_list([
+            'Order',
+            'Oracle',
+            'Turn',
+            'Down',
+            'Life',
+            'Exile',
+            'Grand Melee',
+            'Conspiracy',
+            'Leveler'])

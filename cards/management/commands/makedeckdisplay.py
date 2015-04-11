@@ -19,8 +19,9 @@ sys.stdout = UTF8Writer(sys.stdout)
 UTF8Reader = codecs.getreader('utf8')
 sys.stdin = UTF8Reader(sys.stdin)
 
+
 class Command(BaseCommand):
-    #args = '<poll_id poll_id ...>'                                                                                                   
+    #args = '<poll_id poll_id ...>'
     help = 'Generate HTML links to the cards that are entered on stdin.'
 
 # DO THIS: export PYTHONIOENCODING=utf-8

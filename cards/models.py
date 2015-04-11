@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-                                                                                                              
+#-*- coding: utf-8 -*-
 
 # This is an auto-generated Django model module.
 # You'll have to do the following manually to clean this up:
@@ -24,6 +24,7 @@ from django.db import connection
 
 import logging
 from operator import itemgetter
+
 
 class Color(models.Model):
     id = models.CharField(primary_key=True, max_length=1)

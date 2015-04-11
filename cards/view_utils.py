@@ -172,7 +172,9 @@ def convertSymbolsToHTML(text):
 
     return mark_safe(result)
 
-# Get all of the cards, and replace them!                                                                                     
+# Get all of the cards, and replace them!
+
+
 def make_links_to_cards(text, simple_card_list, magic_format=u'data-mid="{}"'):
     result = text
     for simplecard in simple_card_list:
