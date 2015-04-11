@@ -171,3 +171,28 @@ def convertSymbolsToHTML(text):
     result = result.replace("\n", "<br />\n")
 
     return mark_safe(result)
+
+# Get all of the cards, and replace them!                                                                                     
+def make_links_to_cards(text, simple_card_list, magic_format=u'data-mid="{}"'):
+    result = text
+    for simplecard in simple_card_list:
+        nre = re.compile(u'([^>a-zA-Z]){}([^<a-zA-Z])'.format(simplecard['name']), re.U)
+        sstr = u'\\1<a href="/cards/{}-{}/" ' + magic_format + u'>{}</a>\\2'
+        result = nre.sub(
+            sstr.format(
+                simplecard['multiverseid'],
+                simplecard['url_slug'],
+                simplecard['multiverseid'],
+                simplecard['cleanname']),
+            result)
+        nre2 = re.compile(u'^{}'.format(simplecard['name']), re.U)
+        sstr = u'\\1<a href="/cards/{}-{}/" ' + magic_format + u'>{}</a>'
+        result = nre2.sub(
+            sstr.format(
+                simplecard['multiverseid'],
+                simplecard['url_slug'],
+                simplecard['multiverseid'],
+                simplecard['cleanname']),
+            result)
+
+    return result

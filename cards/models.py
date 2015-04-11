@@ -1,3 +1,5 @@
+#-*- coding: utf-8 -*-                                                                                                              
+
 # This is an auto-generated Django model module.
 # You'll have to do the following manually to clean this up:
 #   * Rearrange models' order
@@ -21,7 +23,7 @@ from django.db.models import Max, Min, Count
 from django.db import connection
 
 import logging
-
+from operator import itemgetter
 
 class Color(models.Model):
     id = models.CharField(primary_key=True, max_length=1)
@@ -626,6 +628,54 @@ class CardManager(models.Manager):
         cards = self.raw(sql_s, params=safelocker)
 
         return cards
+
+    def get_simple_cards_list(self, card_names_to_skip=list()):
+        result = list()
+        #bcards = BaseCard.objects.filter(physicalcard_id__gt=7400, physicalcard_id__lt=7500).order_by('-filing_name')
+        # These are cards that pretty much aren't going to be referenced - there are more false positives than actual hits.
+        bcards = BaseCard.objects.exclude(name__in=card_names_to_skip).order_by('-filing_name')
+        for basecard in bcards:
+            card = basecard.physicalcard.get_latest_card()
+            simple = {'name': basecard.name,
+                      'cleanname': basecard.name,
+                      'url_slug': card.url_slug(),
+                      'name_len': len(basecard.name),
+                      'multiverseid': card.multiverseid}
+            result.append(simple)
+            try:
+                if basecard.name.index("'"):
+                    simple = {'name': basecard.name.replace(u"'", u"’"),
+                              'cleanname': basecard.name,
+                              'url_slug': card.url_slug(),
+                              'name_len': len(basecard.name),
+                              'multiverseid': card.multiverseid}
+                    result.append(simple)
+            except ValueError:
+                pass
+            for sillydash in [u'–', u'—', u'‒', u'-']:
+                try:
+                    if basecard.name.index(sillydash):
+                        simple = {'name': basecard.name.replace(sillydash, u'-'),
+                                  'cleanname': basecard.name,
+                                  'url_slug': card.url_slug(),
+                                  'name_len': len(basecard.name),
+                                  'multiverseid': card.multiverseid}
+                        result.append(simple)
+                except ValueError:
+                    pass
+                try:
+                    if simple['name'].index('-'):
+                        simple = {'name': basecard.name.replace('-', sillydash),
+                                  'cleanname': basecard.name,
+                                  'url_slug': card.url_slug(),
+                                  'name_len': len(basecard.name),
+                                  'multiverseid': card.multiverseid}
+                        result.append(simple)
+                except ValueError:
+                    pass
+
+        result = sorted(result, key=itemgetter('name_len'), reverse=True)
+        return result
 
     class FormatNotSpecifiedException(Exception):
         pass
