@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.db import models
 from datetime import datetime
@@ -10,6 +11,7 @@ import logging
 
 from cards.models import PhysicalCard, Format
 import re
+import sys
 
 
 class Deck(models.Model):
@@ -24,7 +26,7 @@ class Deck(models.Model):
     format = models.ForeignKey('cards.Format')
     cards = models.ManyToManyField(PhysicalCard, through='DeckCard')
 
-    # Returns the total number of cards in this deck.
+    # Returns the total number of caxrds in this deck.
     def get_card_count(self):
         dcs = DeckCard.objects.filter(deck=self)
         result = 0
@@ -41,22 +43,27 @@ class Deck(models.Model):
             self.text = text
 
         def __unicode__(self):
-            return u'CardNotFoundException: "{}"'.format(self.text)
+            return 'CardNotFoundException: "{}"'.format(str(self.text))
 
     class CardsNotFoundException():
 
         def __init__(self, cnfes):
+            # a list of CardNotFoundExceptions
             self.cnfes = cnfes
 
         def __unicode__(self):
-            return u'CardsNotFoundException: "{}"'.format(self.cnfes)
+            return 'CardsNotFoundException: "{}"'.format(','.join(str(c) for c in self.cnfes))
 
     def set_cards_from_text(self, cardlist):
         '''Go through each line and try to determine what the card is
         and how many should be present. If there are no errors, then
         delete/replace all of the existing DeckCards with these new
         DeckCards.'''
-        req = re.compile(r'^(sb:\s*)?((\d+)x?\s+)?(.+)$', re.UNICODE)
+
+        # Note that when matching the card name here we are getting everything but
+        # a "+" or a "/". This will give us the first card in a double card like
+        # Wear // Tear
+        req = re.compile(r'^([Ss][Bb]:\s*)?((\d+)x?\s+)?([^\+/]+)', re.UNICODE)
         new_deckcards = list()
         exceptions = list()
         for line in cardlist.splitlines():
@@ -68,13 +75,19 @@ class Deck(models.Model):
                 is_sb = line_match.group(1) or False
                 card_count = line_match.group(3) or 1
                 # getting close! Now let's see if it's a real card
-                # REVSIT - ADDRESS multi-basecard cards, like "Beck // Call"
-                pc = PhysicalCard.objects.filter(basecard__name__iexact=line_match.group(4)).first()
+                # Let's do some quick clean-up of the card name...
+                card_name = line_match.group(4).strip()
+                for sillyapos in [u'\u2019', r'\u2019', '\\' + 'u2019', u'’']:
+                    card_name = card_name.replace(sillyapos, u"'")
+                for sillydash in [u'–', u'—', u'‒', u'-']:
+                    card_name = card_name.replace(sillydash, '-')
+                pc = PhysicalCard.objects.filter(basecard__name__iexact=card_name).first()
                 if pc is not None:
                     # winner!
-                    dc = DeckCard(deck=self, cardcount=card_count, physicalcard=pc)
+                    board_t = DeckCard.MAIN
                     if is_sb:
-                        dc.board = DeckCard.SIDE
+                        board_t = DeckCard.SIDE
+                    dc = DeckCard(deck=self, cardcount=card_count, physicalcard=pc, board=board_t)
                     new_deckcards.append(dc)
                 else:
                     # throw an exception if we don't know it
@@ -87,6 +100,7 @@ class Deck(models.Model):
         else:
             DeckCard.objects.filter(deck=self).delete()
             for dc in new_deckcards:
+                #sys.stderr.write("dc save: " + str(dc) + "\n")
                 dc.save()
 
     def cards_as_text(self):
@@ -104,7 +118,7 @@ class Deck(models.Model):
         db_table = 'deck'
 
     def __unicode__(self):
-        return str(self.name)
+        return '{} [{}]'.format(str(self.name), str(self.id))
 
 
 class DeckCard(models.Model):
@@ -123,7 +137,8 @@ class DeckCard(models.Model):
         unique_together = ('deck', 'physicalcard', 'board')
 
     def __unicode__(self):
-        return '[' + str(self.deck.name) + ' (' + str(self.deck.id) + '): ' + str(self.cardcount) + ' ' + str(self.physicalcard.id) + ']'
+        return '[' + str(self.deck.name) + ' (' + str(self.deck.id) + '): ' + str(self.cardcount) + \
+            ' ' + str(self.physicalcard.id) + ' ' + str(self.board) + ']'
 
 
 class Tournament(models.Model):
@@ -134,7 +149,7 @@ class Tournament(models.Model):
     start_date = models.DateField(null=False, blank=False)
 
     def __unicode__(self):
-        return 'Tournament {} ({}) [{}]'.format(str(self.name), str(self.start_date), str(self.id))
+        return 'Tournament {} ({}, {}) [{}]'.format(str(self.name), str(self.format.formatname), str(self.start_date), str(self.id))
 
     class Meta:
         managed = True

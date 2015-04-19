@@ -85,9 +85,15 @@ DATABASES = {
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
-        'URL': 'http://127.0.0.1:8983/solr'
+        'URL': 'http://127.0.0.1:8983/solr',
         # ...or for multicore...
         # 'URL': 'http://127.0.0.1:8983/solr/mysite',
+        # NOTE: when turning this on for the first time, a "rebuild_index" is
+        # required. Then, poked the solr instance directly to get it started with
+        # curl
+        # 'http://localhost:8983/solr/select?q=brimaz&spellcheck=true&spellcheck.collate=true&spellcheck.build=true'
+        # Unfortuantely, it didn't work. :(
+        'INCLUDE_SPELLING': True,
     },
 }
 

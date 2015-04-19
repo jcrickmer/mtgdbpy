@@ -58,6 +58,7 @@ class DeckCardAdmin(admin.ModelAdmin):
 
 class TournamentAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
+    ordering = ['-start_date']
 
 
 class TournamentDeckAdmin(admin.ModelAdmin):
