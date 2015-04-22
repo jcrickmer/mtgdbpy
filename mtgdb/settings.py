@@ -150,6 +150,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
+        'decks.models': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
     },
 }
 
