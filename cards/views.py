@@ -29,6 +29,8 @@ from cards.models import Battle
 from cards.models import BattleTest
 from cards.models import CardRating
 
+from decks.models import FormatCardStat
+
 from django.db.models import Q
 from datetime import datetime, timedelta
 
@@ -363,19 +365,25 @@ def detail(request, multiverseid=None, slug=None):
             json.dumps(response_dict),
             content_type='application/javascript')
     else:
+        mod_fcstat = None
+        std_fcstat = None
         formats = Format.cards.current_legal_formats(cards[0])
         card_format_details = {}
         for ff in formats:
             dets = {}
             card_format_details[ff.format] = dets
             dets['format'] = ff
-            if ff.format == 'Standard':
+            if ff.formatname == 'Standard':
                 dets['format_abbr'] = 'Std'
-            elif ff.format == 'Modern':
+                std_fcstat = FormatCardStat(cards[0].basecard.physicalcard, ff)
+                logger.error("Std FCS \"" + str(std_fcstat) + "\"")
+            elif ff.formatname == 'Modern':
                 dets['format_abbr'] = 'Mod'
-            elif ff.format == 'TinyLeaders':
+                mod_fcstat = FormatCardStat(cards[0].basecard.physicalcard, ff)
+                logger.error("Mod FCS \"" + str(mod_fcstat) + "\"")
+            elif ff.formatname == 'TinyLeaders':
                 dets['format_abbr'] = 'TL'
-            elif ff.format == 'Commander':
+            elif ff.formatname == 'Commander':
                 dets['format_abbr'] = 'EDH'
             dets['rating'] = cards[0].basecard.physicalcard.cardrating_set.filter(test_id=1, format_id=ff.id).first()
             dets['wincount'] = Battle.objects.filter(winner_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).count()
@@ -411,6 +419,8 @@ def detail(request, multiverseid=None, slug=None):
                                                          'physicalCardTitle': " // ".join(card_titles),
                                                          'card_format_details': card_format_details,
                                                          'rulings': cards[0].basecard.get_rulings(),
+                                                         'mod_card_stat': mod_fcstat,
+                                                         'std_card_stat': std_fcstat,
                                                          #'rules_text_html': mark_safe(card.basecard.rules_text),
                                                          #'flavor_text_html': mark_safe(card.flavor_text),
                                                          #'mana_cost_html': mana_cost_html,

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}{{ physicalCardTitle }}{% endblock %}
-{% block pagetitle %}{{ physicalCardTitle }}{% endblock %}
+{% block pagetitle %}{{ physicalCardTitle }}{% if std_card_stat.is_staple %} <span class="staple-standard">Standard Staple</span> {% endif %}{% if mod_card_stat.is_staple %} <span class="staple-modern">Modern Staple</span> {% endif %}{% endblock %}
 {% block description %}Magic: The Gathering card {{ physicalCardTitle }} information and analysis{% endblock %}
 
 {% block subsearchnav %}

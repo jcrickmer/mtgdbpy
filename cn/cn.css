@@ -376,3 +376,24 @@ h4.cardlist-category {
   margin-top: 0px;
 }
 
+span.staple-modern {
+  font-size: .4em;
+  padding: 8px;
+  color: #eeeeee;
+  background-color: #E19D29
+}
+span.staple-standard {
+  font-size: .4em;
+  padding: 8px;
+  color: #eeeeee;
+  background-color: #92B06A;
+}
+/** Colors for non-CTA and warning messages
+blue #4298B5
+gray #ADC4CC
+green #92B06A
+orange #E19D29
+red #DD5F32
+dark gray #2D2D2D
+white on color: #EEEEEE
+**/

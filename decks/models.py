@@ -4,6 +4,7 @@ from django.db import models
 from datetime import datetime
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.db.models import Max, Min, Count, Sum
 
 from django.db import connection
 
@@ -12,6 +13,21 @@ import logging
 from cards.models import PhysicalCard, Format
 import re
 import sys
+
+
+class Tournament(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, null=False)
+    url = models.CharField(max_length=500)
+    format = models.ForeignKey('cards.Format')
+    start_date = models.DateField(null=False, blank=False)
+
+    def __unicode__(self):
+        return 'Tournament {} ({}, {}) [{}]'.format(str(self.name), str(self.format.formatname), str(self.start_date), str(self.id))
+
+    class Meta:
+        managed = True
+        db_table = 'tournament'
 
 
 class Deck(models.Model):
@@ -25,6 +41,7 @@ class Deck(models.Model):
     authorname = models.CharField(max_length=100)
     format = models.ForeignKey('cards.Format')
     cards = models.ManyToManyField(PhysicalCard, through='DeckCard')
+    tournaments = models.ManyToManyField(Tournament, through='TournamentDeck', through_fields=('deck', 'tournament'))
 
     # Returns the total number of caxrds in this deck.
     def get_card_count(self):
@@ -255,21 +272,6 @@ class DeckCard(models.Model):
             ' ' + str(self.physicalcard.id) + ' ' + str(self.board) + ']'
 
 
-class Tournament(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100, null=False)
-    url = models.CharField(max_length=500)
-    format = models.ForeignKey('cards.Format')
-    start_date = models.DateField(null=False, blank=False)
-
-    def __unicode__(self):
-        return 'Tournament {} ({}, {}) [{}]'.format(str(self.name), str(self.format.formatname), str(self.start_date), str(self.id))
-
-    class Meta:
-        managed = True
-        db_table = 'tournament'
-
-
 class TournamentDeck(models.Model):
     id = models.AutoField(primary_key=True)
     deck = models.ForeignKey('Deck', null=False)
@@ -283,3 +285,45 @@ class TournamentDeck(models.Model):
 
     def __unicode__(self):
         return 'TournamentDeck ({}, {}, {}) [{}]'.format(str(self.tournament), str(self.deck), str(self.place), str(self.id))
+
+
+class FormatCardStat():
+    # For looking at Staples, look back and see how it performed in the previous 3 formats.
+    STAPLE_LOOKBACK = 3
+
+    # This is the threshold for how many times the card needs to show up in ALL of the decks in a given format. If there are 100 decks in
+    # the format, then 0.0008 means that the card shows up 20*75 * 0.0008 = 6 times.
+    STAPLE_THRESHOLD = 0.0008
+
+    def __init__(self, physicalcard, format):
+        # Shouldn't I throw a TypeError here if the user gave me crap
+        self.format = format
+        self.physicalcard = physicalcard
+
+    def is_staple(self):
+        logger = logging.getLogger(__name__)
+        # return true if this card is a "staple" in this format.
+        # Let's get the last three iterations of this format
+        result = True
+        latest_formats = Format.objects.filter(formatname=self.format.formatname, start_date__lte=self.format.start_date).order_by(
+            '-start_date')[0:FormatCardStat.STAPLE_LOOKBACK]
+        for lformat in latest_formats:
+            if result:
+                tfcc = DeckCard.objects.filter(deck__tournaments__format=lformat).aggregate(Sum('cardcount'))['cardcount__sum'] or 0
+                this_card_cc = DeckCard.objects.filter(
+                    deck__tournaments__format=lformat,
+                    physicalcard=self.physicalcard).aggregate(
+                    Sum('cardcount'))['cardcount__sum'] or 0
+                if tfcc == 0:
+                    # no div by zero
+                    logger.error('is_staple {} bailing on div by 0.'.format(str(self.physicalcard)))
+                    result = False
+                else:
+                    pcalc = float(this_card_cc) / float(tfcc)
+                    logger.error('is_staple {} pcalc is {} from {} occurences in {} cards in {}.'.format(
+                        str(self.physicalcard), str(pcalc), str(this_card_cc), str(tfcc), str(lformat)))
+                    result = result and pcalc >= FormatCardStat.STAPLE_THRESHOLD
+        return result
+
+    def __unicode__(self):
+        return 'FormatCardStat ({}, {})'.format(str(self.format), str(self.physicalcard))
