@@ -1,3 +1,41 @@
+body {
+	color: #262624;
+}
+a:link {
+	color: #4d5f8b;
+}
+a:visited {
+	color: #5b2f46;
+}
+a:hover {
+	color: #4d5f8b;
+}
+a:active {
+	color: #4d5f8b;
+}
+.menu {
+	background-color: #262624;
+	background-image: -webkit-linear-gradient(top, #262624, #262624);
+}
+.menu a {
+	color: #f0f0f2;
+}
+.navbar-inverse {
+	background-image: -webkit-linear-gradient(top, #262624, #262624);
+	background-color: #262624;
+}
+.navbar-inverse .navbar-nav li a {
+	color: #f0f0f2;
+}
+.navbar-inverse .navbar-nav>.open>a, .navbar-inverse .navbar-nav>.active>a {
+	background-image: -webkit-linear-gradient(top, #0a0b0d, #0a0b0d);
+	background-color: #0a0b0d;
+}
+.termsbox a {
+	font-size: 1.1em;
+	font-weight: 500;
+	vertical-align: middle;
+}
 .magic-symbol-small {
   background: url("/cn/glyphs/symbols_small.png");
   height: 15px;
@@ -379,17 +417,17 @@ h4.cardlist-category {
 span.staple-modern {
   font-size: .4em;
   padding: 8px;
-  color: #eeeeee;
-  background-color: #E19D29
+  vertical-align: middle;
+  background-color: #bfbea1;
 }
 span.staple-standard {
   font-size: .4em;
   padding: 8px;
-  color: #eeeeee;
-  background-color: #92B06A;
+  vertical-align: middle;
+  background-color: #cadac0;
 }
 /** Colors for non-CTA and warning messages
-blue #4298B5
+blue #4d5f8b
 gray #ADC4CC
 green #92B06A
 orange #E19D29
