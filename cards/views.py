@@ -376,11 +376,9 @@ def detail(request, multiverseid=None, slug=None):
             if ff.formatname == 'Standard':
                 dets['format_abbr'] = 'Std'
                 std_fcstat = FormatCardStat(cards[0].basecard.physicalcard, ff)
-                logger.error("Std FCS \"" + str(std_fcstat) + "\"")
             elif ff.formatname == 'Modern':
                 dets['format_abbr'] = 'Mod'
                 mod_fcstat = FormatCardStat(cards[0].basecard.physicalcard, ff)
-                logger.error("Mod FCS \"" + str(mod_fcstat) + "\"")
             elif ff.formatname == 'TinyLeaders':
                 dets['format_abbr'] = 'TL'
             elif ff.formatname == 'Commander':
