@@ -72,7 +72,7 @@ class FormatCardStatTestCase(TestCase):
         tdcount = mstat.tournamentdecks_in_format_count()
         self.assertEquals(tdcount, 1)
 
-        self.assertEquals(mstat.decks_in_format_percentage(), 1.0)
+        self.assertEquals(mstat.decks_in_format_percentage(), 100.0)
 
     def test_two_decks(self):
         tlh = TestLoadHelper()
@@ -116,7 +116,7 @@ class FormatCardStatTestCase(TestCase):
         tdcount = mstat.tournamentdecks_in_format_count()
         self.assertEquals(tdcount, 2)
 
-        self.assertEquals(mstat.decks_in_format_percentage(), 0.5)
+        self.assertEquals(mstat.decks_in_format_percentage(), 50.0)
 
     def test_one_deck_abs_card(self):
         tlh = TestLoadHelper()

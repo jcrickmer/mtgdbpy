@@ -14,7 +14,7 @@
 $(function() {
     $("#return-terms").button().click(function(event) { document.location = "{% url 'cards:index' %}"; });
     $("#return-results").button().click(function(event) { document.location = "{% url 'cards:list' %}"; });
-	cdb.makeFieldNameAuto($("#cardtutor"), cdb.AUTO_NAVIGATE);
+    cdb.makeFieldNameAuto($("#cardtutor"), cdb.AUTO_NAVIGATE);
 });
   </script>
 </div>
@@ -81,7 +81,7 @@ $(function() {
       <td>
         {% for format, details in card_format_details.items %}
           <span class="hidden-xs-inline">{{details.format.formatname}}</span><span class="visible-xs-inline">{{details.format_abbr}}</span>:
-		  {{details.rating.cardninjaRating|floatformat:3 }}<br>
+          {{details.rating.cardninjaRating|floatformat:2 }}<br>
         {% endfor%}
       </td>
     </tr>
@@ -129,45 +129,89 @@ $(function() {
 </div>
 {% endfor %}
 <div class="battles-block">
-<div class="row">
-  <div class="col-xs-12">
-    <h3>Current Legal Formats</h3>
-  </div>
-</div>
-{% for format, details in card_format_details.items %}
-<div class="row">
-  <div class="col-xs-12">
-    <h4>{{details.format.formatname}} - card.ninja Rating {{details.rating.cardninjaRating|floatformat:3 }}</h4>
-    <div>Rating Confidence: {{details.rating.confidence|floatformat:3 }}</div>
-    <div><b>Wins</b> - {{details.wincount}} ({{details.winpercentage|floatformat:1}}%)</div>
-{% if details.wincount > 0 %}
-    <div>{{ physicalCardTitle }} has beaten these cards in card.ninja Battles:</div>
-    <div class="row">
-      {% for woncard in details.card_wins %}
-        <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
-          <div class="text-center"><a href="{% url 'cards:detail' woncard.multiverseid woncard.url_slug %}"><img class="list_cardimage" src="{{ woncard.img_url }}" alt="{{ woncard.basecard.name }}"/></a></div>
-          <div class="text-center"><a href="{% url 'cards:detail' woncard.multiverseid woncard.url_slug %}">{{woncard.basecard.name}}</a></div>
-        </div>
-      {% endfor %}
+  <div class="row">
+    <div class="col-xs-12">
+      <h3>Current Legal Formats</h3>
     </div>
-{% endif %}
-    <div><b>Losses</b> - {{details.losecount}} ({{details.losepercentage|floatformat:1}}%)</div>
-{% if details.losecount > 0 %}
-    <div>{{ physicalCardTitle }} has lost to these cards in card.ninja Battles:</div>
-    <div class="row">
-      {% for lostcard in details.card_losses %}
-        <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
-          <div class="text-center"><a href="{% url 'cards:detail' lostcard.multiverseid lostcard.url_slug %}"><img class="list_cardimage" src="{{ lostcard.img_url }}" alt="{{ lostcard.basecard.name }}"/></a></div>
-          <div class="text-center"><a href="{% url 'cards:detail' lostcard.multiverseid lostcard.url_slug %}">{{lostcard.basecard.name}}</a></div>
-        </div>
-      {% endfor %}
-    </div>
-{% endif %}
-    <div><a href="{% url 'cards:battle' format=details.format.formatname %}?bcid={{primary_basecard_id}}">Battle in Current {{details.format.formatname}}</a></div>
   </div>
+  {% for format, details in card_format_details.items %}
+    <div class="row">
+      <div class="col-xs-12">
+        <h4>{{details.format.formatname}}</h4>
+        <div class="panel-group" id="accordion-{{details.format.formatname}}" role="tablist" aria-multiselectable="true">
+          {% for card_stat in card_stats %}
+            {% if card_stat.format.formatname == details.format.formatname %}
+              <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="heading-{{details.format.formatname}}-meta">
+                  <h5 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion-{{details.format.formatname}}" href="#collapse-{{details.format.formatname}}-meta" aria-expanded="false" aria-controls="collapse-{{details.format.formatname}}-meta">
+                      <i class="indicator glyphicon glyphicon-menu-right pull-left" style="font-size: 90%; padding-right: 5px;"></i> Metagame Statistics
+                    </a> {% if card_stat.is_staple %} <span class="staple-{{details.format.formatname|lower}}">{{details.format.formatname}} Staple</span> {% endif %}
+                  </h5>
+                </div>
+                <div id="collapse-{{details.format.formatname}}-meta" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{details.format.formatname}}-meta">
+                  <div class="panel-body">
+                    <div>Appears in {{details.format.formatname}} decks: {{card_stat.decks_in_format_percentage|floatformat:1}}%</div>
+                    <div>When included, average number included in deck: {{card_stat.average_card_count_in_deck|floatformat:2}}</div>
+                  </div>
+                </div>
+              </div>
+            {%endif%}
+          {%endfor%}
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading-{{details.format.formatname}}-rating">
+              <h5 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion-{{details.format.formatname}}" href="#collapse-{{details.format.formatname}}-rating" aria-expanded="false" aria-controls="collapse-{{details.format.formatname}}-rating">
+                  <i class="indicator glyphicon glyphicon-menu-right pull-left" style="font-size: 90%; padding-right: 5px;"></i> card.ninja Card Rating: {{details.rating.cardninjaRating|floatformat:2 }}
+                </a>
+              </h5>
+            </div>
+            <div id="collapse-{{details.format.formatname}}-rating" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{details.format.formatname}}-rating">
+              <div class="panel-body">
+                <div><a href="{% url 'cards:battle' format=details.format.formatname %}?bcid={{primary_basecard_id}}">Battle in Current {{details.format.formatname}}</a></div>
+                <div>Rating Confidence: {{details.rating.confidence|floatformat:2 }}</div>
+                <div><b>Wins</b> - {{details.wincount}} ({{details.winpercentage|floatformat:1}}%)</div>
+                {% if details.wincount > 0 %}
+                  <div>{{ physicalCardTitle }} has beaten these cards in card.ninja Battles:</div>
+                  <div class="row">
+                    {% for woncard in details.card_wins %}
+                      <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
+                        <div class="text-center"><a href="{% url 'cards:detail' woncard.multiverseid woncard.url_slug %}"><img class="list_cardimage" src="{{ woncard.img_url }}" alt="{{ woncard.basecard.name }}"/></a></div>
+                        <div class="text-center"><a href="{% url 'cards:detail' woncard.multiverseid woncard.url_slug %}">{{woncard.basecard.name}}</a></div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                <div><b>Losses</b> - {{details.losecount}} ({{details.losepercentage|floatformat:1}}%)</div>
+                {% if details.losecount > 0 %}
+                  <div>{{ physicalCardTitle }} has lost to these cards in card.ninja Battles:</div>
+                  <div class="row">
+                    {% for lostcard in details.card_losses %}
+                      <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
+                        <div class="text-center"><a href="{% url 'cards:detail' lostcard.multiverseid lostcard.url_slug %}"><img class="list_cardimage" src="{{ lostcard.img_url }}" alt="{{ lostcard.basecard.name }}"/></a></div>
+                        <div class="text-center"><a href="{% url 'cards:detail' lostcard.multiverseid lostcard.url_slug %}">{{lostcard.basecard.name}}</a></div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
 </div>
-{% endfor %}
-</div>
+<script>
+function toggleChevron(e) {
+    $(e.target)
+        .prev('.panel-heading')
+        .find("i.indicator")
+        .toggleClass('glyphicon-menu-right glyphicon-menu-down');
+}
+$('.panel-group').on('hidden.bs.collapse', toggleChevron);
+$('.panel-group').on('shown.bs.collapse', toggleChevron);
+</script>
 <div class="similiar-block">
   <div class="row">
     <div class="col-xs-12">

@@ -4,7 +4,7 @@ from django.db import models
 from datetime import datetime
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-from django.db.models import Max, Min, Count, Sum
+from django.db.models import Max, Min, Count, Sum, Avg
 
 from django.db import connection
 
@@ -310,9 +310,7 @@ class FormatCardStat():
         count = DeckCard.objects.filter(
             deck__tournaments__format=self.format,
             physicalcard=self.physicalcard).aggregate(
-            Count(
-                'deck',
-                distinct=True))['deck__count'] or 0
+            Count('deck', distinct=True))['deck__count'] or 0
         return count
 
     def decks_in_format_percentage(self):
@@ -320,7 +318,15 @@ class FormatCardStat():
         result = None
         tdifc = self.tournamentdecks_in_format_count()
         if tdifc > 0:
-            result = float(self.deck_count()) / float(tdifc)
+            result = 100.0 * float(self.deck_count()) / float(tdifc)
+        return result
+
+    def average_card_count_in_deck(self):
+        # return the average card count when this card is included in a deck
+        result = DeckCard.objects.filter(
+            deck__tournaments__format=self.format,
+            physicalcard=self.physicalcard).aggregate(
+            Avg('cardcount'))['cardcount__avg'] or 0.0
         return result
 
     def is_staple(self):

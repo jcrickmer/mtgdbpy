@@ -365,6 +365,7 @@ def detail(request, multiverseid=None, slug=None):
             json.dumps(response_dict),
             content_type='application/javascript')
     else:
+        card_stats = []
         mod_fcstat = None
         std_fcstat = None
         formats = Format.cards.current_legal_formats(cards[0])
@@ -376,9 +377,11 @@ def detail(request, multiverseid=None, slug=None):
             if ff.formatname == 'Standard':
                 dets['format_abbr'] = 'Std'
                 std_fcstat = FormatCardStat(cards[0].basecard.physicalcard, ff)
+                card_stats.append(std_fcstat)
             elif ff.formatname == 'Modern':
                 dets['format_abbr'] = 'Mod'
                 mod_fcstat = FormatCardStat(cards[0].basecard.physicalcard, ff)
+                card_stats.append(mod_fcstat)
             elif ff.formatname == 'TinyLeaders':
                 dets['format_abbr'] = 'TL'
             elif ff.formatname == 'Commander':
@@ -419,6 +422,7 @@ def detail(request, multiverseid=None, slug=None):
                                                          'rulings': cards[0].basecard.get_rulings(),
                                                          'mod_card_stat': mod_fcstat,
                                                          'std_card_stat': std_fcstat,
+                                                         'card_stats': card_stats,
                                                          #'rules_text_html': mark_safe(card.basecard.rules_text),
                                                          #'flavor_text_html': mark_safe(card.flavor_text),
                                                          #'mana_cost_html': mana_cost_html,
