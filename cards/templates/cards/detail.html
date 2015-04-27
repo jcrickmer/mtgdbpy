@@ -77,35 +77,21 @@ $(function() {
       <td>{% for tcolor in working.card.basecard.colors.all %}{{ tcolor.color }} {% endfor %}{% if working.card.basecard.colors.all|length == 0 %}Colorless{% endif %}</td>
     </tr>
     <tr>
-      <td class="cardattr">Multiverse Id</td>
-      <td>{{ working.card.multiverseid }}</td>
-    </tr>
-    <tr>
       <td class="cardattr">card.ninja Card&nbsp;Rating</td>
       <td>
-        {% for cardrating in working.card.basecard.physicalcard.cardrating_set.all %}
-          {% if cardrating.test.id == 1 %}
-            {% if cardrating.format.id == 21 %}
-              <span class="hidden-xs">{{cardrating.format.formatname}}</span><span class="visible-xs-inline">Std</span>: {{cardrating.cardninjaRating|floatformat:3 }}<!-- (confidence {{cardrating.confidence|floatformat:2 }})--><br>
-
-            {% endif %}
-            {% if cardrating.format.id == 20 %}
-              <span class="hidden-xs">{{cardrating.format.formatname}}</span><span class="visible-xs-inline">Mod</span>: {{cardrating.cardninjaRating|floatformat:3 }}<!-- (confidence {{cardrating.confidence|floatformat:2 }})--><br>
-
-            {% endif %}
-            {% if cardrating.format.id == 18 %}
-              <span class="hidden-xs">{{cardrating.format.formatname}}</span><span class="visible-xs-inline">EDH</span>: {{cardrating.cardninjaRating|floatformat:3 }}<!-- (confidence {{cardrating.confidence|floatformat:2 }})--><br>
-            {% endif %}
-            {% if cardrating.format.id == 19 %}
-              <span class="hidden-xs">{{cardrating.format.formatname}}</span><span class="visible-xs-inline">TL</span>: {{cardrating.cardninjaRating|floatformat:3 }}<!-- (confidence {{cardrating.confidence|floatformat:2 }})--><br>
-            {% endif %}
-          {% endif %}
+        {% for format, details in card_format_details.items %}
+          <span class="hidden-xs-inline">{{details.format.formatname}}</span><span class="visible-xs-inline">{{details.format_abbr}}</span>:
+		  {{details.rating.cardninjaRating|floatformat:3 }}<br>
         {% endfor%}
       </td>
     </tr>
     <tr>
       <td class="cardattr">Expansion Set</td>
       <td>{{ working.card.expansionset.name }}</td>
+    </tr>
+    <tr>
+      <td class="cardattr">Multiverse Id</td>
+      <td>{{ working.card.multiverseid }}</td>
     </tr>
     <tr>
       <td class="cardattr">Flavor Text</td>
