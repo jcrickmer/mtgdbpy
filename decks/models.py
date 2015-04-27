@@ -300,6 +300,29 @@ class FormatCardStat():
         self.format = format
         self.physicalcard = physicalcard
 
+    def tournamentdecks_in_format_count(self):
+        # For this format, how many tournament decks are there
+        count = TournamentDeck.objects.filter(tournament__format=self.format).aggregate(Count('id'))['id__count'] or 0
+        return count
+
+    def deck_count(self):
+        # return the card count in the current format
+        count = DeckCard.objects.filter(
+            deck__tournaments__format=self.format,
+            physicalcard=self.physicalcard).aggregate(
+            Count(
+                'deck',
+                distinct=True))['deck__count'] or 0
+        return count
+
+    def decks_in_format_percentage(self):
+        # Returns either None or the float percentage of the number of decks that have this physicalcard in this format.
+        result = None
+        tdifc = self.tournamentdecks_in_format_count()
+        if tdifc > 0:
+            result = float(self.deck_count()) / float(tdifc)
+        return result
+
     def is_staple(self):
         logger = logging.getLogger(__name__)
         # return true if this card is a "staple" in this format.
@@ -316,11 +339,11 @@ class FormatCardStat():
                     Sum('cardcount'))['cardcount__sum'] or 0
                 if tfcc == 0:
                     # no div by zero
-                    logger.error('is_staple {} bailing on div by 0.'.format(str(self.physicalcard)))
+                    logger.info('is_staple {} bailing on div by 0.'.format(str(self.physicalcard)))
                     result = False
                 else:
                     pcalc = float(this_card_cc) / float(tfcc)
-                    logger.error('is_staple {} pcalc is {} from {} occurences in {} cards in {}.'.format(
+                    logger.info('is_staple {} pcalc is {} from {} occurences in {} cards in {}.'.format(
                         str(self.physicalcard), str(pcalc), str(this_card_cc), str(tfcc), str(lformat)))
                     result = result and pcalc >= FormatCardStat.STAPLE_THRESHOLD
         return result
