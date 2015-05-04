@@ -6,6 +6,7 @@ from ajax_select.admin import AjaxSelectAdmin
 from ajax_select.fields import AutoCompleteSelectField
 
 from decks.models import Deck, DeckCard, Tournament, TournamentDeck
+from decks.models import DeckCluster, DeckClusterDeck
 from cards.models import PhysicalCard
 import sys
 
@@ -65,8 +66,18 @@ class TournamentDeckAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
 
 
+class DeckClusterDeckAdmin(admin.ModelAdmin):
+    readonly_fields = ('id',)
+
+
+class DeckClusterAdmin(admin.ModelAdmin):
+    readonly_fields = ('id',)
+
+
 # Register your models here.
 admin.site.register(Deck, DeckAdmin)
 admin.site.register(DeckCard, DeckCardAdmin)
 admin.site.register(Tournament, TournamentAdmin)
 admin.site.register(TournamentDeck, TournamentDeckAdmin)
+admin.site.register(DeckCluster, DeckClusterAdmin)
+admin.site.register(DeckClusterDeck, DeckClusterDeckAdmin)

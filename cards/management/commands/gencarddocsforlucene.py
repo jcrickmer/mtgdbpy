@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from cards.models import Card
+from cards.models import Card, FormatBasecard, BaseCard
 from cards.models import PhysicalCard
 
 import re
@@ -28,15 +28,23 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        pcard_list = PhysicalCard.objects.all()
+        #pcard_list = PhysicalCard.objects.all()
 
-        for pcard in pcard_list:
+        fbc_list = FormatBasecard.objects.filter(
+            format__formatname='Modern',
+            basecard__cardposition__in=[
+                BaseCard.FRONT,
+                BaseCard.LEFT,
+                BaseCard.UP]).order_by('basecard__physicalcard__id')
+
+        for fbcard in fbc_list:
+            pcard = fbcard.basecard.physicalcard
             if pcard.layout in [pcard.TOKEN, pcard.PLANE, pcard.SCHEME, pcard.PHENOMENON, pcard.VANGUARD]:
                 continue
             text = pcard.get_searchable_document(include_names=False)
             if len(text) < 1:
                 sys.stderr.write("Did not get anything valuable back from {}, {}\n".format(str(pcard), str(pcard.get_card_name())))
             else:
-                fileout = codecs.open(options['outdir'] + '/' + str(pcard.id), 'w', 'utf-8')
+                fileout = codecs.open(options['outdir'] + '/physicalcard_' + str(pcard.id), 'w', 'utf-8')
                 fileout.write(text + "\n")
                 fileout.close()

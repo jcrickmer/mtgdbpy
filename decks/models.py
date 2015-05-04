@@ -349,10 +349,34 @@ class FormatCardStat():
                     result = False
                 else:
                     pcalc = float(this_card_cc) / float(tfcc)
-                    logger.info('is_staple {} pcalc is {} from {} occurences in {} cards in {}.'.format(
-                        str(self.physicalcard), str(pcalc), str(this_card_cc), str(tfcc), str(lformat)))
+                    # logger.info('is_staple {} pcalc is {} from {} occurences in {} cards in {}.'.format(
+                    #    str(self.physicalcard), str(pcalc), str(this_card_cc), str(tfcc), str(lformat)))
                     result = result and pcalc >= FormatCardStat.STAPLE_THRESHOLD
         return result
 
     def __unicode__(self):
         return 'FormatCardStat ({}, {})'.format(str(self.format), str(self.physicalcard))
+
+
+class DeckClusterDeck(models.Model):
+    deckcluster = models.ForeignKey('DeckCluster')
+    deck = models.ForeignKey('Deck', unique=True)
+    distance = models.FloatField(default=1000.0, null=False)
+
+    class Meta:
+        managed = True
+        db_table = 'deckclusterdeck'
+
+
+class DeckCluster(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, null=False)
+    clusterkey = models.IntegerField(null=False, default=-1)
+    formatname = models.CharField(max_length=100, null=False)
+
+    def __unicode__(self):
+        return 'DeckCluster {} ({}) [{}]'.format(str(self.name), str(self.formatname), str(self.id))
+
+    class Meta:
+        managed = True
+        db_table = 'deckcluster'
