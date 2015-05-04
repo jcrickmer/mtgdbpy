@@ -130,15 +130,35 @@ class PhysicalCard(models.Model):
         return max(bc.updated_at for bc in self.basecard_set.all())
 
     def get_card_name(self):
-        return ' // '.join(bc.name for bc in self.basecard_set.all())
+        first_card = None
+        sec_card = None
+        for bc in self.basecard_set.all():
+            if bc.cardposition == BaseCard.BACK or bc.cardposition == BaseCard.RIGHT or bc.cardposition == BaseCard.DOWN:
+                sec_card = bc
+            else:
+                first_card = bc
+        result = first_card.name
+        if sec_card:
+            result = result + ' // ' + sec_card.name
+        return result
 
     def get_card_filing_name(self):
-        return ' // '.join(bc.filing_name for bc in self.basecard_set.all())
+        first_card = None
+        sec_card = None
+        for bc in self.basecard_set.all():
+            if bc.cardposition == BaseCard.BACK or bc.cardposition == BaseCard.RIGHT or bc.cardposition == BaseCard.DOWN:
+                sec_card = bc
+            else:
+                first_card = bc
+        result = first_card.filing_name
+        if sec_card:
+            result = result + ' // ' + sec_card.filing_name
+        return result
 
     def get_latest_card(self):
         logger = logging.getLogger(__name__)
         #logger.error("PhysicalCard.get_latest_card: self is {}".format(str(self)))
-        bc = self.basecard_set.filter(cardposition__in=['F', 'L', 'U']).first()
+        bc = self.basecard_set.filter(cardposition__in=[BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP]).first()
         if bc is None:
             logger.error("PhysicalCard.get_latest_card: ouch. bc is None")
 
