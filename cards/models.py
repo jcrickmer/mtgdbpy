@@ -511,7 +511,7 @@ class CardManager(models.Manager):
             namesort.term = 'name'
             sortds.append(namesort)
         else:
-            # go through the sort directives and andle card rating sorting, if needed
+            # go through the sort directives and handle card rating sorting, if needed
             for sd in sortds:
                 # If we are sorting for card rating, we need to inject into the search criteria the format that we care about.
                 if sd.term == 'cardrating':

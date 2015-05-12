@@ -22,6 +22,9 @@ import os
 from PIL import Image
 from PIL import ImageFilter, ImageOps
 
+
+from twython import Twython
+
 out = sys.stdout
 
 format_hashtags = {'Standard': '#mtgstandard',
@@ -53,6 +56,9 @@ class Command(BaseCommand):
         image_locs = self.produce_image(first_card, comp_card)
         for key in image_locs.keys():
             out.write("Image {}: {}\n".format(key, image_locs[key]))
+
+        if True:
+            self.send_tweet(tweet, image_locs['filename'])
 
     def produce_image(self, card_one, card_two):
         result = dict()
@@ -106,6 +112,32 @@ class Command(BaseCommand):
             out.write("Oh no. " + str(ioe))
         return result
 
+    def send_tweet(self, tweet, media_filename):
+        # these values came from the auth = twitter.get_authentication_tokens() call below.
+        #twitter = Twython(APP_KEY, APP_SECRET)
+        #auth = twitter.get_authentication_tokens()
+        #for key in auth.keys():
+        #    sys.stderr.write("oauth {} = '{}'\n".format(key, auth[key]))
+        # https://twython.readthedocs.org/en/latest/usage/starting_out.html#starting-out
+        # Now, go to the URL and complete the process. Get the PIN number and put that into the get_authorized_tokens call below.
+        #twitter_li = Twython(APP_KEY, APP_SECRET, '8gDs7j68yJZirbQkrd32Cj2cYzILyR68', 'EX4moMI98JrYaB28mOIHU4ZWag7nCVfT')
+        #final_step = twitter_li.get_authorized_tokens('7437869')
+        #for key in final_step.keys():
+        #    sys.stderr.write("oauth {} = '{}'\n".format(key, final_step[key]))
+        ##
+        ## oauth oauth_token_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+        ## oauth user_id = '2222222222'
+        ## oauth oauth_token = '2222222222-mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm'
+        ## oauth screen_name = 'dev327364652'
+
+        twitter_act = Twython(settings.APP_KEY, settings.APP_SECRET, settings.OAUTH_TOKEN, settings.OAUTH_TOKEN_SECRET)
+
+        #twitter_act.update_status(status=tweet)
+        photo = open(media_filename, 'rb')
+        twitter_act.update_status_with_media(status=tweet, media=photo)
+
+        pass
+
 class BaseCardRandomizer():
 
     def __init__(self):
@@ -146,7 +178,7 @@ class BaseCardRandomizer():
         cc_cr = CardRating.objects.filter(physicalcard=self.comp_card.basecard.physicalcard, format=self.cur_format, test__id=1).first()
 
         comp_word = 'worse'
-        if fc_cr.sigma > cc_cr.sigma:
+        if fc_cr.mu > cc_cr.mu:
             comp_word = 'better'
 
         url_raw = 'http://card.ninja/cards/battle/' + self.cur_format.formatname + '/?bcid=' + str(self.first_card.basecard.id)
@@ -513,7 +545,7 @@ class MM2CardRandomizer(BaseCardRandomizer):
         cc_cr = CardRating.objects.filter(physicalcard=self.comp_card.basecard.physicalcard, format=self.cur_format, test__id=1).first()
 
         comp_word = 'worse'
-        if fc_cr.sigma > cc_cr.sigma:
+        if fc_cr.mu > cc_cr.mu:
             comp_word = 'better'
 
         url_raw = 'http://card.ninja/cards/battle/' + self.cur_format.formatname + '/?bcid=' + str(self.first_card.basecard.id)
