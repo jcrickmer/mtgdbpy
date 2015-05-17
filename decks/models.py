@@ -10,10 +10,24 @@ from django.db import connection
 
 import logging
 
-from cards.models import PhysicalCard, Format
+from cards.models import PhysicalCard, Format, FormatBasecard
 import re
 import sys
 
+from django.core.cache import cache
+from django.utils.functional import cached_property
+
+
+import time
+
+class Timer:    
+    def __enter__(self):
+        self.start = time.time()
+        return self
+
+    def __exit__(self, *args):
+        self.end = time.time()
+        self.interval = self.end - self.start
 
 class Tournament(models.Model):
     id = models.AutoField(primary_key=True)
@@ -21,6 +35,7 @@ class Tournament(models.Model):
     url = models.CharField(max_length=500)
     format = models.ForeignKey('cards.Format')
     start_date = models.DateField(null=False, blank=False)
+    end_date = models.DateField(null=False, blank=False)
 
     def __unicode__(self):
         return 'Tournament {} ({}, {}) [{}]'.format(str(self.name), str(self.format.formatname), str(self.start_date), str(self.id))
@@ -286,8 +301,87 @@ class TournamentDeck(models.Model):
     def __unicode__(self):
         return 'TournamentDeck ({}, {}, {}) [{}]'.format(str(self.tournament), str(self.deck), str(self.place), str(self.id))
 
+def safelog(msg):
+    try:
+        sys.stderr.write('' + msg + "\n")
+    except UnicodeEncodeError as uee:
+        sys.stderr.write('cold not log because of stupid unicode error\n')
+    return
 
-class FormatCardStat():
+class FormatStat(models.Model):
+    # Number of decks that have to be in a tournament for it to qualify
+    MIN_DECKS_IN_TOURNAMENT = 8
+    
+    id = models.AutoField(primary_key=True)
+    format = models.ForeignKey('cards.Format')
+    tournamentdeck_count = models.IntegerField(null=False, default=0)
+    tournamentdeckcard_count = models.IntegerField(null=False, default=0)
+
+    def __init__(self, *args, **kwargs):
+        super(FormatStat, self).__init__(*args, **kwargs)
+        self._qti = None
+
+    @property
+    def qualified_tourn_ids(self):
+        if self._qti is None:
+            self._qti = Tournament.objects.filter(format=self.format).annotate(deck_count=Count('tournamentdeck')).filter(deck_count__gte=FormatStat.MIN_DECKS_IN_TOURNAMENT).values('id').order_by('id')
+        return self._qti
+
+    def calc_tournamentdeck_count(self):
+        ''' For this format, how many tournament decks are there
+        '''
+        self.tournamentdeck_count = TournamentDeck.objects.filter(tournament_id__in=self.qualified_tourn_ids).aggregate(Count('id'))['id__count'] or 0
+        return self.tournamentdeck_count
+
+    def calc_tournamentdeckcard_count(self):
+        self.tournamentdeckcard_count = DeckCard.objects.filter(deck__tournaments__id__in=self.qualified_tourn_ids).aggregate(Sum('cardcount'))['cardcount__sum'] or 0
+        return self.tournamentdeckcard_count
+
+    @staticmethod
+    def calc_all(new_only=False, start_date=None, end_date=None, only_formatname=None):
+        safelog("FormatCardStat.calc_all start.")
+        formats_db = Format.objects.all().values('formatname').distinct()
+        for formatname in (x['formatname'] for x in formats_db):
+            # If the caller wants only one of the formats, then skip
+            # all of the others that are not the named format.
+            if only_formatname is not None:
+                if formatname != only_formatname:
+                    continue
+                
+            latest_formats_qs = Format.objects.filter(formatname=formatname)
+            if start_date is not None:
+                latest_formats_qs = latest_formats_qs.filter(start_date__gte=start_date)
+            if end_date is not None:
+                latest_formats_qs = latest_formats_qs.filter(start_date__lte=end_date)
+            # Always process in start_date order. This may actually
+            # not matter to the result now (since staple is
+            # calcualted at run-time), but this is how I started and
+            # tested it.
+            latest_formats_qs = latest_formats_qs.order_by('start_date')
+
+            for fmt in latest_formats_qs:
+                safelog("  FormatCardStat.calc_all format {}".format(fmt.format))
+                fs = FormatStat.objects.filter(format=fmt).first()
+                is_new = fs is None
+                if is_new:
+                    fs = FormatStat(format=fmt)
+                    fs.save()
+                    fs = FormatStat.objects.filter(format=fmt).first()
+                if (new_only and is_new) or not new_only:
+                    fs.calc_tournamentdeck_count()
+                    fs.calc_tournamentdeckcard_count()
+                    fs.save()
+                    safelog("      {}".format(fs))
+
+    def __unicode__(self):
+        return 'FormatStat f="{}": dc={}, dcc={}'.format(str(self.format.format), str(self.tournamentdeck_count), str(self.tournamentdeckcard_count))
+    
+
+    class Meta:
+        managed = True
+        db_table = 'formatstat'
+    
+class FormatCardStat(models.Model):
     # For looking at Staples, look back and see how it performed in the previous 3 formats.
     STAPLE_LOOKBACK = 3
 
@@ -295,68 +389,171 @@ class FormatCardStat():
     # the format, then 0.0008 means that the card shows up 20*75 * 0.0008 = 6 times.
     STAPLE_THRESHOLD = 0.0008
 
-    def __init__(self, physicalcard, format):
-        # Shouldn't I throw a TypeError here if the user gave me crap
-        self.format = format
-        self.physicalcard = physicalcard
+    id = models.AutoField(primary_key=True)
+    format = models.ForeignKey('cards.Format')
+    physicalcard = models.ForeignKey('cards.PhysicalCard')
 
-    def tournamentdecks_in_format_count(self):
-        # For this format, how many tournament decks are there
-        count = TournamentDeck.objects.filter(tournament__format=self.format).aggregate(Count('id'))['id__count'] or 0
-        return count
+    # the number of times that this card shows up in all decks in this format
+    occurence_count = models.IntegerField(null=False, default=0)
 
-    def deck_count(self):
-        # return the card count in the current format
-        count = DeckCard.objects.filter(
-            deck__tournaments__format=self.format,
-            physicalcard=self.physicalcard).aggregate(
-            Count('deck', distinct=True))['deck__count'] or 0
-        return count
+    # the number of decks in this format that have this card
+    deck_count = models.IntegerField(null=False, default=0)
 
-    def decks_in_format_percentage(self):
-        # Returns either None or the float percentage of the number of decks that have this physicalcard in this format.
+    # the average card count when this card is included in a deck
+    average_card_count_in_deck = models.FloatField(null=False, default=0.0)
+
+    # the percentage of all cards in the format that are this card
+    percentage_of_all_cards = models.FloatField(null=False, default=0.0)
+
+    def __init__(self, *args, **kwargs):
+        super(FormatCardStat, self).__init__(*args, **kwargs)
+        self._formatstat = None
+
+    @property
+    def formatstat(self):
+        if self._formatstat is None:
+            self._formatstat = FormatStat.objects.filter(format=self.format).first()
+        return self._formatstat
+
+    def in_decks_percentage(self):
+        ''' Returns either None or the float percentage of the number of decks that have this physicalcard in this format.
+        '''
         result = None
-        tdifc = self.tournamentdecks_in_format_count()
-        if tdifc > 0:
-            result = 100.0 * float(self.deck_count()) / float(tdifc)
-        return result
-
-    def average_card_count_in_deck(self):
-        # return the average card count when this card is included in a deck
-        result = DeckCard.objects.filter(
-            deck__tournaments__format=self.format,
-            physicalcard=self.physicalcard).aggregate(
-            Avg('cardcount'))['cardcount__avg'] or 0.0
+        if self.formatstat is not None and self.formatstat.tournamentdeck_count > 0:
+            result = 100.0 * float(self.deck_count) / float(self.formatstat.tournamentdeck_count)
         return result
 
     def is_staple(self):
-        logger = logging.getLogger(__name__)
-        # return true if this card is a "staple" in this format.
-        # Let's get the last three iterations of this format
+        latest_formats_qs = Format.objects.filter(formatname=self.format.formatname,
+                                                  start_date__lte=self.format.start_date,
+                                                  formatbasecard__basecard__physicalcard=self.physicalcard).order_by('-start_date')
+        latest_formats = latest_formats_qs[0:FormatCardStat.STAPLE_LOOKBACK]
+        #safelog("is_staple latest_formats = {}".format(latest_formats))
         result = True
-        latest_formats = Format.objects.filter(formatname=self.format.formatname, start_date__lte=self.format.start_date).order_by(
-            '-start_date')[0:FormatCardStat.STAPLE_LOOKBACK]
-        for lformat in latest_formats:
-            if result:
-                tfcc = DeckCard.objects.filter(deck__tournaments__format=lformat).aggregate(Sum('cardcount'))['cardcount__sum'] or 0
-                this_card_cc = DeckCard.objects.filter(
-                    deck__tournaments__format=lformat,
-                    physicalcard=self.physicalcard).aggregate(
-                    Sum('cardcount'))['cardcount__sum'] or 0
-                if tfcc == 0:
-                    # no div by zero
-                    logger.info('is_staple {} bailing on div by 0.'.format(str(self.physicalcard)))
-                    result = False
+        cntr = 1
+        if result:
+            for lformat in latest_formats:
+                old_fcs = FormatCardStat.objects.filter(physicalcard=self.physicalcard, format=lformat).first()
+                if old_fcs is not None:
+                    #safelog("is_staple f={} old_fcs.percent = {}".format(lformat.format, old_fcs.percentage_of_all_cards))
+                    pass
                 else:
-                    pcalc = float(this_card_cc) / float(tfcc)
-                    # logger.info('is_staple {} pcalc is {} from {} occurences in {} cards in {}.'.format(
-                    #    str(self.physicalcard), str(pcalc), str(this_card_cc), str(tfcc), str(lformat)))
-                    result = result and pcalc >= FormatCardStat.STAPLE_THRESHOLD
+                    #safelog("is_staple f={} old_fcs is None".format(lformat.format))
+                    pass
+                result = result and old_fcs is not None and old_fcs.percentage_of_all_cards > FormatCardStat.STAPLE_THRESHOLD
+                cntr = cntr + 1
+        result = result and cntr >= FormatCardStat.STAPLE_LOOKBACK
         return result
 
-    def __unicode__(self):
-        return 'FormatCardStat ({}, {})'.format(str(self.format), str(self.physicalcard))
+    def calc_deck_count(self):
+        if self.formatstat is not None and self.formatstat.tournamentdeck_count > 0:
+            self.deck_count = DeckCard.objects.filter(deck__tournaments__id__in=self.formatstat.qualified_tourn_ids,
+                                            physicalcard=self.physicalcard).aggregate(
+                                                Count('deck', distinct=True))['deck__count'] or 0
+        return self.deck_count
 
+    def calc_combined(self):
+        self.deck_count = 0
+        self.occurence_count = 0
+        self.average_card_count_in_deck = 0.0
+        if self.formatstat is not None and self.formatstat.tournamentdeck_count > 0:
+            cstats = DeckCard.objects.filter(deck__tournaments__id__in=self.formatstat.qualified_tourn_ids,
+                                             physicalcard=self.physicalcard).aggregate(Count('deck', distinct=True),
+                                                                                       Sum('cardcount'),
+                                                                                       Avg('cardcount'))
+            self.deck_count = cstats['deck__count'] or 0
+            self.occurence_count = cstats['cardcount__sum'] or 0
+            self.average_card_count_in_deck = cstats['cardcount__avg'] or 0.0
+            self.percentage_of_all_cards = float(self.occurence_count) / float(self.formatstat.tournamentdeckcard_count)
+        return
+
+    def calc_average_card_count_in_deck(self):
+        # return the average card count when this card is included in a deck
+        result = 0.0
+        if self.formatstat is not None and self.formatstat.tournamentdeck_count > 0:
+            result = DeckCard.objects.filter(deck__tournaments__id__in=self.formatstat.qualified_tourn_ids,
+                                             physicalcard=self.physicalcard).aggregate(
+                Avg('cardcount'))['cardcount__avg'] or 0.0
+        self.average_card_count_in_deck = result
+        return result
+
+    def calc_percentage_of_all_cards(self):
+        # get all of the tournaments in lformat that have at least MIN_DECKS_IN_TOURNAMENT in them
+        self.percentage_of_all_cards = 0.0
+        if self.formatstat is not None and self.formatstat.tournamentdeck_count > 0:
+            if self.formatstat.tournamentdeckcard_count != 0:
+                self.percentage_of_all_cards = float(self.calc_occurence_count()) / float(self.formatstat.tournamentdeckcard_count)
+        return self.percentage_of_all_cards
+
+    def calc_occurence_count(self):
+        self.occurence_count = 0
+        if self.formatstat is not None and self.formatstat.tournamentdeck_count > 0:
+            self.occurence_count = DeckCard.objects.filter(deck__tournaments__id__in=self.formatstat.qualified_tourn_ids,
+                        physicalcard=self.physicalcard).aggregate(
+                        Sum('cardcount'))['cardcount__sum'] or 0
+        return self.occurence_count
+
+    @staticmethod
+    def calc_all(new_only=False, start_date=None, end_date=None, only_formatname=None):
+        safelog("FormatCardStat.calc_all start.")
+        formatstats_qs = FormatStat.objects.all()
+        if only_formatname is not None:
+            formatstats_qs = formatstats_qs.filter(format__formatname__iexact=only_formatname)
+        if start_date is not None:
+            formatstats_qs = formatstats_qs.filter(format__start_date__gte=start_date)
+        if end_date is not None:
+            formatstats_qs = formatstats_qs.filter(format__start_date__lte=end_date)
+            
+        # Always process in start_date order. This may actually not
+        # matter to the result now (since staple is calcualted at
+        # run-time), but this is how I started and tested it.
+        formatstats_qs = formatstats_qs.order_by('format__start_date')
+        
+        for fstat in formatstats_qs:
+            safelog("  FormatCardStat.calc_all: format {}".format(fstat.format.format))
+            fcards = FormatBasecard.objects.filter(format=fstat.format)
+            for fcard in fcards:
+                fcs = None
+                fcs = FormatCardStat.objects.filter(format=fstat.format, physicalcard=fcard.basecard.physicalcard).first()
+                if fcs is None:
+                    fcs = FormatCardStat(format=fstat.format, physicalcard=fcard.basecard.physicalcard)
+                    fcs.save()
+                    fcs = FormatCardStat.objects.filter(format=fstat.format, physicalcard=fcard.basecard.physicalcard).first()
+                elif new_only:
+                    # If we are calculating new only, then we better skip this one
+                    continue
+                safelog("    FormatCardStat.calc_all: card {}".format(fcs.physicalcard.get_card_name()))
+                with Timer() as t:
+                    fcs.calc_combined()
+                safelog('        calc_combined took %.03f sec.' % t.interval)
+                #with Timer() as t:
+                #    fcs.calc_deck_count()
+                #safelog('calc_deck_count took %.03f sec.' % t.interval)
+                #with Timer() as t:
+                #    fcs.calc_occurence_count()
+                #safelog('calc_occurence_count took %.03f sec.' % t.interval)
+                #with Timer() as t:
+                #    fcs.calc_average_card_count_in_deck()
+                #safelog('        calc_average_card_count_in_deck took %.03f sec.' % t.interval)
+                #with Timer() as t:
+                #    fcs.calc_percentage_of_all_cards()
+                #safelog('        calc_percentage_of_all_cards took %.03f sec.' % t.interval)
+                #with Timer() as t:
+                fcs.save()
+                #safelog('        save took %.03f sec.' % t.interval)
+                #with Timer() as t:
+                safelog("      {}".format(fcs))
+                #safelog('        str took %.03f sec.' % t.interval)
+
+    def __unicode__(self):
+        return 'FormatCardStat f="{}" c="{}": dc={}, oc={}, s={}'.format(self.format.format, self.physicalcard.get_card_name(), str(self.deck_count), str(self.occurence_count), str(self.is_staple()))
+    
+    class Meta:
+        managed = True
+        db_table = 'formatcardstat'
+        unique_together = ('format', 'physicalcard')
+        
+    
 
 class DeckClusterDeck(models.Model):
     deckcluster = models.ForeignKey('DeckCluster')

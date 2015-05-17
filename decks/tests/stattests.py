@@ -8,7 +8,7 @@ from django.db import transaction
 from datetime import datetime
 
 from cards.models import PhysicalCard, Format, Color, BaseCard, Card
-from decks.models import Deck, DeckCard, FormatCardStat, Tournament, TournamentDeck
+from decks.models import Deck, DeckCard, FormatCardStat, Tournament, TournamentDeck, FormatStat
 
 from cards.tests.helper import TestLoadHelper
 
@@ -20,16 +20,23 @@ class FormatCardStatTestCase(TestCase):
 
     exempt_from_fixture_bundling = True
 
+    FormatStat.MIN_DECKS_IN_TOURNAMENT = 0
+
     def test_empty(self):
         tlh = TestLoadHelper()
         tlh.basics_loader()
 
         island = BaseCard.objects.filter(name='Island').first().physicalcard
         modern = Format.objects.all().first()
-        mstat = FormatCardStat(format=modern, physicalcard=island)
-        dcount = mstat.deck_count()
+
+        FormatStat.calc_all()
+        FormatCardStat.calc_all()
+
+        fstat = FormatStat.objects.filter(format=modern).first()
+        mstat = FormatCardStat.objects.filter(format=modern, physicalcard=island).first()
+        dcount = mstat.deck_count
         self.assertEquals(dcount, 0)
-        tdcount = mstat.tournamentdecks_in_format_count()
+        tdcount = fstat.tournamentdeck_count
         self.assertEquals(tdcount, 0)
 
     def test_one_deck(self):
@@ -58,7 +65,7 @@ class FormatCardStatTestCase(TestCase):
 
         self.assertEquals(tdeck.get_card_count(), 60)
 
-        tourny = Tournament(name='Test', url='http://foo.dog/', format=myform, start_date='2015-04-01')
+        tourny = Tournament(name='Test', url='http://foo.dog/', format=myform, start_date='2015-04-01', end_date='2015-04-01')
         tourny.save()
         tourny = Tournament.objects.all().first()
 
@@ -66,13 +73,20 @@ class FormatCardStatTestCase(TestCase):
         td.save()
         td = TournamentDeck.objects.filter(tournament=tourny, deck=dc1, place=1).first()
 
-        mstat = FormatCardStat(format=myform, physicalcard=island)
-        dcount = mstat.deck_count()
+        FormatStat.calc_all()
+        FormatCardStat.calc_all()
+
+        fstat = FormatStat.objects.filter(format=myform).first()
+        mstat = FormatCardStat.objects.filter(format=myform, physicalcard=island).first()
+        dcount = mstat.deck_count
         self.assertEquals(dcount, 1)
-        tdcount = mstat.tournamentdecks_in_format_count()
+        tdcount = fstat.tournamentdeck_count
         self.assertEquals(tdcount, 1)
 
-        self.assertEquals(mstat.decks_in_format_percentage(), 100.0)
+        tdccount = fstat.tournamentdeckcard_count
+        self.assertEquals(tdccount, 60)
+
+        self.assertEquals(mstat.in_decks_percentage(), 100.0)
 
     def test_two_decks(self):
         tlh = TestLoadHelper()
@@ -82,7 +96,7 @@ class FormatCardStatTestCase(TestCase):
         island = BaseCard.objects.filter(name='Island').first().physicalcard
         myform = Format.objects.all().first()
 
-        tourny = Tournament(name='Test', url='http://foo.dog/', format=myform, start_date='2015-04-01')
+        tourny = Tournament(name='Test', url='http://foo.dog/', format=myform, start_date='2015-04-01', end_date='2015-04-01')
         tourny.save()
         tourny = Tournament.objects.all().first()
 
@@ -110,13 +124,18 @@ class FormatCardStatTestCase(TestCase):
             td = TournamentDeck.objects.filter(tournament=tourny, deck=dc1, place=incr).first()
             incr = incr + 1
 
-        mstat = FormatCardStat(format=myform, physicalcard=island)
-        dcount = mstat.deck_count()
+        FormatStat.calc_all()
+        FormatCardStat.calc_all()
+
+        fstat = FormatStat.objects.filter(format=myform).first()
+        mstat = FormatCardStat.objects.filter(format=myform, physicalcard=island).first()
+
+        dcount = mstat.deck_count
         self.assertEquals(dcount, 1)
-        tdcount = mstat.tournamentdecks_in_format_count()
+        tdcount = fstat.tournamentdeck_count
         self.assertEquals(tdcount, 2)
 
-        self.assertEquals(mstat.decks_in_format_percentage(), 50.0)
+        self.assertEquals(mstat.in_decks_percentage(), 50.0)
 
     def test_one_deck_abs_card(self):
         tlh = TestLoadHelper()
@@ -145,7 +164,7 @@ class FormatCardStatTestCase(TestCase):
 
         self.assertEquals(tdeck.get_card_count(), 60)
 
-        tourny = Tournament(name='Test', url='http://foo.dog/', format=myform, start_date='2015-04-01')
+        tourny = Tournament(name='Test', url='http://foo.dog/', format=myform, start_date='2015-04-01', end_date='2015-04-01')
         tourny.save()
         tourny = Tournament.objects.all().first()
 
@@ -153,10 +172,15 @@ class FormatCardStatTestCase(TestCase):
         td.save()
         td = TournamentDeck.objects.filter(tournament=tourny, deck=dc1, place=1).first()
 
-        mstat = FormatCardStat(format=myform, physicalcard=mountain)
-        dcount = mstat.deck_count()
+        FormatStat.calc_all()
+        FormatCardStat.calc_all()
+
+        fstat = FormatStat.objects.filter(format=myform).first()
+        mstat = FormatCardStat.objects.filter(format=myform, physicalcard=mountain).first()
+
+        dcount = mstat.deck_count
         self.assertEquals(dcount, 0)
-        tdcount = mstat.tournamentdecks_in_format_count()
+        tdcount = fstat.tournamentdeck_count
         self.assertEquals(tdcount, 1)
 
-        self.assertEquals(mstat.decks_in_format_percentage(), 0.0)
+        self.assertEquals(mstat.in_decks_percentage(), 0.0)

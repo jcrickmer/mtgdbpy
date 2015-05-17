@@ -29,7 +29,7 @@ from cards.models import Battle
 from cards.models import BattleTest
 from cards.models import CardRating
 
-from decks.models import FormatCardStat
+from decks.models import FormatCardStat, FormatStat
 
 from django.db.models import Q
 from datetime import datetime, timedelta
@@ -376,11 +376,11 @@ def detail(request, multiverseid=None, slug=None):
             dets['format'] = ff
             if ff.formatname == 'Standard':
                 dets['format_abbr'] = 'Std'
-                std_fcstat = FormatCardStat(cards[0].basecard.physicalcard, ff)
+                std_fcstat = FormatCardStat.objects.filter(physicalcard=cards[0].basecard.physicalcard, format=ff).first()
                 card_stats.append(std_fcstat)
             elif ff.formatname == 'Modern':
                 dets['format_abbr'] = 'Mod'
-                mod_fcstat = FormatCardStat(cards[0].basecard.physicalcard, ff)
+                mod_fcstat = FormatCardStat.objects.filter(physicalcard=cards[0].basecard.physicalcard, format=ff).first()
                 card_stats.append(mod_fcstat)
             elif ff.formatname == 'TinyLeaders':
                 dets['format_abbr'] = 'TL'
