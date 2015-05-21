@@ -20,6 +20,69 @@ $(function() {
 </div>
 {% endblock %}
 {% block content %}
+<script type="text/javascript">
+// Load the Visualization API and the piechart package.
+google.load('visualization', '1.1', {'packages':['line']});
+//google.load('visualization', '1', {'packages':['corechart']});
+
+function drawCardStatsChart(formatname) {
+    cardstats = cn.getCardStats(formatname,{{request_mvid}});
+    // Create the data table.
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Format');
+    data.addColumn('number', '% of Decks');
+    data.addColumn('number', '# of Cards');
+	for (var p = 0; p < cardstats.length; p++) {
+  	    var myrow = [cardstats[p].format, cardstats[p].in_decks_percentage / 100, cardstats[p].average_card_count_in_deck];
+        data.addRow(myrow);
+    }
+
+    var options = {
+        chart: {
+          /*title: '% of All Cards in Format',*/
+        },
+        legend: { position: 'right', },
+		colors: ['#4d5f8b','#e19d29'],
+        width: Math.min(800, $('#collapse-' + formatname + '-meta').innerWidth()),
+        height: 220,
+		series: {
+          // Gives each series an axis name that matches the Y-axis below.
+          0: {axis: '% of Decks', targetAxisIndex: 0, },
+          1: {axis: '# of Cards', targetAxisIndex: 1, }
+        },
+        axes: {
+          // Adds labels to each axis; they don't have to match the axis names.
+          y: {
+            Cards: {label: 'Avg Cards'},
+            Decks: {label: '% of Decks'},
+          }
+        },
+		vAxes: [{title: '% of Decks',
+		         gridlines: {count: 4},
+		         minValue: 0.0,
+		         viewWindow: { min: 0.0 },
+		         baseline: 0.0,
+		         format:'#.###%'
+		        },
+		        {title: 'Avg Cards',
+		         gridlines: {count: 4},
+		         minValue: 0.0,
+		         viewWindow: { min: 0.0 },
+		         baseline: 0.0,
+		         format:'#.###'
+		        },
+               ],
+	};
+	if (options.width < 800) {
+	    options.legend.position = 'bottom';
+		options.height = options.height + 30;
+    }
+    var lchart = new google.charts.Line(document.getElementById('cardstats-' + formatname));
+    lchart.draw(data, google.charts.Line.convertOptions(options));
+	//var lchart = new google.visualization.LineChart(document.getElementById('line_div'));
+    //lchart.draw(data, options);
+}
+</script>
 {% for working in cards %}
 <div class="row">
   <div class="col-xs-12 col-sm-6 col-md-3 text-center">
@@ -149,12 +212,15 @@ $(function() {
                     </a> {% if card_stat.is_staple %} <span class="staple-{{details.format.formatname|lower}}">{{details.format.formatname}} Staple</span> {% endif %}
                   </h5>
                 </div>
-                <div id="collapse-{{details.format.formatname}}-meta" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{details.format.formatname}}-meta">
+                <div id="collapse-{{details.format.formatname}}-meta" class="panel-collapse {%if card_stat.format.formatname != "Modern" %}collapse{%endif%}" role="tabpanel" aria-labelledby="heading-{{details.format.formatname}}-meta">
                   <div class="panel-body">
+                    <div id="cardstats-{{details.format.formatname}}"></div>
                     <div>Appears in {{details.format.formatname}} decks: {{card_stat.in_decks_percentage|floatformat:1}}%</div>
                     <div>When included, average number included in deck: {{card_stat.average_card_count_in_deck|floatformat:2}}</div>
                   </div>
                 </div>
+                <script>$('#accordion-{{details.format.formatname}}').on('shown.bs.collapse', function () { drawCardStatsChart('{{details.format.formatname}}'); });</script>
+				{%if card_stat.format.formatname == "Modern" %}<script>google.setOnLoadCallback(function(){ drawCardStatsChart('{{details.format.formatname}}');});</script>{%endif%}
               </div>
             {%endif%}
           {%endfor%}
@@ -246,5 +312,5 @@ $('.panel-group').on('shown.bs.collapse', toggleChevron);
   </div>
 </div>
 
-<div style="margin-top: 20px;" class="row"><div class="col-xs-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_muid}}" target="_blank">View on Gatherer</a></div></div>
+<div style="margin-top: 20px;" class="row"><div class="col-xs-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_mvid}}" target="_blank">View on Gatherer</a></div></div>
 {% endblock %}

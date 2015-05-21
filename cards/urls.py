@@ -10,6 +10,8 @@ urlpatterns = patterns('',
                        url(r'^_ratings/(?P<format_id>[0-9]+)/$', views.ratings, name='ratings'),
                        url(r'^list/$', views.cardlist, name='list'),
                        url(r'^_list$', views.cardlist, name='list'),
+                       url(r'^_cardstats/(?P<formatname>[^/]+)/(?P<physicalcard_id>\d+)/$', views.cardstats, name='cardstats'),
+                       url(r'^_cardstats/(?P<formatname>[^/]+)/mvid-(?P<multiverseid>\d+)/$', views.cardstats, name='cardstats'),
                        # ex: /cards/5/
                        url(r'^(?P<multiverseid>\d+)/$', views.detail, name='detail'),
                        # ex: /cards/376251-augur-of-bolas/

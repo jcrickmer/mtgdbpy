@@ -411,7 +411,7 @@ def detail(request, multiverseid=None, slug=None):
             simcard = Card.objects.filter(basecard__physicalcard=sim.sim_physicalcard).order_by('-multiverseid').first()
             if simcard is not None:
                 similars.append(simcard)
-        response = render(request, 'cards/detail.html', {'request_muid': multiverseid,
+        response = render(request, 'cards/detail.html', {'request_mvid': multiverseid,
                                                          'primary_basecard_id': primary_basecard_id,
                                                          'cards': card_list,
                                                          'keywords': cards[0].basecard.physicalcard.cardkeyword_set.all().order_by('-kwscore'),
@@ -429,6 +429,64 @@ def detail(request, multiverseid=None, slug=None):
                                                          #'img_url': img_url, })
                                                          })
     return response
+
+
+def cardstats(request, formatname=None, physicalcard_id=None, multiverseid=None):
+    result = dict()
+    result['type'] = 'CardStatusResponse'
+    result['status'] = 'ok'
+    latest_format = None
+    if formatname is None:
+        result['status'] = 'error'
+        result['status_message'] = 'format not specified'
+    else:
+        latest_format = Format.objects.filter(formatname=formatname).order_by('-start_date').first()
+        if latest_format is None:
+            result['status'] = 'error'
+            result['status_message'] = 'format could not be found'
+
+    pcard = None
+    if result['status'] == 'ok':
+        if physicalcard_id is not None:
+            try:
+                pcard = PhysicalCard.objects.get(pk=physicalcard_id)
+            except PhysicalCard.DoesNotExist:
+                result['status'] = 'error'
+                result['status_message'] = 'card cannot be found'
+        elif multiverseid is not None:
+            card = Card.objects.filter(multiverseid=multiverseid).first()
+            if card is not None:
+                pcard = card.basecard.physicalcard
+            else:
+                result['status'] = 'error'
+                result['status_message'] = 'card cannot be found'
+    if result['status'] == 'ok':
+        fcstats = FormatCardStat.objects.filter(
+            physicalcard=pcard,
+            format__formatname=latest_format.formatname).order_by('format__start_date')
+        stats = list()
+        for fcstat in fcstats:
+            rec = dict()
+            rec['format'] = fcstat.format.format
+            rec['format_start_date'] = fcstat.format.start_date.strftime('%Y-%m-%d')
+            rec['occurence_count'] = fcstat.occurence_count
+            rec['deck_count'] = fcstat.deck_count
+            rec['average_card_count_in_deck'] = fcstat.average_card_count_in_deck
+            rec['percentage_of_all_cards'] = fcstat.percentage_of_all_cards
+            rec['in_decks_percentage'] = fcstat.in_decks_percentage()
+            rec['meets_staple_threshold'] = fcstat.percentage_of_all_cards > FormatCardStat.STAPLE_THRESHOLD
+
+            stats.append(rec)
+        # card_stats.append(mod_fcstat)
+        result['stats'] = stats
+    the_data = json.dumps(result)
+    if 'callback' in request.REQUEST:
+        # a jsonp response!
+        the_data = '%s(%s);' % (request.REQUEST['callback'], the_data)
+        return HttpResponse(the_data, "text/javascript")
+    else:
+        return HttpResponse(the_data, content_type='application/json')
+    pass
 
 
 def battle(request, format="redirect"):

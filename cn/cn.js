@@ -1,5 +1,6 @@
 $(function() { 
     window.cn = {};
+    cn.cardstatsCache = {};
     cn.cardCache = {};
     cn.updateCard = function(targetId, multiverseId) {  
 		var card = cn.getCard(multiverseId);
@@ -27,6 +28,24 @@ $(function() {
 			});
 		}
 		return card;
+	};
+    cn.getCardStats = function(formatname, multiverseId) {
+		var cardstats = window.cn.cardstatsCache[formatname + '-mvid-' + multiverseId];
+		if (cardstats == null) {
+			$.ajax({
+				url: "/cards/_cardstats/" + formatname + '/mvid-' + multiverseId + "/",
+				dataType: "json",
+				async: false,
+				complete: function(data) {
+					var envelop = data.responseJSON;
+					if (envelop.status == 'ok') {
+						window.cn.cardstatsCache[formatname + '-mvid-' + multiverseId] = envelop.stats;
+					}
+					cardstats = envelop.stats;
+				},
+			});
+		}
+		return cardstats;
 	};
     cn.initToolTips = function() {  
         $(document).uitooltip({
