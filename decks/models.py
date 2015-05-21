@@ -20,7 +20,9 @@ from django.utils.functional import cached_property
 
 import time
 
-class Timer:    
+
+class Timer:
+
     def __enter__(self):
         self.start = time.time()
         return self
@@ -28,6 +30,7 @@ class Timer:
     def __exit__(self, *args):
         self.end = time.time()
         self.interval = self.end - self.start
+
 
 class Tournament(models.Model):
     id = models.AutoField(primary_key=True)
@@ -301,6 +304,7 @@ class TournamentDeck(models.Model):
     def __unicode__(self):
         return 'TournamentDeck ({}, {}, {}) [{}]'.format(str(self.tournament), str(self.deck), str(self.place), str(self.id))
 
+
 def safelog(msg):
     try:
         sys.stderr.write('' + msg + "\n")
@@ -308,10 +312,11 @@ def safelog(msg):
         sys.stderr.write('cold not log because of stupid unicode error\n')
     return
 
+
 class FormatStat(models.Model):
     # Number of decks that have to be in a tournament for it to qualify
     MIN_DECKS_IN_TOURNAMENT = 8
-    
+
     id = models.AutoField(primary_key=True)
     format = models.ForeignKey('cards.Format')
     tournamentdeck_count = models.IntegerField(null=False, default=0)
@@ -324,17 +329,24 @@ class FormatStat(models.Model):
     @property
     def qualified_tourn_ids(self):
         if self._qti is None:
-            self._qti = Tournament.objects.filter(format=self.format).annotate(deck_count=Count('tournamentdeck')).filter(deck_count__gte=FormatStat.MIN_DECKS_IN_TOURNAMENT).values('id').order_by('id')
+            self._qti = Tournament.objects.filter(
+                format=self.format).annotate(
+                deck_count=Count('tournamentdeck')).filter(
+                deck_count__gte=FormatStat.MIN_DECKS_IN_TOURNAMENT).values('id').order_by('id')
         return self._qti
 
     def calc_tournamentdeck_count(self):
         ''' For this format, how many tournament decks are there
         '''
-        self.tournamentdeck_count = TournamentDeck.objects.filter(tournament_id__in=self.qualified_tourn_ids).aggregate(Count('id'))['id__count'] or 0
+        self.tournamentdeck_count = TournamentDeck.objects.filter(
+            tournament_id__in=self.qualified_tourn_ids).aggregate(
+            Count('id'))['id__count'] or 0
         return self.tournamentdeck_count
 
     def calc_tournamentdeckcard_count(self):
-        self.tournamentdeckcard_count = DeckCard.objects.filter(deck__tournaments__id__in=self.qualified_tourn_ids).aggregate(Sum('cardcount'))['cardcount__sum'] or 0
+        self.tournamentdeckcard_count = DeckCard.objects.filter(
+            deck__tournaments__id__in=self.qualified_tourn_ids).aggregate(
+            Sum('cardcount'))['cardcount__sum'] or 0
         return self.tournamentdeckcard_count
 
     @staticmethod
@@ -347,7 +359,7 @@ class FormatStat(models.Model):
             if only_formatname is not None:
                 if formatname != only_formatname:
                     continue
-                
+
             latest_formats_qs = Format.objects.filter(formatname=formatname)
             if start_date is not None:
                 latest_formats_qs = latest_formats_qs.filter(start_date__gte=start_date)
@@ -374,13 +386,15 @@ class FormatStat(models.Model):
                     safelog("      {}".format(fs))
 
     def __unicode__(self):
-        return 'FormatStat f="{}": dc={}, dcc={}'.format(str(self.format.format), str(self.tournamentdeck_count), str(self.tournamentdeckcard_count))
-    
+        return 'FormatStat f="{}": dc={}, dcc={}'.format(str(self.format.format),
+                                                         str(self.tournamentdeck_count),
+                                                         str(self.tournamentdeckcard_count))
 
     class Meta:
         managed = True
         db_table = 'formatstat'
-    
+
+
 class FormatCardStat(models.Model):
     # For looking at Staples, look back and see how it performed in the previous 3 formats.
     STAPLE_LOOKBACK = 3
@@ -448,8 +462,8 @@ class FormatCardStat(models.Model):
     def calc_deck_count(self):
         if self.formatstat is not None and self.formatstat.tournamentdeck_count > 0:
             self.deck_count = DeckCard.objects.filter(deck__tournaments__id__in=self.formatstat.qualified_tourn_ids,
-                                            physicalcard=self.physicalcard).aggregate(
-                                                Count('deck', distinct=True))['deck__count'] or 0
+                                                      physicalcard=self.physicalcard).aggregate(
+                Count('deck', distinct=True))['deck__count'] or 0
         return self.deck_count
 
     def calc_combined(self):
@@ -489,8 +503,8 @@ class FormatCardStat(models.Model):
         self.occurence_count = 0
         if self.formatstat is not None and self.formatstat.tournamentdeck_count > 0:
             self.occurence_count = DeckCard.objects.filter(deck__tournaments__id__in=self.formatstat.qualified_tourn_ids,
-                        physicalcard=self.physicalcard).aggregate(
-                        Sum('cardcount'))['cardcount__sum'] or 0
+                                                           physicalcard=self.physicalcard).aggregate(
+                Sum('cardcount'))['cardcount__sum'] or 0
         return self.occurence_count
 
     @staticmethod
@@ -503,12 +517,12 @@ class FormatCardStat(models.Model):
             formatstats_qs = formatstats_qs.filter(format__start_date__gte=start_date)
         if end_date is not None:
             formatstats_qs = formatstats_qs.filter(format__start_date__lte=end_date)
-            
+
         # Always process in start_date order. This may actually not
         # matter to the result now (since staple is calcualted at
         # run-time), but this is how I started and tested it.
         formatstats_qs = formatstats_qs.order_by('format__start_date')
-        
+
         for fstat in formatstats_qs:
             safelog("  FormatCardStat.calc_all: format {}".format(fstat.format.format))
             fcards = FormatBasecard.objects.filter(format=fstat.format)
@@ -526,34 +540,37 @@ class FormatCardStat(models.Model):
                 with Timer() as t:
                     fcs.calc_combined()
                 safelog('        calc_combined took %.03f sec.' % t.interval)
-                #with Timer() as t:
+                # with Timer() as t:
                 #    fcs.calc_deck_count()
                 #safelog('calc_deck_count took %.03f sec.' % t.interval)
-                #with Timer() as t:
+                # with Timer() as t:
                 #    fcs.calc_occurence_count()
                 #safelog('calc_occurence_count took %.03f sec.' % t.interval)
-                #with Timer() as t:
+                # with Timer() as t:
                 #    fcs.calc_average_card_count_in_deck()
                 #safelog('        calc_average_card_count_in_deck took %.03f sec.' % t.interval)
-                #with Timer() as t:
+                # with Timer() as t:
                 #    fcs.calc_percentage_of_all_cards()
                 #safelog('        calc_percentage_of_all_cards took %.03f sec.' % t.interval)
-                #with Timer() as t:
+                # with Timer() as t:
                 fcs.save()
                 #safelog('        save took %.03f sec.' % t.interval)
-                #with Timer() as t:
+                # with Timer() as t:
                 safelog("      {}".format(fcs))
                 #safelog('        str took %.03f sec.' % t.interval)
 
     def __unicode__(self):
-        return 'FormatCardStat f="{}" c="{}": dc={}, oc={}, s={}'.format(self.format.format, self.physicalcard.get_card_name(), str(self.deck_count), str(self.occurence_count), str(self.is_staple()))
-    
+        return 'FormatCardStat f="{}" c="{}": dc={}, oc={}, s={}'.format(
+            self.format.format, self.physicalcard.get_card_name(), str(
+                self.deck_count), str(
+                self.occurence_count), str(
+                self.is_staple()))
+
     class Meta:
         managed = True
         db_table = 'formatcardstat'
         unique_together = ('format', 'physicalcard')
-        
-    
+
 
 class DeckClusterDeck(models.Model):
     deckcluster = models.ForeignKey('DeckCluster')

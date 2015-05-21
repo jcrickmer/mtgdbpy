@@ -106,14 +106,14 @@ class Command(BaseCommand):
                         sys.stdout.write("Tournament: skipped no format '{}' found in db {}\n".format(format_string, jblob['name']))
 
         tournament_url_re = re.compile('^(.+/coverage/([^/]+))/?')
-        
+
         # Process the deck files
         for filename in onlyfiles:
             if filename.find('deck_') > -1:
                 ###fqfilename = join(directory, filename)
-                ###print "last modified: %s" % time.ctime(getmtime(fqfilename))
-                ##### REVISIT - nothing processes because I was working on only processing the mostrecent files...
-                ###continue
+                # print "last modified: %s" % time.ctime(getmtime(fqfilename))
+                # REVISIT - nothing processes because I was working on only processing the mostrecent files...
+                # continue
                 filehandler = open(join(directory, filename))
                 jblob = json.load(filehandler)
 
@@ -171,11 +171,12 @@ class Command(BaseCommand):
                                         jblob['tournament_date'])).first()
                                 deck.format = db_format
                             except ValueError:
-                                # Looks like we cannot find a valid format because we don't have a real deck_format or a real tournament_date.
+                                # Looks like we cannot find a valid format because we don't have a real
+                                # deck_format or a real tournament_date.
                                 sys.stdout.write("Deck: skipped '{}' because a valid format cannot be found\n".format(jblob['name']))
                                 deck = None
                                 pass
-                            
+
                         if deck is not None:
                             deck.save()
                             sys.stdout.write("Deck: created {}\n".format(jblob['name']))
@@ -210,7 +211,7 @@ class Command(BaseCommand):
                                     except UnicodeEncodeError:
                                         sys.stdout.write(
                                             "ERROR: Could not find card BUT I CAN'T TELL YOU ABOUT IT BECAUSE UNICODE IN PYTHON SUCKS in {}\n".format(filename))
-    
+
                         if tourna is not None and tourna.name is not None and tourna.name.lower().find('test deck') < 0:
                             # Now we will associate the deck to a tournament
                             td = TournamentDeck.objects.filter(deck=deck, tournament=tourna).first()
@@ -228,7 +229,7 @@ class Command(BaseCommand):
                                 sys.stdout.write("TournamentDeck: updated for {}\n".format(jblob['name']))
                         else:
                             sys.stdout.write("Deck: skipped no valid tournament {}\n".format(jblob['name']))
-    
+
     def isodate(self, datestring):
         try:
             date_obj = dtparse(datestring)
