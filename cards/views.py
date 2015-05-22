@@ -489,6 +489,68 @@ def cardstats(request, formatname=None, physicalcard_id=None, multiverseid=None)
     pass
 
 
+def formatstats(request, formatname="modern"):
+    context = dict()
+    top_formats = Format.objects.filter(formatname__iexact=formatname).order_by('-start_date')
+    top_format = None
+    next_format = None
+    try:
+        top_format = top_formats[0]
+        next_format = top_formats[1]
+    except IndexError:
+        raise Http404
+    context['formatname'] = top_format.formatname
+    up_raw_sql = '''
+SELECT s1.physicalcard_id AS id,
+       100 * s2.percentage_of_all_cards AS prev_percentage,
+       100 * s1.percentage_of_all_cards AS current_percentage,
+       100 * (s1.percentage_of_all_cards - s2.percentage_of_all_cards) AS delta,
+       case when s2.percentage_of_all_cards = 0 then NULL else 100 * (s1.percentage_of_all_cards - s2.percentage_of_all_cards) / s2.percentage_of_all_cards end AS per_change,
+       100 * (s1.deck_count / fs1.tournamentdeck_count) decks_current_percentage,
+       100 * (s2.deck_count / fs2.tournamentdeck_count) decks_prev_percentage,
+       case when fs2.tournamentdeck_count = 0 then NULL else 100 * ((s1.deck_count / fs1.tournamentdeck_count) - (s2.deck_count / fs2.tournamentdeck_count)) / (s2.deck_count / fs2.tournamentdeck_count) end AS decks_per_change
+  FROM formatcardstat s1
+       JOIN formatcardstat s2 ON s1.physicalcard_id = s2.physicalcard_id
+       JOIN basecard bc ON s1.physicalcard_id = bc.physicalcard_id
+       JOIN formatstat fs1 ON fs1.format_id = s1.format_id
+       JOIN formatstat fs2 ON fs2.format_id = s2.format_id
+ WHERE bc.cardposition IN ('F','L','U')
+       AND s1.format_id = %s
+       AND s2.format_id = %s
+       AND s1.percentage_of_all_cards > s2.percentage_of_all_cards
+ ORDER BY delta DESC LIMIT 50'''
+
+    foo = PhysicalCard.objects.raw(up_raw_sql,[top_format.id,next_format.id]);
+    up_cr = CardRating.objects.filter(test_id=1,format_id=20, physicalcard_id__in=[g.id for g in foo])
+    context['trendingup'] = foo
+    context['trendingup_cr'] = up_cr
+
+    down_raw_sql = '''
+SELECT s1.physicalcard_id AS id,
+       100 * s2.percentage_of_all_cards AS prev_percentage,
+       100 * s1.percentage_of_all_cards AS current_percentage,
+       100 * (s2.percentage_of_all_cards - s1.percentage_of_all_cards) AS delta,
+       case when s2.percentage_of_all_cards = 0 then NULL else 100 * (((s2.percentage_of_all_cards - s1.percentage_of_all_cards) / s2.percentage_of_all_cards) - 1) end AS per_change,
+       100 * (s1.deck_count / fs1.tournamentdeck_count) decks_current_percentage,
+       100 * (s2.deck_count / fs2.tournamentdeck_count) decks_prev_percentage,
+       case when fs2.tournamentdeck_count = 0 then NULL else 100 * ((s1.deck_count / fs1.tournamentdeck_count) - (s2.deck_count / fs2.tournamentdeck_count)) / (s2.deck_count / fs2.tournamentdeck_count) end AS decks_per_change
+  FROM formatcardstat s1
+       JOIN formatcardstat s2 ON s1.physicalcard_id = s2.physicalcard_id
+       JOIN basecard bc ON s1.physicalcard_id = bc.physicalcard_id
+       JOIN formatstat fs1 ON fs1.format_id = s1.format_id
+       JOIN formatstat fs2 ON fs2.format_id = s2.format_id
+ WHERE bc.cardposition IN ('F','L','U')
+       AND s1.format_id = %s
+       AND s2.format_id = %s
+       AND s1.percentage_of_all_cards < s2.percentage_of_all_cards
+ ORDER BY delta DESC LIMIT 50'''
+    tdown = PhysicalCard.objects.raw(down_raw_sql,[top_format.id,next_format.id]);
+    down_cr = CardRating.objects.filter(test_id=1,format_id=20, physicalcard_id__in=[g.id for g in tdown])
+    context['trendingdown'] = tdown
+    context['trendingdown_cr'] = down_cr
+    response = render(request, 'cards/formatstats.html', context)
+    return response
+    
 def battle(request, format="redirect"):
     logger = logging.getLogger(__name__)
     # this shows two cards at random and then let's the user decide which one

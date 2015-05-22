@@ -119,7 +119,7 @@ class PhysicalCard(models.Model):
         # This is accessible in templates
         return self.cardrating_set.get(format__id=format_id, test__id=test_id)
 
-    def get_cardrating_safe(self, format_id, test_id):
+    def get_cardrating_safe(self, format_id, test_id=1):
         try:
             return self.get_cardrating(format_id, test_id)
         except CardRating.DoesNotExist:

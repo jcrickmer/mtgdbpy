@@ -12,6 +12,8 @@ urlpatterns = patterns('',
                        url(r'^_list$', views.cardlist, name='list'),
                        url(r'^_cardstats/(?P<formatname>[^/]+)/(?P<physicalcard_id>\d+)/$', views.cardstats, name='cardstats'),
                        url(r'^_cardstats/(?P<formatname>[^/]+)/mvid-(?P<multiverseid>\d+)/$', views.cardstats, name='cardstats'),
+                       # format stats
+                       url(r'stats/(?P<formatname>[a-zA-Z-]+)/$', views.formatstats, name='formatstats'),
                        # ex: /cards/5/
                        url(r'^(?P<multiverseid>\d+)/$', views.detail, name='detail'),
                        # ex: /cards/376251-augur-of-bolas/
