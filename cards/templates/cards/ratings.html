@@ -4,6 +4,50 @@
 {% block title %}Ratings{% endblock %}
 
 {% block content %}
+<script type="text/javascript">
+google.load('visualization', '1.1', {'packages':['bar']});
+
+function drawRecentChart(formatname) {
+    // Create the data table.
+    var data = google.visualization.arrayToDataTable([
+         ['Time', 'Battle Count'],
+         {% for rrr in activity %}[new Date('{{rrr.datehour|date:"cO"}}'), {{rrr.count}}],
+{% endfor %}
+      ]);
+
+    var options = {
+        chart: {
+          /*title: '% of All Cards in Format',*/
+        },
+        legend: { position: 'right', },
+		colors: ['#4d5f8b','#e19d29'],
+        width: 1000,
+        height: 400,
+		series: {
+          // Gives each series an axis name that matches the Y-axis below.
+          0: {axis: 'Battle Count', targetAxisIndex: 0, },
+        },
+        axes: {
+          // Adds labels to each axis; they don't have to match the axis names.
+          y: {
+            battles: {label: 'Battle Count'},
+          }
+        },
+		vAxes: [{title: 'Battle Count',
+		         gridlines: {count: 4},
+		         minValue: 0,
+		         viewWindow: { min: 0 },
+		         baseline: 0,
+		         //format:'#'
+		        },
+               ],
+	};
+    var cchart = new google.charts.Bar(document.getElementById('chartspot'));
+    cchart.draw(data, google.charts.Bar.convertOptions(options));
+	//var lchart = new google.visualization.LineChart(document.getElementById('line_div'));
+    //lchart.draw(data, options);
+}
+</script>
 <div class="row">
   <div class="col-xs-12">
     <h2>Format: {{format.format}}</h2>
@@ -23,7 +67,9 @@
       {% endfor %}
     </table>
 
-    <h3>Recent Battling</h3>
+	<h3>Recent Battling</h3>
+	<div id="chartspot">
+	<script>google.setOnLoadCallback(function(){ drawRecentChart(); });</script>
     <table>
       <tr><th>Date and Hour (GMT)</th><th>Battles</th></tr>
       {% for a in activity %}
