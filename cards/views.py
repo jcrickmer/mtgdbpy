@@ -461,20 +461,31 @@ def cardstats(request, formatname=None, physicalcard_id=None, multiverseid=None)
                 result['status'] = 'error'
                 result['status_message'] = 'card cannot be found'
     if result['status'] == 'ok':
-        fcstats = FormatCardStat.objects.filter(
-            physicalcard=pcard,
-            format__formatname=latest_format.formatname).order_by('format__start_date')
+        fffs = Format.objects.filter(formatname=latest_format.formatname, start_date__gt=datetime(2013, 9, 15)).order_by('start_date')
         stats = list()
-        for fcstat in fcstats:
+        for fff in fffs:
+            fcstat = FormatCardStat.objects.filter(
+                physicalcard=pcard,
+                format=fff).first()
             rec = dict()
-            rec['format'] = fcstat.format.format
-            rec['format_start_date'] = fcstat.format.start_date.strftime('%Y-%m-%d')
-            rec['occurence_count'] = fcstat.occurence_count
-            rec['deck_count'] = fcstat.deck_count
-            rec['average_card_count_in_deck'] = fcstat.average_card_count_in_deck
-            rec['percentage_of_all_cards'] = fcstat.percentage_of_all_cards
-            rec['in_decks_percentage'] = fcstat.in_decks_percentage()
-            rec['meets_staple_threshold'] = fcstat.percentage_of_all_cards > FormatCardStat.STAPLE_THRESHOLD
+            if fcstat is None:
+                rec['format'] = fff.format
+                rec['format_start_date'] = fff.start_date.strftime('%Y-%m-%d')
+                rec['occurence_count'] = 0
+                rec['deck_count'] = 0
+                rec['average_card_count_in_deck'] = 0
+                rec['percentage_of_all_cards'] = 0
+                rec['in_decks_percentage'] = 0
+                rec['meets_staple_threshold'] = False
+            else:
+                rec['format'] = fcstat.format.format
+                rec['format_start_date'] = fcstat.format.start_date.strftime('%Y-%m-%d')
+                rec['occurence_count'] = fcstat.occurence_count
+                rec['deck_count'] = fcstat.deck_count
+                rec['average_card_count_in_deck'] = fcstat.average_card_count_in_deck
+                rec['percentage_of_all_cards'] = fcstat.percentage_of_all_cards
+                rec['in_decks_percentage'] = fcstat.in_decks_percentage()
+                rec['meets_staple_threshold'] = fcstat.percentage_of_all_cards > FormatCardStat.STAPLE_THRESHOLD
 
             stats.append(rec)
         # card_stats.append(mod_fcstat)
@@ -548,6 +559,44 @@ SELECT s1.physicalcard_id AS id,
     down_cr = CardRating.objects.filter(test_id=1,format_id=20, physicalcard_id__in=[g.id for g in tdown])
     context['trendingdown'] = tdown
     context['trendingdown_cr'] = down_cr
+
+    Stop_raw_sql = '''
+SELECT s1.physicalcard_id AS id,
+       100 * s2.percentage_of_all_cards AS prev_percentage,
+       100 * s1.percentage_of_all_cards AS current_percentage,
+       100 * (s2.percentage_of_all_cards - s1.percentage_of_all_cards) AS delta,
+       case when s2.percentage_of_all_cards = 0 then NULL else 100 * (((s2.percentage_of_all_cards - s1.percentage_of_all_cards) / s2.percentage_of_all_cards) - 1) end AS per_change,
+       100 * (s1.deck_count / fs1.tournamentdeck_count) decks_current_percentage,
+       100 * (s2.deck_count / fs2.tournamentdeck_count) decks_prev_percentage,
+       case when fs2.tournamentdeck_count = 0 then NULL else 100 * ((s1.deck_count / fs1.tournamentdeck_count) - (s2.deck_count / fs2.tournamentdeck_count)) / (s2.deck_count / fs2.tournamentdeck_count) end AS decks_per_change
+  FROM formatcardstat s1
+       JOIN basecard bc ON s1.physicalcard_id = bc.physicalcard_id
+       JOIN formatstat fs1 ON fs1.format_id = s1.format_id
+       INNER JOIN formatcardstat s2 ON s1.physicalcard_id = s2.physicalcard_id AND s2.format_id = %s
+       INNER JOIN formatstat fs2 ON fs2.format_id = s2.format_id
+ WHERE bc.cardposition IN ('F','L','U')
+       AND s1.format_id = %s
+ ORDER BY decks_current_percentage DESC LIMIT 50'''
+    top_raw_sql = '''
+SELECT s1.physicalcard_id AS id,
+       0 AS prev_percentage,
+       100 * s1.percentage_of_all_cards AS current_percentage,
+       0 AS delta,
+       0 AS per_change,
+       100 * (s1.deck_count / fs1.tournamentdeck_count) decks_current_percentage,
+       0 decks_prev_percentage,
+       0 AS decks_per_change
+  FROM formatcardstat s1
+       JOIN basecard bc ON s1.physicalcard_id = bc.physicalcard_id
+       JOIN formatstat fs1 ON fs1.format_id = s1.format_id
+ WHERE bc.cardposition IN ('F','L','U')
+       AND s1.format_id = %s
+ ORDER BY decks_current_percentage DESC LIMIT 100'''
+    top = PhysicalCard.objects.raw(top_raw_sql,[top_format.id]);
+    top_cr = CardRating.objects.filter(test_id=1,format_id=20, physicalcard_id__in=[g.id for g in top])
+    context['top'] = top
+    context['top_cr'] = top_cr
+
     response = render(request, 'cards/formatstats.html', context)
     return response
     

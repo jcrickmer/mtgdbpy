@@ -29,11 +29,11 @@ function drawCardStatsChart(formatname) {
     cardstats = cn.getCardStats(formatname,{{request_mvid}});
     // Create the data table.
     var data = new google.visualization.DataTable();
-    data.addColumn('string', 'Format');
+    data.addColumn('string', 'Format Start Date');
     data.addColumn('number', '% of Decks');
     data.addColumn('number', '# of Cards');
 	for (var p = 0; p < cardstats.length; p++) {
-  	    var myrow = [cardstats[p].format, cardstats[p].in_decks_percentage / 100, cardstats[p].average_card_count_in_deck];
+  	    var myrow = [cardstats[p].format_start_date, cardstats[p].in_decks_percentage / 100, cardstats[p].average_card_count_in_deck];
         data.addRow(myrow);
     }
 
