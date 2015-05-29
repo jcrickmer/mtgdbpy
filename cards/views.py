@@ -521,18 +521,15 @@ SELECT s1.physicalcard_id AS id,
        100 * (s2.deck_count / fs2.tournamentdeck_count) decks_prev_percentage,
        case when fs2.tournamentdeck_count = 0 then NULL else 100 * ((s1.deck_count / fs1.tournamentdeck_count) - (s2.deck_count / fs2.tournamentdeck_count)) / (s2.deck_count / fs2.tournamentdeck_count) end AS decks_per_change
   FROM formatcardstat s1
-       JOIN formatcardstat s2 ON s1.physicalcard_id = s2.physicalcard_id
-       JOIN basecard bc ON s1.physicalcard_id = bc.physicalcard_id
-       JOIN formatstat fs1 ON fs1.format_id = s1.format_id
-       JOIN formatstat fs2 ON fs2.format_id = s2.format_id
- WHERE bc.cardposition IN ('F','L','U')
-       AND s1.format_id = %s
-       AND s2.format_id = %s
-       AND s1.percentage_of_all_cards > s2.percentage_of_all_cards
+       JOIN basecard bc ON s1.physicalcard_id = bc.physicalcard_id AND bc.cardposition IN ('F','L','U')
+       JOIN formatstat fs1 ON fs1.format_id = s1.format_id AND s1.format_id = %s
+       LEFT JOIN formatcardstat s2 ON s1.physicalcard_id = s2.physicalcard_id AND s2.format_id = %s
+       LEFT JOIN formatstat fs2 ON fs2.format_id = s2.format_id
+ WHERE s1.percentage_of_all_cards > s2.percentage_of_all_cards
  ORDER BY delta DESC LIMIT 50'''
 
     foo = PhysicalCard.objects.raw(up_raw_sql,[top_format.id,next_format.id]);
-    up_cr = CardRating.objects.filter(test_id=1,format_id=20, physicalcard_id__in=[g.id for g in foo])
+    up_cr = CardRating.objects.filter(test_id=1,format=top_format, physicalcard_id__in=[g.id for g in foo])
     context['trendingup'] = foo
     context['trendingup_cr'] = up_cr
 
@@ -546,21 +543,18 @@ SELECT s1.physicalcard_id AS id,
        100 * (s2.deck_count / fs2.tournamentdeck_count) decks_prev_percentage,
        case when fs2.tournamentdeck_count = 0 then NULL else 100 * ((s1.deck_count / fs1.tournamentdeck_count) - (s2.deck_count / fs2.tournamentdeck_count)) / (s2.deck_count / fs2.tournamentdeck_count) end AS decks_per_change
   FROM formatcardstat s1
-       JOIN formatcardstat s2 ON s1.physicalcard_id = s2.physicalcard_id
-       JOIN basecard bc ON s1.physicalcard_id = bc.physicalcard_id
-       JOIN formatstat fs1 ON fs1.format_id = s1.format_id
-       JOIN formatstat fs2 ON fs2.format_id = s2.format_id
- WHERE bc.cardposition IN ('F','L','U')
-       AND s1.format_id = %s
-       AND s2.format_id = %s
-       AND s1.percentage_of_all_cards < s2.percentage_of_all_cards
+       JOIN basecard bc ON s1.physicalcard_id = bc.physicalcard_id AND bc.cardposition IN ('F','L','U')
+       JOIN formatstat fs1 ON fs1.format_id = s1.format_id AND s1.format_id = %s
+       LEFT JOIN formatcardstat s2 ON s1.physicalcard_id = s2.physicalcard_id AND s2.format_id = %s
+       LEFT JOIN formatstat fs2 ON fs2.format_id = s2.format_id
+ WHERE s1.percentage_of_all_cards < s2.percentage_of_all_cards
  ORDER BY delta DESC LIMIT 50'''
     tdown = PhysicalCard.objects.raw(down_raw_sql,[top_format.id,next_format.id]);
-    down_cr = CardRating.objects.filter(test_id=1,format_id=20, physicalcard_id__in=[g.id for g in tdown])
+    down_cr = CardRating.objects.filter(test_id=1,format=top_format, physicalcard_id__in=[g.id for g in tdown])
     context['trendingdown'] = tdown
     context['trendingdown_cr'] = down_cr
 
-    Stop_raw_sql = '''
+    top_raw_sql = '''
 SELECT s1.physicalcard_id AS id,
        100 * s2.percentage_of_all_cards AS prev_percentage,
        100 * s1.percentage_of_all_cards AS current_percentage,
@@ -570,30 +564,13 @@ SELECT s1.physicalcard_id AS id,
        100 * (s2.deck_count / fs2.tournamentdeck_count) decks_prev_percentage,
        case when fs2.tournamentdeck_count = 0 then NULL else 100 * ((s1.deck_count / fs1.tournamentdeck_count) - (s2.deck_count / fs2.tournamentdeck_count)) / (s2.deck_count / fs2.tournamentdeck_count) end AS decks_per_change
   FROM formatcardstat s1
-       JOIN basecard bc ON s1.physicalcard_id = bc.physicalcard_id
+       JOIN basecard bc ON s1.physicalcard_id = bc.physicalcard_id AND s1.format_id = %s AND bc.cardposition IN ('F','L','U')
        JOIN formatstat fs1 ON fs1.format_id = s1.format_id
-       INNER JOIN formatcardstat s2 ON s1.physicalcard_id = s2.physicalcard_id AND s2.format_id = %s
-       INNER JOIN formatstat fs2 ON fs2.format_id = s2.format_id
- WHERE bc.cardposition IN ('F','L','U')
-       AND s1.format_id = %s
- ORDER BY decks_current_percentage DESC LIMIT 50'''
-    top_raw_sql = '''
-SELECT s1.physicalcard_id AS id,
-       0 AS prev_percentage,
-       100 * s1.percentage_of_all_cards AS current_percentage,
-       0 AS delta,
-       0 AS per_change,
-       100 * (s1.deck_count / fs1.tournamentdeck_count) decks_current_percentage,
-       0 decks_prev_percentage,
-       0 AS decks_per_change
-  FROM formatcardstat s1
-       JOIN basecard bc ON s1.physicalcard_id = bc.physicalcard_id
-       JOIN formatstat fs1 ON fs1.format_id = s1.format_id
- WHERE bc.cardposition IN ('F','L','U')
-       AND s1.format_id = %s
- ORDER BY decks_current_percentage DESC LIMIT 100'''
-    top = PhysicalCard.objects.raw(top_raw_sql,[top_format.id]);
-    top_cr = CardRating.objects.filter(test_id=1,format_id=20, physicalcard_id__in=[g.id for g in top])
+       LEFT JOIN formatcardstat s2 ON s1.physicalcard_id = s2.physicalcard_id AND s2.format_id = %s
+       LEFT JOIN formatstat fs2 ON fs2.format_id = s2.format_id
+ ORDER BY s1.percentage_of_all_cards DESC LIMIT 100'''
+    top = PhysicalCard.objects.raw(top_raw_sql,[top_format.id,next_format.id]);
+    top_cr = CardRating.objects.filter(test_id=1,format=top_format, physicalcard_id__in=[g.id for g in top])
     context['top'] = top
     context['top_cr'] = top_cr
 
