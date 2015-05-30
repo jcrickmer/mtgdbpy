@@ -1,0 +1,17 @@
+These two files belong in the ../../clustering/lucene-4.6.1 directory.
+
+To compile:
+javac -cp core/lucene-core-4.6.1.jar:queryparser/lucene-queryparser-4.6.1.jar:analysis/common/lucene-analyzers-common-4.6.1.jar:demo/lucene-demo-4.6.1.jar:. MTG*.java
+
+
+To run indexer:
+java -cp core/lucene-core-4.6.1.jar:queryparser/lucene-queryparser-4.6.1.jar:analysis/common/lucene-analyzers-common-4.6.1.jar:demo/lucene-demo-4.6.1.jar:. MTGIndexer -docs /tmp/cards_for_lucene/
+
+
+To generage SQL commands to populate the similarcards table:
+java -cp core/lucene-core-4.6.1.jar:queryparser/lucene-queryparser-4.6.1.jar:analysis/common/lucene-analyzers-common-4.6.1.jar:demo/lucene-demo-4.6.1.jar:. MTGSearch > sims.sql
+
+And then to get the data back into the database
+mysql -u root -p -e 'DELETE FROM  similarphysicalcard;' mtgdbpy
+mysql -u root -ppassword mtgdbpy  < sims.sql
+
