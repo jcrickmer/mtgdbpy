@@ -116,28 +116,27 @@ class Command(BaseCommand):
         # these values came from the auth = twitter.get_authentication_tokens() call below.
         #twitter = Twython(APP_KEY, APP_SECRET)
         #auth = twitter.get_authentication_tokens()
-        # for key in auth.keys():
+        #for key in auth.keys():
         #    sys.stderr.write("oauth {} = '{}'\n".format(key, auth[key]))
         # https://twython.readthedocs.org/en/latest/usage/starting_out.html#starting-out
         # Now, go to the URL and complete the process. Get the PIN number and put that into the get_authorized_tokens call below.
         #twitter_li = Twython(APP_KEY, APP_SECRET, '8gDs7j68yJZirbQkrd32Cj2cYzILyR68', 'EX4moMI98JrYaB28mOIHU4ZWag7nCVfT')
         #final_step = twitter_li.get_authorized_tokens('7437869')
-        # for key in final_step.keys():
+        #for key in final_step.keys():
         #    sys.stderr.write("oauth {} = '{}'\n".format(key, final_step[key]))
         ##
-        # oauth oauth_token_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        # oauth user_id = '2222222222'
-        # oauth oauth_token = '2222222222-mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm'
-        # oauth screen_name = 'dev327364652'
+        ## oauth oauth_token_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+        ## oauth user_id = '2222222222'
+        ## oauth oauth_token = '2222222222-mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm'
+        ## oauth screen_name = 'dev327364652'
 
         twitter_act = Twython(settings.APP_KEY, settings.APP_SECRET, settings.OAUTH_TOKEN, settings.OAUTH_TOKEN_SECRET)
 
-        # twitter_act.update_status(status=tweet)
+        #twitter_act.update_status(status=tweet)
         photo = open(media_filename, 'rb')
         twitter_act.update_status_with_media(status=tweet, media=photo)
 
         pass
-
 
 class BaseCardRandomizer():
 
@@ -562,11 +561,18 @@ class MM2CardRandomizer(BaseCardRandomizer):
         else:
             bitly = {"url": url_raw}
 
-        self.tweet = '{} rated {} than {} in {}. {} #MTGMM2015'.format(
-            self.first_card.basecard.name,
-            comp_word,
-            self.comp_card.basecard.name,
-            format_hashtags[self.cur_format.formatname],
-            bitly['url'])
+        if random.random() > 0.05:
+            self.tweet = '{} rated {} than {}. {} #MTGMM2015'.format(
+                self.first_card.basecard.name,
+                comp_word,
+                self.comp_card.basecard.name,
+                bitly['url'])
+        else:
+            self.tweet = '{} rated {} than {} in {}. {} #MTGMM2015'.format(
+                self.first_card.basecard.name,
+                comp_word,
+                self.comp_card.basecard.name,
+                format_hashtags[self.cur_format.formatname],
+                bitly['url'])
 
         return self.tweet
