@@ -186,11 +186,11 @@ class PhysicalCard(models.Model):
             rules = rules.replace('{x}', ' manax ')
             for numm in range(0, 20):
                 rules = rules.replace('{' + str(numm) + '}', 'mana' + str(numm))
-            rules = rules.replace("{wp}", ' mamawhite manaphyrexian ')
-            rules = rules.replace("{up}", ' mamablue manaphyrexian ')
-            rules = rules.replace("{bp}", ' mamawhite manaphyrexian ')
-            rules = rules.replace("{rp}", ' mamawhite manaphyrexian ')
-            rules = rules.replace("{gp}", ' mamawhite manaphyrexian ')
+            rules = rules.replace("{wp}", ' manawhite manaphyrexian ')
+            rules = rules.replace("{up}", ' manablue manaphyrexian ')
+            rules = rules.replace("{bp}", ' manablack manaphyrexian ')
+            rules = rules.replace("{rp}", ' manared manaphyrexian ')
+            rules = rules.replace("{gp}", ' managreen manaphyrexian ')
             rules = rules.replace("{2w}", ' manaalt2 manawhite ')
             rules = rules.replace("{2u}", ' manaalt2 manablue ')
             rules = rules.replace("{2b}", ' manaalt2 manablack ')
@@ -214,6 +214,21 @@ class PhysicalCard(models.Model):
                 result = result + basecard.filing_name + '\n'
             result = result + rules + '\n'
             result = result + basecard.mana_cost + '\n'
+            # add the pips that are in the mana cost
+            if len(basecard.mana_cost) > 0:
+                costparts = basecard.mana_cost.lower().split('}')
+                for pippart in costparts:
+                    if pippart.find('w') > -1:
+                        result = result + 'pipwhite '
+                    if pippart.find('u') > -1:
+                        result = result + 'pipblue '
+                    if pippart.find('b') > -1:
+                        result = result + 'pipblack '
+                    if pippart.find('r') > -1:
+                        result = result + 'pipred '
+                    if pippart.find('g') > -1:
+                        result = result + 'pipgreen '
+                result = result + "\n"
             strippedcost = str(basecard.mana_cost).replace('{', '')
             strippedcost = strippedcost.replace('}', '')
             strippedcost = strippedcost.replace('/p', '')
