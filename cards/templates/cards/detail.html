@@ -22,8 +22,8 @@ $(function() {
 {% block content %}
 <script type="text/javascript">
 // Load the Visualization API and the piechart package.
-google.load('visualization', '1.1', {'packages':['line']});
-//google.load('visualization', '1', {'packages':['corechart']});
+//google.load('visualization', '1.1', {'packages':['line']});
+google.load('visualization', '1.1', {'packages':['corechart']});
 
 function drawCardStatsChart(formatname) {
     cardstats = cn.getCardStats(formatname,{{request_mvid}});
@@ -31,9 +31,9 @@ function drawCardStatsChart(formatname) {
     var data = new google.visualization.DataTable();
     data.addColumn('string', 'Format Start Date');
     data.addColumn('number', '% of Decks');
-    data.addColumn('number', '# of Cards');
-	for (var p = 0; p < cardstats.length; p++) {
-  	    var myrow = [cardstats[p].format_start_date, cardstats[p].in_decks_percentage / 100, cardstats[p].average_card_count_in_deck];
+    data.addColumn('number', 'Avg # of Cards');
+    for (var p = 0; p < cardstats.length; p++) {
+        var myrow = [cardstats[p].format_start_date, cardstats[p].in_decks_percentage / 100, cardstats[p].average_card_count_in_deck];
         data.addRow(myrow);
     }
 
@@ -42,45 +42,56 @@ function drawCardStatsChart(formatname) {
           /*title: '% of All Cards in Format',*/
         },
         legend: { position: 'right', },
-		colors: ['#4d5f8b','#e19d29'],
+        curveType: 'function',
+        fontName: 'Arial',
+        colors: ['#4d5f8b','#e19d29'],
         width: Math.min(800, $('#collapse-' + formatname + '-meta').innerWidth()),
         height: 220,
-		series: {
+        series: {
           // Gives each series an axis name that matches the Y-axis below.
-          0: {axis: '% of Decks', targetAxisIndex: 0, },
-          1: {axis: '# of Cards', targetAxisIndex: 1, }
+          0: {axis: '% of Decks', targetAxisIndex: 0, curveType: 'function', fontName: 'Arial', },
+          1: {axis: 'Avg # of Cards', targetAxisIndex: 1, curveType: 'function', fontName: 'Arial',},
         },
         axes: {
           // Adds labels to each axis; they don't have to match the axis names.
           y: {
-            Cards: {label: 'Avg Cards'},
-            Decks: {label: '% of Decks'},
+            Cards: {label: 'Avg # of Cards', },
+            Decks: {label: '% of Decks', },
           }
         },
-		vAxes: [{title: '% of Decks',
-		         gridlines: {count: 4},
-		         minValue: 0.0,
-		         viewWindow: { min: 0.0 },
-		         baseline: 0.0,
-		         format:'#.###%'
-		        },
-		        {title: 'Avg Cards',
-		         gridlines: {count: 4},
-		         minValue: 0.0,
-		         viewWindow: { min: 0.0 },
-		         baseline: 0.0,
-		         format:'#.###'
-		        },
-               ],
-	};
-	if (options.width < 800) {
-	    options.legend.position = 'bottom';
-		options.height = options.height + 30;
+        hAxis: { title: 'Format Start Date',
+                 textStyle: { fontName: 'Arial', },
+                 titleTextStyle: { fontName: 'Arial', },
+        },
+        vAxes: [{title: '% of Decks',
+                 gridlines: {count: 4},
+                 minValue: 0.0,
+                 titleTextStyle: { color: '#4d5f8b', fontName: 'Arial', },
+                 textStyle: { color: '#4d5f8b', fontName: 'Arial', },
+                 viewWindow: { min: 0.0 },
+                 baseline: 0.0,
+                 format:'#.###%'
+                },
+                {title: 'Avg # of Cards',
+                 gridlines: {count: 4},
+                 titleTextStyle: { color: '#e19d29', fontName: 'Arial', },
+                 textStyle: { color: '#e19d29', fontName: 'Arial', },
+                 minValue: 0.0,
+                 viewWindow: { min: 0.0 },
+                 baseline: 0.0,
+                 format:'#.###'
+                },
+        ],
+        theme: 'material' 
+    };
+    if (options.width < 800) {
+        options.legend.position = 'bottom';
+        options.height = options.height + 30;
     }
-    var lchart = new google.charts.Line(document.getElementById('cardstats-' + formatname));
-    lchart.draw(data, google.charts.Line.convertOptions(options));
-	//var lchart = new google.visualization.LineChart(document.getElementById('line_div'));
-    //lchart.draw(data, options);
+    //var lchart = new google.charts.Line(document.getElementById('cardstats-' + formatname));
+    //lchart.draw(data, google.charts.Line.convertOptions(options));
+    var lchart = new google.visualization.LineChart(document.getElementById('cardstats-' + formatname));
+    lchart.draw(data, options);
 }
 </script>
 {% for working in cards %}
@@ -220,7 +231,7 @@ function drawCardStatsChart(formatname) {
                   </div>
                 </div>
                 <script>$('#accordion-{{details.format.formatname}}').on('shown.bs.collapse', function () { drawCardStatsChart('{{details.format.formatname}}'); });</script>
-				{%if card_stat.format.formatname == "Modern" %}<script>google.setOnLoadCallback(function(){ drawCardStatsChart('{{details.format.formatname}}');});</script>{%endif%}
+                {%if card_stat.format.formatname == "Modern" %}<script>google.setOnLoadCallback(function(){ drawCardStatsChart('{{details.format.formatname}}');});</script>{%endif%}
               </div>
             {%endif%}
           {%endfor%}
