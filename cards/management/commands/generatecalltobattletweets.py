@@ -42,7 +42,8 @@ class Command(BaseCommand):
         cur_formats = Format.objects.filter(start_date__lte=datetime.today(), end_date__gte=datetime.today()).order_by('format')
 
         #rand_card_gen = BaseCardRandomizer()
-        rand_card_gen = MM2CardRandomizer()
+        #rand_card_gen = MM2CardRandomizer()
+        rand_card_gen = RatedCardRandomizer()
 
         cur_format = rand_card_gen.get_format()
         first_card = rand_card_gen.get_first_card()
@@ -143,9 +144,7 @@ class BaseCardRandomizer():
     def __init__(self):
         self.tweet = ''
         cur_formats = Format.objects.filter(start_date__lte=datetime.today(), end_date__gte=datetime.today()).order_by('format')
-        format_count = len(list(cur_formats))
-        format_index = int(random.random() * format_count)
-        self.cur_format = cur_formats[format_index]
+        self.cur_format = random.choice(cur_formats)
 
         for counter in range(0, 1):
             spreds = []
@@ -194,7 +193,7 @@ class BaseCardRandomizer():
         else:
             bitly = {"url": url_raw}
 
-        self.tweet = '{} rated {} than {} in {}. {} #MTG #CardBattle'.format(
+        self.tweet = '{} rated {} than {} in {}. {}'.format(
             self.first_card.basecard.name,
             comp_word,
             self.comp_card.basecard.name,
@@ -220,6 +219,39 @@ class BaseCardRandomizer():
 
     def get_second_card(self):
         return self.comp_card
+
+class RatedCardRandomizer(BaseCardRandomizer):
+
+    def __init__(self):
+        self.tweet = ''
+        cur_formats = Format.objects.filter(start_date__lte=datetime.today(), end_date__gte=datetime.today()).order_by('format')
+        self.cur_format = random.choice(cur_formats)
+
+        for counter in range(0, 1):
+            spreds = []
+            spred = SearchPredicate()
+            spred.term = 'format'
+            spred.value = self.cur_format.id
+            spreds.append(spred)
+            spred_cr = SearchPredicate()
+            spred_cr.term = 'cardrating'
+            spred_cr.operator = SearchPredicate.GREATER_THAN
+            spred_cr.value = 500.0
+            spreds.append(spred_cr)
+            sd = SortDirective()
+            sd.term = 'cardrating'
+            sd.direction = sd.DESC
+            sd.crs_format_id = self.cur_format.id
+            spreds.append(sd)
+            card_list = Card.playables.search(spreds)
+
+            rand_index = 5 + int(random.random() * 90)
+            comp_index = int(random.random() * 10) - 5 + rand_index
+            if comp_index == rand_index:
+                comp_index = comp_index + 1
+
+            self.first_card = card_list[rand_index]
+            self.comp_card = card_list[comp_index]
 
 
 class MM2CardRandomizer(BaseCardRandomizer):
