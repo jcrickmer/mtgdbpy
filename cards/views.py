@@ -528,8 +528,8 @@ SELECT s1.physicalcard_id AS id,
  WHERE s1.percentage_of_all_cards > s2.percentage_of_all_cards
  ORDER BY delta DESC LIMIT 50'''
 
-    foo = PhysicalCard.objects.raw(up_raw_sql,[top_format.id,next_format.id]);
-    up_cr = CardRating.objects.filter(test_id=1,format=top_format, physicalcard_id__in=[g.id for g in foo])
+    foo = PhysicalCard.objects.raw(up_raw_sql, [top_format.id, next_format.id])
+    up_cr = CardRating.objects.filter(test_id=1, format=top_format, physicalcard_id__in=[g.id for g in foo])
     context['trendingup'] = foo
     context['trendingup_cr'] = up_cr
 
@@ -549,8 +549,8 @@ SELECT s1.physicalcard_id AS id,
        LEFT JOIN formatstat fs2 ON fs2.format_id = s2.format_id
  WHERE s1.percentage_of_all_cards < s2.percentage_of_all_cards
  ORDER BY delta DESC LIMIT 50'''
-    tdown = PhysicalCard.objects.raw(down_raw_sql,[top_format.id,next_format.id]);
-    down_cr = CardRating.objects.filter(test_id=1,format=top_format, physicalcard_id__in=[g.id for g in tdown])
+    tdown = PhysicalCard.objects.raw(down_raw_sql, [top_format.id, next_format.id])
+    down_cr = CardRating.objects.filter(test_id=1, format=top_format, physicalcard_id__in=[g.id for g in tdown])
     context['trendingdown'] = tdown
     context['trendingdown_cr'] = down_cr
 
@@ -569,14 +569,15 @@ SELECT s1.physicalcard_id AS id,
        LEFT JOIN formatcardstat s2 ON s1.physicalcard_id = s2.physicalcard_id AND s2.format_id = %s
        LEFT JOIN formatstat fs2 ON fs2.format_id = s2.format_id
  ORDER BY s1.percentage_of_all_cards DESC LIMIT 100'''
-    top = PhysicalCard.objects.raw(top_raw_sql,[top_format.id,next_format.id]);
-    top_cr = CardRating.objects.filter(test_id=1,format=top_format, physicalcard_id__in=[g.id for g in top])
+    top = PhysicalCard.objects.raw(top_raw_sql, [top_format.id, next_format.id])
+    top_cr = CardRating.objects.filter(test_id=1, format=top_format, physicalcard_id__in=[g.id for g in top])
     context['top'] = top
     context['top_cr'] = top_cr
 
     response = render(request, 'cards/formatstats.html', context)
     return response
-    
+
+
 def battle(request, format="redirect"):
     logger = logging.getLogger(__name__)
     # this shows two cards at random and then let's the user decide which one
