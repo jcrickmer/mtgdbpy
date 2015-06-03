@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_nose',
     'ajax_select',
+    'mathfilters',
     'haystack',
     'cards',
     'decks',
@@ -177,7 +178,7 @@ USE_BITLY = False
 
 
 # Twitter
-#### for dev327364652
+# for dev327364652
 APP_KEY = 'XXXXXXXX'
 APP_SECRET = 'XXXXXXXX'
 OAUTH_TOKEN = 'XXXXXXXX'
