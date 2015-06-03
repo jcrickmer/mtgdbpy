@@ -25,6 +25,8 @@ from django.db import connection
 import logging
 from operator import itemgetter
 
+from django.core.cache import cache
+
 
 class Color(models.Model):
     id = models.CharField(primary_key=True, max_length=1)
@@ -158,11 +160,13 @@ class PhysicalCard(models.Model):
     def get_latest_card(self):
         logger = logging.getLogger(__name__)
         #logger.error("PhysicalCard.get_latest_card: self is {}".format(str(self)))
-        bc = self.basecard_set.filter(cardposition__in=[BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP]).first()
-        if bc is None:
-            logger.error("PhysicalCard.get_latest_card: ouch. bc is None")
-
-        card = bc.card_set.all().order_by('-multiverseid').first()
+        card = cache.get('c_pc' + str(self.id))
+        if card is None:
+            bc = self.basecard_set.filter(cardposition__in=[BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP]).first()
+            if bc is None:
+                logger.error("PhysicalCard.get_latest_card: ouch. bc is None")
+            card = bc.card_set.all().order_by('-multiverseid').first()
+            cache.set('c_pc' + str(self.id), card, 300)
         return card
 
     def get_latest_url_part(self):

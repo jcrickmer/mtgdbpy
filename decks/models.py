@@ -10,7 +10,8 @@ from django.db import connection
 
 import logging
 
-from cards.models import PhysicalCard, Format, FormatBasecard
+from cards.models import PhysicalCard, Format, FormatBasecard, BaseCard
+import json
 import re
 import sys
 
@@ -61,12 +62,66 @@ class Deck(models.Model):
     cards = models.ManyToManyField(PhysicalCard, through='DeckCard')
     tournaments = models.ManyToManyField(Tournament, through='TournamentDeck', through_fields=('deck', 'tournament'))
 
-    # Returns the total number of caxrds in this deck.
+    # Returns the total number of cards in this deck.
     def get_card_count(self):
         dcs = DeckCard.objects.filter(deck=self)
         result = 0
         for dc in dcs:
             result = result + dc.cardcount
+        return result
+
+    def card_groups(self):
+        result = None
+        with Timer() as t:
+            result = cache.get('dcg_' + str(self.id))
+            if result is None:
+                result = self.card_groups_i()
+                cache.set('dcg_' + str(self.id), result, 300)
+        safelog('card_groups took %.04f sec.' % t.interval)
+        return result
+
+    def card_groups_i(self):
+        ''' Returns all of the cards in the deck broken up into groups
+            that are common for display. This is an list, which each
+            item in the array containing a 'title' text field, and
+            then an array in 'deckcards'. '''
+        tlist = [{'ctype': 'Instant', 'title': 'Instants', },
+                 {'ctype': 'Sorcery', 'title': 'Sorceries', },
+                 {'ctype': 'Creature', 'title': 'Creatures', },
+                 {'ctype': 'Enchantment', 'title': 'Enchantments', },
+                 {'ctype': 'Artifact', 'title': 'Artifacts', },
+                 {'ctype': 'Planeswalker', 'title': 'Planeswalkers', },
+                 {'ctype': 'Land', 'title': 'Lands', },
+                 ]  # Sideboard!!
+        result = list()
+        handled = list()  # the deckcards that have already been handled
+        dcs = self.deckcard_set.filter(board=DeckCard.MAIN)  # .order_by('
+        # for ttt in range(0,0):
+        for ttt in tlist:
+            gres = dict()
+            gres['title'] = ttt['title']
+            gres['deckcards'] = list()
+            for dc in dcs:
+                basecard = None
+                if True:  # slower way?
+                    basecard = cache.get('bc_pc' + str(dc.physicalcard.id))
+                    if basecard is None:
+                        basecard = BaseCard.objects.filter(
+                            physicalcard=dc.physicalcard,
+                            cardposition__in=(
+                                BaseCard.FRONT,
+                                BaseCard.LEFT,
+                                BaseCard.UP)).first()
+                        cache.set('bc_pc' + str(dc.physicalcard.id), basecard, 300)
+                    if dc.id not in handled and ttt['ctype'] in [qqq.type for qqq in basecard.types.all()]:
+                        gres['deckcards'].append(dc)
+                        handled.append(dc.id)
+            if len(gres['deckcards']) > 0:
+                result.append(gres)
+        # dcssm = self.deckcard_set.filter(board=DeckCard.MAIN)#.order_by('
+        #result.append({'title':'Mainboard', 'deckcards':dcssm,})
+        dcss = self.deckcard_set.filter(board=DeckCard.SIDE)  # .order_by('
+        result.append({'title': 'Sideboard', 'deckcards': dcss})
         return result
 
     def is_legal(self):
@@ -587,6 +642,63 @@ class DeckCluster(models.Model):
     name = models.CharField(max_length=100, null=False)
     clusterkey = models.IntegerField(null=False, default=-1)
     formatname = models.CharField(max_length=100, null=False)
+
+    def get_stats_json(self):
+        return json.dumps(self.get_stats())
+
+    def get_stats(self):
+        # All decks per month
+        all_sql = '''SELECT DATE_FORMAT(t.start_date, '%%Y-%%m'), count(dcd.id), MIN(dcd.distance), MAX(dcd.distance), AVG(dcd.distance) FROM deckcluster dc JOIN deckclusterdeck dcd ON dc.id = dcd.deckcluster_id LEFT JOIN deck ON deck.id = dcd.deck_id LEFT JOIN tournamentdeck td ON td.deck_id = deck.id LEFT JOIN tournament t ON td.tournament_id = t.id LEFT JOIN format f ON t.format_id = f.id WHERE f.formatname = 'Modern' GROUP BY DATE_FORMAT(t.start_date, '%%Y%%m')'''
+
+        # Just decks in a specific cluster per month
+        cluster_sql = '''SELECT DATE_FORMAT(t.start_date, '%%Y-%%m'), count(dcd.id), MIN(dcd.distance), MAX(dcd.distance), AVG(dcd.distance) FROM deckcluster dc JOIN deckclusterdeck dcd ON dc.id = dcd.deckcluster_id LEFT JOIN deck ON deck.id = dcd.deck_id LEFT JOIN tournamentdeck td ON td.deck_id = deck.id LEFT JOIN tournament t ON td.tournament_id = t.id LEFT JOIN format f ON t.format_id = f.id WHERE f.formatname = 'Modern' AND dc.id = %s GROUP BY DATE_FORMAT(t.start_date, '%%Y%%m')'''
+
+        cursor = connection.cursor()
+
+        cursor.execute(all_sql, [])
+        all_res = cursor.fetchall()
+
+        cursor.execute(cluster_sql, [self.id])
+        cluster_res = cursor.fetchall()
+        result = dict()
+        result['histogram'] = list()
+        for line in cluster_res:
+            record = dict()
+            record['month'] = line[0]
+            record['decks'] = line[1]
+            record['distance_min'] = line[2]
+            record['distance_max'] = line[3]
+            record['distance_avg'] = line[4]
+            for allline in all_res:
+                if allline[0] == record['month']:
+                    record['all_decks'] = allline[1]
+                    record['all_distance_min'] = allline[2]
+                    record['all_distance_max'] = allline[3]
+                    record['all_distance_avg'] = allline[4]
+                    record['deck_percent_of_all'] = None
+                    if record['all_decks'] > 0:
+                        record['deck_percent_of_all'] = float(record['decks']) / float(record['all_decks'])
+            result['histogram'].append(record)
+
+        count_sql = '''SELECT count(id), min(distance), max(distance), avg(distance) FROM deckclusterdeck WHERE deckcluster_id = %s'''
+        cursor.execute(count_sql, [self.id])
+        count_res = cursor.fetchone()
+        result['cluster'] = dict()
+        result['cluster']['size'] = count_res[0]
+        result['cluster']['min_distance'] = count_res[1]
+        result['cluster']['max_distance'] = count_res[2]
+        result['cluster']['avg_distance'] = count_res[3]
+
+        perc_sql = '''SELECT distance FROM deckclusterdeck WHERE deckcluster_id = %s ORDER BY distance'''
+        cursor.execute(perc_sql, [self.id])
+        perc_res = cursor.fetchall()
+        result['cluster']['percentile'] = dict()
+        for sample in range(1, 9):
+            idx = len(perc_res) * sample / 10
+            result['cluster']['percentile'][sample * 10] = perc_res[idx][0]
+        result['cluster']['median_distance'] = result['cluster']['percentile'][50]
+
+        return result
 
     def __unicode__(self):
         return 'DeckCluster {} ({}) [{}]'.format(str(self.name), str(self.formatname), str(self.id))

@@ -31,7 +31,7 @@ class Command(BaseCommand):
         #pcard_list = PhysicalCard.objects.all()
 
         fbc_list = FormatBasecard.objects.filter(
-            #format__formatname='Modern',
+            # format__formatname='Modern',
             basecard__cardposition__in=[
                 BaseCard.FRONT,
                 BaseCard.LEFT,
@@ -41,7 +41,7 @@ class Command(BaseCommand):
             pcard = fbcard.basecard.physicalcard
             if pcard.layout in [pcard.TOKEN, pcard.PLANE, pcard.SCHEME, pcard.PHENOMENON, pcard.VANGUARD]:
                 continue
-            text = pcard.get_searchable_document(include_names=True)
+            text = pcard.get_searchable_document(include_names=False)
             if len(text) < 1:
                 sys.stderr.write("Did not get anything valuable back from {}, {}\n".format(pcard.id, pcard.get_card_name()))
             else:
