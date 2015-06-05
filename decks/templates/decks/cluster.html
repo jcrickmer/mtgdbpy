@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load mathfilters %}
+{% block title %}Cluster Analysis - {{cluster.name}}{% endblock %}
+{% block pagetitle %}Cluster Analysis - {{cluster.name}}{% endblock %}
+{% block content %}
+  <script>
+var cluster_stats = {{cluster.get_stats_json|safe}};
+  </script>
+  <script>
+google.load('visualization', '1.1', {'packages':['corechart']});
+
+function drawClusterStatsChart() {
+    // Create the data table.
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Month');
+    data.addColumn('number', '% of Decks');
+    //data.addColumn('number', 'Avg Distance');
+    for (var p = 0; p < cluster_stats.histogram.length; p++) {
+        var myrow = [cluster_stats.histogram[p].month, cluster_stats.histogram[p].deck_percent_of_all /*, cluster_stats.histogram[p].distance_avg */];
+        data.addRow(myrow);
+    }
+
+    var options = {
+        chart: {
+          /*title: '% of All Cards in Format',*/
+        },
+        legend: { position: 'right', },
+        curveType: 'function',
+        fontName: 'Arial',
+        colors: ['#4d5f8b','#e19d29'],
+        width: 800,
+        height: 250,
+        series: {
+          // Gives each series an axis name that matches the Y-axis below.
+          0: {axis: '% of Decks', targetAxisIndex: 0, curveType: 'function', fontName: 'Arial', },
+        },
+        axes: {
+          // Adds labels to each axis; they don't have to match the axis names.
+          y: {
+            Decks: {label: '% of Decks', },
+          }
+        },
+        hAxis: { title: 'Month',
+                 textStyle: { fontName: 'Arial', },
+                 titleTextStyle: { fontName: 'Arial', },
+        },
+        vAxes: [{title: '% of Decks',
+                 gridlines: {count: 4},
+                 minValue: 0.0,
+                 titleTextStyle: { color: '#4d5f8b', fontName: 'Arial', },
+                 textStyle: { color: '#4d5f8b', fontName: 'Arial', },
+                 viewWindow: { min: 0.0 },
+                 baseline: 0.0,
+                 format:'#.###%'
+                },
+        ],
+        theme: 'material' 
+    };
+
+    var lchart = new google.visualization.LineChart(document.getElementById('clusterstats'));
+    lchart.draw(data, options);
+}
+</script>
+  <div id="clusterstats"></div>
+  <script>google.setOnLoadCallback(function(){ drawClusterStatsChart();});</script>
+  <div>
+  Cluster Size: {{cluster.get_stats.cluster.size}}<br>
+  Min Distance: {{cluster.get_stats.cluster.min_distance}}<br>
+  Avg Distance: {{cluster.get_stats.cluster.avg_distance}}<br>
+  Median Distance: {{cluster.get_stats.cluster.median_distance}}<br>
+  Max Distance: {{cluster.get_stats.cluster.max_distance}}
+  </div>
+
+  <ul>
+    <li><a href="cards/">Common Cards</a></li>
+    <li><a href="close/">5 Closest Decks</a></li>
+    <li><a href="far/">5 Farthest Decks</a></li>
+  </ul>
+
+  {% for deckblock in decks %}
+    <h3>Prototypical Decks<h3>
+    {% for cdeck in deckblock.decks %}
+      {% include "decks/block_deck.html" %}
+    {% endfor %}
+  {% endfor %}
+{% endblock content %}

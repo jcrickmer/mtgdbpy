@@ -157,6 +157,10 @@ class PhysicalCard(models.Model):
             result = result + ' // ' + sec_card.filing_name
         return result
 
+    def get_face_basecard(self):
+        basecard = BaseCard.objects.filter(physicalcard_id=self.id, cardposition__in=[BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP]).first()
+        return basecard
+
     def get_latest_card(self):
         logger = logging.getLogger(__name__)
         #logger.error("PhysicalCard.get_latest_card: self is {}".format(str(self)))
@@ -177,6 +181,17 @@ class PhysicalCard(models.Model):
         result = ''
         for basecard in self.basecard_set.all():
             rules = basecard.rules_text
+            if rules is None or len(rules) == 0:
+                if basecard.name == 'Plains':
+                    rules = 'tap: add manawhite to your mana pool.'
+                elif basecard.name == 'Island':
+                    rules = 'tap: add manablue to your mana pool.'
+                elif basecard.name == 'Swamp':
+                    rules = 'tap: add manablack to your mana pool.'
+                elif basecard.name == 'Mountain':
+                    rules = 'tap: add manared to your mana pool.'
+                elif basecard.name == 'Forest':
+                    rules = 'tap: add managreen to your mana pool.'
             rules = rules.replace(basecard.name, 'cardselfreference')
             rules = rules.lower()
             rules = rules.replace('{t}', ' tap ')
@@ -217,7 +232,7 @@ class PhysicalCard(models.Model):
                 result = result + basecard.name + '\n'
                 result = result + basecard.filing_name + '\n'
             result = result + rules + '\n'
-            result = result + basecard.mana_cost + '\n'
+            #result = result + basecard.mana_cost + '\n'
             # add the pips that are in the mana cost
             if len(basecard.mana_cost) > 0:
                 costparts = basecard.mana_cost.lower().split('}')
@@ -274,8 +289,8 @@ class PhysicalCard(models.Model):
 
             result = result + ' '.join('type' + ctype.type for ctype in basecard.types.all()) + "\n"
             result = result + ' '.join('subtype' + cstype.subtype for cstype in basecard.subtypes.all()) + "\n"
-            result = result + ' '.join(ctype.type for ctype in basecard.types.all()) + "\n"
-            result = result + ' '.join(cstype.subtype for cstype in basecard.subtypes.all()) + "\n"
+            #result = result + ' '.join(ctype.type for ctype in basecard.types.all()) + "\n"
+            #result = result + ' '.join(cstype.subtype for cstype in basecard.subtypes.all()) + "\n"
 
             result = result + '\n'
 
@@ -336,6 +351,10 @@ class BaseCard(models.Model):
 
     def get_rulings(self):
         return Ruling.objects.filter(basecard=self.id).order_by('ruling_date')
+
+    def is_land(self):
+        ct = CardType.objects.filter(type__type='Land', basecard=self).first()
+        return ct is not None
 
     def make_filing_name(self, name):
         # REVISIT- Currently filing name logic is in Perl. See

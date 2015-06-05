@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load mathfilters %}
+{% block title %}Cluster Analysis - {{cluster.name}} Deck List{% endblock %}
+{% block pagetitle %}Cluster Analysis - {{cluster.name}} Deck List{% endblock %}
+{% block content %}
+  <script>
+var cluster_stats = {{cluster.get_stats_json|safe}};
+  </script>
+  <div><a href="{% url 'decks:cluster' cluster_id=cluster.id %}">Back to Cluster</a></div>
+  <div>
+  Cluster Size: {{cluster.get_stats.cluster.size}}<br>
+  Min Distance: {{cluster.get_stats.cluster.min_distance}}<br>
+  Avg Distance: {{cluster.get_stats.cluster.avg_distance}}<br>
+  Median Distance: {{cluster.get_stats.cluster.median_distance}}<br>
+  Max Distance: {{cluster.get_stats.cluster.max_distance}}
+  </div>
+
+  {% for deckblock in decks %}
+    <h3>{{deckblock.title}} 5 Decks<h3>
+    {% for cdeck in deckblock.decks %}
+      {% include "decks/block_deck.html" %}
+    {% endfor %}
+  {% endfor %}
+{% endblock content %}

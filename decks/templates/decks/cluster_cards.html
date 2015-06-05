@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load mathfilters %}
+{% block title %}Cluster Analysis - {{cluster.name}} Cards{% endblock %}
+{% block pagetitle %}Cluster Analysis - {{cluster.name}} Cards{% endblock %}
+{% block content %}
+  <script>
+var cluster_stats = {{cluster.get_stats_json|safe}};
+  </script>
+  <div><a href="{% url 'decks:cluster' cluster_id=cluster.id %}">Back to Cluster</a></div>
+  <div>
+  <!-- Cluster Size: {{cluster.get_stats.cluster.size}}<br> -->
+  Min Distance: {{cluster.get_stats.cluster.min_distance}}<br>
+  Avg Distance: {{cluster.get_stats.cluster.avg_distance}}<br>
+  Median Distance: {{cluster.get_stats.cluster.median_distance}}<br>
+  Max Distance: {{cluster.get_stats.cluster.max_distance}}
+  </div>
+  <script>
+google.load("visualization", "1.1", {packages:["table"]});
+google.setOnLoadCallback(drawTable);
+
+window.table = null;
+window.data = null;
+function selectHandler() {
+    var selection = window.table.getSelection();
+    for (var i = 0; i < selection.length; i++) {
+        var item = selection[i];
+        if (item.row != null) {
+            var url = data.getFormattedValue(item.row, 0);
+            document.location = url;
+        }
+    }
+}
+function drawTable() {
+    data = new google.visualization.DataTable();
+    data.addColumn('string', 'url');
+    data.addColumn('string', 'Name');
+    data.addColumn('number', '% of All Cards in Cluster');
+    data.addColumn('number', '% of Decks running Main');
+    data.addColumn('number', '% of Decks running Side');
+    data.addColumn('string', 'multiverseid');
+    {
+{% for pcard in physicalcards %}
+        data.addRow(["{% url 'cards:detail' pcard.get_latest_card.multiverseid pcard.get_latest_card.url_slug %}",
+                     "{{pcard.get_card_name}}",
+                     {{pcard.card_count}}/(75*{{cluster.get_stats.cluster.size}}),
+                     {{pcard.deck_main_count}}/{{cluster.get_stats.cluster.size}},
+                     {{pcard.deck_side_count}}/{{cluster.get_stats.cluster.size}},
+		     "{{pcard.get_latest_card.multiverseid}}",
+                    ]);
+{% endfor %}
+    }
+    for (var p = 0; p < data.getNumberOfRows(); p++) {
+        data.setFormattedValue(p, 1, '<a href="' + data.getValue(p, 0) + '" data-mid="' + data.getValue(p, 5) + '">' + data.getValue(p, 1) + '</a>');
+        for (var q = 2; q < 5; q++) {
+            data.setFormattedValue(p, q, (Math.floor(data.getValue(p, q) * 10000)/100) + '%');
+        }
+    }
+    window.table = new google.visualization.Table(document.getElementById('table_div'));
+    var myView = new google.visualization.DataView(data);
+    myView.hideColumns([0,5]);
+
+    table.draw(myView, {allowHtml: true, showRowNumber: true});
+    //google.visualization.events.addListener(table, 'select', selectHandler);
+
+}
+</script>
+  <div id="table_div"></div>
+
+{% endblock content %}

@@ -356,6 +356,43 @@ class CardTestCase(TestCase):
         foo = mss.get_double_faced_card()
         self.assertIsNone(foo)
 
+    def test_pcard_get_face_basecard0(self):
+        startbc = BaseCard.objects.filter(cardposition=BaseCard.FRONT, name='Island').first()
+        self.assertIsNotNone(startbc)
+        pcard = startbc.physicalcard
+        resultbc = pcard.get_face_basecard()
+        self.assertEqual(resultbc.id, startbc.id)
+
+    def test_pcard_get_face_basecard1(self):
+        startbc = BaseCard.objects.filter(cardposition=BaseCard.FRONT, name='Delver of Secrets').first()
+        self.assertIsNotNone(startbc)
+        pcard = startbc.physicalcard
+        resultbc = pcard.get_face_basecard()
+        self.assertEqual(resultbc.id, startbc.id)
+
+    def test_pcard_get_face_basecard2(self):
+        startbc = BaseCard.objects.filter(name='Insectile Aberration').first()
+        self.assertIsNotNone(startbc)
+        pcard = startbc.physicalcard
+        resultbc = pcard.get_face_basecard()
+        self.assertNotEqual(resultbc.id, startbc.id)
+        self.assertEqual(resultbc.physicalcard.id, startbc.physicalcard.id)
+
+    def test_basecard_is_land0(self):
+        startbc = BaseCard.objects.filter(cardposition=BaseCard.FRONT, name='Island').first()
+        self.assertIsNotNone(startbc)
+        self.assertTrue(startbc.is_land())
+
+    def test_basecard_is_land1(self):
+        startbc = BaseCard.objects.filter(cardposition=BaseCard.FRONT, name='Delver of Secrets').first()
+        self.assertIsNotNone(startbc)
+        self.assertFalse(startbc.is_land())
+
+    def test_basecard_is_land2(self):
+        startbc = BaseCard.objects.filter(name='Insectile Aberration').first()
+        self.assertIsNotNone(startbc)
+        self.assertFalse(startbc.is_land())
+
 
 class ViewsTestCase(TestCase):
 
