@@ -15,6 +15,7 @@ from haystack.query import SearchQuerySet
 
 import random
 import operator
+import os.path
 
 from cards.models import Card, CardManager, SearchPredicate, SortDirective, BaseCard
 from cards.models import Mark
@@ -636,7 +637,22 @@ def battle(request, format="redirect"):
             logger.error("Battle: bad ju-ju finding card ratings for basecard id " + str(card_a.basecard.id))
             pass
     else:
-        fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE pc.layout IN %(layouts)s AND fbc.format_id = %(formatid)s ORDER BY r ASC LIMIT 1'
+        bb_file = 'betterbattle_{}.csv'.format(str(format_id))
+        fcsqls_xtra = ''
+        if os.path.isfile(bb_file):
+            bb_ids_list = list()
+            with open(bb_file) as bb_f:
+                bbcontent = bb_f.readlines()
+                for bbline in bbcontent:
+                    try:
+                        bb_ids_list.append(int(bbline.strip()))
+                    except ValueError:
+                        pass
+            query_params['x_ids'] = bb_ids_list
+            if len(bb_ids_list) > 0:
+                fcsqls_xtra = ' AND pc.id IN %(x_ids)s '
+        fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE pc.layout IN %(layouts)s AND fbc.format_id = %(formatid)s {} ORDER BY r ASC LIMIT 1'.format(
+            fcsqls_xtra)
         #logger.error("First Card SQL: " + fcsqls)
         cursor.execute(fcsqls, params=query_params)
         rows = cursor.fetchall()
