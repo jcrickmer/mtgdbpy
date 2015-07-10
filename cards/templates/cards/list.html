@@ -69,12 +69,16 @@ $(function() {
           <div class="list_rules">{{card.rules_text_html}}</div>
         </td>
         <td>
+          <div class="cn_r_std">ORI:&nbsp;<span id="cr_{{card.multiverseid}}_28"></span></div>
           <div class="cn_r_std">Std:&nbsp;<span id="cr_{{card.multiverseid}}_21"></span></div>
           <div class="cn_r_mod">Mod:&nbsp;<span id="cr_{{card.multiverseid}}_20"></span></div>
           <div class="cn_r_edh">EDH:&nbsp;<span id="cr_{{card.multiverseid}}_18"></span></div>
           <div class="cn_r_tl">TL:&nbsp;<span id="cr_{{card.multiverseid}}_19"></span></div>
         {% for cardrating in card.basecard.physicalcard.cardrating_set.all %}
           {% if cardrating.test.id == 1 %}
+            {% if cardrating.format.id == 28 %}
+              <script>$("#cr_{{card.multiverseid}}_28").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
+            {% endif %}
             {% if cardrating.format.id == 21 %}
               <script>$("#cr_{{card.multiverseid}}_21").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
             {% endif %}

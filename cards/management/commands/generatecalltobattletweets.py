@@ -28,6 +28,7 @@ from twython import Twython
 out = sys.stdout
 
 format_hashtags = {'Standard': '#mtgstandard',
+                   'Origins': '#MTGOrigins',
                    'Modern': '#mtgmodern',
                    'Commander': '#mtgcommander #edh',
                    'TinyLeaders': '#mtgtiny'
@@ -43,7 +44,8 @@ class Command(BaseCommand):
 
         #rand_card_gen = BaseCardRandomizer()
         #rand_card_gen = MM2CardRandomizer()
-        rand_card_gen = RatedCardRandomizer()
+        rand_card_gen = OriginsCardRandomizer()
+        #rand_card_gen = RatedCardRandomizer()
 
         cur_format = rand_card_gen.get_format()
         first_card = rand_card_gen.get_first_card()
@@ -256,6 +258,107 @@ class RatedCardRandomizer(BaseCardRandomizer):
             self.comp_card = card_list[comp_index]
 
 
+class OriginsCardRandomizer(BaseCardRandomizer):
+
+    def __init__(self):
+        cur_formats = Format.objects.filter(
+            formatname='Origins',
+            start_date__lte=datetime.today(),
+            end_date__gte=datetime.today()).order_by('format')
+        format_count = len(list(cur_formats))
+        format_index = int(random.random() * format_count)
+        self.cur_format = cur_formats[format_index]
+
+        #ori_cards = Card.objects.filter(expansionset_id=187)
+        #ori_card_names = [x.basecard.name for x in ori_cards]
+        
+        spreds = []
+        spred = SearchPredicate()
+        spred.term = 'format'
+        spred.value = self.cur_format.id
+        spreds.append(spred)
+        #spred_n = SearchPredicate()
+        #spred_n.term = 'name'
+        #spred_n.value = random.choice(ori_card_names)
+        #spreds.append(spred_n)
+        sd = SortDirective()
+        sd.term = 'cardrating'
+        sd.direction = sd.DESC
+        sd.crs_format_id = self.cur_format.id
+        spreds.append(sd)
+        card_list = Card.playables.search(spreds)
+
+        self.first_card = card_list[0]
+        fc_cr = CardRating.objects.filter(physicalcard=self.first_card.basecard.physicalcard, format=self.cur_format, test__id=1).first()
+        #sys.stderr.write("first card is {}\n".format(self.first_card.basecard.name))
+        #sys.stderr.write("first card rating sigma {}, mu {} \n".format(fc_cr.sigma, fc_cr.mu))
+
+        spreds2 = []
+        spred = SearchPredicate()
+        spred.term = 'format'
+        spred.value = self.cur_format.id
+        spreds2.append(spred)
+
+        spred_u = SearchPredicate()
+        spred_u.term = 'cardrating'
+        spred_u.operator = SearchPredicate.LESS_THAN
+        spred_u.value = 20.0 * (fc_cr.mu + (1.0 * fc_cr.sigma))
+        spreds2.append(spred_u)
+
+        spred_l = SearchPredicate()
+        spred_l.term = 'cardrating'
+        spred_l.operator = SearchPredicate.GREATER_THAN
+        spred_l.value = 20.0 * (fc_cr.mu - (1.0 * fc_cr.sigma))
+        spreds2.append(spred_l)
+
+        spred_n = SearchPredicate()
+        spred_n.term = 'name'
+        spred_n.negative = True
+        spred_n.value = self.first_card.basecard.name
+        spreds2.append(spred_n)
+        #sys.stderr.write("spreds2 is {}\n".format(str(spreds2)))
+        for sp in spreds2:
+            #sys.stderr.write("spreds2: {} {} {}\n".format(sp.term, sp.operator, sp.value))
+            pass
+        card_list2 = Card.playables.search(spreds2)
+        act_list = list()
+        for cccc in card_list2:
+            #sys.stderr.write("cccc is {}\n".format(cccc.basecard.filing_name))
+            act_list.append(cccc)
+        self.comp_card = random.choice(act_list)
+
+    def produce_tweet(self):
+        self.tweet = ''
+
+        fc_cr = CardRating.objects.filter(physicalcard=self.first_card.basecard.physicalcard, format=self.cur_format, test__id=1).first()
+        cc_cr = CardRating.objects.filter(physicalcard=self.comp_card.basecard.physicalcard, format=self.cur_format, test__id=1).first()
+
+        comp_word = 'worse'
+        if fc_cr.mu > cc_cr.mu:
+            comp_word = 'better'
+
+        url_raw = 'http://card.ninja/cards/battle/' + self.cur_format.formatname + '/?bcid=' + str(self.first_card.basecard.id)
+        url_raw = url_raw + '&utm_source=Social&utm_medium=post&utm_campaign=calltobattle'
+
+        use_bitly = settings.USE_BITLY
+        # connect to bitly
+        conn_bitly = bitly_api.Connection(access_token=settings.BITLY_ACCESS_TOKEN)
+
+        bitly = dict()
+        if use_bitly:
+            bitly = conn_bitly.shorten(url_raw)
+        else:
+            bitly = {"url": url_raw}
+
+        self.tweet = '{} rated {} than {} in #MTGOrigins limited'.format(
+                self.first_card.basecard.name,
+                comp_word,
+                self.comp_card.basecard.name,
+                bitly['url'])
+
+        return self.tweet
+
+            
 class MM2CardRandomizer(BaseCardRandomizer):
 
     def __init__(self):

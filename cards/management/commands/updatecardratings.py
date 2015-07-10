@@ -30,7 +30,8 @@ class Command(BaseCommand):
         # iterate through each test
         for test in tests:
             # get all of the formats
-            formats = Format.objects.all()
+            #formats = Format.objects.all()
+            formats = Format.objects.filter(id=28)
 
             # iterate through each format
             for format in formats:
