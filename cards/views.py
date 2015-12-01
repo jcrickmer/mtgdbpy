@@ -369,6 +369,7 @@ def detail(request, multiverseid=None, slug=None):
         card_stats = []
         mod_fcstat = None
         std_fcstat = None
+        ori_fcstat = None
         formats = Format.cards.current_legal_formats(cards[0])
         card_format_details = {}
         for ff in formats:
@@ -383,6 +384,10 @@ def detail(request, multiverseid=None, slug=None):
                 dets['format_abbr'] = 'Mod'
                 mod_fcstat = FormatCardStat.objects.filter(physicalcard=cards[0].basecard.physicalcard, format=ff).first()
                 card_stats.append(mod_fcstat)
+            elif ff.formatname == 'Origins':
+                dets['format_abbr'] = 'ORI'
+                ori_fcstat = FormatCardStat.objects.filter(physicalcard=cards[0].basecard.physicalcard, format=ff).first()
+                card_stats.append(ori_fcstat)
             elif ff.formatname == 'TinyLeaders':
                 dets['format_abbr'] = 'TL'
             elif ff.formatname == 'Commander':
@@ -423,6 +428,7 @@ def detail(request, multiverseid=None, slug=None):
                                                          'rulings': cards[0].basecard.get_rulings(),
                                                          'mod_card_stat': mod_fcstat,
                                                          'std_card_stat': std_fcstat,
+                                                         'ori_card_stat': ori_fcstat,
                                                          'card_stats': card_stats,
                                                          #'rules_text_html': mark_safe(card.basecard.rules_text),
                                                          #'flavor_text_html': mark_safe(card.flavor_text),
