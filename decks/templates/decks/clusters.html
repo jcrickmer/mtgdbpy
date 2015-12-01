@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Deck Clusters{% endblock %}
+{% block pagetitle %}Deck Clusters{% endblock %}
+{% block content %}
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+  <script type="text/javascript">
+google.load("visualization", "1.1", {packages:["table"]});
+google.setOnLoadCallback(drawTable);
+
+window.table = null;
+window.data = null;
+function selectHandler() {
+    var selection = window.table.getSelection();
+    for (var i = 0; i < selection.length; i++) {
+        var item = selection[i];
+        if (item.row != null) {
+            var url = data.getFormattedValue(item.row, 0);
+            document.location = url;
+        }
+    }
+}
+function drawTable() {
+    data = new google.visualization.DataTable();
+    data.addColumn('string', 'url');
+    data.addColumn('string', 'Name');
+    data.addColumn('number', 'Size');
+    data.addColumn('number', 'Min Distance');
+    data.addColumn('number', 'Avg Distance');
+    data.addColumn('number', 'Median Distance');
+    data.addColumn('number', '% Meta Last Month');
+{% for cluster in clusters %}
+    {
+	    var newRow = ['{% url 'decks:cluster' cluster_id=cluster.id %}', '{{cluster.name}}', {{cluster.get_stats.cluster.size}}, {{cluster.get_stats.cluster.min_distance|floatformat:2}}, {{cluster.get_stats.cluster.avg_distance|floatformat:2}}, {{cluster.get_stats.cluster.median_distance|floatformat:2}}, ];
+		var ppp = 0.0;
+		{%for rrr in cluster.get_stats.histogram %}{%if rrr.month == '2015-05' %}ppp = {{rrr.deck_percent_of_all|floatformat:5}};{%endif%}{% endfor %}
+		newRow.push({v:ppp, f:parseInt(ppp*10000)/100 + "%"});
+        data.addRow(newRow);
+    }
+{% endfor %}
+
+    window.table = new google.visualization.Table(document.getElementById('table_div'));
+    var myView = new google.visualization.DataView(data);
+	myView.hideColumns([0]);
+
+    table.draw(myView, {showRowNumber: true});
+	google.visualization.events.addListener(table, 'select', selectHandler);
+
+}
+    </script>
+    <div id="table_div"></div>
+{% endblock content %}

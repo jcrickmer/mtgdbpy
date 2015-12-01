@@ -16,7 +16,7 @@ out = sys.stdout
 
 
 class Command(BaseCommand):
-    help = 'Generate a deck in a dcoument to be fed into Lucene or Mahout.'
+    help = 'Generate a deck in a document to be fed into Lucene or Mahout.'
 
     option_list = BaseCommand.option_list + (
         make_option('--input',
@@ -43,6 +43,7 @@ class Command(BaseCommand):
                     out.write('Created new DeckCluster for Key {}\n'.format(str(key)))
                     dc = DeckCluster.objects.filter(formatname='Modern', clusterkey=int(key)).first()
                 deck_obj = Deck.objects.get(pk=int(deck_id))
-                DeckClusterDeck(deckcluster=dc, distance=float(distance), deck=deck_obj)
+                dcd = DeckClusterDeck(deckcluster=dc, distance=float(distance), deck=deck_obj)
+                dcd.save()
                 out.write('Key {}, dist {}, deck id {}\n'.format(str(key), str(distance), str(deck_id)))
         filein.close()

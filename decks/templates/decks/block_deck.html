@@ -1,0 +1,26 @@
+{% load mathfilters %}
+      <h4>{{cdeck.deck.name}}</h4>
+      <!-- <p>Author: {{cdeck.deck.authorname}}</p> --><p>Id: {{cdeck.deck.id}}</p>
+      <p>Distance from cluster center: {{cdeck.distance}}</p>
+      <div style="clear:both; float:left; width: 100%">
+        <div style="width:198px; float:left">
+          {% for cardgroup in cdeck.deck.card_groups %}
+            <h4 class="cardlist-category">{{cardgroup.title}}</h4>
+            <ol class="cardlist">
+			  {% for deckcard in cardgroup.deckcards %}
+	            <li>{{deckcard.cardcount}} <a href="{% url 'cards:detail' multiverseid=deckcard.physicalcard.get_latest_card.multiverseid slug=deckcard.physicalcard.get_latest_card.url_slug %}" onmouseover="cn.updateCard('cardarea-{{cdeck.deck.id}}', {{deckcard.physicalcard.get_latest_card.multiverseid}});">{{deckcard.physicalcard.get_card_name}}</a></li>
+	          {% endfor %}
+	        </ol>
+			{% if forloop.counter > cdeck.deck.card_groups|length|mul:0.5 %}
+			  {% if forloop.counter|sub:1 <= cdeck.deck.card_groups|length|mul:0.5 %}
+		</div>
+        <div style="width:198px; float:left">
+              {% endif %}
+            {% endif %}
+	      {% endfor %}
+	    </div>
+        <div style="width:198px; float:left; height:620px" id="cardarea-{{cdeck.deck.id}}">
+        </div>
+      </div>
+      <script>$(document).ready(function () { cn.updateCard('cardarea-{{cdeck.deck.id}}', null); });</script>
+      <br style="clear:all"/>
