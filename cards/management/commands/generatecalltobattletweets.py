@@ -29,6 +29,7 @@ out = sys.stdout
 
 format_hashtags = {'Standard': '#mtgstandard',
                    'Origins': '#MTGOrigins',
+                   'BFZ': '#MTGBFZ',
                    'Modern': '#mtgmodern',
                    'Commander': '#mtgcommander #edh',
                    'TinyLeaders': '#mtgtiny'
@@ -44,8 +45,8 @@ class Command(BaseCommand):
 
         #rand_card_gen = BaseCardRandomizer()
         #rand_card_gen = MM2CardRandomizer()
-        rand_card_gen = OriginsCardRandomizer()
-        #rand_card_gen = RatedCardRandomizer()
+        #rand_card_gen = OriginsCardRandomizer()
+        rand_card_gen = RatedCardRandomizer()
 
         cur_format = rand_card_gen.get_format()
         first_card = rand_card_gen.get_first_card()
