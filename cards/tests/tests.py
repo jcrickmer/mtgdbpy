@@ -26,7 +26,7 @@ class MigrationTestCase(TransactionTestCase):
         black = Color.objects.get(pk='B')
         red = Color.objects.get(pk='R')
         green = Color.objects.get(pk='G')
-        colorless = Color.objects.get(pk='c')
+        colorless = Color.objects.get(pk='C')
         colors = Color.objects.all()
         self.assertEqual(len(colors), 6)
 

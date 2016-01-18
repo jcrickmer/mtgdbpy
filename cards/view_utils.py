@@ -29,14 +29,14 @@ def convertSymbolsToHTML(text):
     # return tag_open + 'class="magic-symbol-small symbol_' + term0.lower() +
     # '_small" alt="{' + term0.lower() + '}"' + tag_close
 
-    pattern2 = re.compile(r'\{([WUBRG2])\/?([WUBRGP])\}', re.IGNORECASE)
+    pattern2 = re.compile(r'\{([CWUBRG2])\/?([CWUBRGP])\}', re.IGNORECASE)
     result = pattern2.sub(
         lambda m: format_mana_terms(
             m.group(1),
             m.group(2)),
         result)
 
-    pattern = re.compile(r'\{([WUBRGX])\}', re.IGNORECASE)
+    pattern = re.compile(r'\{([CWUBRGX])\}', re.IGNORECASE)
     result = pattern.sub(lambda m: format_mana_term(m.group(1)), result)
 
     #pattern = re.compile(r'\{([PTQ])\}', re.IGNORECASE)

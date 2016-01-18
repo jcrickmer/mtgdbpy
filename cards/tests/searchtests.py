@@ -1402,7 +1402,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
     def test_color_e_c(self):
         a = SearchPredicate()
         a.term = 'color'
-        a.value = 'c'
+        a.value = 'C'
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 134)
@@ -1451,7 +1451,7 @@ class CardManagerROTestCase(FastFixtureTestCase):
     def test_color_ne_c(self):
         a = SearchPredicate()
         a.term = 'color'
-        a.value = 'c'
+        a.value = 'C'
         a.negative = True
         a.operator = a.EQUALS
         cards = Card.playables.search(a)

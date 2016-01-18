@@ -12,6 +12,14 @@ Step 2b:
 
 update the card filing names with the update_card_names.pl command in mtgstats. It will output sql that you can copy over to prod and then update/run on that database.
 
+Setp 2c:
+
+Get all of the new card images. From the mtgstats directory...
+
+echo 'SELECT DISTINCT multiverseid FROM card WHERE expansionset_id = 189 ORDER BY multiverseid;' | mysql -u root -ppassword mtgdbpy | ./fetch_images.pl
+
+And set the expansionset_id to be the id for the new expansion set.
+
 Step 3:
 Create new formats. You will need to know the start and end dates for the new formats. Here are some examples.
 

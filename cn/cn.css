@@ -147,6 +147,13 @@ h5.panel-title a:hover {
 .symbol_mana_z_small {
   background-position:-45px -30px;
 }
+.symbol_mana_c_small {
+  background: url("/cn/Colorless_symbol.png");
+  height: 15px;
+  width: 15px;
+  background-size:15px 15px;
+  background-position:0px 0px;
+}
 .symbol_mana_w_small {
   background-position:-60px -30px;
 }
