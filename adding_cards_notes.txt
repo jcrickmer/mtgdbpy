@@ -8,6 +8,10 @@ Load those cards into the database with the loadcardjson Django command.
 
 ./manage.py loadcardjson DDO-x.json
 
+Step 2b:
+
+update the card filing names with the update_card_names.pl command in mtgstats. It will output sql that you can copy over to prod and then update/run on that database.
+
 Step 3:
 Create new formats. You will need to know the start and end dates for the new formats. Here are some examples.
 

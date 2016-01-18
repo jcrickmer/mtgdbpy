@@ -1,17 +1,29 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render
-from decks.models import Deck, DeckCluster, DeckClusterDeck
+from decks.models import Deck, DeckCluster, DeckClusterDeck, Tournament, TournamentDeck
 from cards.models import PhysicalCard
-
+from django.views.generic import ListView
 import logging
 from django.core.cache import cache
-
+from django.db.models import Max, Min, Count, Sum, Avg
 
 def index(request):
     context = dict()
     return render(request, 'decks/index.html', context)
 
 
+def deck(request, deck_id=None):
+    deck = None
+    try:
+        deck = Deck.objects.get(pk=deck_id)
+    except Deck.DoesNotExist:
+        raise Http404
+    context = dict()
+    context['deck'] = deck
+    context['cdeck'] = dict()
+    context['cdeck']['deck'] = deck
+    return render(request, 'decks/deck.html', context)
+        
 def clusters(request):
     context = dict()
     clusters = DeckCluster.objects.all()
@@ -84,3 +96,24 @@ def cluster_cards(request, cluster_id=None):
     context['physicalcards'] = pcards
 
     return render(request, 'decks/cluster_cards.html', context)
+
+def tournament(request, tournament_id=None):
+    tournament = None
+    try:
+        tournament = Tournament.objects.get(pk=tournament_id)
+    except Tournament.DoesNotExist:
+        raise Http404
+
+    context = dict()
+    context['tournament'] = tournament
+    tdecks = TournamentDeck.objects.filter(tournament=tournament).order_by('place')
+    context['tournament_decks'] = tdecks
+    return render(request, 'decks/tournament.html', context)
+
+class TournamentListView(ListView):
+    model = Tournament
+    template_name = 'decks/tournaments.html'
+    context_object_name = 'tournament_list'
+    queryset = Tournament.objects.filter(format__formatname='Modern').annotate(deck_count=Count('tournamentdeck')).order_by('-start_date')
+    paginate_by = 25
+    

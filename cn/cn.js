@@ -2,7 +2,10 @@ $(function() {
     window.cn = {};
     cn.cardstatsCache = {};
     cn.cardCache = {};
-    cn.updateCard = function(targetId, multiverseId) {  
+    cn.updateCard = function(targetId, multiverseId) {
+		if (multiverseId === null) {
+			return false;
+		}
 		var card = cn.getCard(multiverseId);
 		var result = "<img src=\"" + card.img_url + "\" class=\"card\" alt=\""+ card.name + "\">";
 		result += "<div>" + card.name + "</div>";

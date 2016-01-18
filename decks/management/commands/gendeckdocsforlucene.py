@@ -55,7 +55,7 @@ class Command(BaseCommand):
                             bc = dcard.physicalcard.get_face_basecard()
                             if len(text) > 0:
                                 text = text + "\n\n"
-                            text = text + dcard.physicalcard.get_searchable_document(include_names=False)
+                            text = text + dcard.physicalcard.get_searchable_document(include_names=True)
                             cardcount = cardcount + 1
                             if bc.is_land():
                                 # not sure that this is necessary. term frequency analysis will find all

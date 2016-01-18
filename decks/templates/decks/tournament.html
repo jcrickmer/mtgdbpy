@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load mathfilters %}
+{% block title %}Tournament {% endblock %}
+{% block pagetitle %}Tournament {% endblock %}
+{% block content %}
+<div>
+    <table id="tournament">
+            <tr>
+                <td>{{ tournament.id }}</td>
+                <td>{{ tournament.name }}</td>
+                <td>{{ tournament.url }}</td>
+                <td>{{ tournament.format.formatname }}</td>
+                <td>{{ tournament.format.format }}</td>
+                <td>{{ tournament.start_date }}</td>
+                <td>{{ tournament.end_date }}</td>
+            </tr>
+    </table>
+  <h3>Decks</h3>
+  <table id="tournament-decks">
+    {% for tdeck in tournament_decks %}
+      <tr>
+        <td>{{ tdeck.place }}</td>
+        <td>{{ tdeck.deck.name }}</td>
+        <td>{{ tdeck.deck.authorname }}</td>
+        <td><a href="{{ tdeck.deck.url }}">{{ tdeck.deck.url }}</td>
+        <td>{{ tdeck.deck.id }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock content %}

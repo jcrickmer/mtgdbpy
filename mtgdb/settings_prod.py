@@ -66,6 +66,6 @@ DYNAMIC_IMAGE_FILE_ROOT = '/var/mtgdb/cn_dyn_root'
 USE_BITLY = True
 
 # Twitter
-#### for card_ninja (production)
+# for card_ninja (production)
 OAUTH_TOKEN = 'XXXXX'
 OAUTH_TOKEN_SECRET = 'XXXXX'

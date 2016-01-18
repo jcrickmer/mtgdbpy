@@ -229,7 +229,7 @@ class PhysicalCard(models.Model):
             # need to add something that does a regexp match on hybrid mana in mana cost and rules text and adds a term for 'manahybrid'
 
             if include_names:
-                result = result + basecard.name + '\n'
+                #result = result + basecard.name + '\n'
                 result = result + basecard.filing_name + '\n'
             result = result + rules + '\n'
             #result = result + basecard.mana_cost + '\n'

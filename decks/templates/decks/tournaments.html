@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load mathfilters %}
+{% block title %}Tournaments{% endblock %}
+{% block pagetitle %}Tournaments{% endblock %}
+{% block content %}
+{% if tournament_list %}
+    <table id="cars">
+        {% for tourn in tournament_list %}
+            <tr>
+                <td>{{ tourn.id }}</td>
+                <td><a href="{% url 'decks:tournament' tournament_id=tourn.id %}">{{ tourn.name }}</a></td>
+                <td>{{ tourn.url }}</td>
+                <td>{{ tourn.format.formatname }}</td>
+                <td>{{ tourn.format.format }}</td>
+                <td>{{ tourn.start_date }}</td>
+                <td>{{ tourn.deck_count }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    {# .... **Now the pagination section** .... #}
+    {% if is_paginated %}
+        <div class="pagination">
+            <span class="page-links">
+                {% if page_obj.has_previous %}
+                    <a href="{% url 'decks:tournaments' %}?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="{% url 'decks:tournaments' %}?page={{ page_obj.next_page_number }}">next</a>
+                {% endif %}
+            </span>
+        </div>
+    {% endif %}
+{% else %}
+    <h3>My Cars</h3>
+    <p>No cars found!!! :(</p>
+{% endif %}
+{% endblock content %}

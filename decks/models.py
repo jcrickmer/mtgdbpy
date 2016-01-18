@@ -662,6 +662,38 @@ class DeckCluster(models.Model):
         cluster_res = cursor.fetchall()
         result = dict()
         result['histogram'] = list()
+        
+        # setup all of the months that we want to look at
+        all_dates = list()
+        now = time.localtime()
+        mon_delay = 1
+        if now.tm_mday > 18:
+            mon_delay = 0
+        end_m = time.localtime(time.mktime((now.tm_year, now.tm_mon - mon_delay, 1, 0, 0, 0, 0, 0, 0)))[:2]
+        start_month = 9
+        start_year = 2013
+        date_m = time.localtime(time.mktime((2013, 9, 1, 0, 0, 0, 0, 0, 0)))[:2]
+        while date_m != end_m:
+            date_m = time.localtime(time.mktime((start_year, start_month, 1, 0, 0, 0, 0, 0, 0)))[:2]
+            all_dates.append(date_m)
+            start_month = start_month + 1
+        
+        # create 0-objects for all of those dates and add them to a temporary dict
+        temp_dict = dict()
+        for rmonth in all_dates:
+            record = dict()
+            record['month'] = '{0:04d}-{1:02d}'.format(rmonth[0], rmonth[1])
+            record['decks'] = 0
+            record['distance_min'] = 0
+            record['distance_max'] = 0
+            record['distance_avg'] = 0
+            record['all_decks'] = 0
+            record['all_distance_min'] = 0
+            record['all_distance_max'] = 0
+            record['all_distance_avg'] = 0
+            record['deck_percent_of_all'] = 0
+            temp_dict[record['month']] = record
+        
         for line in cluster_res:
             record = dict()
             record['month'] = line[0]
@@ -678,7 +710,10 @@ class DeckCluster(models.Model):
                     record['deck_percent_of_all'] = None
                     if record['all_decks'] > 0:
                         record['deck_percent_of_all'] = float(record['decks']) / float(record['all_decks'])
-            result['histogram'].append(record)
+            temp_dict[record['month']] = record
+
+        for rrkey in sorted(temp_dict.iterkeys()):
+            result['histogram'].append(temp_dict[rrkey])
 
         count_sql = '''SELECT count(id), min(distance), max(distance), avg(distance) FROM deckclusterdeck WHERE deckcluster_id = %s'''
         cursor.execute(count_sql, [self.id])
