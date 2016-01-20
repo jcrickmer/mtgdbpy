@@ -64,7 +64,7 @@ Again, you will probably need to do something a little bit different for Standar
 Step 6:
 Update all of the card ratings based on the new formats and recently copied-over battles into the new formats:
 
-./manage updatecardratings
+./manage.py updatecardratings
 
 Step 7:
 Need to update all of the Similiar Physical Cards.
@@ -94,7 +94,7 @@ java -cp core/lucene-core-4.6.1.jar:queryparser/lucene-queryparser-4.6.1.jar:ana
 Step 7e:
 Delete all of the current similarphysicalcard entries and stick our new entries in there:
 
-mysql -u root -p -e 'DELETE FROM similarphsyicalcard;' mtgdbpy
+mysql -u root -p -e 'DELETE FROM similarphysicalcard;' mtgdbpy
 mysql -u root -p mtgdbpy < sims.sql
 
 Step 8:

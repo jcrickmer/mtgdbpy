@@ -13,4 +13,5 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL("UPDATE color SET id = 'C' WHERE id = 'c'"),
         migrations.RunSQL("UPDATE cardcolor SET color_id = 'C' WHERE  color_id = 'c'"),
+        migrations.RunSQL("UPDATE expansionset SET abbr = 'CEI' WHERE id = 71"),
     ]

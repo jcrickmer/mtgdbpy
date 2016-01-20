@@ -43,6 +43,18 @@ class Command(BaseCommand):
             expset = self.get_expset(jblob['name'], jblob['code'])
             for jcard in jblob['cards']:
                 self.handle_card(jcard, expset)
+        # maybe it is AllSets
+        elif 'LEA' in jblob and 'code' in jblob['LEA'] and 'cards' in jblob['LEA']:
+            sys.stdout.write("File is a AllSets JSON...")
+            for expkey in jblob.keys():
+                eblob = jblob[expkey]
+                try:
+                    expset = self.get_expset(eblob['name'], eblob['code'])
+                    for jcard in eblob['cards']:
+                        self.handle_card(jcard, expset)
+                except:
+                    sys.stdout.write("COULD NOT get expansionset or handle_card threw an error.\n")
+                    pass
         pass
 
     def get_expset(self, name, code):
@@ -57,43 +69,65 @@ class Command(BaseCommand):
         return self.handle_card(jcard, expset)
 
     def handle_card(self, jcard, expset):
-        # First, let's see if we have this basecard
-        bc = None
         try:
-            bc = BaseCard.objects.get(name=jcard['name'])
-            self.update_basecard(jcard, bc)
-        except BaseCard.DoesNotExist:
-            bc = self.add_basecard(jcard)
-
-        # REVISIT - what about updates to BaseCard?
-
-        # Now let's get the Card
-        card = None
-        card_number = None
-        try:
-            card_number = jcard['card_number']
-        except KeyError:
-            pass
-        if card_number is None:
+            # First, let's see if we have this basecard
+            bc = None
             try:
-                card_number = jcard['number']
+                bc = BaseCard.objects.get(name=jcard['name'])
+                self.update_basecard(jcard, bc)
+            except BaseCard.DoesNotExist:
+                bc = self.add_basecard(jcard)
+
+            # REVISIT - what about updates to BaseCard?
+
+            # Now let's get the Card
+            card = None
+            card_number = None
+            try:
+                card_number = jcard['card_number']
             except KeyError:
                 pass
+            if card_number is None:
+                try:
+                    card_number = jcard['number']
+                except KeyError:
+                    pass
 
-        #sys.stderr.write("Name: " + jcard['name'] + '\n')
-        #sys.stderr.write("MUID: " + str(jcard['multiverseid']) + '\n')
-        # sys.stderr.write(" card #: " + str(card_number) + '\n')
-        #sys.stderr.write(str(bc) + "\n")
+            sys.stderr.write("Name: " + jcard['name'] + ': ')
 
-        card = Card.objects.filter(expansionset=expset, card_number=card_number, multiverseid=jcard['multiverseid'], basecard=bc).first()
-        if card is None:
-            card = self.add_card(jcard, expset, bc)
-        else:
-            # let's update the card
-            card = self.update_card(jcard, card)
+            try:
+                lll = jcard['layout']
+                if lll == 'token':
+                    sys.stderr.write(" token, so skipped.\n")
+                    return
+            except KeyError:
+                sys.stderr.write(" no layout, so skipped.\n")
+                return
 
-        # and now rulings
-        self.set_rulings(bc, jcard)
+            try:
+                muid = jcard['multiverseid']
+            except KeyError:
+                sys.stderr.write(" no multiverseid, so skipped.\n")
+                return
+
+            sys.stderr.write(" " + str(jcard['multiverseid']) + '\n')
+            # sys.stderr.write(" card #: " + str(card_number) + '\n')
+            #sys.stderr.write(str(bc) + "\n")
+
+            card = Card.objects.filter(expansionset=expset, card_number=card_number, multiverseid=jcard['multiverseid'], basecard=bc).first()
+            if card is None:
+                card = self.add_card(jcard, expset, bc)
+            else:
+                # let's update the card
+                card = self.update_card(jcard, card)
+
+            # and now rulings
+            self.set_rulings(bc, jcard)
+        except:
+            try:
+                sys.stderr.write("UNABLE TO LOAD CARD: " + jcard['name'] + '\n')
+            except KeyError:
+                sys.stderr.write("UNABLE TO LOAD CARD WITH NO NAME!!\n")
 
     def add_basecard(self, jcard):
         # Initially, I had tried to put all of the objecst into a

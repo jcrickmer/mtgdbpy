@@ -194,6 +194,7 @@ class PhysicalCard(models.Model):
                     rules = 'tap: add managreen to your mana pool.'
             rules = rules.replace(basecard.name, 'cardselfreference')
             rules = rules.lower()
+            rules = rules.replace('{c}', ' manacolorless ')
             rules = rules.replace('{t}', ' tap ')
             rules = rules.replace('{q}', ' untap ')
             rules = rules.replace('{w}', ' manawhite ')
@@ -270,11 +271,20 @@ class PhysicalCard(models.Model):
 
             result = result + 'cmc' + str(basecard.cmc) + '\n'
             if basecard.power is not None:
-                result = result + 'power' + str(basecard.power) + "\n"
+                try:
+                    result = result + 'power' + str(basecard.power) + "\n"
+                except:
+                    pass
             if basecard.toughness is not None:
-                result = result + 'toughness' + str(basecard.toughness) + "\n"
+                try:
+                    result = result + 'toughness' + str(basecard.toughness) + "\n"
+                except:
+                    pass
             if basecard.loyalty is not None:
-                result = result + 'loyalty' + str(basecard.loyalty) + "\n"
+                try:
+                    result = result + 'loyalty' + str(basecard.loyalty) + "\n"
+                except:
+                    pass
             colors = basecard.colors.all()
             if len(colors) > 1:
                 result = result + 'multicolored\n'
