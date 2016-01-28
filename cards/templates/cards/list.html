@@ -69,27 +69,27 @@ $(function() {
           <div class="list_rules">{{card.rules_text_html}}</div>
         </td>
         <td>
-          <div class="cn_r_bfz">BFZ:&nbsp;<span id="cr_{{card.multiverseid}}_33"></span></div>
-          <div class="cn_r_std">Std:&nbsp;<span id="cr_{{card.multiverseid}}_32"></span></div>
-          <div class="cn_r_mod">Mod:&nbsp;<span id="cr_{{card.multiverseid}}_31"></span></div>
-          <div class="cn_r_edh">EDH:&nbsp;<span id="cr_{{card.multiverseid}}_29"></span></div>
-          <div class="cn_r_tl">TL:&nbsp;<span id="cr_{{card.multiverseid}}_30"></span></div>
+          <div class="cn_r_bfz">BFZ:&nbsp;<span id="cr_{{card.multiverseid}}_38"></span></div>
+          <div class="cn_r_std">Std:&nbsp;<span id="cr_{{card.multiverseid}}_37"></span></div>
+          <div class="cn_r_mod">Mod:&nbsp;<span id="cr_{{card.multiverseid}}_36"></span></div>
+          <div class="cn_r_edh">EDH:&nbsp;<span id="cr_{{card.multiverseid}}_34"></span></div>
+          <div class="cn_r_tl">TL:&nbsp;<span id="cr_{{card.multiverseid}}_35"></span></div>
         {% for cardrating in card.basecard.physicalcard.cardrating_set.all %}
           {% if cardrating.test.id == 1 %}
-            {% if cardrating.format.id == 33 %}
-              <script>$("#cr_{{card.multiverseid}}_33").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
+            {% if cardrating.format.id == 38 %}
+              <script>$("#cr_{{card.multiverseid}}_38").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
             {% endif %}
-            {% if cardrating.format.id == 32 %}
-              <script>$("#cr_{{card.multiverseid}}_32").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
+            {% if cardrating.format.id == 37 %}
+              <script>$("#cr_{{card.multiverseid}}_37").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
             {% endif %}
-            {% if cardrating.format.id == 31 %}
-              <script>$("#cr_{{card.multiverseid}}_31").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
+            {% if cardrating.format.id == 36 %}
+              <script>$("#cr_{{card.multiverseid}}_36").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
             {% endif %}
-            {% if cardrating.format.id == 29 %}
-              <script>$("#cr_{{card.multiverseid}}_29").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
+            {% if cardrating.format.id == 34 %}
+              <script>$("#cr_{{card.multiverseid}}_34").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
             {% endif %}
-            {% if cardrating.format.id == 30 %}
-              <script>$("#cr_{{card.multiverseid}}_30").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
+            {% if cardrating.format.id == 35 %}
+              <script>$("#cr_{{card.multiverseid}}_35").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
             {% endif %}
           {% endif %}
         {% endfor%}
