@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Page Not Found</title>
+    <title>Server Error</title>
     <link rel="stylesheet" href="/cn/cn.css">
     <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -17,15 +17,15 @@
   ga('create', 'UA-51890509-1', 'card.ninja');
   ga('send', 'pageview');
   ga('send', 'exception', {
-    'exDescription': 'ERROR_403',
+    'exDescription': 'ERROR_500',
     'exFatal': false
   });
     </script>
   </head>
   <body role="document">
-    <h1>This is not the page that you are looking for.</h1>
+    <h1>Server Error</h1>
     <p>
-      Sorry, the page &quot;{{request_path}}&quot; does not exist. Try <a href="{% url 'cards:index' %}">looking again</a>.
+      Deepest appologies, but it looks like we are having a hard time responding to your request.
     </p>
   </body>
 </html>
