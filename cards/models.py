@@ -957,6 +957,7 @@ class Format(models.Model):
     id = models.AutoField(primary_key=True)
     formatname = models.CharField(max_length=60, null=False)
     format = models.CharField(max_length=60, unique=True, null=False)
+    abbr = models.CharField(max_length=6, unique=False, null=True)
     min_cards_main = models.IntegerField(null=False, default=60)
     max_cards_main = models.IntegerField(null=False, default=60)
     min_cards_side = models.IntegerField(null=False, default=0)

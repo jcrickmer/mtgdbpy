@@ -69,28 +69,12 @@ $(function() {
           <div class="list_rules">{{card.rules_text_html}}</div>
         </td>
         <td>
-          <div class="cn_r_bfz">BFZ:&nbsp;<span id="cr_{{card.multiverseid}}_38"></span></div>
-          <div class="cn_r_std">Std:&nbsp;<span id="cr_{{card.multiverseid}}_37"></span></div>
-          <div class="cn_r_mod">Mod:&nbsp;<span id="cr_{{card.multiverseid}}_36"></span></div>
-          <div class="cn_r_edh">EDH:&nbsp;<span id="cr_{{card.multiverseid}}_34"></span></div>
-          <div class="cn_r_tl">TL:&nbsp;<span id="cr_{{card.multiverseid}}_35"></span></div>
+          {% for format in current_formats %}
+            <div class="cn_r_{{format.abbr}}">{{format.abbr}}:&nbsp;<span id="cr_{{card.multiverseid}}_{{format.id}}"></span></div>
+	  {% endfor %}
         {% for cardrating in card.basecard.physicalcard.cardrating_set.all %}
           {% if cardrating.test.id == 1 %}
-            {% if cardrating.format.id == 38 %}
-              <script>$("#cr_{{card.multiverseid}}_38").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
-            {% endif %}
-            {% if cardrating.format.id == 37 %}
-              <script>$("#cr_{{card.multiverseid}}_37").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
-            {% endif %}
-            {% if cardrating.format.id == 36 %}
-              <script>$("#cr_{{card.multiverseid}}_36").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
-            {% endif %}
-            {% if cardrating.format.id == 34 %}
-              <script>$("#cr_{{card.multiverseid}}_34").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
-            {% endif %}
-            {% if cardrating.format.id == 35 %}
-              <script>$("#cr_{{card.multiverseid}}_35").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
-            {% endif %}
+            <script>$("#cr_{{card.multiverseid}}_{{cardrating.format.id}}").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
           {% endif %}
         {% endfor%}
         </td>

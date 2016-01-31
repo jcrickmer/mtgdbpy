@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block pagetitle %}Formats{% endblock %}
+{% block title %}Formats{% endblock %}
+
+{% block content %}
+  <p>Current Formats</p>
+  <table>
+      <tr>
+        <td>id</td>
+        <td>Abbr</td>
+        <td>Format</td>
+        <td>Format Name</td>
+        <td>Start Date</td>
+        <td>End Date</td>
+        <td>Actions</td>
+      </tr>
+    {% for format in formats %}
+      <tr>
+        <td>{{format.id}}</td>
+        <td>{{format.abbr}}</td>
+        <td>{{format.format}}</td>
+        <td>{{format.formatname}}</td>
+        <td>{{format.start_date}}</td>
+        <td>{{format.end_date}}</td>
+        <td><a href="{% url 'cards:battle' format=format.formatname %}">Battle</a>
+          <a href="{% url 'cards:ratings' format_id=format.id %}">Rating Stats</a>
+          <a href="{% url 'cards:formatstats' formatname=format.formatname %}">Format Stats</a></td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}

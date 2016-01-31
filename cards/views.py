@@ -80,10 +80,8 @@ def index(request):
             'format': f.format,
             'formatname': f.formatname,
             'start_date': f.start_date} for f in Format.objects.all().order_by('format')]
-    context['current_formats'] = [{'format': f.format,
-                                   'formatname': f.formatname,
-                                   'start_date': f.start_date} for f in Format.objects.filter(start_date__lte=datetime.today(),
-                                                                                              end_date__gte=datetime.today()).order_by('format')]
+    context['current_formats'] = Format.objects.filter(start_date__lte=datetime.today(),
+                                                       end_date__gte=datetime.today()).order_by('format')
     return render(request, 'cards/index.html', context)
 
 
@@ -248,10 +246,8 @@ def cardlist(request):
         'predicates': query_pred_array,
         'predicates_js': json.dumps(query_pred_array),
     }
-    context['current_formats'] = [{'format': f.format,
-                                   'formatname': f.formatname,
-                                   'start_date': f.start_date} for f in Format.objects.filter(start_date__lte=datetime.today(),
-                                                                                              end_date__gte=datetime.today()).order_by('format')]
+    context['current_formats'] = Format.objects.filter(start_date__lte=datetime.today(),
+                                                       end_date__gte=datetime.today()).order_by('format')
     return render(request, 'cards/list.html', context)
 
 
@@ -370,7 +366,6 @@ def detail(request, multiverseid=None, slug=None):
         card_stats = []
         mod_fcstat = None
         std_fcstat = None
-        bfz_fcstat = None
         formats = Format.cards.current_legal_formats(cards[0])
         card_format_details = {}
         for ff in formats:
@@ -378,21 +373,11 @@ def detail(request, multiverseid=None, slug=None):
             card_format_details[ff.format] = dets
             dets['format'] = ff
             if ff.formatname == 'Standard':
-                dets['format_abbr'] = 'Std'
                 std_fcstat = FormatCardStat.objects.filter(physicalcard=cards[0].basecard.physicalcard, format=ff).first()
                 card_stats.append(std_fcstat)
             elif ff.formatname == 'Modern':
-                dets['format_abbr'] = 'Mod'
                 mod_fcstat = FormatCardStat.objects.filter(physicalcard=cards[0].basecard.physicalcard, format=ff).first()
                 card_stats.append(mod_fcstat)
-            elif ff.formatname == 'BattleforZendikar':
-                dets['format_abbr'] = 'BFZ'
-                bfz_fcstat = FormatCardStat.objects.filter(physicalcard=cards[0].basecard.physicalcard, format=ff).first()
-                card_stats.append(bfz_fcstat)
-            elif ff.formatname == 'TinyLeaders':
-                dets['format_abbr'] = 'TL'
-            elif ff.formatname == 'Commander':
-                dets['format_abbr'] = 'EDH'
             dets['rating'] = cards[0].basecard.physicalcard.cardrating_set.filter(test_id=1, format_id=ff.id).first()
             dets['wincount'] = Battle.objects.filter(winner_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).count()
             dets['losecount'] = Battle.objects.filter(loser_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).count()
@@ -429,7 +414,6 @@ def detail(request, multiverseid=None, slug=None):
                                                          'rulings': cards[0].basecard.get_rulings(),
                                                          'mod_card_stat': mod_fcstat,
                                                          'std_card_stat': std_fcstat,
-                                                         'bfz_card_stat': bfz_fcstat,
                                                          'card_stats': card_stats,
                                                          #'rules_text_html': mark_safe(card.basecard.rules_text),
                                                          #'flavor_text_html': mark_safe(card.flavor_text),
@@ -507,6 +491,14 @@ def cardstats(request, formatname=None, physicalcard_id=None, multiverseid=None)
         return HttpResponse(the_data, content_type='application/json')
     pass
 
+
+def formats(request, formatname="modern"):
+    context = dict()
+    context['formats'] = Format.objects.filter(start_date__lte=datetime.today(),
+                                               end_date__gte=datetime.today())
+
+    response = render(request, 'cards/formats.html', context)
+    return response
 
 def formatstats(request, formatname="modern"):
     context = dict()

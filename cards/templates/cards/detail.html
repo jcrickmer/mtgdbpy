@@ -154,7 +154,7 @@ function drawCardStatsChart(formatname) {
       <td class="cardattr">card.ninja Card&nbsp;Rating</td>
       <td>
         {% for format, details in card_format_details.items %}
-          <span class="hidden-xs-inline">{{details.format.formatname}}</span><span class="visible-xs-inline">{{details.format_abbr}}</span>:
+          <span class="hidden-xs-inline">{{details.format.formatname}}</span><span class="visible-xs-inline">{{details.format.abbr}}</span>:
           {{details.rating.cardninjaRating|floatformat:2 }}<br>
         {% endfor%}
       </td>
