@@ -12,6 +12,7 @@ from django.db import IntegrityError
 import collections
 from django.core.urlresolvers import reverse
 from haystack.query import SearchQuerySet
+from django.conf import settings
 
 import random
 import operator
@@ -623,12 +624,15 @@ def battle(request, format="redirect"):
     }
     find_iterations = 0
 
+    rand_source = 'random'
+
     # this is a BATTLE CHEAT so that you can battle a specific card
     if request.GET.get('muid', False) or request.session.get('battle_cont_muid', False) or request.GET.get('bcid', False):
         if request.GET.get('bcid', False):
             card_a = Card.objects.filter(basecard__id__exact=int(request.GET.get('bcid', 1))).order_by('-multiverseid').first()
         else:
             card_a = Card.objects.filter(multiverseid__exact=request.GET.get('muid', request.session.get('battle_cont_muid'))).first()
+        rand_source = 'querystring'
         first_card['basecard_id'] = card_a.basecard.id
         crsdb = CardRating.objects.filter(
             physicalcard=card_a.basecard.physicalcard,
@@ -643,9 +647,17 @@ def battle(request, format="redirect"):
             logger.error("Battle: bad ju-ju finding card ratings for basecard id " + str(card_a.basecard.id))
             pass
     else:
-        bb_file = 'betterbattle_{}.csv'.format(str(format_id))
         fcsqls_xtra = ''
+        bb_file = 'betterbattle_{}.csv'.format(str(format_id))
+        try:
+            bb_file = settings.BETTER_BATTLE_PATH + '/' + 'betterbattle_{}.csv'.format(str(format_id))
+        except AttributeError:
+            pass
+        #logger.error("cur dir " + os.path.abspath("."))
+        #logger.error("looking for  " + os.path.abspath(bb_file))
         if os.path.isfile(bb_file):
+            #logger.error("loaded " + os.path.abspath(bb_file))
+            rand_source = "file: " + os.path.abspath(bb_file)
             bb_ids_list = list()
             with open(bb_file) as bb_f:
                 bbcontent = bb_f.readlines()
@@ -702,7 +714,7 @@ def battle(request, format="redirect"):
                 card_b.basecard.physicalcard.id) + " AND loser_pcard_id = " + str(
                     card_a.basecard.physicalcard.id) + "))"
         #'request.session.fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id WHERE fbc.format_id = ' + str(format_id) + ' AND fbc.basecard_id <> ' + str(first_card['basecard_id']) + ' AND cr.mu > ' + str(first_card['mu'] - ((1 + find_iterations) * first_card['sigma'])) + ' AND cr.mu < ' + str(first_card['mu'] + ((1 + find_iterations) * first_card['sigma'])) + ' ORDER BY r ASC LIMIT 1'
-        logger.error("Check battle SQL: " + sqls)
+        #logger.error("Check battle SQL: " + sqls)
         cursor.execute(sqls)
         rows = cursor.fetchall()
         if len(rows) > 0 and find_iterations < 9:
@@ -734,6 +746,7 @@ def battle(request, format="redirect"):
                'test_id': test_id,
                'format_id': format_id,
                'format': format_obj,
+               'rand_source': rand_source,
                }
     if random.random() > 0.5:
         y_a = context['card_a']

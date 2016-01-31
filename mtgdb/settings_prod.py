@@ -69,3 +69,5 @@ USE_BITLY = True
 # for card_ninja (production)
 OAUTH_TOKEN = 'XXXXX'
 OAUTH_TOKEN_SECRET = 'XXXXX'
+
+BETTER_BATTLE_PATH = '/opt/mtgdb'

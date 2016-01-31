@@ -77,9 +77,9 @@ WSGI_APPLICATION = 'mtgdb.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mtgdbpy',
-                'USER': 'mtgdb',
-                'PASSWORD': 'password'
+        'NAME': 'mtgdb',
+                'USER': 'root',
+                'PASSWORD': 'godzilla'
     },
 }
 
@@ -183,3 +183,5 @@ APP_KEY = 'XXXXXXXX'
 APP_SECRET = 'XXXXXXXX'
 OAUTH_TOKEN = 'XXXXXXXX'
 OAUTH_TOKEN_SECRET = 'XXXXXXXX'
+
+BETTER_BATTLE_PATH = '/home/jason/projects/mtgdb'
