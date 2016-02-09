@@ -103,13 +103,14 @@ def search(request):
 
 
 def autocomplete(request):
+    logger = logging.getLogger(__name__)
     sqs = SearchQuerySet().autocomplete(name_auto=request.GET.get('q', ''))[:15]
     #suggestions = [result.name for result in sqs]
     suggestions = []
     for result in sqs:
         cardname = result.name
         if cardname is not None and len(cardname) > 0:
-            cn_bc = BaseCard.objects.filter(name__iexact=cardname).first()
+            cn_bc = BaseCard.objects.filter(physicalcard__id=result.pk).first()
             result = {'name': cardname}
             if cn_bc is not None:
                 the_card = cn_bc.physicalcard.get_latest_card()

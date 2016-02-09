@@ -248,6 +248,8 @@ class PhysicalCard(models.Model):
                         result = result + 'pipred '
                     if pippart.find('g') > -1:
                         result = result + 'pipgreen '
+                    if pippart.find('c') > -1:
+                        result = result + 'pipcolorless '
                 result = result + "\n"
             strippedcost = str(basecard.mana_cost).replace('{', '')
             strippedcost = strippedcost.replace('}', '')

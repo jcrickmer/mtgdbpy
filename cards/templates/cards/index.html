@@ -157,9 +157,11 @@ $(function() {
         if (input_type == "input") {
             console.log(field_name + " is an input");
             console.log(field_name + " is " + op + " value \"" + form_field.val() + "\"");
-            var plops = form_field.val().split(" ");
+            var plops = form_field.val().split(/\W/);
             for (var p = 0; p < plops.length ; p++) {
-                window.predicates.push({"field" : field_name, "op" : op, "value" : plops[p], "hint" : field_name + op + plops[p]});
+                if (plops[p].length > 0) {
+                    window.predicates.push({"field" : field_name, "op" : op, "value" : plops[p], "hint" : field_name + op + plops[p]});
+                }
             }
             form_field.val("");
         } else if (input_type == "select") {
