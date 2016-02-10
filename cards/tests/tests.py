@@ -206,7 +206,8 @@ class CardCreateTestCase(TestCase):
         self.assertEquals(Card.objects.get_queryset().all().count(), 1)
 
 
-class CardManagerROTestCase(FastFixtureTestCase):
+#class CardManagerROTestCase(FastFixtureTestCase):
+class CardManagerROTestCase(TestCase):
     fixtures = ['mtgdbapp_testdata', ]
 
     def test_all_cards_search(self):

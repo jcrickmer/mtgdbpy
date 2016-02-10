@@ -338,11 +338,9 @@ class BaseCard(models.Model):
     toughness = models.CharField(max_length=4, null=True, blank=True)
     loyalty = models.CharField(max_length=4, null=True, blank=True)
     created_at = models.DateTimeField(
-        default=timezone.now,
         null=False,
         auto_now_add=True)
     updated_at = models.DateTimeField(
-        default=timezone.now,
         null=False,
         auto_now=True)
     cardposition = models.CharField(max_length=1, null=False, default=FRONT)
@@ -841,11 +839,9 @@ class Card(models.Model):
     card_number = models.CharField(max_length=6, blank=True, null=True)
     mark = models.ForeignKey('Mark', blank=True, null=True)
     created_at = models.DateTimeField(
-        default=timezone.now,
         null=False,
         auto_now_add=True)
     updated_at = models.DateTimeField(
-        default=timezone.now,
         null=False,
         auto_now=True)
     objects = models.Manager()
@@ -1006,7 +1002,6 @@ class Battle(models.Model):
     winner_pcard = models.ForeignKey('PhysicalCard', related_name='winner')
     loser_pcard = models.ForeignKey('PhysicalCard', related_name='loser')
     battle_date = models.DateTimeField(
-        auto_now=True,
         auto_now_add=True,
         null=False)
     session_key = models.CharField(null=False, max_length=40)
@@ -1042,7 +1037,6 @@ class CardRating(models.Model):
     test = models.ForeignKey('BattleTest')
     format = models.ForeignKey('Format')
     updated_at = models.DateTimeField(
-        default=timezone.now,
         auto_now=True,
         null=False)
 

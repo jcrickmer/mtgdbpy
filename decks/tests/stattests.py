@@ -71,7 +71,7 @@ class FormatCardStatTestCase(TestCase):
 
         td = TournamentDeck(tournament=tourny, deck=tdeck, place=1)
         td.save()
-        td = TournamentDeck.objects.filter(tournament=tourny, deck=dc1, place=1).first()
+        td = TournamentDeck.objects.filter(tournament=tourny, deck=tdeck, place=1).first()
 
         FormatStat.calc_all()
         FormatCardStat.calc_all()
@@ -121,7 +121,7 @@ class FormatCardStatTestCase(TestCase):
 
             td = TournamentDeck(tournament=tourny, deck=tdeck, place=incr)
             td.save()
-            td = TournamentDeck.objects.filter(tournament=tourny, deck=dc1, place=incr).first()
+            td = TournamentDeck.objects.filter(tournament=tourny, deck=tdeck, place=incr).first()
             incr = incr + 1
 
         FormatStat.calc_all()
@@ -170,7 +170,7 @@ class FormatCardStatTestCase(TestCase):
 
         td = TournamentDeck(tournament=tourny, deck=tdeck, place=1)
         td.save()
-        td = TournamentDeck.objects.filter(tournament=tourny, deck=dc1, place=1).first()
+        td = TournamentDeck.objects.filter(tournament=tourny, deck=tdeck, place=1).first()
 
         FormatStat.calc_all()
         FormatCardStat.calc_all()

@@ -119,9 +119,14 @@ def autocomplete(request):
     # Make sure you return a JSON object, not a bare list.
     # Otherwise, you could be vulnerable to an XSS attack.
     the_data = json.dumps(suggestions)
-    if 'callback' in request.REQUEST:
+    if 'callback' in request.GET or 'callback' in request.POST:
         # a jsonp response!
-        the_data = '%s(%s);' % (request.REQUEST['callback'], the_data)
+        callback_request = None
+        if 'callback' in request.GET:
+            callback_request = request.GET['callback']
+        elif 'callback' in request.POST:
+            callback_request = request.POST['callback']
+        the_data = '%s(%s);' % (callback_request, the_data)
         return HttpResponse(the_data, "text/javascript")
     else:
         return HttpResponse(the_data, content_type='application/json')
@@ -484,9 +489,14 @@ def cardstats(request, formatname=None, physicalcard_id=None, multiverseid=None)
         # card_stats.append(mod_fcstat)
         result['stats'] = stats
     the_data = json.dumps(result)
-    if 'callback' in request.REQUEST:
+    if 'callback' in request.GET or 'callback' in request.POST:
         # a jsonp response!
-        the_data = '%s(%s);' % (request.REQUEST['callback'], the_data)
+        callback_request = None
+        if 'callback' in request.GET:
+            callback_request = request.GET['callback']
+        elif 'callback' in request.POST:
+            callback_request = request.POST['callback']
+        the_data = '%s(%s);' % (callback_request, the_data)
         return HttpResponse(the_data, "text/javascript")
     else:
         return HttpResponse(the_data, content_type='application/json')

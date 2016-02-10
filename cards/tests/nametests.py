@@ -11,7 +11,8 @@ from cards.views import autocomplete
 err = sys.stderr
 
 
-class CardManagerROTestCase(FastFixtureTestCase):
+#class CardManagerROTestCase(FastFixtureTestCase):
+class CardManagerROTestCase(TestCase):
     fixtures = ['mtgdbapp_testdata', ]
 
     def setUp(self):
