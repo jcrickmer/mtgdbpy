@@ -87,7 +87,7 @@ rm /tmp/cards_for_lucene/*
 ./manage.py gencarddocsforlucene --outdir /tmp/cards_for_lucene
 
 Step 7b:
-Now move over to the Lucene 4.6.1 instance that we are using on smoker (the dev box), and forgood measure, recompile the Java classes we are using:
+Now move over to the Lucene 4.6.1 instance that we are using on smoker (the dev box), and for good measure, recompile the Java classes we are using:
 
 cd ../clustering/lucene-4.6.1
 javac -cp core/lucene-core-4.6.1.jar:queryparser/lucene-queryparser-4.6.1.jar:analysis/common/lucene-analyzers-common-4.6.1.jar:demo/lucene-demo-4.6.1.jar:. MTG*.java

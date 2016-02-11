@@ -406,7 +406,7 @@ def detail(request, multiverseid=None, slug=None):
                     basecard__physicalcard__id=battle['winner_pcard_id']).order_by('-multiverseid').first() for battle in lost_battles]
         similars = []
         for sim in cards[0].basecard.physicalcard.physicalcard.all().order_by('-score')[:18]:
-            simcard = Card.objects.filter(basecard__physicalcard=sim.sim_physicalcard).order_by('-multiverseid').first()
+            simcard = Card.objects.filter(basecard__physicalcard=sim.sim_physicalcard, basecard__cardposition__in=[BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP]).order_by('-multiverseid').first()
             if simcard is not None:
                 similars.append(simcard)
         response = render(request, 'cards/detail.html', {'request_mvid': multiverseid,

@@ -298,8 +298,8 @@ $('.panel-group').on('shown.bs.collapse', toggleChevron);
   <div class="row">
     {% for sim in similars %}
       <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
-        <div class="text-center"><a href="{% url 'cards:detail' sim.multiverseid sim.url_slug %}"><img class="list_cardimage" src="{{ sim.img_url }}" alt="{{ sim.basecard.name }}"/></a></div>
-        <div class="text-center"><a href="{% url 'cards:detail' sim.multiverseid sim.url_slug %}">{{sim.basecard.name}}</a></div>
+        <div class="text-center"><a href="{% url 'cards:detail' sim.multiverseid sim.url_slug %}"><img class="list_cardimage" src="{{ sim.img_url }}" alt="{{ sim.basecard.physicalcard.get_card_name }}"/></a></div>
+        <div class="text-center"><a href="{% url 'cards:detail' sim.multiverseid sim.url_slug %}">{{sim.basecard.physicalcard.get_card_name}}</a></div>
       </div>
     {% endfor %}
   </div>
