@@ -22,8 +22,6 @@ SECRET_KEY = 'fn+&ta$dafk$a57ozf9h*!@!j-&np6_ik-%tg#y=$z*@$6b^@$'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-TEMPLATE_DEBUG = True
-
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 ALLOWED_HOSTS = []
@@ -118,12 +116,27 @@ USE_L10N = True
 
 USE_TZ = True
 
-TEMPLATE_DIRS = (
-    os.path.join(BASE_DIR, 'cards', 'templates'),
-    os.path.join(BASE_DIR, 'decks', 'templates'),
-    os.path.join(BASE_DIR, 'rules', 'templates'),
-    os.path.join(BASE_DIR, 'mtgdb', 'templates'),
-)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'cards', 'templates'),
+                 os.path.join(BASE_DIR, 'decks', 'templates'),
+                 os.path.join(BASE_DIR, 'rules', 'templates'),
+                 os.path.join(BASE_DIR, 'mtgdb', 'templates'),
+                 ],
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        }
+    }
+]
 
 LOGGING = {
     'version': 1,
