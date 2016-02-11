@@ -11,7 +11,7 @@ from cards.views import autocomplete
 err = sys.stderr
 
 
-#class CardManagerROTestCase(FastFixtureTestCase):
+# class CardManagerROTestCase(FastFixtureTestCase):
 class CardManagerROTestCase(TestCase):
     fixtures = ['mtgdbapp_testdata', ]
 
@@ -58,57 +58,56 @@ class CardManagerROTestCase(TestCase):
         request = self.factory.get('/cards/_nameauto?q=Island')
         response = autocomplete(request)
         data = json.loads(response.content)
-        self.assertEquals(len(data),1)
-        self.assertEquals(data[0]['name'],'Island')
+        self.assertEquals(len(data), 1)
+        self.assertEquals(data[0]['name'], 'Island')
 
     def test_two_ajax(self):
         request = self.factory.get('/cards/_nameauto?q=Firewalker')
         response = autocomplete(request)
         data = json.loads(response.content)
-        self.assertEquals(len(data),1)
-        self.assertEquals(data[0]['name'],'Kor Firewalker')
+        self.assertEquals(len(data), 1)
+        self.assertEquals(data[0]['name'], 'Kor Firewalker')
 
     def test_three_ajax(self):
         request = self.factory.get('/cards/_nameauto?q=elspeth+knight')
         response = autocomplete(request)
         data = json.loads(response.content)
-        self.assertEquals(len(data),1)
-        self.assertEquals(data[0]['name'],'Elspeth, Knight-Errant')
+        self.assertEquals(len(data), 1)
+        self.assertEquals(data[0]['name'], 'Elspeth, Knight-Errant')
 
     def test_four_ajax(self):
         request = self.factory.get('/cards/_nameauto?q=delver')
         response = autocomplete(request)
         data = json.loads(response.content)
-        self.assertEquals(len(data),1)
-        self.assertEquals(data[0]['name'],'Delver of Secrets // Insectile Aberration')
+        self.assertEquals(len(data), 1)
+        self.assertEquals(data[0]['name'], 'Delver of Secrets // Insectile Aberration')
 
     def test_five_ajax(self):
         request = self.factory.get('/cards/_nameauto?q=ravager+fells')
         response = autocomplete(request)
         data = json.loads(response.content)
-        self.assertEquals(len(data),1)
-        self.assertEquals(data[0]['name'],'Huntmaster of the Fells // Ravager of the Fells')
+        self.assertEquals(len(data), 1)
+        self.assertEquals(data[0]['name'], 'Huntmaster of the Fells // Ravager of the Fells')
 
     def test_six_ajax(self):
         request = self.factory.get('/cards/_nameauto?q=wear')
         response = autocomplete(request)
         data = json.loads(response.content)
-        self.assertEquals(len(data),1)
-        self.assertEquals(data[0]['name'],'Wear // Tear')
+        self.assertEquals(len(data), 1)
+        self.assertEquals(data[0]['name'], 'Wear // Tear')
 
     def test_six_ajax(self):
         request = self.factory.get('/cards/_nameauto?q=wear')
         response = autocomplete(request)
         data = json.loads(response.content)
         # Rest for the Weary' is in this list.
-        self.assertEquals(len(data),2)
-        self.assertEquals(data[0]['name'],'Wear // Tear')
+        self.assertEquals(len(data), 2)
+        self.assertEquals(data[0]['name'], 'Wear // Tear')
 
     def test_seven_ajax(self):
         request = self.factory.get('/cards/_nameauto?q=tear')
         response = autocomplete(request)
         #err.write("RES: {}".format(response.content))
         data = json.loads(response.content)
-        self.assertEquals(len(data),1)
-        self.assertEquals(data[0]['name'],'Wear // Tear')
-
+        self.assertEquals(len(data), 1)
+        self.assertEquals(data[0]['name'], 'Wear // Tear')

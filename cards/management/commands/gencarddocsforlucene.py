@@ -46,7 +46,7 @@ class Command(BaseCommand):
         else:
             fbc_list = FormatBasecard.objects.filter(
                 format__formatname=options['formatname'],
-                ## REVISIT - need to come back and set this so that it only grabs the most recent version of the format.
+                # REVISIT - need to come back and set this so that it only grabs the most recent version of the format.
                 basecard__cardposition__in=[
                     BaseCard.FRONT,
                     BaseCard.LEFT,
@@ -54,7 +54,7 @@ class Command(BaseCommand):
             for fbcard in fbc_list:
                 pcard = fbcard.basecard.physicalcard
                 pcard_list.append(pcard)
-                
+
         for pcard in pcard_list:
             if pcard.layout in [pcard.TOKEN, pcard.PLANE, pcard.SCHEME, pcard.PHENOMENON, pcard.VANGUARD]:
                 continue

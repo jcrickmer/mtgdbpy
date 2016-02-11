@@ -22,7 +22,7 @@ sys.stdin = UTF8Reader(sys.stdin)
 
 class Command(BaseCommand):
 
-# DO THIS: export PYTHONIOENCODING=utf-8
+    # DO THIS: export PYTHONIOENCODING=utf-8
 
     def handle(self, *args, **options):
         for line in sys.stdin:

@@ -662,7 +662,7 @@ class DeckCluster(models.Model):
         cluster_res = cursor.fetchall()
         result = dict()
         result['histogram'] = list()
-        
+
         # setup all of the months that we want to look at
         all_dates = list()
         now = time.localtime()
@@ -677,7 +677,7 @@ class DeckCluster(models.Model):
             date_m = time.localtime(time.mktime((start_year, start_month, 1, 0, 0, 0, 0, 0, 0)))[:2]
             all_dates.append(date_m)
             start_month = start_month + 1
-        
+
         # create 0-objects for all of those dates and add them to a temporary dict
         temp_dict = dict()
         for rmonth in all_dates:
@@ -693,7 +693,7 @@ class DeckCluster(models.Model):
             record['all_distance_avg'] = 0
             record['deck_percent_of_all'] = 0
             temp_dict[record['month']] = record
-        
+
         for line in cluster_res:
             record = dict()
             record['month'] = line[0]

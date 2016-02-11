@@ -7,6 +7,7 @@ import logging
 from django.core.cache import cache
 from django.db.models import Max, Min, Count, Sum, Avg
 
+
 def index(request):
     context = dict()
     return render(request, 'decks/index.html', context)
@@ -23,7 +24,8 @@ def deck(request, deck_id=None):
     context['cdeck'] = dict()
     context['cdeck']['deck'] = deck
     return render(request, 'decks/deck.html', context)
-        
+
+
 def clusters(request):
     context = dict()
     clusters = DeckCluster.objects.all()
@@ -97,6 +99,7 @@ def cluster_cards(request, cluster_id=None):
 
     return render(request, 'decks/cluster_cards.html', context)
 
+
 def tournament(request, tournament_id=None):
     tournament = None
     try:
@@ -110,10 +113,10 @@ def tournament(request, tournament_id=None):
     context['tournament_decks'] = tdecks
     return render(request, 'decks/tournament.html', context)
 
+
 class TournamentListView(ListView):
     model = Tournament
     template_name = 'decks/tournaments.html'
     context_object_name = 'tournament_list'
     queryset = Tournament.objects.filter(format__formatname='Modern').annotate(deck_count=Count('tournamentdeck')).order_by('-start_date')
     paginate_by = 25
-    

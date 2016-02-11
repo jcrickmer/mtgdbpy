@@ -9,7 +9,7 @@ import sys
 err = sys.stderr
 
 
-#class CardManagerROTestCase(FastFixtureTestCase):
+# class CardManagerROTestCase(FastFixtureTestCase):
 class CardManagerROTestCase(TestCase):
     fixtures = ['mtgdbapp_testdata', ]
 

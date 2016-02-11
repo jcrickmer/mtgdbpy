@@ -272,7 +272,7 @@ class OriginsCardRandomizer(BaseCardRandomizer):
 
         #ori_cards = Card.objects.filter(expansionset_id=187)
         #ori_card_names = [x.basecard.name for x in ori_cards]
-        
+
         spreds = []
         spred = SearchPredicate()
         spred.term = 'format'
@@ -281,7 +281,7 @@ class OriginsCardRandomizer(BaseCardRandomizer):
         #spred_n = SearchPredicate()
         #spred_n.term = 'name'
         #spred_n.value = random.choice(ori_card_names)
-        #spreds.append(spred_n)
+        # spreds.append(spred_n)
         sd = SortDirective()
         sd.term = 'cardrating'
         sd.direction = sd.DESC
@@ -352,14 +352,14 @@ class OriginsCardRandomizer(BaseCardRandomizer):
             bitly = {"url": url_raw}
 
         self.tweet = '{} rated {} than {} in #MTGOrigins limited'.format(
-                self.first_card.basecard.name,
-                comp_word,
-                self.comp_card.basecard.name,
-                bitly['url'])
+            self.first_card.basecard.name,
+            comp_word,
+            self.comp_card.basecard.name,
+            bitly['url'])
 
         return self.tweet
 
-            
+
 class MM2CardRandomizer(BaseCardRandomizer):
 
     def __init__(self):

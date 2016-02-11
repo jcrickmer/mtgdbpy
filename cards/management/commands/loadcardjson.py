@@ -114,7 +114,11 @@ class Command(BaseCommand):
             # sys.stderr.write(" card #: " + str(card_number) + '\n')
             #sys.stderr.write(str(bc) + "\n")
 
-            card = Card.objects.filter(expansionset=expset, card_number=card_number, multiverseid=jcard['multiverseid'], basecard=bc).first()
+            card = Card.objects.filter(
+                expansionset=expset,
+                card_number=card_number,
+                multiverseid=jcard['multiverseid'],
+                basecard=bc).first()
             if card is None:
                 card = self.add_card(jcard, expset, bc)
             else:
