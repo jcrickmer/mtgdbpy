@@ -2,6 +2,7 @@
 from django.shortcuts import render
 from decks.models import Deck, DeckCluster, DeckClusterDeck, Tournament, TournamentDeck
 from cards.models import PhysicalCard
+from django.http import Http404
 from django.views.generic import ListView
 import logging
 from django.core.cache import cache

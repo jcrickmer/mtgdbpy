@@ -629,7 +629,8 @@ class FormatCardStat(models.Model):
 
 class DeckClusterDeck(models.Model):
     deckcluster = models.ForeignKey('DeckCluster')
-    deck = models.ForeignKey('Deck', unique=True)
+    #deck = models.ForeignKey('Deck', unique=True)
+    deck = models.OneToOneField(Deck)
     distance = models.FloatField(default=1000.0, null=False)
 
     class Meta:
