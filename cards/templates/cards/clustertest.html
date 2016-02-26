@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Card Clustering Test Results{% endblock %}
+{% block pagetitle %}Card Clustering Test Results{% endblock %}
+
+{% block content %}
+These are the results for test {{test_number}}
+
+<div>Cluster count: {{clustered_cards|length}}</div>
+
+{% for metric, value in metrics.items %}
+<div>{{metric}}: {{value}}</div>
+{% endfor %}
+{% for cluster_id, cards_list in clustered_cards.items %}
+<h3>Cluster {{cluster_id}}</h3>
+<div>Card count: {{cards_list|length}}</div>
+{% for pcard in cards_list %}
+<a href="{% url 'cards:detail' pcard.get_latest_card.multiverseid pcard.get_latest_card.url_slug %}"><img class="list_cardimage" src="{{ pcard.get_latest_card.img_url }}" alt="{{ pcard.get_card_name }}"/></a>
+{% endfor %}
+{% endfor %}
+{% endblock %}

@@ -1,6 +1,7 @@
 from django.conf.urls import patterns, url, include
 
 from cards import views
+from cards import utilviews
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
@@ -27,4 +28,6 @@ urlpatterns = [
     url(r'^(?P<slug>[a-zA-Z-]+)/$', views.detail, name='detail'),
     url(r'^_textsearch/', include('haystack.urls')),
     url(r'^_nameauto/', views.autocomplete, name='autocomplete'),
+    url(r'^_clustertest/(?P<test_id>[0-9]+)', utilviews.cardclustertest, name='cardclustertest'),
+    url(r'^_clustertest/',utilviews.cardclustertest, name='cardclustertest'),
 ]
