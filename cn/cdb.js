@@ -86,9 +86,10 @@ $(function() {
         }
     };
     cdb.cleanHint = function(hint) {
-        return hint.replace(/[^a-zA-Z0-9_]/, "_");
+        return hint.replace(/[^a-zA-Z0-9_{}]/, "_");
     };
     cdb.removeSearchPredicate = function(hint, parent_jqs, autoSubmitQuery) {
+        //console.log("trying to remove hint\"" + hint + "\"")
         for (var h = 0 ; h < cdb.predicates.length ; h++) {
             var pred = cdb.predicates[h];
             if (cdb.cleanHint(pred.hint) == cdb.cleanHint(hint)) {

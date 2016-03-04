@@ -156,8 +156,9 @@ def predefsearch(request, terms=None):
     elif 'colorless' in terms:
         for color, cid in colors:
             query_pred_array.append({"field":"color","op":"not","value":cid,"hint":"colornot{}".format(cid)})
-            if not uses_slang:
-                page_title_words.append('Colorless')
+            query_pred_array.append({"field":"rules","op":"not","value":"{" + cid + "}","hint":"rulesnot" + cid})
+        if not uses_slang:
+            page_title_words.append('Colorless')
     else:
         for color, cid in colors:
             if color in terms:

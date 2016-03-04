@@ -148,16 +148,16 @@ $(function() {
     $( "button.add-btn" )
       .button()
       .click(function( event ) {
-        console.dir(event);
-        console.log("You clicked it! " + event.target.name);
+        //console.dir(event);
+        //console.log("You clicked it! " + event.target.name);
         var field_name = event.target.name.replace("_add","");
         var form_field = $("#" + field_name);
         var input_type = form_field.prop("tagName").toLowerCase();
         var op = $("#" + field_name + "_op option:selected").attr("value");
         if (input_type == "input") {
-            console.log(field_name + " is an input");
-            console.log(field_name + " is " + op + " value \"" + form_field.val() + "\"");
-            var plops = form_field.val().split(/\W/);
+            //console.log(field_name + " is an input");
+            //console.log(field_name + " is " + op + " value \"" + form_field.val() + "\"");
+            var plops = form_field.val().split(/\s/);
             for (var p = 0; p < plops.length ; p++) {
                 if (plops[p].length > 0) {
                     window.predicates.push({"field" : field_name, "op" : op, "value" : plops[p], "hint" : field_name + op + plops[p]});
@@ -165,7 +165,7 @@ $(function() {
             }
             form_field.val("");
         } else if (input_type == "select") {
-            console.log(field_name + " is a select");
+            //console.log(field_name + " is a select");
             var op = $("#" + field_name + "_op option:selected").attr("value");
             window.predicates.push({"field" : field_name, "op" : op, "value" : $("#" + field_name + " option:selected").attr("value"), "hint" : field_name + op + $("#" + field_name + " option:selected").attr("value")});
         } else { alert("I do not yet understand this query type."); }
