@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block pagetitle %}Search Results ({{cards.paginator.count}}){% endblock %}
-{% block title %}Search Results{% endblock %}
+{% block pagetitle %}{{thepagetitle}} ({{cards.paginator.count}}){% endblock %}
+{% block title %}{{thepagetitle}}{% endblock %}
 
 {% block content %}
   <style>

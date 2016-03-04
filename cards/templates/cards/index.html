@@ -178,8 +178,11 @@ $(function() {
 <div class="row">
   <div class="col-xs-12">
     <h3>Common Searches</h3>
-    <ul>
-      <li><a href="_search">All Cards</a></li>
+    <style>li.common-search { margin-right: 18px; margin-bottom: 9px; display: inline-block; }</style>
+    <ul style="padding-left: 0;">
+      {% for label, url in common_searches.items %}
+        <li class="common-search"><a href="{{url}}">{{label}}</a></li>
+      {% endfor %}
     </ul>
   </div>
 </div>

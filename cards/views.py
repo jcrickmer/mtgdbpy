@@ -42,6 +42,27 @@ import logging
 from trueskill import TrueSkill, Rating, quality_1vs1, rate_1vs1
 from functools import reduce
 
+color_slang = [['azorius',['white','blue']],
+               ['orzhov',['white','black']],
+               ['boros',['white','red']],
+               ['selesnya',['white','green']],
+               ['dimir',['blue','black']],
+               ['izzet',['blue','red']],
+               ['simic',['blue','green']],
+               ['rakdos',['black','red']],
+               ['golgari',['black','green']],
+               ['gruul',['red','green']],
+               ['esper',['white','blue','black']],
+               ['jeskai',['white','blue','red']],
+               ['bant',['white','blue','green']],
+               ['grixis',['blue','black','red']],
+               ['sultai',['blue','black','green']],
+               ['jund',['black','red','green']],
+               ['mardu',['black','red','white']],
+               ['naya',['red','green','white']],
+               ['temur',['red','green','blue']],
+               ['abzan',['green','white','black']]]
+
 #
 # The index view simple shows a search page. The page may be
 # interactive, but the index view has no specific interactions
@@ -82,8 +103,81 @@ def index(request):
             'start_date': f.start_date} for f in Format.objects.all().order_by('format')]
     context['current_formats'] = Format.objects.filter(start_date__lte=datetime.today(),
                                                        end_date__gte=datetime.today()).order_by('format')
+    com_searches = {'All cards': '_search'}
+    for color in ['white','blue','black','red','green','colorless','five-color']:
+        com_searches['{} Commanders'.format(color.capitalize())] = '/cards/search/{}-commanders/'.format(color)
+        com_searches['{} Planeswalkers'.format(color.capitalize())] = '/cards/search/{}-planeswalkers/'.format(color)
+    for guild, gcolors in color_slang:
+        com_searches['{} Commanders'.format(guild.capitalize())] = '/cards/search/{}-commanders/'.format('-'.join(gcolors))
+        com_searches['{} Planeswalkers'.format(guild.capitalize())] = '/cards/search/{}-planeswalkers/'.format('-'.join(gcolors))
+    
+    context['common_searches'] = com_searches
     return render(request, 'cards/index.html', context)
 
+
+def predefsearch(request, terms=None):
+    query_pred_array = []
+    page_title_words = []
+    uses_slang = False
+    for guild, gcolors in color_slang:
+        if guild in terms:
+            for gc in gcolors:
+                terms = '{}-{}'.format(terms,gc)
+            uses_slang = True
+            page_title_words.append(guild.capitalize())
+    if 'planeswalker' in terms:
+        query_pred_array.append({"field":"type","op":"and","value":"Planeswalker","hint":"typeandPlaneswalker"})
+        request.session['sort_order'] = 'name'
+    elif 'edh' in terms or 'commander' in terms:
+        query_pred_array.append({"field":"type","op":"and","value":"Legendary","hint":"typeandLegendary"})
+        query_pred_array.append({"field":"type","op":"and","value":"Creature","hint":"typeandCreature"})
+        if 'tiny' in terms:
+            cformat = Format.objects.filter(formatname='TinyLeaders',
+                                            start_date__lte=datetime.today(),
+                                            end_date__gte=datetime.today()).first()
+            query_pred_array.append({"field":"format","op":"and","value":cformat.format,"hint":"format"})
+            request.session['sort_order'] = 'rating-{}'.format(cformat.format)
+        else:
+            cformat = Format.objects.filter(formatname='Commander',
+                                            start_date__lte=datetime.today(),
+                                            end_date__gte=datetime.today()).first()
+            query_pred_array.append({"field":"format","op":"and","value":cformat.format,"hint":"format"})
+            request.session['sort_order'] = 'rating-{}'.format(cformat.format)
+    colors = [['white', 'w'],
+              ['blue','u'],
+              ['black', 'b'],
+              ['red', 'r'],
+              ['green', 'g']]
+    if 'five' in terms:
+        for color, cid in colors:
+            query_pred_array.append({"field":"color","op":"and","value":cid,"hint":"colorand{}".format(cid)})
+        if not uses_slang:
+            page_title_words.append('Five-color')
+    elif 'colorless' in terms:
+        for color, cid in colors:
+            query_pred_array.append({"field":"color","op":"not","value":cid,"hint":"colornot{}".format(cid)})
+            if not uses_slang:
+                page_title_words.append('Colorless')
+    else:
+        for color, cid in colors:
+            if color in terms:
+                query_pred_array.append({"field":"color","op":"and","value":cid,"hint":"colorand{}".format(cid)})
+                if not uses_slang:
+                    page_title_words.append(color.capitalize())
+            else:
+                query_pred_array.append({"field":"color","op":"not","value":cid,"hint":"colornot{}".format(cid)})
+    
+    if request.GET.get('sort', False):
+        sort_order = request.GET.get('sort', 'name')
+        request.session['sort_order'] = sort_order
+    request.session['query_pred_array'] = query_pred_array
+
+    if 'planeswalker' in terms:
+        page_title_words.append('Planeswalkers')
+    elif 'edh' in terms or 'commander' in terms:
+        page_title_words.append('Commanders')
+    
+    return cardlist(request, page_title=' '.join(page_title_words))
 
 def search(request):
     logger = logging.getLogger(__name__)
@@ -132,15 +226,16 @@ def autocomplete(request):
         return HttpResponse(the_data, content_type='application/json')
 
 
-def cardlist(request):
+def cardlist(request, query_pred_array=None, page_title='Search Results'):
     # Get an instance of a logger
     logger = logging.getLogger(__name__)
     # logger.error(request)
 
     # Let's get the array of predicates from the session
-    query_pred_array = []
-    if request.session.get('query_pred_array', False):
-        query_pred_array = request.session.get('query_pred_array')
+    if query_pred_array is None:
+        query_pred_array = []
+        if request.session.get('query_pred_array', False):
+            query_pred_array = request.session.get('query_pred_array')
 
     spreds = []
     for pred in query_pred_array:
@@ -248,6 +343,7 @@ def cardlist(request):
         'ellided_prev_page': max(0, int(page) - 4),
         'ellided_next_page': min(paginator.num_pages, int(page) + 4),
         'cards': cards,
+        'thepagetitle': page_title,
         'sort_order': request.session.get('sort_order', 'name'),
         'predicates': query_pred_array,
         'predicates_js': json.dumps(query_pred_array),

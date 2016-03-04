@@ -5,6 +5,7 @@ from cards import utilviews
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
+    url(r'^search/(?P<terms>[^/]+)/$', views.predefsearch, name='predefsearch'),
     # ex: /cards/_search
     url(r'^_search$', views.search, name='search'),
     url(r'^_ratings/$', views.ratings, name='ratings'),

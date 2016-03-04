@@ -1925,3 +1925,67 @@ class CardManagerROTestCase(TestCase):
         a.operator = a.CONTAINS
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 2)
+
+    def test_not_color_not_consequential_pre(self):
+        # abzan planeswalker
+        e = SearchPredicate()
+        e.term = 'color'
+        e.operator = e.EQUALS
+        e.value = 'w'
+        a = SearchPredicate()
+        a.term = 'color'
+        a.operator = a.EQUALS
+        a.value = 'g'
+        b = SearchPredicate()
+        b.term = 'color'
+        b.operator = b.EQUALS
+        b.value = 'b'
+        c = SearchPredicate()
+        c.term = 'type'
+        c.operator = c.EQUALS
+        c.value = 11
+        f = SearchPredicate()
+        f.term = 'color'
+        f.operator = f.EQUALS
+        f.value = 'r'
+        g = SearchPredicate()
+        g.term = 'color'
+        g.operator = g.EQUALS
+        g.value = 'u'
+        cards = Card.playables.search(f, g, e, a, c, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 0)
+        #self.assertEquals(cards[0].basecard.filing_name, u'anafenza the foremost')
+
+    def test_not_color_not_consequential(self):
+        # abzan planeswalker
+        e = SearchPredicate()
+        e.term = 'color'
+        e.operator = e.EQUALS
+        e.value = 'w'
+        a = SearchPredicate()
+        a.term = 'color'
+        a.operator = a.EQUALS
+        a.value = 'g'
+        b = SearchPredicate()
+        b.term = 'color'
+        b.operator = b.EQUALS
+        b.value = 'b'
+        c = SearchPredicate()
+        c.term = 'type'
+        c.operator = c.EQUALS
+        c.value = 11
+        f = SearchPredicate()
+        f.term = 'color'
+        f.operator = f.EQUALS
+        f.negative = True
+        f.value = 'r'
+        g = SearchPredicate()
+        g.term = 'color'
+        g.operator = g.EQUALS
+        g.negative = True
+        g.value = 'u'
+        cards = Card.playables.search(f, g, e, a, c, b)
+        #err.write(str(cards.query) + "\n")
+        self.assertEquals(len(list(cards)), 0)
+        #self.assertEquals(cards[0].basecard.filing_name, u'anafenza the foremost')

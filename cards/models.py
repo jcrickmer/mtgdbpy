@@ -20,7 +20,7 @@ from cards.view_utils import convertSymbolsToHTML
 from django.utils.safestring import mark_safe
 
 from django.db.models import Max, Min, Count
-from django.db import connection
+from django.db import connection, ProgrammingError
 
 import logging
 from operator import itemgetter
@@ -508,6 +508,7 @@ class CardManager(models.Manager):
         return cards
 
     def search(self, *args, **kwargs):
+        logger = logging.getLogger(__name__)
         test_id = 1
 
         # use this to create unique table aliases as we add joins
@@ -652,33 +653,37 @@ class CardManager(models.Manager):
             cursor.execute(sql_s, params=safelocker)
             card_ids = cursor.fetchall()
             bc_ids = [row[1] for row in card_ids]
-
-            sql_s = 'SELECT c.id FROM physicalcard AS pc JOIN basecard AS bc ON pc.id = bc.physicalcard_id JOIN card AS c ON c.basecard_id = bc.id LEFT JOIN cardcolor AS cc ON cc.basecard_id = bc.id LEFT JOIN formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 ' + \
-                pre_where_clause + ' WHERE bc.id IN (' + ','.join(str(i) for i in bc_ids) + ') '
-            for arg in not_terms:
-                # Now that we have all of these ids, let's use them to filter out those types that we do not want.
-                if arg.term == 'color':
-                    sql_not = 'SELECT cc.basecard_id FROM cardcolor AS cc WHERE cc.color_id = \'' + \
-                        str(arg.value) + '\' AND cc.basecard_id IN (' + ','.join(str(i) for i in bc_ids) + ')'
-                    cursor.execute(sql_not)
-                    not_basecard_ids = cursor.fetchall()
-                    if len(not_basecard_ids) > 0:
-                        sql_s = sql_s + ' AND bc.id NOT IN (' + ','.join(str(n[0]) for n in not_basecard_ids) + ') '
-                elif arg.term == 'type':
-                    sql_not = 'SELECT ct.basecard_id FROM cardtype AS ct WHERE ct.type_id = ' + \
-                        str(arg.value) + ' AND ct.basecard_id IN (' + ','.join(str(i) for i in bc_ids) + ')'
-                    cursor.execute(sql_not)
-                    not_basecard_ids = cursor.fetchall()
-                    if len(not_basecard_ids) > 0:
-                        sql_s = sql_s + ' AND bc.id NOT IN (' + ','.join(str(n[0]) for n in not_basecard_ids) + ') '
-                elif arg.term == 'subtype':
-                    sql_not = 'SELECT cst.basecard_id FROM cardsubtype AS cst WHERE cst.subtype_id = ' + \
-                        str(arg.value) + ' AND cst.basecard_id IN (' + ','.join(str(i) for i in bc_ids) + ')'
-                    cursor.execute(sql_not)
-                    not_basecard_ids = cursor.fetchall()
-                    if len(not_basecard_ids) > 0:
-                        sql_s = sql_s + ' AND bc.id NOT IN (' + ','.join(str(n[0]) for n in not_basecard_ids) + ') '
-            group_by_added = False
+            if len(bc_ids) > 0:
+                sql_s = 'SELECT c.id FROM physicalcard AS pc JOIN basecard AS bc ON pc.id = bc.physicalcard_id JOIN card AS c ON c.basecard_id = bc.id LEFT JOIN cardcolor AS cc ON cc.basecard_id = bc.id LEFT JOIN formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 ' + \
+                    pre_where_clause + ' WHERE bc.id IN (' + ','.join(str(i) for i in bc_ids) + ') '
+                for arg in not_terms:
+                    # Now that we have all of these ids, let's use them to filter out those types that we do not want.
+                    try:
+                        if arg.term == 'color':
+                            sql_not = 'SELECT cc.basecard_id FROM cardcolor AS cc WHERE cc.color_id = \'' + \
+                                str(arg.value) + '\' AND cc.basecard_id IN (' + ','.join(str(i) for i in bc_ids) + ')'
+                            cursor.execute(sql_not)
+                            not_basecard_ids = cursor.fetchall()
+                            if len(not_basecard_ids) > 0:
+                                sql_s = sql_s + ' AND bc.id NOT IN (' + ','.join(str(n[0]) for n in not_basecard_ids) + ') '
+                        elif arg.term == 'type':
+                            sql_not = 'SELECT ct.basecard_id FROM cardtype AS ct WHERE ct.type_id = ' + \
+                                str(arg.value) + ' AND ct.basecard_id IN (' + ','.join(str(i) for i in bc_ids) + ')'
+                            cursor.execute(sql_not)
+                            not_basecard_ids = cursor.fetchall()
+                            if len(not_basecard_ids) > 0:
+                                sql_s = sql_s + ' AND bc.id NOT IN (' + ','.join(str(n[0]) for n in not_basecard_ids) + ') '
+                        elif arg.term == 'subtype':
+                            sql_not = 'SELECT cst.basecard_id FROM cardsubtype AS cst WHERE cst.subtype_id = ' + \
+                                str(arg.value) + ' AND cst.basecard_id IN (' + ','.join(str(i) for i in bc_ids) + ')'
+                            cursor.execute(sql_not)
+                            not_basecard_ids = cursor.fetchall()
+                            if len(not_basecard_ids) > 0:
+                                sql_s = sql_s + ' AND bc.id NOT IN (' + ','.join(str(n[0]) for n in not_basecard_ids) + ') '
+                    except ProgrammingError as pe:
+                        logger.error("CardManager.search: SQL error in: {}".format(sql_not))
+                        raise pe
+                group_by_added = False
 
         if group_by_added:
             #sql_s = sql_s + ' , '
