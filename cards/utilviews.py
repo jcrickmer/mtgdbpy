@@ -25,10 +25,11 @@ from cards.models import PhysicalCard
 
 import logging
 
+
 def cardclustertest(request, test_id=0):
     context = {}
     context['test_number'] = test_id
-    ## This part really isn't used. Real goal here is the cluster definitions, which is below
+    # This part really isn't used. Real goal here is the cluster definitions, which is below
     pcid_list = list()
 
     test_dir = os.path.join('/tmp/clusters/test_{:03d}'.format(int(test_id)))
@@ -36,16 +37,16 @@ def cardclustertest(request, test_id=0):
     filelist = os.listdir(os.path.join(test_dir, 'pcards'))
     for filename in filelist:
         if 'physicalcard_' in filename:
-            pcid_list.append(filename[len('physicalcard_') : len(filename)])
+            pcid_list.append(filename[len('physicalcard_'): len(filename)])
     context['physicalcard_id_list'] = pcid_list
 
-    ## Cluster definitions...
+    # Cluster definitions...
     clustered_cards = {}
     cluster_dir = os.path.join(test_dir, 'clusters')
     filelist = os.listdir(cluster_dir)
     for filename in filelist:
         if 'cluster_' in filename:
-            cluster_id = filename[len('cluster_') : len(filename)]
+            cluster_id = filename[len('cluster_'): len(filename)]
             with open(os.path.join(cluster_dir, filename), 'r') as clustfile:
                 # expecting a physical card id (an int) on each line of this file
                 pc_ids = clustfile.readlines()
@@ -57,4 +58,3 @@ def cardclustertest(request, test_id=0):
     except Error:
         pass
     return render(request, 'cards/clustertest.html', context)
-

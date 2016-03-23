@@ -30,5 +30,5 @@ urlpatterns = [
     url(r'^_textsearch/', include('haystack.urls')),
     url(r'^_nameauto/', views.autocomplete, name='autocomplete'),
     url(r'^_clustertest/(?P<test_id>[0-9]+)', utilviews.cardclustertest, name='cardclustertest'),
-    url(r'^_clustertest/',utilviews.cardclustertest, name='cardclustertest'),
+    url(r'^_clustertest/', utilviews.cardclustertest, name='cardclustertest'),
 ]

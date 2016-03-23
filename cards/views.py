@@ -42,26 +42,26 @@ import logging
 from trueskill import TrueSkill, Rating, quality_1vs1, rate_1vs1
 from functools import reduce
 
-color_slang = [['azorius',['white','blue']],
-               ['orzhov',['white','black']],
-               ['boros',['white','red']],
-               ['selesnya',['white','green']],
-               ['dimir',['blue','black']],
-               ['izzet',['blue','red']],
-               ['simic',['blue','green']],
-               ['rakdos',['black','red']],
-               ['golgari',['black','green']],
-               ['gruul',['red','green']],
-               ['esper',['white','blue','black']],
-               ['jeskai',['white','blue','red']],
-               ['bant',['white','blue','green']],
-               ['grixis',['blue','black','red']],
-               ['sultai',['blue','black','green']],
-               ['jund',['black','red','green']],
-               ['mardu',['black','red','white']],
-               ['naya',['red','green','white']],
-               ['temur',['red','green','blue']],
-               ['abzan',['green','white','black']]]
+color_slang = [['azorius', ['white', 'blue']],
+               ['orzhov', ['white', 'black']],
+               ['boros', ['white', 'red']],
+               ['selesnya', ['white', 'green']],
+               ['dimir', ['blue', 'black']],
+               ['izzet', ['blue', 'red']],
+               ['simic', ['blue', 'green']],
+               ['rakdos', ['black', 'red']],
+               ['golgari', ['black', 'green']],
+               ['gruul', ['red', 'green']],
+               ['esper', ['white', 'blue', 'black']],
+               ['jeskai', ['white', 'blue', 'red']],
+               ['bant', ['white', 'blue', 'green']],
+               ['grixis', ['blue', 'black', 'red']],
+               ['sultai', ['blue', 'black', 'green']],
+               ['jund', ['black', 'red', 'green']],
+               ['mardu', ['black', 'red', 'white']],
+               ['naya', ['red', 'green', 'white']],
+               ['temur', ['red', 'green', 'blue']],
+               ['abzan', ['green', 'white', 'black']]]
 
 #
 # The index view simple shows a search page. The page may be
@@ -104,13 +104,13 @@ def index(request):
     context['current_formats'] = Format.objects.filter(start_date__lte=datetime.today(),
                                                        end_date__gte=datetime.today()).order_by('format')
     com_searches = {'All cards': '_search'}
-    for color in ['white','blue','black','red','green','colorless','five-color']:
+    for color in ['white', 'blue', 'black', 'red', 'green', 'colorless', 'five-color']:
         com_searches['{} Commanders'.format(color.capitalize())] = '/cards/search/{}-commanders/'.format(color)
         com_searches['{} Planeswalkers'.format(color.capitalize())] = '/cards/search/{}-planeswalkers/'.format(color)
     for guild, gcolors in color_slang:
         com_searches['{} Commanders'.format(guild.capitalize())] = '/cards/search/{}-commanders/'.format('-'.join(gcolors))
         com_searches['{} Planeswalkers'.format(guild.capitalize())] = '/cards/search/{}-planeswalkers/'.format('-'.join(gcolors))
-    
+
     context['common_searches'] = com_searches
     return render(request, 'cards/index.html', context)
 
@@ -122,52 +122,52 @@ def predefsearch(request, terms=None):
     for guild, gcolors in color_slang:
         if guild in terms:
             for gc in gcolors:
-                terms = '{}-{}'.format(terms,gc)
+                terms = '{}-{}'.format(terms, gc)
             uses_slang = True
             page_title_words.append(guild.capitalize())
     if 'planeswalker' in terms:
-        query_pred_array.append({"field":"type","op":"and","value":"Planeswalker","hint":"typeandPlaneswalker"})
+        query_pred_array.append({"field": "type", "op": "and", "value": "Planeswalker", "hint": "typeandPlaneswalker"})
         request.session['sort_order'] = 'name'
     elif 'edh' in terms or 'commander' in terms:
-        query_pred_array.append({"field":"type","op":"and","value":"Legendary","hint":"typeandLegendary"})
-        query_pred_array.append({"field":"type","op":"and","value":"Creature","hint":"typeandCreature"})
+        query_pred_array.append({"field": "type", "op": "and", "value": "Legendary", "hint": "typeandLegendary"})
+        query_pred_array.append({"field": "type", "op": "and", "value": "Creature", "hint": "typeandCreature"})
         if 'tiny' in terms:
             cformat = Format.objects.filter(formatname='TinyLeaders',
                                             start_date__lte=datetime.today(),
                                             end_date__gte=datetime.today()).first()
-            query_pred_array.append({"field":"format","op":"and","value":cformat.format,"hint":"format"})
+            query_pred_array.append({"field": "format", "op": "and", "value": cformat.format, "hint": "format"})
             request.session['sort_order'] = 'rating-{}'.format(cformat.format)
         else:
             cformat = Format.objects.filter(formatname='Commander',
                                             start_date__lte=datetime.today(),
                                             end_date__gte=datetime.today()).first()
-            query_pred_array.append({"field":"format","op":"and","value":cformat.format,"hint":"format"})
+            query_pred_array.append({"field": "format", "op": "and", "value": cformat.format, "hint": "format"})
             request.session['sort_order'] = 'rating-{}'.format(cformat.format)
     colors = [['white', 'w'],
-              ['blue','u'],
+              ['blue', 'u'],
               ['black', 'b'],
               ['red', 'r'],
               ['green', 'g']]
     if 'five' in terms:
         for color, cid in colors:
-            query_pred_array.append({"field":"color","op":"and","value":cid,"hint":"colorand{}".format(cid)})
+            query_pred_array.append({"field": "color", "op": "and", "value": cid, "hint": "colorand{}".format(cid)})
         if not uses_slang:
             page_title_words.append('Five-color')
     elif 'colorless' in terms:
         for color, cid in colors:
-            query_pred_array.append({"field":"color","op":"not","value":cid,"hint":"colornot{}".format(cid)})
-            query_pred_array.append({"field":"rules","op":"not","value":"{" + cid + "}","hint":"rulesnot" + cid})
+            query_pred_array.append({"field": "color", "op": "not", "value": cid, "hint": "colornot{}".format(cid)})
+            query_pred_array.append({"field": "rules", "op": "not", "value": "{" + cid + "}", "hint": "rulesnot" + cid})
         if not uses_slang:
             page_title_words.append('Colorless')
     else:
         for color, cid in colors:
             if color in terms:
-                query_pred_array.append({"field":"color","op":"and","value":cid,"hint":"colorand{}".format(cid)})
+                query_pred_array.append({"field": "color", "op": "and", "value": cid, "hint": "colorand{}".format(cid)})
                 if not uses_slang:
                     page_title_words.append(color.capitalize())
             else:
-                query_pred_array.append({"field":"color","op":"not","value":cid,"hint":"colornot{}".format(cid)})
-    
+                query_pred_array.append({"field": "color", "op": "not", "value": cid, "hint": "colornot{}".format(cid)})
+
     if request.GET.get('sort', False):
         sort_order = request.GET.get('sort', 'name')
         request.session['sort_order'] = sort_order
@@ -177,8 +177,9 @@ def predefsearch(request, terms=None):
         page_title_words.append('Planeswalkers')
     elif 'edh' in terms or 'commander' in terms:
         page_title_words.append('Commanders')
-    
+
     return cardlist(request, page_title=' '.join(page_title_words))
+
 
 def search(request):
     logger = logging.getLogger(__name__)
@@ -288,13 +289,17 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
             else:
                 spred.value = subtype_lookup.id
         elif pred['field'] == 'format':
-            logger.error("format is " + str(pred['value']))
+            logger.debug("L291 format is " + str(pred['value']))
             format_lookup = Format.objects.filter(format__iexact=pred['value']).first()
             if format_lookup is None:
                 spred.value = -1
             else:
                 spred.value = format_lookup.id
         spreds.append(spred)
+
+    if request.GET.get('sort', False):
+        sort_order = request.GET.get('sort', 'name')
+        request.session['sort_order'] = sort_order
 
     sort_by_filing_name_added = False
     if request.session.get('sort_order', False):
@@ -305,6 +310,7 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
             sd.term = 'cmc'
         elif sort_order.startswith('rating-'):
             ffff = Format.objects.filter(format__iexact=sort_order.replace('rating-', '')).first()
+            logger.debug("L308 SORT ORDER is '{}' from sort param '{}'".format(str(ffff), sort_order))
             if ffff is not None:
                 sd.term = 'cardrating'
                 sd.direction = sd.DESC
@@ -384,7 +390,7 @@ def detail(request, multiverseid=None, slug=None):
     # Let's see if the slub matching my filing name
     if slug is not None:
         slugws = slug.lower().replace('-', ' ')
-        logger.error("slug is now \"" + slugws + "\"")
+        logger.debug("slug is now \"" + slugws + "\"")
         amatch = False
         for acard in cards:
             if amatch:
