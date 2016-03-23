@@ -753,6 +753,7 @@ def battle(request, format="redirect"):
         try:
             crdb = crsdb[0]
             first_card['mu'] = crdb.mu
+            logger.debug("L756 Setting first card mu to {}".format(str(crdb.mu)))
             first_card['sigma'] = crdb.sigma
         except IndexError:
             # no op
@@ -781,7 +782,7 @@ def battle(request, format="redirect"):
             query_params['x_ids'] = bb_ids_list
             if len(bb_ids_list) > 0:
                 fcsqls_xtra = ' AND pc.id IN %(x_ids)s '
-        fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE pc.layout IN %(layouts)s AND fbc.format_id = %(formatid)s {} ORDER BY cr.sigma DESC, r ASC LIMIT 1'.format(
+        fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id AND cr.format_id = fbc.format_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE pc.layout IN %(layouts)s AND fbc.format_id = %(formatid)s {} ORDER BY cr.sigma DESC, r ASC LIMIT 1'.format(
             fcsqls_xtra)
         #logger.error("First Card SQL: " + fcsqls)
         cursor.execute(fcsqls, params=query_params)
@@ -791,6 +792,7 @@ def battle(request, format="redirect"):
             'mu': rows[0][1],
             'sigma': rows[0][2],
         }
+        logger.debug("L795 Setting first card mu to {}".format(str(first_card['mu'])))
         card_a = Card.objects.filter(basecard__id__exact=rows[0][0]).order_by('-multiverseid').first()
 
     query_params['cardabcid'] = first_card['basecard_id']
@@ -798,7 +800,7 @@ def battle(request, format="redirect"):
         query_params['lowermu'] = first_card['mu'] - ((1 + find_iterations) * first_card['sigma'])
         query_params['uppermu'] = first_card['mu'] + ((1 + find_iterations) * first_card['sigma'])
         # now let's get a card of similar level - make it a real battle
-        sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE fbc.format_id = %(formatid)s AND fbc.basecard_id <> %(cardabcid)s AND cr.mu > %(lowermu)s AND cr.mu < %(uppermu)s AND pc.layout IN %(layouts)s ORDER BY r ASC LIMIT 1'
+        sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id AND cr.format_id = fbc.format_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE fbc.format_id = %(formatid)s AND fbc.basecard_id <> %(cardabcid)s AND cr.mu > %(lowermu)s AND cr.mu < %(uppermu)s AND pc.layout IN %(layouts)s ORDER BY r ASC LIMIT 1'
         #logger.error("Second Card SQL: " + sqls)
         cursor.execute(sqls, params=query_params)
         rows = cursor.fetchall()
@@ -808,6 +810,7 @@ def battle(request, format="redirect"):
                 'mu': rows[0][1],
                 'sigma': rows[0][2],
             }
+            logger.debug("L813 Setting second card mu to {}".format(str(second_card['mu'])))
         except IndexError:
             logger.error("Battle iteration " + str(find_iterations) + ": UGH. IndexError. This SQL returned no result: " + sqls)
             logger.error("Battle: params were: " + str(query_params))
@@ -924,9 +927,7 @@ def winbattle(request):
     try:
         battle.save()
     except IntegrityError as ie:
-        logger.error(
-            "Integrity Error on winning a battle... probably not a big deal: " +
-            str(ie))
+        logger.error("Integrity Error on winning a battle... probably not a big deal: {}".format(str(ie)))
 
     updateRatings(battle)
 
@@ -952,9 +953,7 @@ def updateRatings(battle):
     except IndexError:
         # well, that isn't good. Just be done with it. The cron job will fix it
         # later.
-        logger.error(
-            "updateRatings - could not get the CardRating for the winner. battle =" +
-            str(battle))
+        logger.error("updateRatings - could not get the CardRating for the winner. battle = {}".format(str(battle)))
         return
 
     crsdb_l = CardRating.objects.filter(
@@ -967,16 +966,11 @@ def updateRatings(battle):
     except IndexError:
         # well, that isn't good. Just be done with it. The cron job will fix it
         # later.
-        logger.error(
-            "updateRatings - could not get the CardRating for the loser. battle =" +
-            str(battle))
+        logger.error("updateRatings - could not get the CardRating for the loser. battle = {}".format(str(battle)))
         return
 
     # calculate!
-    logger.error("updating battles for cards " +
-                 str(battle.winner_pcard.id) +
-                 " and " +
-                 str(battle.loser_pcard.id))
+    logger.error("updating battles for cards {} and {}".format(str(battle.winner_pcard.id), str(battle.loser_pcard.id)))
     rating_w, rating_l = rate_1vs1(rating_w, rating_l, env=ts)
 
     # save
