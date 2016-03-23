@@ -781,7 +781,7 @@ def battle(request, format="redirect"):
             query_params['x_ids'] = bb_ids_list
             if len(bb_ids_list) > 0:
                 fcsqls_xtra = ' AND pc.id IN %(x_ids)s '
-        fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE pc.layout IN %(layouts)s AND fbc.format_id = %(formatid)s {} ORDER BY r ASC LIMIT 1'.format(
+        fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE pc.layout IN %(layouts)s AND fbc.format_id = %(formatid)s {} ORDER BY cr.sigma DESC, r ASC LIMIT 1'.format(
             fcsqls_xtra)
         #logger.error("First Card SQL: " + fcsqls)
         cursor.execute(fcsqls, params=query_params)
