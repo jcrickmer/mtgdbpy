@@ -30,6 +30,7 @@ out = sys.stdout
 format_hashtags = {'Standard': '#mtgstandard',
                    'Origins': '#MTGOrigins',
                    'BFZ': '#MTGBFZ',
+                   'SOI': '#MTGSOI',
                    'Modern': '#mtgmodern',
                    'Commander': '#mtgcommander #edh',
                    'TinyLeaders': '#mtgtiny'

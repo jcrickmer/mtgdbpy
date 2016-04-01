@@ -31,7 +31,7 @@ class Command(BaseCommand):
         for test in tests:
             # get all of the formats
             #formats = Format.objects.all()
-            formats = Format.objects.filter(id__gte=34)
+            formats = Format.objects.filter(id__gte=42)
 
             # iterate through each format
             for format in formats:

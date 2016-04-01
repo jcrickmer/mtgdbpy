@@ -22,13 +22,14 @@ class Command(BaseCommand):
 
     help = '''Load up some JSON and add it to the database, if needed.'''
 
+    def add_arguments(self, parser):
+        parser.add_argument('input')
+
     def handle(self, *args, **options):
         #logger = logging.getLogger(__name__)
         # the first (and only) arg should be a filename
-        if len(args) < 1:
-            sys.stderr.write("No filename given.\n")
-            return
-        filename = args[0]
+
+        filename = options['input']
         if not os.access(filename, os.R_OK):
             sys.stderr.write("Cannot read file '{}'.\n".format(filename))
             return

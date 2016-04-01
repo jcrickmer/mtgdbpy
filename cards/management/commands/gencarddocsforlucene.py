@@ -149,7 +149,11 @@ class Command(BaseCommand):
             else:
                 text = pcard.get_searchable_document(include_names=options['include_names'])
             if len(text) < 1:
-                sys.stderr.write("Did not get anything valuable back from {}, {}\n".format(pcard.id, pcard.get_card_name()))
+                sys.stderr.write("Did not get anything valuable back from {}, ".format(pcard.id))
+                try:
+                    sys.stderr.write("{}\n".format(pcard.get_card_name()))
+                except AttributeError:
+                    sys.stderr.write("_could not determine name - possibly no basecard for this physicalcard_\n")
             else:
                 mkdir_p(options['outdir'])
                 fileout = codecs.open(options['outdir'] + '/physicalcard_' + str(pcard.id), 'w', 'utf-8')
