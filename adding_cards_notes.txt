@@ -77,6 +77,10 @@ DROP TABLE fooy;
 
 Again, you will probably need to do something a little bit different for Standard set rotations and possibly for bannings.
 
+** Special fun for bringing over all cards to a new format, like Pauper. **
+SELECT battle_date, 48 AS format_id, loser_pcard_id, NULL, winner_pcard_id, test_id FROM battle WHERE format_id = 40 AND loser_pcard_id IN (SELECT physicalcard_id FROM basecard bc JOIN formatbasecard fbc ON bc.id = fbc.basecard_id WHERE format_id = 48) AND winner_pcard_id IN (SELECT physicalcard_id FROM basecard bc JOIN formatbasecard fbc ON bc.id = fbc.basecard_id WHERE format_id = 48);
+
+
 Step 6:
 Update all of the card ratings based on the new formats and recently copied-over battles into the new formats:
 
