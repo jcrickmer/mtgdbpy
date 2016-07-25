@@ -801,6 +801,10 @@ def battle(request, format="redirect"):
         query_params['uppermu'] = first_card['mu'] + ((1 + find_iterations) * first_card['sigma'])
         # now let's get a card of similar level - make it a real battle
         sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id AND cr.format_id = fbc.format_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE fbc.format_id = %(formatid)s AND fbc.basecard_id <> %(cardabcid)s AND cr.mu > %(lowermu)s AND cr.mu < %(uppermu)s AND pc.layout IN %(layouts)s ORDER BY r ASC LIMIT 1'
+        # Half the time, let's pick a card that is similar and in this format
+        if random.random() > 0.66:
+            logger.debug("L806 Picking an opponent to {} based on simliar cards.".format(str(first_card['basecard_id'])))
+            sqls = 'SELECT sbc.id, cr.mu, cr.sigma, RAND() r FROM similarphysicalcard AS spc JOIN basecard bc ON spc.physicalcard_id = bc.physicalcard_id JOIN basecard sbc ON sbc.physicalcard_id = spc.sim_physicalcard_id AND sbc.cardposition IN (\'F\',\'L\',\'T\') JOIN formatbasecard simfbc ON sbc.id = simfbc.basecard_id AND simfbc.format_id = %(formatid)s JOIN cardrating cr ON cr.physicalcard_id = sbc.physicalcard_id AND cr.format_id = simfbc.format_id  WHERE bc.cardposition IN (\'F\',\'L\',\'T\') AND bc.id = %(cardabcid)s ORDER BY r ASC LIMIT 1'
         #logger.error("Second Card SQL: " + sqls)
         cursor.execute(sqls, params=query_params)
         rows = cursor.fetchall()
@@ -810,7 +814,7 @@ def battle(request, format="redirect"):
                 'mu': rows[0][1],
                 'sigma': rows[0][2],
             }
-            logger.debug("L813 Setting second card mu to {}".format(str(second_card['mu'])))
+            #logger.debug("L813 Setting second card mu to {}".format(str(second_card['mu'])))
         except IndexError:
             logger.error("Battle iteration " + str(find_iterations) + ": UGH. IndexError. This SQL returned no result: " + sqls)
             logger.error("Battle: params were: " + str(query_params))
