@@ -11,9 +11,10 @@ from cards.models import CardSubtype
 from cards.models import Mark
 from cards.models import ExpansionSet
 from cards.models import Ruling
+from django.db.models import Q
 
 import logging
-import sys
+import sys, traceback
 import os
 import json
 
@@ -51,6 +52,7 @@ class Command(BaseCommand):
                 eblob = jblob[expkey]
                 try:
                     expset = self.get_expset(eblob['name'], eblob['code'])
+                    sys.stderr.write("The expset is {}\n".format(expset))
                     for jcard in eblob['cards']:
                         self.handle_card(jcard, expset)
                 except:
@@ -74,10 +76,19 @@ class Command(BaseCommand):
             # First, let's see if we have this basecard
             bc = None
             try:
-                bc = BaseCard.objects.get(name=jcard['name'])
+                name_ashremoved = jcard['name'].replace(u'\u00C6', 'Ae')
+                name_ashremoved = name_ashremoved.replace(u'\u00E6', 'ae')
+                #sys.stderr.write("L79 Name: " + name_ashremoved + "\n")
+                bc = BaseCard.objects.filter(Q(name=jcard['name']) | Q(name=name_ashremoved)).first()
+                if bc is None:
+                    raise BaseCard.DoesNotExist()
+                #sys.stderr.write("L81 bc is: {}\n".format(bc))
                 self.update_basecard(jcard, bc)
             except BaseCard.DoesNotExist:
                 bc = self.add_basecard(jcard)
+            except:
+                #sys.stderr.write("What!!??\n")
+                traceback.print_exc()
 
             # REVISIT - what about updates to BaseCard?
 
@@ -131,6 +142,7 @@ class Command(BaseCommand):
         except:
             try:
                 sys.stderr.write("UNABLE TO LOAD CARD: " + jcard['name'] + '\n')
+                traceback.print_exc()
             except KeyError:
                 sys.stderr.write("UNABLE TO LOAD CARD WITH NO NAME!!\n")
 
