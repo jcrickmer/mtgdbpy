@@ -242,6 +242,10 @@ h5.panel-title a:hover {
 .symbol_untap_small {
   background-position:-15px -75px;
 }
+.symbol_energy_small {
+  background: url("/cn/glyphs/symbol_energy_small.png");
+  background-position:0px 0px;
+}
 .symbol_phyrexian_small {
   width: 9px;
   background-position:-141px -90px;

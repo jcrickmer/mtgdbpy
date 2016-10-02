@@ -80,6 +80,11 @@ def convertSymbolsToHTML(text):
         'class="magic-symbol-small symbol_tap_small" alt="{t}"' +
         tag_close)
     result = result.replace(
+        "{e}",
+        tag_open +
+        'class="magic-symbol-small symbol_energy_small" alt="{e}"' +
+        tag_close)
+    result = result.replace(
         "{q}",
         tag_open +
         'class="magic-symbol-small symbol_untap_small" alt="{q}"' +
@@ -136,6 +141,11 @@ def convertSymbolsToHTML(text):
         "{T}",
         tag_open +
         'class="magic-symbol-small symbol_tap_small" alt="{t}"' +
+        tag_close)
+    result = result.replace(
+        "{E}",
+        tag_open +
+        'class="magic-symbol-small symbol_energy_small" alt="{e}"' +
         tag_close)
     result = result.replace(
         "{Q}",

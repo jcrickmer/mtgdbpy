@@ -57,6 +57,7 @@ class Rarity(models.Model):
 class Type(models.Model):
     #id = models.IntegerField(primary_key=True)
     type = models.CharField(max_length=128, unique=True)
+    sort_order = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = True
@@ -196,6 +197,7 @@ class PhysicalCard(models.Model):
             rules = rules.lower()
             rules = rules.replace('{c}', ' manacolorless ')
             rules = rules.replace('{t}', ' tap ')
+            rules = rules.replace('{e}', ' energy ')
             rules = rules.replace('{q}', ' untap ')
             rules = rules.replace('{w}', ' manawhite ')
             rules = rules.replace('{u}', ' manablue ')
