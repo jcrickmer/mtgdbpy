@@ -75,7 +75,7 @@ WSGI_APPLICATION = 'mtgdb.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mtgdb',
+        'NAME': 'mtgdbdev',
                 'USER': 'root',
                 'PASSWORD': 'godzilla'
     },
@@ -123,6 +123,7 @@ TEMPLATES = [
                  os.path.join(BASE_DIR, 'decks', 'templates'),
                  os.path.join(BASE_DIR, 'rules', 'templates'),
                  os.path.join(BASE_DIR, 'mtgdb', 'templates'),
+                 os.path.join('/home/jason/mtgdbpy/lib/python2.7/site-packages/django/contrib', 'admin', 'templates'),
                  ],
         'OPTIONS': {
             'context_processors': [
