@@ -110,6 +110,12 @@ function drawCardStatsChart(formatname) {
           <td class="cardattr">Mana Cost</td>
           <td>{{ working.card.mana_cost_html }}</td>
         </tr>
+{% if working.card.basecard.supertypes.all %}
+    <tr>
+      <td class="cardattr">Supertype</td>
+      <td>{% for tsupertype in working.card.basecard.supertypes.all %}{{ tsupertype.supertype }} {% endfor %}</td>
+    </tr>
+{% endif %}
     <tr>
       <td class="cardattr">Type</td>
       <td>{% for ttype in working.card.basecard.types.all %}{{ ttype.type }} {% endfor %}</td>

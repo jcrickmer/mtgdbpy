@@ -5,8 +5,10 @@ from cards.models import Card
 from cards.models import Color, CardColor
 from cards.models import Rarity
 from cards.models import Type
+from cards.models import Supertype
 from cards.models import Subtype
 from cards.models import CardType
+from cards.models import CardSupertype
 from cards.models import CardSubtype
 from cards.models import Mark
 from cards.models import ExpansionSet
@@ -264,9 +266,30 @@ class Command(BaseCommand):
 
         bc.save()
 
+        sptype_counter = 0
+        CardSupertype.objects.filter(basecard=bc).delete()
+        for jsonsptype in ['supertypes']:
+            if jsonsptype not in jcard:
+                continue
+            for csptype in jcard[jsonsptype]:
+                # need to see if we know about this supertype
+                dbsptype = None
+                try:
+                    dbsptype = Supertype.objects.get(supertype=csptype)
+                except Supertype.DoesNotExist:
+                    # better add this type!
+                    dbsptype = self.add_supertype(csptype)
+
+                cspt = CardSupertype()
+                cspt.basecard = bc
+                cspt.supertype = dbsptype
+                cspt.position = sptype_counter
+                cspt.save()
+                sptype_counter = sptype_counter + 1
+
         type_counter = 0
         CardType.objects.filter(basecard=bc).delete()
-        for jsontype in ['supertypes', 'types']:
+        for jsontype in ['types']:
             if jsontype not in jcard:
                 continue
             for ctype in jcard[jsontype]:
@@ -322,6 +345,12 @@ class Command(BaseCommand):
     def add_type(self, cardtype):
         result = Type.objects.create()
         result.type = cardtype
+        result.save()
+        return result
+
+    def add_supertype(self, cardsupertype):
+        result = Supertype.objects.create()
+        result.supertype = cardsupertype
         result.save()
         return result
 

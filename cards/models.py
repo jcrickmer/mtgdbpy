@@ -10,7 +10,7 @@
 # Also note: You'll have to insert the output of 'django-admin.py sqlcustom [appname]'
 # into your database.
 from __future__ import unicode_literals
-
+import sys
 from django.db import models
 from datetime import datetime
 from django.utils import timezone
@@ -65,6 +65,18 @@ class Type(models.Model):
 
     def __unicode__(self):
         return self.type
+
+
+class Supertype(models.Model):
+    #id = models.IntegerField(primary_key=True)
+    supertype = models.CharField(max_length=128, unique=True)
+
+    class Meta:
+        managed = True
+        db_table = 'supertype'
+
+    def __unicode__(self):
+        return self.supertype
 
 
 class Subtype(models.Model):
@@ -140,9 +152,13 @@ class PhysicalCard(models.Model):
                 sec_card = bc
             else:
                 first_card = bc
-        result = first_card.name
+        if not first_card:
+            result = "!FIRST_CARD MISSING!"
+            sys.stderr.write("NO first_card for " + str(self.id) + "\n")
+        else:
+            result = first_card.name
         if sec_card:
-            result = result + ' // ' + sec_card.name
+            result = result + '/' + sec_card.name
         return result
 
     def get_card_filing_name(self):
@@ -155,7 +171,7 @@ class PhysicalCard(models.Model):
                 first_card = bc
         result = first_card.filing_name
         if sec_card:
-            result = result + ' // ' + sec_card.filing_name
+            result = result + '/' + sec_card.filing_name
         return result
 
     def get_face_basecard(self):
@@ -301,6 +317,7 @@ class PhysicalCard(models.Model):
             for notcolor in allcolors:
                 result = result + 'notcardcolor' + notcolor + "\n"
 
+            result = result + ' '.join('supertype' + csptype.supertype for csptype in basecard.supertypes.all()) + "\n"
             result = result + ' '.join('type' + ctype.type for ctype in basecard.types.all()) + "\n"
             result = result + ' '.join('subtype' + cstype.subtype for cstype in basecard.subtypes.all()) + "\n"
             #result = result + ' '.join(ctype.type for ctype in basecard.types.all()) + "\n"
@@ -347,6 +364,7 @@ class BaseCard(models.Model):
         auto_now=True)
     cardposition = models.CharField(max_length=1, null=False, default=FRONT)
     types = models.ManyToManyField(Type, through='CardType')
+    supertypes = models.ManyToManyField(Supertype, through='CardSupertype')
     subtypes = models.ManyToManyField(Subtype, through='CardSubtype')
     colors = models.ManyToManyField(Color, through='CardColor')
 
@@ -627,6 +645,16 @@ class CardManager(models.Manager):
                         pre_where_clause = pre_where_clause + ' JOIN cardtype AS ' + \
                             tab_alias + ' ON bc.id = ' + tab_alias + '.basecard_id '
                         sql_p = ' ' + tab_alias + '.type_id = ' + str(arg.value)
+                        terms.append(sql_p)
+                elif arg.term == 'supertype':
+                    if arg.negative:
+                        not_terms.append(arg)
+                    else:
+                        tab_alias = 'cspt' + str(jcounter)
+                        jcounter = jcounter + 1
+                        pre_where_clause = pre_where_clause + ' JOIN cardsupertype AS ' + \
+                            tab_alias + ' ON bc.id = ' + tab_alias + '.basecard_id '
+                        sql_p = ' ' + tab_alias + '.supertype_id = ' + str(arg.value)
                         terms.append(sql_p)
                 elif arg.term == 'subtype':
                     if arg.negative:
@@ -912,6 +940,18 @@ class CardColor(models.Model):
         managed = True
         db_table = 'cardcolor'
         unique_together = ('basecard', 'color',)
+
+
+class CardSupertype(models.Model):
+    #id = models.IntegerField(primary_key=True)
+    basecard = models.ForeignKey(BaseCard)
+    supertype = models.ForeignKey('Supertype')
+    position = models.IntegerField()
+
+    class Meta:
+        managed = True
+        db_table = 'cardsupertype'
+        unique_together = ('basecard', 'position',)
 
 
 class CardSubtype(models.Model):

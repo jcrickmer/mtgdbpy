@@ -22,6 +22,7 @@ from cards.models import Card, CardManager, SearchPredicate, SortDirective, Base
 from cards.models import Mark
 from cards.models import PhysicalCard
 from cards.models import Type
+from cards.models import Supertype
 from cards.models import Subtype
 from cards.models import Format
 from cards.models import FormatBasecard
@@ -93,6 +94,7 @@ def index(request):
     context['predicates_js'] = json.dumps(
         request.session.get('query_pred_array'))
     context['types'] = [tt.type for tt in Type.objects.all()]
+    context['supertypes'] = [st.supertype for st in Supertype.objects.all()]
     context['subtypes'] = [st.subtype for st in Subtype.objects.all()]
     context['rarities'] = [{'id': rr.id, 'rarity': rr.rarity}
                            for rr in Rarity.objects.all().order_by('sortorder')]
@@ -282,6 +284,12 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
                 spred.value = -1
             else:
                 spred.value = type_lookup.id
+        elif pred['field'] == 'supertype':
+            supertype_lookup = Supertype.objects.filter(supertype__iexact=pred['value']).first()
+            if supertype_lookup is None:
+                spred.value = -1
+            else:
+                spred.value = supertype_lookup.id
         elif pred['field'] == 'subtype':
             subtype_lookup = Subtype.objects.filter(subtype__iexact=pred['value']).first()
             if subtype_lookup is None:
@@ -436,6 +444,8 @@ def detail(request, multiverseid=None, slug=None):
                 'mana_cost_html': card.mana_cost_html(),
                 'type': [
                     tt.type for tt in card.basecard.types.all()],
+                'supertype': [
+                    spt.supertype for spt in card.basecard.supertypes.all()],
                 'subtype': [
                     st.subtype for st in card.basecard.subtypes.all()],
                 'text': card.rules_text_html(),

@@ -86,7 +86,161 @@ class LoaderTestCase(TestCase):
 
     tear_json = '''{"layout":"split","type":"Instant","types":["Instant"],"colors":["White"],"multiverseid":368950,"names":["Wear","Tear"],"name":"Tear","originalType":"Instant","cmc":1,"rarity":"Uncommon","artist":"Ryan Pancoast","manaCost":"{W}","text":"Destroy target enchantment.\\nFuse (You may cast one or both halves of this card from your hand.)","originalText":"Destroy target artifact.\\n//\\nTear\\n{W}\\nInstant\\nDestroy target enchantment.\\n//\\nFuse (You may cast one or both halves of this card from your hand.)","number":"135b","rulings":[{"date":"2013-04-15","text":"If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."},{"date":"2013-04-15","text":"To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its converted mana cost is the total amount of mana in both costs."},{"date":"2013-04-15","text":"You can choose the same object as the target of each half of a fused split spell, if appropriate."},{"date":"2013-04-15","text":"When resolving a fused split spell with multiple targets, treat it as you would any spell with multiple targets. If all targets are illegal when the spell tries to resolve, the spell is countered and none of its effects happen. If at least one target is still legal at that time, the spell resolves, but an illegal target can't perform any actions or have any actions performed on it."},{"date":"2013-04-15","text":"When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."},{"date":"2013-04-15","text":"In every zone except the stack, split cards have two sets of characteristics and two converted mana costs. If anything needs information about a split card not on the stack, it will get two values."},{"date":"2013-04-15","text":"On the stack, a split spell that hasn't been fused has only that half's characteristics and converted mana cost. The other half is treated as though it didn't exist."},{"date":"2013-04-15","text":"Some split cards with fuse have two monocolor halves of different colors. If such a card is cast as a fused split spell, the resulting spell is multicolored. If only one half is cast, the spell is the color of that half. While not on the stack, such a card is multicolored."},{"date":"2013-04-15","text":"Some split cards with fuse have two halves that are both multicolored. That card is multicolored no matter which half is cast, or if both halves are cast. It's also multicolored while not on the stack."},{"date":"2013-04-15","text":"If a player names a card, the player may name either half of a split card, but not both. A split card has the chosen name if one of its two names matches the chosen name."},{"date":"2013-04-15","text":"If you cast a split card with fuse from your hand without paying its mana cost, you can choose to use its fuse ability and cast both halves without paying their mana costs."}],"imageName":"weartear","foreignNames":[{"language":"Chinese Traditional","name":"穿破"},{"language":"Chinese Simplified","name":"穿破"},{"language":"French","name":"Déchiqueture"},{"language":"German","name":"Abnutzung"},{"language":"Italian","name":"Lacerare"},{"language":"Japanese","name":"損耗"},{"language":"Korean","name":"기세"},{"language":"Portuguese (Brazil)","name":"Rasgar"},{"language":"Russian","name":"Порча"},{"language":"Spanish","name":"Rasgar"}],"legalities":{"Modern":"Legal","Return to Ravnica Block":"Legal","Legacy":"Legal","Vintage":"Legal","Freeform":"Legal","Prismatic":"Legal","Tribal Wars Legacy":"Legal","Singleton 100":"Legal","Commander":"Legal"},"printings":["Dragon's Maze"]}'''
     wear_json = '''{"layout":"split","type":"Instant","types":["Instant"],"colors":["Red"],"multiverseid":368950,"names":["Wear","Tear"],"name":"Wear","originalType":"Instant","cmc":2,"rarity":"Uncommon","artist":"Ryan Pancoast","manaCost":"{1}{R}","text":"Destroy target artifact.\\nFuse (You may cast one or both halves of this card from your hand.)","originalText":"Destroy target artifact.\\n//\\nTear\\n{W}\\nInstant\\nDestroy target enchantment.\\n//\\nFuse (You may cast one or both halves of this card from your hand.)","number":"135a","rulings":[{"date":"2013-04-15","text":"If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."},{"date":"2013-04-15","text":"To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its converted mana cost is the total amount of mana in both costs."},{"date":"2013-04-15","text":"You can choose the same object as the target of each half of a fused split spell, if appropriate."},{"date":"2013-04-15","text":"When resolving a fused split spell with multiple targets, treat it as you would any spell with multiple targets. If all targets are illegal when the spell tries to resolve, the spell is countered and none of its effects happen. If at least one target is still legal at that time, the spell resolves, but an illegal target can't perform any actions or have any actions performed on it."},{"date":"2013-04-15","text":"When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."},{"date":"2013-04-15","text":"In every zone except the stack, split cards have two sets of characteristics and two converted mana costs. If anything needs information about a split card not on the stack, it will get two values."},{"date":"2013-04-15","text":"On the stack, a split spell that hasn't been fused has only that half's characteristics and converted mana cost. The other half is treated as though it didn't exist."},{"date":"2013-04-15","text":"Some split cards with fuse have two monocolor halves of different colors. If such a card is cast as a fused split spell, the resulting spell is multicolored. If only one half is cast, the spell is the color of that half. While not on the stack, such a card is multicolored."},{"date":"2013-04-15","text":"Some split cards with fuse have two halves that are both multicolored. That card is multicolored no matter which half is cast, or if both halves are cast. It's also multicolored while not on the stack."},{"date":"2013-04-15","text":"If a player names a card, the player may name either half of a split card, but not both. A split card has the chosen name if one of its two names matches the chosen name."},{"date":"2013-04-15","text":"If you cast a split card with fuse from your hand without paying its mana cost, you can choose to use its fuse ability and cast both halves without paying their mana costs."}],"imageName":"weartear","foreignNames":[{"language":"Chinese Traditional","name":"損耗"},{"language":"Chinese Simplified","name":"损耗"},{"language":"French","name":"Usure"},{"language":"German","name":"Verschleiß"},{"language":"Italian","name":"Logorare"},{"language":"Japanese","name":"摩耗"},{"language":"Korean","name":"파죽"},{"language":"Portuguese (Brazil)","name":"Desgastar"},{"language":"Russian","name":"Износ"},{"language":"Spanish","name":"Estropear"}],"legalities":{"Modern":"Legal","Return to Ravnica Block":"Legal","Legacy":"Legal","Vintage":"Legal","Freeform":"Legal","Prismatic":"Legal","Tribal Wars Legacy":"Legal","Singleton 100":"Legal","Commander":"Legal"},"printings":["Dragon's Maze"]}'''
-
+    heliod_json = '''{
+      "artist": "Jaime Jones",
+      "cmc": 4,
+      "colorIdentity": [
+        "W"
+      ],
+      "colors": [
+        "White"
+      ],
+      "foreignNames": [
+        {
+          "language": "Chinese Simplified",
+          "name": "太阳神赫利欧德",
+          "multiverseid": 373773
+        },
+        {
+          "language": "Chinese Traditional",
+          "name": "太陽神赫利歐德",
+          "multiverseid": 374022
+        },
+        {
+          "language": "French",
+          "name": "Héliode, dieu du Soleil",
+          "multiverseid": 374520
+        },
+        {
+          "language": "German",
+          "name": "Heliod, Gott der Sonne",
+          "multiverseid": 374271
+        },
+        {
+          "language": "Italian",
+          "name": "Eliod, Dio del Sole",
+          "multiverseid": 374769
+        },
+        {
+          "language": "Japanese",
+          "name": "太陽の神、ヘリオッド",
+          "multiverseid": 375018
+        },
+        {
+          "language": "Korean",
+          "name": "태양의 신 헬리아드",
+          "multiverseid": 375267
+        },
+        {
+          "language": "Portuguese (Brazil)",
+          "name": "Heliode, Deus do Sol",
+          "multiverseid": 375516
+        },
+        {
+          "language": "Russian",
+          "name": "Гелиод, Бог Солнца",
+          "multiverseid": 375765
+        },
+        {
+          "language": "Spanish",
+          "name": "Heliod, dios del sol",
+          "multiverseid": 376014
+        }
+      ],
+      "id": "fe167cc84dada81cff04aa6e8debe5f668111c93",
+      "imageName": "heliod, god of the sun",
+      "layout": "normal",
+      "legalities": [
+        {
+          "format": "Commander",
+          "legality": "Legal"
+        },
+        {
+          "format": "Legacy",
+          "legality": "Legal"
+        },
+        {
+          "format": "Modern",
+          "legality": "Legal"
+        },
+        {
+          "format": "Theros Block",
+          "legality": "Legal"
+        },
+        {
+          "format": "Vintage",
+          "legality": "Legal"
+        }
+      ],
+      "manaCost": "{3}{W}",
+      "mciNumber": "17",
+      "multiverseid": 373524,
+      "name": "Heliod, God of the Sun",
+      "number": "17",
+      "originalText": "Indestructible\\nAs long as your devotion to white is less than five, Heliod isn't a creature. (Each {W} in the mana costs of permanents you control counts toward your devotion to white.)\\nOther creatures you control have vigilance.\\n{2}{W}{W}: Put a 2/1 white Cleric enchantment creature token onto the battlefield.",
+      "originalType": "Legendary Enchantment Creature — God",
+      "power": "5",
+      "printings": [
+        "THS"
+      ],
+      "rarity": "Mythic Rare",
+      "rulings": [
+        {
+          "date": "2013-09-15",
+          "text": "Numeric mana symbols ({0}, {1}, and so on) in mana costs of permanents you control don't count toward your devotion to any color."
+        },
+        {
+          "date": "2013-09-15",
+          "text": "Mana symbols in the text boxes of permanents you control don't count toward your devotion to any color."
+        },
+        {
+          "date": "2013-09-15",
+          "text": "Hybrid mana symbols, monocolored hybrid mana symbols, and Phyrexian mana symbols do count toward your devotion to their color(s)."
+        },
+        {
+          "date": "2013-09-15",
+          "text": "If an activated ability or triggered ability has an effect that depends on your devotion to a color, you count the number of mana symbols of that color among the mana costs of permanents you control as the ability resolves. The permanent with that ability will be counted if it's still on the battlefield at that time."
+        },
+        {
+          "date": "2013-09-15",
+          "text": "The type-changing ability that can make the God not be a creature functions only on the battlefield. It's always a creature card in other zones, regardless of your devotion to its color."
+        },
+        {
+          "date": "2013-09-15",
+          "text": "If a God enters the battlefield, your devotion to its color (including the mana symbols in the mana cost of the God itself) will determine if a creature entered the battlefield or not, for abilities that trigger whenever a creature enters the battlefield."
+        },
+        {
+          "date": "2013-09-15",
+          "text": "If a God stops being a creature, it loses the type creature and all creature subtypes. It continues to be a legendary enchantment."
+        },
+        {
+          "date": "2013-09-15",
+          "text": "The abilities of Gods function as long as they're on the battlefield, regardless of whether they're creatures."
+        },
+        {
+          "date": "2013-09-15",
+          "text": "If a God is attacking or blocking and it stops being a creature, it will be removed from combat."
+        },
+        {
+          "date": "2013-09-15",
+          "text": "If a God is dealt damage, then stops being a creature, then becomes a creature again later in the same turn, the damage will still be marked on it. This is also true for any effects that were affecting the God when it was originally a creature. (Note that in most cases, the damage marked on the God won't matter because it has indestructible.)"
+        }
+      ],
+      "subtypes": [
+        "God"
+      ],
+      "supertypes": [
+        "Legendary"
+      ],
+      "text": "Indestructible\\nAs long as your devotion to white is less than five, Heliod isn't a creature. (Each {W} in the mana costs of permanents you control counts toward your devotion to white.)\\nOther creatures you control have vigilance.\\n{2}{W}{W}: Create a 2/1 white Cleric enchantment creature token.",
+      "toughness": "6",
+      "type": "Legendary Enchantment Creature — God",
+      "types": [
+        "Enchantment",
+        "Creature"
+      ]
+    }'''
+    
     def load_card(self, json, name, loadhelper=True, set_abbr='BAR'):
         helper = TestLoadHelper()
         if loadhelper:
@@ -100,8 +254,16 @@ class LoaderTestCase(TestCase):
 
     def test_type_single_artifact(self):
         card = self.load_card(self.black_lotus_json, 'Black Lotus')
+        self.assertEquals(card.supertypes.count(), 0)
         self.assertEquals(card.types.count(), 1)
         self.assertEquals(card.types.all().first().type, 'Artifact')
+
+    def test_type_basic_land(self):
+        card = self.load_card(self.island_json, 'Island')
+        self.assertEquals(card.supertypes.count(), 1)
+        self.assertEquals(card.types.count(), 1)
+        self.assertEquals(card.types.all().first().type, 'Land')
+        self.assertEquals(card.supertypes.all().first().supertype, 'Basic')
 
     def test_type_single_land(self):
         card = self.load_card(self.cavern_of_souls_json, 'Cavern of Souls')
@@ -197,8 +359,13 @@ class LoaderTestCase(TestCase):
 
     def test_types_legendary(self):
         card = self.load_card(self.alesha_json, "Alesha, Who Smiles at Death")
-        self.assertGreater(card.types.count(), 1)
-        self.assertEquals(card.types.all().first().type, 'Legendary')
+        self.assertEquals(card.types.count(), 1)
+        self.assertEquals(card.types.all().first().type, 'Creature')
+
+    def test_types_legendary_super(self):
+        card = self.load_card(self.alesha_json, "Alesha, Who Smiles at Death")
+        self.assertEquals(card.supertypes.count(), 1)
+        self.assertEquals(card.supertypes.all().first().supertype, 'Legendary')
 
 #    def test_types_three(self):
 #        self.assertTrue(False)
@@ -222,10 +389,16 @@ class LoaderTestCase(TestCase):
         self.assertEquals(card.subtypes.all().first().subtype, 'Lhurgoyf')
 
     def test_types_two(self):
-        card = self.load_card(self.alesha_json, "Alesha, Who Smiles at Death")
+        card = self.load_card(self.heliod_json, "Heliod, God of the Sun")
         self.assertEquals(card.types.count(), 2)
-        self.assertEquals(card.types.all().first().type, 'Legendary')
+        self.assertEquals(card.types.all().first().type, 'Enchantment')
         self.assertEquals(card.types.all()[1].type, 'Creature')
+
+    def test_types_two_plus_super(self):
+        card = self.load_card(self.heliod_json, "Heliod, God of the Sun")
+        self.assertEquals(card.types.count(), 2)
+        self.assertEquals(card.supertypes.count(), 1)
+        self.assertEquals(card.supertypes.all().first().supertype, 'Legendary')
 
     def test_subtypes_two(self):
         card = self.load_card(self.alesha_json, "Alesha, Who Smiles at Death")

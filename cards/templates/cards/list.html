@@ -65,7 +65,7 @@ $(function() {
         <td><a href="{% url 'cards:detail' card.basecard.physicalcard.get_latest_card.multiverseid card.basecard.physicalcard.get_latest_card.url_slug %}"><img class="list_cardimage" src="{{ card.basecard.physicalcard.get_latest_card.img_url }}" alt="{{ card.basecard.physicalcard.get_card_name }}"/></a></td></td>
         <td>
           <div><span class="list_cardname"><a href="{% url 'cards:detail' card.basecard.physicalcard.get_latest_card.multiverseid card.basecard.physicalcard.get_latest_card.url_slug %}">{{ card.basecard.physicalcard.get_card_name }}</a></span> <span class="list_mana_cost">{{card.mana_cost_html }}</span> <span class="list_cmc">({{card.basecard.cmc}})</span></div>
-          <div class="list_cardtype">{% for ttype in card.basecard.types.all %}{{ ttype.type }} {% endfor %} {% if card.basecard.subtypes.all %}&mdash; {% for tsubtype in card.basecard.subtypes.all %}{{ tsubtype.subtype }} {% endfor %}{%endif%}</div>
+          <div class="list_cardtype">{% for tsupertype in card.basecard.supertypes.all %}{{ tsupertype.subertype }} {% endfor %} {% for ttype in card.basecard.types.all %}{{ ttype.type }} {% endfor %} {% if card.basecard.subtypes.all %}&mdash; {% for tsubtype in card.basecard.subtypes.all %}{{ tsubtype.subtype }} {% endfor %}{%endif%}</div>
           <div class="list_rules">{{card.rules_text_html}}</div>
         </td>
         <td>
