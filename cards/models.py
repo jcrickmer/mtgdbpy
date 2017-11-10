@@ -17,6 +17,7 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 
 from cards.view_utils import convertSymbolsToHTML
+from cards.text_utils import filing_string
 from django.utils.safestring import mark_safe
 
 from django.db.models import Max, Min, Count
@@ -387,12 +388,7 @@ class BaseCard(models.Model):
         return ct is not None
 
     def make_filing_name(self, name):
-        # REVISIT- Currently filing name logic is in Perl. See
-        # MTG::Util::makeFilingName in the mtgstats project. We need
-        # to get that moved to Python
-        name = name.replace("'", '')
-        name = name.replace("-", ' ')
-        return name.lower()
+        return filing_string(name)
 
     class Meta:
         managed = True

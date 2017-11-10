@@ -16,6 +16,7 @@ $(function() {
                       'cmc':'CMC',
                       'power':'Power',
                       'toughness':'Toughness',
+                      'supertype':'Supertype',
                       'type':'Type',
                       'subtype':'Subtype',
                       'rarity':'Rarity',

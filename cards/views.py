@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.utils.safestring import mark_safe
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
@@ -17,6 +19,7 @@ from django.conf import settings
 import random
 import operator
 import os.path
+import sys
 
 from cards.models import Card, CardManager, SearchPredicate, SortDirective, BaseCard
 from cards.models import Mark
@@ -207,16 +210,21 @@ def autocomplete(request):
     suggestions = []
     for result in sqs:
         cardname = result.name
+        #sys.stderr.write("L211 cardname is " + str(cardname) + " and pk is " + str(result.pk) + "\n")
         if cardname is not None and len(cardname) > 0:
+            #sys.stderr.write("L213\n")
             cn_bc = BaseCard.objects.filter(physicalcard__id=result.pk).first()
+            #sys.stderr.write("L215 " + str(cn_bc) + "\n")
             result = {'name': cardname}
             if cn_bc is not None:
                 the_card = cn_bc.physicalcard.get_latest_card()
+                #sys.stderr.write("L218 the_card " + str(the_card) + "\n")
                 result['url'] = reverse('cards:detail', kwargs={'multiverseid': str(the_card.multiverseid), 'slug': the_card.url_slug()})
                 suggestions.append(result)
     # Make sure you return a JSON object, not a bare list.
     # Otherwise, you could be vulnerable to an XSS attack.
     the_data = json.dumps(suggestions)
+
     if 'callback' in request.GET or 'callback' in request.POST:
         # a jsonp response!
         callback_request = None
@@ -475,7 +483,7 @@ def detail(request, multiverseid=None, slug=None):
 
     if request.is_ajax():
         response_dict.update({'status': 'success',
-                              'physicalCardTitle': " // ".join(card_titles),
+                              'physicalCardTitle': card.basecard.physicalcard.get_card_name(),
                               'cards': jcards,
                               })
         response = HttpResponse(
@@ -533,7 +541,7 @@ def detail(request, multiverseid=None, slug=None):
                                                          'keywords': cards[0].basecard.physicalcard.cardkeyword_set.all().order_by('-kwscore'),
                                                          'similars': similars,
                                                          'other_versions': twinCards,
-                                                         'physicalCardTitle': " // ".join(card_titles),
+                                                         'physicalCardTitle': cards[0].basecard.physicalcard.get_card_name(),
                                                          'card_format_details': card_format_details,
                                                          'rulings': cards[0].basecard.get_rulings(),
                                                          'mod_card_stat': mod_fcstat,

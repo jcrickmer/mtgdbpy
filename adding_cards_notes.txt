@@ -10,21 +10,6 @@ Load those cards into the database with the loadcardjson Django command.
 
 Step 2b:
 
-mtgjson.com doesn't have rules text for basic lands. So let's add that.
-
-UPDATE basecard SET rules_text = '({T}: Add {W} to your mana pool.)' WHERE name = 'Plains';
-UPDATE basecard SET rules_text = '({T}: Add {U} to your mana pool.)' WHERE name = 'Island';
-UPDATE basecard SET rules_text = '({T}: Add {B} to your mana pool.)' WHERE name = 'Swamp';
-UPDATE basecard SET rules_text = '({T}: Add {R} to your mana pool.)' WHERE name = 'Mountain';
-UPDATE basecard SET rules_text = '({T}: Add {G} to your mana pool.)' WHERE name = 'Forest';
-UPDATE basecard SET rules_text = '({T}: Add {C} to your mana pool.)' WHERE name = 'Wastes';
-
-Step 2c:
-
-update the card filing names with the update_card_names.pl command in mtgstats. It will output sql that you can copy over to prod and then update/run on that database.
-
-Setp 2d:
-
 Get all of the new card images. From the mtgstats directory...
 
 echo 'SELECT DISTINCT multiverseid FROM card WHERE expansionset_id = 189 ORDER BY multiverseid;' | mysql -u root -ppassword mtgdbpy | ./fetch_images.pl
