@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.utils.safestring import mark_safe
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse

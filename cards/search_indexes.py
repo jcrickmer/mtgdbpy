@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import datetime
 from haystack import indexes
 from cards.models import PhysicalCard

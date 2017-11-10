@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Django settings for mtgdb project.
 
@@ -12,6 +14,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+DEFAULT_CHARSET = 'utf-8'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
@@ -24,7 +27,7 @@ DEBUG = True
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1','smoker']
 INTERNAL_IPS = (
     '127.0.0.1',
     'localhost',
@@ -84,7 +87,7 @@ DATABASES = {
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
-        'URL': 'http://127.0.0.1:8983/solr',
+        'URL': 'http://127.0.0.1:8983/solr/mtgdb',
         # ...or for multicore...
         # 'URL': 'http://127.0.0.1:8983/solr/mysite',
         # NOTE: when turning this on for the first time, a "rebuild_index" is
@@ -124,6 +127,8 @@ TEMPLATES = [
                  os.path.join(BASE_DIR, 'rules', 'templates'),
                  os.path.join(BASE_DIR, 'mtgdb', 'templates'),
                  os.path.join('/home/jason/mtgdbpy/lib/python2.7/site-packages/django/contrib', 'admin', 'templates'),
+                 '/home/jason/mtgdb/lib/python2.7/site-packages/django/contrib/admin/templates',
+                 '/home/jason/mtgdb/lib/python2.7/site-packages/haystack/templates',
                  ],
         'OPTIONS': {
             'context_processors': [

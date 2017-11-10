@@ -1,4 +1,6 @@
-from django.conf.urls import patterns, url, include
+# -*- coding: utf-8 -*-
+
+from django.conf.urls import url, include
 
 from cards import views
 from cards import utilviews

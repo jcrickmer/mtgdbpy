@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from cards.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, Format, FormatBasecard, SearchPredicate, CardType, CardSubtype, CardColor
 from datetime import datetime
 from cards.management.commands import initcardsdatabase
