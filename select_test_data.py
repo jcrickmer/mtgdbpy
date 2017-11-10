@@ -4,6 +4,7 @@
 import sys
 import json
 import codecs
+import re
 
 UTF8Reader = codecs.getreader('utf8')
 sys.stdin = UTF8Reader(sys.stdin)
@@ -84,11 +85,34 @@ else:
     data = loadeddata
 
 final_muids = list()
+final_muids.append(262875) # Huntmaster of the Fells
+final_muids.append(262699) # Ravager of the Fells
+final_muids.append(368950) # Wear/Tear
 
+# used for finding mciNumbers with letters
+mciNum_re = re.compile('^([0-9]+)([a-d])+$')
 
-def add_card(cards_list, card_dict):
+def add_card(cards_list, card_dict, allcards_list):
     if "multiverseid" in card_dict:
         cards_list.append(card_dict["multiverseid"])
+        # going to use the mciNumber to see if there is a related card...
+        if "mciNumber" in card_dict:
+            mat = mciNum_re.match(card_dict["mciNumber"])
+            if mat:
+                #sys.stderr.write("Looking because of " + card_dict["mciNumber"] + "\n")
+                # hunt down the siblings...
+                for hcard in allcards_list:
+                    #sys.stderr.write("L102\n")
+                    # only look at cards that are near us, because the mciNumber is relative to our set.
+                    if "multiverseid" in hcard and int(hcard["multiverseid"]) > int(card_dict["multiverseid"]) - 300  and int(hcard["multiverseid"]) < int(card_dict["multiverseid"]) + 300:
+                        #sys.stderr.write("L105\n")
+                        if "mciNumber" in hcard and hcard["mciNumber"] is not card_dict["mciNumber"]:
+                            #sys.stderr.write("L107\n")
+                            for letter in ['a','b','c','d']:
+                                #sys.stderr.write("L109 - " + str(hcard["mciNumber"]) + " == " + str(mat.group(1)) + letter + "\n")
+                                if str(hcard["mciNumber"]) == str(mat.group(1)) + letter:
+                                    cards_list.append(hcard["multiverseid"])
+                                    #sys.stderr.write("MATCH!!! Adding " + str(hcard["multiverseid"]) + " because of " + str(card_dict["multiverseid"]) + "!!\n")
         return 1
     else:
         #sys.stderr.write("==========\nCard missing multiverseid\n" + json.dumps(card_dict, indent=2) + "\n")
@@ -103,7 +127,7 @@ for ctype in supertypes_list:
             continue
         if "supertypes" in card:
             if card["supertypes"][0].lower() == ctype:
-                found = found + add_card(final_muids, card)
+                found = found + add_card(final_muids, card, data["cards"])
 
                 
 # each card type
@@ -114,7 +138,7 @@ for ctype in types_list:
             continue
         if "types" in card:
             if card["types"][0].lower() == ctype.lower():
-                found = found + add_card(final_muids, card)
+                found = found + add_card(final_muids, card, data["cards"])
 
 
 # legendary for each type
@@ -126,7 +150,7 @@ for ctype in types_list:
                 continue
             if "types" in card:
                 if card["types"][0].lower() == ctype.lower():
-                    found = found + add_card(final_muids, card)
+                    found = found + add_card(final_muids, card, data["cards"])
 
 
 # cards with multiple types
@@ -137,10 +161,10 @@ for counter in range(0, 4):
             continue
         if counter == 0:
             if "types" not in card:
-                found = found + add_card(final_muids, card)
+                found = found + add_card(final_muids, card, data["cards"])
         else:
             if "types" in card and len(card["types"]) == counter:
-                found = found + add_card(final_muids, card)
+                found = found + add_card(final_muids, card, data["cards"])
 
 
 # cards with multiple subtypes
@@ -151,10 +175,10 @@ for counter in range(0, 4):
             continue
         if counter == 0:
             if "subtypes" not in card:
-                found = found + add_card(final_muids, card)
+                found = found + add_card(final_muids, card, data["cards"])
         else:
             if "subtypes" in card and len(card["subtypes"]) == counter:
-                found = found + add_card(final_muids, card)
+                found = found + add_card(final_muids, card, data["cards"])
 
 
 # each card subtype
@@ -166,7 +190,7 @@ for ctype in subtypes_list:
         if "subtypes" in card:
             for counter in range(len(card["subtypes"])):
                 if card["subtypes"][counter].lower() == ctype.lower():
-                    found = found + add_card(final_muids, card)
+                    found = found + add_card(final_muids, card, data["cards"])
 
 
 # cards by power
@@ -176,7 +200,7 @@ for cpower in power_list:
         if "power" in card and card["power"] == cpower:
             if found >= MAX_PER_CRITERION:
                 continue
-            found = found + add_card(final_muids, card)
+            found = found + add_card(final_muids, card, data["cards"])
 
             
 # cards by toughness
@@ -186,7 +210,7 @@ for ctoughness in toughness_list:
         if "toughness" in card and card["toughness"] == ctoughness:
             if found >= MAX_PER_CRITERION:
                 continue
-            found = found + add_card(final_muids, card)
+            found = found + add_card(final_muids, card, data["cards"])
 
 
 # cards with no rules
@@ -195,7 +219,7 @@ for card in data["cards"]:
     if "text" not in card or len(card["text"]) == 0:
         if found >= MAX_PER_CRITERION:
             continue
-        found = found + add_card(final_muids, card)
+        found = found + add_card(final_muids, card, data["cards"])
 
 
 # cards with keywords
@@ -207,7 +231,7 @@ for word in keywords_list:
         if "text" in card:
             #print card["text"].lower()
             if card["text"].lower().find(word) >= 0:
-                found = found + add_card(final_muids, card)
+                found = found + add_card(final_muids, card, data["cards"])
 
 
 # layouts
@@ -218,7 +242,7 @@ for layout in layout_list:
             continue
         if "layout" in card:
             if card["layout"].lower() == layout:
-                found = found + add_card(final_muids, card)
+                found = found + add_card(final_muids, card, data["cards"])
 
 
 # cards by mana symbols in cost
@@ -230,7 +254,7 @@ for symbol in symbols_list:
         if "manaCost" in card:
             if card["manaCost"].lower().find(symbol) >= 0:
                 #print card["name"] + " - " + card["manaCost"]
-                found = found + add_card(final_muids, card)
+                found = found + add_card(final_muids, card, data["cards"])
 
 
 # cards by cmc
@@ -241,10 +265,12 @@ for cmc in range (0,22):
             if found >= MAX_PER_CRITERION:
                 continue
             #print card["name"] + " - " + str(card["cmc"])
-            found = found + add_card(final_muids, card)
+            found = found + add_card(final_muids, card, data["cards"])
 
 
 output = {}
+output["name"] = "MTG Test Data"
+output["code"] = "CNTest"
 output["cards"] = list()
 
 for card in data["cards"]:
