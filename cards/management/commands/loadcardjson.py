@@ -16,7 +16,8 @@ from cards.models import Ruling
 from django.db.models import Q
 
 import logging
-import sys, traceback
+import sys
+import traceback
 import os
 import json
 
@@ -89,7 +90,7 @@ class Command(BaseCommand):
             except BaseCard.DoesNotExist:
                 bc = self.add_basecard(jcard)
             except:
-                #sys.stderr.write("What!!??\n")
+                # sys.stderr.write("What!!??\n")
                 traceback.print_exc()
 
             # REVISIT - what about updates to BaseCard?
@@ -251,7 +252,7 @@ class Command(BaseCommand):
         except KeyError:
             # REVISIT - we now have an orphaned PhysicalCard
             raise KeyError('JSON is missing attribute "name".')
-        
+
         try:
             bc.rules_text = jcard['text']
         except KeyError:

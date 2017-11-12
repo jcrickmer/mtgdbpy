@@ -241,7 +241,7 @@ class LoaderTestCase(TestCase):
         "Creature"
       ]
     }'''
-    
+
     def load_card(self, json, name, loadhelper=True, set_abbr='BAR'):
         helper = TestLoadHelper()
         if loadhelper:

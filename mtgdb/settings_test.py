@@ -2,7 +2,7 @@
 
 from settings import *
 
-DEFAULT_CHARSET='utf-8'
+DEFAULT_CHARSET = 'utf-8'
 
 DATABASES = {
     'default': {

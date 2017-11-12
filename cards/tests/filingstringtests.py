@@ -60,17 +60,17 @@ class FilingStringTestCase(TestCase):
         val = u'Il-vec it'
         result = filing_string(val)
         self.assertEquals(result, u'il vec it')
-        
+
     def test_dash_four(self):
         val = u'-Il-vec it'
         result = filing_string(val)
         self.assertEquals(result, u'il vec it')
-        
+
     def test_dash_five(self):
         val = u'Il-vec it-'
         result = filing_string(val)
         self.assertEquals(result, u'il vec it')
-        
+
     def test_endash_one(self):
         val = u'test of the\u2013Dash'
         result = filing_string(val)
@@ -90,12 +90,12 @@ class FilingStringTestCase(TestCase):
         val = u'\u2013Il\u2013vec it'
         result = filing_string(val)
         self.assertEquals(result, u'il vec it')
-        
+
     def test_endash_five(self):
         val = u'Il\u2013vec it\u2013'
         result = filing_string(val)
         self.assertEquals(result, u'il vec it')
-        
+
     def test_emdash_one(self):
         val = u'test of the\u2014Dash'
         result = filing_string(val)
@@ -115,12 +115,12 @@ class FilingStringTestCase(TestCase):
         val = u'\u2014Il\u2014vec it'
         result = filing_string(val)
         self.assertEquals(result, u'il vec it')
-        
+
     def test_emdash_five(self):
         val = u'Il\u2014vec it\u2014'
         result = filing_string(val)
         self.assertEquals(result, u'il vec it')
-        
+
     def test_apos_one(self):
         val = u"test of the'Dash"
         result = filing_string(val)
@@ -140,12 +140,12 @@ class FilingStringTestCase(TestCase):
         val = u"'Il'vec it"
         result = filing_string(val)
         self.assertEquals(result, u'ilvec it')
-        
+
     def test_apos_five(self):
         val = u"Il'vec it'"
         result = filing_string(val)
         self.assertEquals(result, u'ilvec it')
-        
+
     def test_period_one(self):
         val = u"test of the.Period"
         result = filing_string(val)
@@ -165,12 +165,12 @@ class FilingStringTestCase(TestCase):
         val = u".Il.vec it"
         result = filing_string(val)
         self.assertEquals(result, u'il vec it')
-        
+
     def test_period_five(self):
         val = u"Il.vec it."
         result = filing_string(val)
         self.assertEquals(result, u'il vec it')
-        
+
     def test_ellipse_one(self):
         val = u"test of the\u2026Ellipse"
         result = filing_string(val)
@@ -190,12 +190,12 @@ class FilingStringTestCase(TestCase):
         val = u"\u2026Il\u2026vec it"
         result = filing_string(val)
         self.assertEquals(result, u'il vec it')
-        
+
     def test_ellipse_five(self):
         val = u"Il\u2026vec it\u2026"
         result = filing_string(val)
         self.assertEquals(result, u'il vec it')
-        
+
     def test_number_zero(self):
         val = u"0"
         result = filing_string(val)
@@ -210,7 +210,7 @@ class FilingStringTestCase(TestCase):
         val = u"100000000"
         result = filing_string(val)
         self.assertEquals(result, u'100000000')
-        
+
     def test_number_onehundredmillioncomma(self):
         val = u"100,000,000"
         result = filing_string(val)
@@ -230,12 +230,12 @@ class FilingStringTestCase(TestCase):
         val = u"hello 100000000 bye"
         result = filing_string(val)
         self.assertEquals(result, u'hello 100000000 bye')
-        
+
     def test_midnumber_onehundredmillioncomma(self):
         val = u"hello 100,000,000 bye"
         result = filing_string(val)
         self.assertEquals(result, u'hello 100000000 bye')
-        
+
     def test_midnumber_zerodec(self):
         val = u"hello 0.5 bye"
         result = filing_string(val)
@@ -250,12 +250,12 @@ class FilingStringTestCase(TestCase):
         val = u"hello 100000000.5 bye"
         result = filing_string(val)
         self.assertEquals(result, u'hello 100000000.5 bye')
-        
+
     def test_midnumber_onehundredmillioncommadec(self):
         val = u"hello 100,000,000.5 bye"
         result = filing_string(val)
         self.assertEquals(result, u'hello 100000000.5 bye')
-        
+
     def test_number_madness(self):
         val = u"9 people , . s 8 about 4.6757 OYSTERS in .8 seconds 2"
         result = filing_string(val)
@@ -270,4 +270,3 @@ class FilingStringTestCase(TestCase):
         val = u"hello ! # $ % ' ( ) * + , - / : ; < > = ? [ ] \\ ^ _ { | } ~ there"
         result = filing_string(val)
         self.assertEquals(result, u'hello                             there')
-

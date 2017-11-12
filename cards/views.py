@@ -212,7 +212,7 @@ def autocomplete(request):
         cardname = result.name
         #sys.stderr.write("L211 cardname is " + str(cardname) + " and pk is " + str(result.pk) + "\n")
         if cardname is not None and len(cardname) > 0:
-            #sys.stderr.write("L213\n")
+            # sys.stderr.write("L213\n")
             cn_bc = BaseCard.objects.filter(physicalcard__id=result.pk).first()
             #sys.stderr.write("L215 " + str(cn_bc) + "\n")
             result = {'name': cardname}

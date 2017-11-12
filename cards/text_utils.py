@@ -16,6 +16,7 @@ from django.core.cache import cache
 
 import re
 
+
 def filing_string(input):
     result = filing_string_rule_1(input)
     result = filing_string_rule_2(result)
@@ -42,13 +43,17 @@ def filing_string(input):
 # Rule 1 - General Principle
 #
 # This is standard alphetical order, which computers are good at. But,
-# let's lowercase everything to make sure that we are playing in the same space.   
+# let's lowercase everything to make sure that we are playing in the same space.
+
+
 def filing_string_rule_1(input):
     return input.lower()
 
 # Rule 2 - Treat modified letters like their equivalents in the
 # English alphabet. Ignore diacritical marks and modifications of
 # recognizable English letters
+
+
 def filing_string_rule_2(input):
     result = input
     result = re.sub(r'\u00c0', 'a', result)  # LATIN CAPITAL LETTER A WITH GRAVE
@@ -253,6 +258,8 @@ def filing_string_rule_2(input):
 # Rule 3 - Order of fields with identical leading elements
 #
 # does not apply
+
+
 def filing_string_rule_3(input):
     result = input
     return result
@@ -260,6 +267,8 @@ def filing_string_rule_3(input):
 # Rule 4 - Place names
 #
 # does not apply
+
+
 def filing_string_rule_4(input):
     result = input
     return result
@@ -270,6 +279,8 @@ def filing_string_rule_4(input):
 # which I would use multiverse id for. However, since I am only
 # concerned with base cards at this time, muid does not exist. So
 # no-op.
+
+
 def filing_string_rule_5(input):
     result = input
     return result
@@ -277,6 +288,8 @@ def filing_string_rule_5(input):
 # Rule 6 - Abbreviations. File abbreviations exactly as written.
 #
 # No-op
+
+
 def filing_string_rule_6(input):
     result = input
     return result
@@ -284,14 +297,18 @@ def filing_string_rule_6(input):
 # Rule 7 - Trreat bracketed data as signifcant
 #
 # No-op
+
+
 def filing_string_rule_7(input):
     result = input
     return result
 
 # Rule 8 - Hyphenated words.
-# 
+#
 # Treat words connected by a hyphen as separate words, regardless of
 # language.
+
+
 def filing_string_rule_8(input):
     result = input
     result = re.sub(r'-', ' ', result)  # dash
@@ -309,17 +326,22 @@ def filing_string_rule_8(input):
 #$filingName =~ s/^ye //gi; # dash
 #$filingName =~ s/^de //gi; # dash
 #$filingName =~ s/^d'//gi; # dash
+
+
 def filing_string_rule_9(input):
     result = input
     return result
+
 
 def filing_string_rule_10(input):
     result = input
     return result
 
 # Rule 11 - Initials and acronyms
-# 
+#
 # Essentially, make periods and ellipses into spaces
+
+
 def filing_string_rule_11(input):
     result = input
     result = re.sub(r'^\.(\d+)', r'0.\1', result)
@@ -333,16 +355,18 @@ def filing_string_rule_11(input):
 
 # Rule 12 - Names with a prefix. Treat a prefix that is part of a
 # name or place as a separate word unless it is joined to the rest
-# of the name directly or by an apostrophe without a space. File 
-# letter by letter. 
+# of the name directly or by an apostrophe without a space. File
+# letter by letter.
 def filing_string_rule_12(input):
     result = input
-    result = re.sub(r"([a-z])'([a-z])", r'\1\2', result) 
+    result = re.sub(r"([a-z])'([a-z])", r'\1\2', result)
     return result
 
 # Rule 13
 #
 # Not taking action on roman numeral interpretation as arabic
+
+
 def filing_string_rule_13(input):
     result = input
     return result
@@ -353,6 +377,8 @@ def numFix(num_match):
     result = re.sub(r',', '', result)
     val = int(result)
     return '%09d' % val
+
+
 def numFix2(num_match):
     result = num_match.group(2)
     result = re.sub(r',', '', result)
@@ -360,8 +386,10 @@ def numFix2(num_match):
     return num_match.group(1) + ('%09d' % val)
 
 # Rule 14 - Numerals
-# 
+#
 # Complicated, since there could be unknown number of digits. Assuming 9 digits
+
+
 def filing_string_rule_14(input):
     result = input
 
@@ -370,11 +398,11 @@ def filing_string_rule_14(input):
 
     # if there is a number in the middle, let's fix it
     result = re.sub(r'([^\\.0-9]+)([0-9,]+)', numFix2, result)
-    
+
     return result
 
 
-# Rule 15 - 
+# Rule 15 -
 #
 # No-op
 def filing_string_rule_15(input):
@@ -382,14 +410,44 @@ def filing_string_rule_15(input):
     return result
 
 # Rule 16  - Ignore all symbols except for "&"
-# 
+#
 # Putting this rule before Rule 14 since comma can be used in numbers and it is easier to process this first.
+
+
 def filing_string_rule_16(input):
     result = input
-    ignored_punctuation = ['!','"','#','$','%',"'",'(',')','*','+',',','-','/',':',';','<','=','>','?','[',']','\\','^','_','{','|','}','~']
-    for u in range(161,191):
+    ignored_punctuation = [
+        '!',
+        '"',
+        '#',
+        '$',
+        '%',
+        "'",
+        '(',
+        ')',
+        '*',
+        '+',
+        ',',
+        '-',
+        '/',
+        ':',
+        ';',
+        '<',
+        '=',
+        '>',
+        '?',
+        '[',
+        ']',
+        '\\',
+        '^',
+        '_',
+        '{',
+        '|',
+        '}',
+        '~']
+    for u in range(161, 191):
         ignored_punctuation.append(chr(u))
-    
+
     for symb in ignored_punctuation:
         result = re.sub(re.escape(symb), '', result)
 

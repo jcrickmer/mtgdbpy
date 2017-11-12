@@ -27,7 +27,7 @@ DEBUG = True
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
-ALLOWED_HOSTS = ['127.0.0.1','smoker']
+ALLOWED_HOSTS = ['127.0.0.1', 'smoker']
 INTERNAL_IPS = (
     '127.0.0.1',
     'localhost',

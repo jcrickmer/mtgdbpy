@@ -18,6 +18,7 @@ final_muids = list()
 
 # no creture type - "Nameless Race"
 
+
 def listify(withcommas):
     result = list()
     step1 = withcommas.split(",")
@@ -27,12 +28,63 @@ def listify(withcommas):
     return result
 
 
-symbols_list = ['{c}', '{t}', '{e}', '{q}', '{w}', '{u}', '{b}', '{r}', '{g}', '{s}', '{x}', "{wp}","{up}","{bp}","{rp}","{gp}","{2w}","{2u}","{2b}","{2r}","{2g}","{wu}","{wb}","{ub}","{ur}","{br}","{bg}","{rg}","{rw}","{gw}","{gu}","{w/p}","{u/p}","{b/p}","{r/p}","{g/p}","{2/w}","{2/u}","{2/b}","{2/r}","{2/g}","{w/u}","{w/b}","{u/b}","{u/r}","{b/r}","{b/g}","{r/g}","{r/w}","{g/w}","{g/u}"]
-for i in range (0,22):
+symbols_list = [
+    '{c}',
+    '{t}',
+    '{e}',
+    '{q}',
+    '{w}',
+    '{u}',
+    '{b}',
+    '{r}',
+    '{g}',
+    '{s}',
+    '{x}',
+    "{wp}",
+    "{up}",
+    "{bp}",
+    "{rp}",
+    "{gp}",
+    "{2w}",
+    "{2u}",
+    "{2b}",
+    "{2r}",
+    "{2g}",
+    "{wu}",
+    "{wb}",
+    "{ub}",
+    "{ur}",
+    "{br}",
+    "{bg}",
+    "{rg}",
+    "{rw}",
+    "{gw}",
+    "{gu}",
+    "{w/p}",
+    "{u/p}",
+    "{b/p}",
+    "{r/p}",
+    "{g/p}",
+    "{2/w}",
+    "{2/u}",
+    "{2/b}",
+    "{2/r}",
+    "{2/g}",
+    "{w/u}",
+    "{w/b}",
+    "{u/b}",
+    "{u/r}",
+    "{b/r}",
+    "{b/g}",
+    "{r/g}",
+    "{r/w}",
+    "{g/w}",
+    "{g/u}"]
+for i in range(0, 22):
     symbols_list.append("{" + str(i) + "}")
-    
+
 power_list = list()
-for i in range(0,21):
+for i in range(0, 21):
     power_list.append(str(i))
 power_list.append("*")
 power_list.append("1+*")
@@ -41,15 +93,18 @@ toughness_list = list(power_list)
 
 supertypes_list = listify("Basic, Legendary, Ongoing, Snow, World")
 
-types_list = listify("artifact, conspiracy, creature, enchantment, instant, land, phenomenon, plane, planeswalker, scheme, sorcery, tribal, vanguard")
+types_list = listify(
+    "artifact, conspiracy, creature, enchantment, instant, land, phenomenon, plane, planeswalker, scheme, sorcery, tribal, vanguard")
 
 subtypes = "Advisor, Aetherborn, Ally, Angel, Antelope, Ape, Archer, Archon, Artificer, Assassin, Assembly-Worker, Atog, Aurochs, Avatar, Badger, Barbarian, Basilisk, Bat, Bear, Beast, Beeble, Berserker, Bird, Blinkmoth, Boar, Bringer, Brushwagg, Camarid, Camel, Caribou, Carrier, Cat, Centaur, Cephalid, Chimera, Citizen, Cleric, Cockatrice, Construct, Coward, Crab, Crocodile, Cyclops, Dauthi, Demon, Deserter, Devil, Dinosaur, Djinn, Dragon, Drake, Dreadnought, Drone, Druid, Dryad, Dwarf, Efreet, Elder, Eldrazi, Elemental, Elephant, Elf, Elk, Eye, Faerie, Ferret, Fish, Flagbearer, Fox, Frog, Fungus, Gargoyle, Germ, Giant, Gnome, Goat, Goblin, God, Golem, Gorgon, Graveborn, Gremlin, Griffin, Hag, Harpy, Hellion, Hippo, Hippogriff, Homarid, Homunculus, Horror, Horse, Hound, Human, Hydra, Hyena, Illusion, Imp, Incarnation, Insect, Jackal, Jellyfish, Juggernaut, Kavu, Kirin, Kithkin, Knight, Kobold, Kor, Kraken, Lamia, Lammasu, Leech, Leviathan, Lhurgoyf, Licid, Lizard, Manticore, Masticore, Mercenary, Merfolk, Metathran, Minion, Minotaur, Mole, Monger, Mongoose, Monk, Monkey, Moonfolk, Mutant, Myr, Mystic, Naga, Nautilus, Nephilim, Nightmare, Nightstalker, Ninja, Noggle, Nomad, Nymph, Octopus, Ogre, Ooze, Orb, Orc, Orgg, Ouphe, Ox, Oyster, Pegasus, Pentavite, Pest, Phelddagrif, Phoenix, Pilot, Pincher, Pirate, Plant, Praetor, Prism, Processor, Rabbit, Rat, Rebel, Reflection, Rhino, Rigger, Rogue, Sable, Salamander, Samurai, Sand, Saproling, Satyr, Scarecrow, Scion, Scorpion, Scout, Serf, Serpent, Servo, Shade, Shaman, Shapeshifter, Sheep, Siren, Skeleton, Slith, Sliver, Slug, Snake, Soldier, Soltari, Spawn, Specter, Spellshaper, Sphinx, Spider, Spike, Spirit, Splinter, Sponge, Squid, Squirrel, Starfish, Surrakar, Survivor, Tetravite, Thalakos, Thopter, Thrull, Treefolk, Trilobite, Triskelavite, Troll, Turtle, Unicorn, Vampire, Vedalken, Viashino, Volver, Wall, Warrior, Weird, Werewolf, Whale, Wizard, Wolf, Wolverine, Wombat, Worm, Wraith, Wurm, Yeti, Zombie, Zubera"
 subtypes = subtypes + "," + "Clue, Contraption, Equipment, Fortification, Treasure, Vehicle"
 subtypes = subtypes + "," + "Aura, Cartouche, Curse, Shrine"
 subtypes = subtypes + "," + "Desert, Forest, Gate, Island, Lair, Locus, Mine, Mountain, Plains, Power-Plant, Swamp, Tower, Urza's"
-subtypes = subtypes + "," + "Ajani, Arlinn, Ashiok, Bolas, Chandra, Dack, Daretti, Domri, Dovin, Elspeth, Freyalise, Garruk, Gideon, Huatli, Jace, Karn, Kaya, Kiora, Koth, Liliana, Nahiri, Narset, Nissa, Nixilis, Ral, Saheeli, Samut, Sarkhan, Sorin, Tamiyo, Teferi, Tezzeret, Tibalt, Ugin, Venser, Vraska, Xenagos"
+subtypes = subtypes + "," + \
+    "Ajani, Arlinn, Ashiok, Bolas, Chandra, Dack, Daretti, Domri, Dovin, Elspeth, Freyalise, Garruk, Gideon, Huatli, Jace, Karn, Kaya, Kiora, Koth, Liliana, Nahiri, Narset, Nissa, Nixilis, Ral, Saheeli, Samut, Sarkhan, Sorin, Tamiyo, Teferi, Tezzeret, Tibalt, Ugin, Venser, Vraska, Xenagos"
 subtypes = subtypes + "," + "Arcane, Trap"
-subtypes = subtypes + "," + "Alara, Arkhos, Azgol, Belenon, Bolas's Meditation Realm, Dominaria, Equilor, Ergamon, Fabacin, Innistrad, Iquatana, Ir, Kaldheim, Kamigawa, Karsus, Kephalai, Kinshala, Kolbahan, Kyneth, Lorwyn, Luvion, Mercadia, Mirrodin, Moag, Mongseng, Muraganda, New Phyrexia, Phyrexia, Pyrulea, Rabiah, Rath, Ravnica, Regatha, Segovia, Serra's Realm, Shadowmoor, Shandalar, Ulgrotha, Valla, Vryn, Wildfire, Xerex, and Zendikar"
+subtypes = subtypes + "," + \
+    "Alara, Arkhos, Azgol, Belenon, Bolas's Meditation Realm, Dominaria, Equilor, Ergamon, Fabacin, Innistrad, Iquatana, Ir, Kaldheim, Kamigawa, Karsus, Kephalai, Kinshala, Kolbahan, Kyneth, Lorwyn, Luvion, Mercadia, Mirrodin, Moag, Mongseng, Muraganda, New Phyrexia, Phyrexia, Pyrulea, Rabiah, Rath, Ravnica, Regatha, Segovia, Serra's Realm, Shadowmoor, Shandalar, Ulgrotha, Valla, Vryn, Wildfire, Xerex, and Zendikar"
 subtypes_list = listify(subtypes)
 
 
@@ -66,7 +121,7 @@ keywords_list.extend(listify(ability_words))
 keywords_list.extend(symbols_list)
 
 # Note that cards with non-normal layout will have multiple cards in the json, but they will have the same multiverseid. That means we don't have to go and find matches.
-### REVISIT - double-check meld!
+# REVISIT - double-check meld!
 layouts = "normal, split, flip, double-faced, token, plane, scheme, phenomenon, leveler, vanguard, meld"
 layout_list = listify(layouts)
 
@@ -79,18 +134,19 @@ if "name" not in loadeddata:
     for mtgset in loadeddata:
         nl = loadeddata[mtgset]
         if "name" in nl and "cards" in nl:
-            #print "adding " + str(len(nl["cards"])) + " cards from " + nl["name"]
+            # print "adding " + str(len(nl["cards"])) + " cards from " + nl["name"]
             data["cards"].extend(nl["cards"])
 else:
     data = loadeddata
 
 final_muids = list()
-final_muids.append(262875) # Huntmaster of the Fells
-final_muids.append(262699) # Ravager of the Fells
-final_muids.append(368950) # Wear/Tear
+final_muids.append(262875)  # Huntmaster of the Fells
+final_muids.append(262699)  # Ravager of the Fells
+final_muids.append(368950)  # Wear/Tear
 
 # used for finding mciNumbers with letters
 mciNum_re = re.compile('^([0-9]+)([a-d])+$')
+
 
 def add_card(cards_list, card_dict, allcards_list):
     if "multiverseid" in card_dict:
@@ -102,13 +158,17 @@ def add_card(cards_list, card_dict, allcards_list):
                 #sys.stderr.write("Looking because of " + card_dict["mciNumber"] + "\n")
                 # hunt down the siblings...
                 for hcard in allcards_list:
-                    #sys.stderr.write("L102\n")
+                    # sys.stderr.write("L102\n")
                     # only look at cards that are near us, because the mciNumber is relative to our set.
-                    if "multiverseid" in hcard and int(hcard["multiverseid"]) > int(card_dict["multiverseid"]) - 300  and int(hcard["multiverseid"]) < int(card_dict["multiverseid"]) + 300:
-                        #sys.stderr.write("L105\n")
+                    if "multiverseid" in hcard and int(
+                            hcard["multiverseid"]) > int(
+                            card_dict["multiverseid"]) - 300 and int(
+                            hcard["multiverseid"]) < int(
+                            card_dict["multiverseid"]) + 300:
+                        # sys.stderr.write("L105\n")
                         if "mciNumber" in hcard and hcard["mciNumber"] is not card_dict["mciNumber"]:
-                            #sys.stderr.write("L107\n")
-                            for letter in ['a','b','c','d']:
+                            # sys.stderr.write("L107\n")
+                            for letter in ['a', 'b', 'c', 'd']:
                                 #sys.stderr.write("L109 - " + str(hcard["mciNumber"]) + " == " + str(mat.group(1)) + letter + "\n")
                                 if str(hcard["mciNumber"]) == str(mat.group(1)) + letter:
                                     cards_list.append(hcard["multiverseid"])
@@ -141,7 +201,7 @@ for ctype in supertypes_list:
             if card["supertypes"][0].lower() == ctype:
                 found = found + add_card(final_muids, card, data["cards"])
 
-                
+
 # each card type
 for ctype in types_list:
     found = 0
@@ -214,7 +274,7 @@ for cpower in power_list:
                 continue
             found = found + add_card(final_muids, card, data["cards"])
 
-            
+
 # cards by toughness
 for ctoughness in toughness_list:
     found = 0
@@ -241,7 +301,7 @@ for word in keywords_list:
         if found >= MAX_PER_CRITERION:
             continue
         if "text" in card:
-            #print card["text"].lower()
+            # print card["text"].lower()
             if card["text"].lower().find(word) >= 0:
                 found = found + add_card(final_muids, card, data["cards"])
 
@@ -265,18 +325,18 @@ for symbol in symbols_list:
             continue
         if "manaCost" in card:
             if card["manaCost"].lower().find(symbol) >= 0:
-                #print card["name"] + " - " + card["manaCost"]
+                # print card["name"] + " - " + card["manaCost"]
                 found = found + add_card(final_muids, card, data["cards"])
 
 
 # cards by cmc
-for cmc in range (0,22):
+for cmc in range(0, 22):
     found = 0
     for card in data["cards"]:
         if "cmc" in card and card["cmc"] == cmc:
             if found >= MAX_PER_CRITERION:
                 continue
-            #print card["name"] + " - " + str(card["cmc"])
+            # print card["name"] + " - " + str(card["cmc"])
             found = found + add_card(final_muids, card, data["cards"])
 
 
@@ -287,7 +347,7 @@ output["cards"] = list()
 
 for card in data["cards"]:
     if "multiverseid" in card and card["multiverseid"] in final_muids:
-        #print card["name"]
+        # print card["name"]
         output["cards"].append(card)
 #    if card["name"] == "Alive":
 #        print json.dumps(card, indent=2)
