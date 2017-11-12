@@ -24,38 +24,42 @@ class Command(BaseCommand):
     #args = '<poll_id poll_id ...>'
     help = 'Generate HTML links to do battles on the cards that are entered on stdin.'
 
-    option_list = BaseCommand.option_list + (
-        make_option(
+    def add_arguments(self, parser):
+        parser.add_argument(
             '--outdir',
             dest='outdir',
-            type='string',
+            #type=string,
             default='./',
-            help='The directory to stick all of these documents.'),
-        make_option(
+            help='The directory to stick all of these documents.'
+            )
+        parser.add_argument(
             '--include-names',
             dest='include_names',
             action='store_true',
             default=False,
-            help='If set, include the name of the card in the output.'),
-        make_option(
+            help='If set, include the name of the card in the output.'
+            )
+        parser.add_argument(
             '--format-name',
             dest='formatname',
-            type='string',
+            #type=string,
             default='all',
-            help='Only include cards of this particular format. Default is all.'),
-        make_option(
+            help='Only include cards of this particular format. Default is all.'
+            )
+        parser.add_argument(
             '--clustertest',
             dest='clustertest',
             action='store_true',
             default=False,
-            help='Generate ~408 cards used for cluster testing. 25 destroy creatures, 50 lands, 25 gain life, 50 flying creatures, 50 seaching creatures, 25 counter spells, 25 burn spells, 25 artifacts with tap abilities.'),
-        make_option(
+            help='Generate ~408 cards used for cluster testing. 25 destroy creatures, 50 lands, 25 gain life, 50 flying creatures, 50 seaching creatures, 25 counter spells, 25 burn spells, 25 artifacts with tap abilities.'
+            )
+        parser.add_argument(
             '--test_id',
             dest='test_id',
-            type='int',
+            type=int,
             default=0,
-            help='The test number to run, for multiple strategies. Only works in conjunction with --clustertest, otherwise y=you just get what is in PhysicalCard.get_searchable_document().'),
-    )
+            help='The test number to run, for multiple strategies. Only works in conjunction with --clustertest, otherwise y=you just get what is in PhysicalCard.get_searchable_document().')
+
 
     def handle(self, *args, **options):
         pcard_list = list()
