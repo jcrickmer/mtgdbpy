@@ -373,7 +373,9 @@ class BaseCard(models.Model):
         super(BaseCard, self).__setattr__(attrname, val)
 
         if attrname == 'name':
-            self.filing_name = self.make_filing_name(val)
+            if self.filing_name is None or self.name is None or self.name != val:
+                self.filing_name = self.make_filing_name(val)
+                #sys.stderr.write('cards.models.BaseCard.set_name - "' + val + '" made filing name "' + self.filing_name + '"' + "\n")
 
         if attrname == 'mana_cost':
             super(BaseCard, self).__setattr__(attrname, str(val).lower())

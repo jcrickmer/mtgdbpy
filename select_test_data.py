@@ -119,6 +119,18 @@ def add_card(cards_list, card_dict, allcards_list):
         return 0
 
 
+# cards with fun things in their names
+spec_chars = [u'Æ', u'æ', '0', ',', '-', '_', '!', 'Ae']
+for spec_char in spec_chars:
+    found = 0
+    for card in data["cards"]:
+        if "name" in card and card["name"].find(spec_char) > -1:
+            if found >= MAX_PER_CRITERION:
+                continue
+            sys.stderr.write(card["name"] + "\n")
+            found = found + add_card(final_muids, card, data["cards"])
+
+
 # each supertype
 for ctype in supertypes_list:
     found = 0

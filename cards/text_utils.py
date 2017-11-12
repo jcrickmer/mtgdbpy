@@ -35,6 +35,8 @@ def filing_string(input):
     result = filing_string_rule_14(result)
     result = filing_string_rule_15(result)
     result = result.strip()
+    if len(result) == 0:
+        result = '_'
     return result
 
 # Rule 1 - General Principle
