@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^rules/', include('rules.urls', namespace="rules")),
     url(r'^decks/', include('decks.urls', namespace="decks")),
     url(r'^cn/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT_CN}),
+    url(r'^fonts/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT_CN}),
     url(r'^img/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT_CARD_IMAGES}),
     url(r'^d/(?P<path>.*)$', serve, {'document_root': settings.DYNAMIC_IMAGE_FILE_ROOT}),
     # Examples:
