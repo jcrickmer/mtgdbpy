@@ -242,6 +242,118 @@ class LoaderTestCase(TestCase):
       ]
     }'''
 
+    elspeth_json = ''' {
+      "artist": "Eric Deschamps",
+      "cmc": 6,
+      "colorIdentity": [
+        "W"
+      ],
+      "colors": [
+        "White"
+      ],
+      "foreignNames": [
+        {
+          "language": "Chinese Simplified",
+          "name": "旭日天尊艾紫培",
+          "multiverseid": 373898
+        },
+        {
+          "language": "Chinese Traditional",
+          "name": "旭日天尊艾紫培",
+          "multiverseid": 374147
+        },
+        {
+          "language": "French",
+          "name": "Elspeth, championne du Soleil",
+          "multiverseid": 374645
+        },
+        {
+          "language": "German",
+          "name": "Elspeth, Auserwählte der Sonne",
+          "multiverseid": 374396
+        },
+        {
+          "language": "Italian",
+          "name": "Elspeth, Campionessa del Sole",
+          "multiverseid": 374894
+        },
+        {
+          "language": "Japanese",
+          "name": "太陽の勇者、エルズペス",
+          "multiverseid": 375143
+        },
+        {
+          "language": "Korean",
+          "name": "태양의 용사 엘스페스",
+          "multiverseid": 375392
+        },
+        {
+          "language": "Portuguese (Brazil)",
+          "name": "Elspeth, Campeã do Sol",
+          "multiverseid": 375641
+        },
+        {
+          "language": "Russian",
+          "name": "Элспет, Поборница Солнца",
+          "multiverseid": 375890
+        },
+        {
+          "language": "Spanish",
+          "name": "Elspeth, campeona del sol",
+          "multiverseid": 376139
+        }
+      ],
+      "id": "7db4316891599a7bfc5e26f40d7424d78aff3e4c",
+      "imageName": "elspeth, sun's champion",
+      "layout": "normal",
+      "legalities": [
+        {
+          "format": "Commander",
+          "legality": "Legal"
+        },
+        {
+          "format": "Legacy",
+          "legality": "Legal"
+        },
+        {
+          "format": "Modern",
+          "legality": "Legal"
+        },
+        {
+          "format": "Theros Block",
+          "legality": "Legal"
+        },
+        {
+          "format": "Vintage",
+          "legality": "Legal"
+        }
+      ],
+      "loyalty": 4,
+      "manaCost": "{4}{W}{W}",
+      "mciNumber": "9",
+      "multiverseid": 373649,
+      "name": "Elspeth, Sun's Champion",
+      "number": "9",
+      "originalText": "+1: Put three 1/1 white Soldier creature tokens onto the battlefield.\\n-3: Destroy all creatures with power 4 or greater.\\n-7: You get an emblem with \\"Creatures you control get +2/+2 and have flying.\\"",
+      "originalType": "Planeswalker — Elspeth",
+      "printings": [
+        "THS",
+        "DDO"
+      ],
+      "rarity": "Mythic Rare",
+      "subtypes": [
+        "Elspeth"
+      ],
+      "supertypes": [
+        "Legendary"
+      ],
+      "text": "+1: Create three 1/1 white Soldier creature tokens.\\n−3: Destroy all creatures with power 4 or greater.\\n−7: You get an emblem with \\"Creatures you control get +2/+2 and have flying.\\"",
+      "type": "Legendary Planeswalker — Elspeth",
+      "types": [
+        "Planeswalker"
+      ]
+    }'''
+
     def load_card(self, json, name, loadhelper=True, set_abbr='BAR'):
         helper = TestLoadHelper()
         if loadhelper:
@@ -529,3 +641,59 @@ class LoaderTestCase(TestCase):
 
         #self.assertEquals(hunt, ravager.get_double_faced_card())
         #self.assertEquals(ravager, hunt.get_double_faced_card())
+
+    def test_isperm_0(self):
+        card = self.load_card(self.induce_despair_json, "Induce Despair")
+        self.assertFalse(card.ispermanent)
+        
+    def test_isperm_1(self):
+        card = self.load_card(self.huntmaster_json, "Huntmaster of the Fells")
+        card2 = self.load_card(self.ravager_json, "Ravager of the Fells", loadhelper=False)
+        self.assertTrue(card.ispermanent)
+        self.assertTrue(card2.ispermanent)
+        
+    def test_isperm_2(self):
+        card = self.load_card(self.wear_json, "Wear")
+        card2 = self.load_card(self.tear_json, "Tear", loadhelper=False)
+        self.assertFalse(card.ispermanent)
+        self.assertFalse(card2.ispermanent)
+        
+    def test_isperm_3(self):
+        card = self.load_card(self.magnivore_json, "Magnivore")
+        self.assertTrue(card.ispermanent)
+        
+    def test_isperm_4(self):
+        card = self.load_card(self.colossus_sardia_json, "Colossus of Sardia")
+        self.assertTrue(card.ispermanent)
+
+    def test_isperm_5(self):
+        card = self.load_card(self.black_lotus_json, 'Black Lotus')
+        self.assertTrue(card.ispermanent)
+
+    def test_isperm_6(self):
+        card = self.load_card(self.island_json, 'Island')
+        self.assertTrue(card.ispermanent)
+
+    def test_isperm_7(self):
+        card = self.load_card(self.cavern_of_souls_json, 'Cavern of Souls')
+        self.assertTrue(card.ispermanent)
+
+    def test_isperm_8(self):
+        card = self.load_card(self.garruks_companion_json, "Garruk's Companion")
+        self.assertTrue(card.ispermanent)
+
+    def test_isperm_9(self):
+        card = self.load_card(self.break_through_json, 'Break Through the Line')
+        self.assertTrue(card.ispermanent)
+
+    def test_isperm_10(self):
+        card = self.load_card(self.arcbond_json, 'Arcbond')
+        self.assertFalse(card.ispermanent)
+
+    def test_isperm_11(self):
+        card = self.load_card(self.cached_defenses_json, 'Cached Defenses')
+        self.assertFalse(card.ispermanent)
+
+    def test_isperm_12(self):
+        card = self.load_card(self.elspeth_json, "Elspeth, Sun's Champion")
+        self.assertTrue(card.ispermanent)

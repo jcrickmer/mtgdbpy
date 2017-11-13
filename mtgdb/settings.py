@@ -87,7 +87,7 @@ DATABASES = {
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
-        'URL': 'http://127.0.0.1:8983/solr/mtgdb',
+        'URL': 'http://127.0.0.1:8983/solr/mtgdbdev',
         # ...or for multicore...
         # 'URL': 'http://127.0.0.1:8983/solr/mysite',
         # NOTE: when turning this on for the first time, a "rebuild_index" is

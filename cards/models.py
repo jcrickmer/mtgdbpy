@@ -357,6 +357,7 @@ class BaseCard(models.Model):
     power = models.CharField(max_length=4, null=True, blank=True)
     toughness = models.CharField(max_length=4, null=True, blank=True)
     loyalty = models.CharField(max_length=4, null=True, blank=True)
+    ispermanent = models.BooleanField(null=False, default=False)
     created_at = models.DateTimeField(
         null=False,
         auto_now_add=True)

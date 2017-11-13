@@ -271,8 +271,6 @@ class Command(BaseCommand):
         except KeyError:
             pass
 
-        bc.save()
-
         sptype_counter = 0
         CardSupertype.objects.filter(basecard=bc).delete()
         for jsonsptype in ['supertypes']:
@@ -294,6 +292,7 @@ class Command(BaseCommand):
                 cspt.save()
                 sptype_counter = sptype_counter + 1
 
+        is_perm = False
         type_counter = 0
         CardType.objects.filter(basecard=bc).delete()
         for jsontype in ['types']:
@@ -314,7 +313,11 @@ class Command(BaseCommand):
                 ct.position = type_counter
                 ct.save()
                 type_counter = type_counter + 1
+                ctypel = ctype.lower()
+                is_perm = is_perm or ctypel == 'artifact' or ctypel == 'creature' or ctypel == 'enchantment' or ctypel == 'land' or ctypel == 'planeswalker'
 
+        bc.ispermanent = is_perm
+                
         try:
             CardSubtype.objects.filter(basecard=bc).delete()
             subtype_counter = 0
@@ -346,6 +349,8 @@ class Command(BaseCommand):
                 cc.save()
         except KeyError:
             pass
+
+        bc.save()
 
         return bc
 
