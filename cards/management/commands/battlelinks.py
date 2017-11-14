@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.core.management.base import BaseCommand, CommandError
 from cards.models import Card
 from cards.models import Battle
@@ -18,13 +20,12 @@ class Command(BaseCommand):
     #args = '<poll_id poll_id ...>'
     help = 'Generate HTML links to do battles on the cards that are entered on stdin.'
 
-    option_list = BaseCommand.option_list + (
-        make_option('--format',
-                    dest='format',
-                    type='string',
-                    default='modern',
-                    help='Select the format to battle in. Default is modern.'),
-    )
+    def add_arguments(self, parser):
+        parser.add_argument('--format',
+                            dest='format',
+                            type='string',
+                            default='modern',
+                            help='Select the format to battle in. Default is modern.')
 
     def handle(self, *args, **options):
         regex = re.compile(r'^\d*\s*(?P<cn>\S.+)')
