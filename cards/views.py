@@ -525,16 +525,26 @@ def detail(request, multiverseid=None, slug=None):
             dets['card_losses'] = [
                 Card.objects.filter(
                     basecard__physicalcard__id=battle['winner_pcard_id']).order_by('-multiverseid').first() for battle in lost_battles]
+
         similars = []
-        for sim in cards[0].basecard.physicalcard.physicalcard.all().order_by('-score')[:18]:
+        solrquerystring = cards[0].basecard.physicalcard.get_searchable_document(include_names=False, include_symbols=False)
+        solrqueryparts_list = solrquerystring.split()
+        orstring = " OR ".join(solrqueryparts_list)
+        sqs = SearchQuerySet().raw_search(query_string=orstring)
+        solrcount = 0
+        for sim_sqr in sqs.order_by('-score'):
+            if solrcount >= 18:
+                break
             simcard = Card.objects.filter(
-                basecard__physicalcard=sim.sim_physicalcard,
+                basecard__physicalcard_id=sim_sqr.pk,
                 basecard__cardposition__in=[
                     BaseCard.FRONT,
                     BaseCard.LEFT,
                     BaseCard.UP]).order_by('-multiverseid').first()
-            if simcard is not None:
+            if simcard is not None and int(cards[0].basecard.physicalcard.id) != int(sim_sqr.pk):
                 similars.append(simcard)
+                solrcount = solrcount + 1
+
         response = render(request, 'cards/detail.html', {'request_mvid': multiverseid,
                                                          'primary_basecard_id': primary_basecard_id,
                                                          'cards': card_list,

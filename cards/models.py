@@ -198,7 +198,7 @@ class PhysicalCard(models.Model):
     def get_searchable_document_selfref(self):
         return self.get_searchable_document(include_names=False)
 
-    def get_searchable_document(self, include_names=True):
+    def get_searchable_document(self, include_names=True, include_symbols=True):
         result = ''
         for basecard in self.basecard_set.all():
             rules = basecard.rules_text
@@ -331,6 +331,25 @@ class PhysicalCard(models.Model):
 
         if self.basecard_set.all().count() > 1:
             result = 'multicard\n' + result
+
+        if not include_symbols:
+            result = result.replace("/", " ")
+            result = result.replace(",", " ")
+            result = result.replace(".", " ")
+            result = result.replace(":", " ")
+            result = result.replace(";", " ")
+            result = result.replace("{", " ")
+            result = result.replace("}", " ")
+            result = result.replace("?", " ")
+            result = result.replace("~", "\\~")
+            result = result.replace("*", "\\*")
+            result = result.replace("-", "\\-")
+            result = result.replace("+", "\\+")
+            result = result.replace("|", "\\|")
+            result = result.replace("(", "")
+            result = result.replace(")", "")
+            result = result.replace("'", "\\'")
+            result = result.replace("\\", "\\\\")
 
         return result
 
