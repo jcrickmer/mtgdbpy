@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.core.management.base import BaseCommand, CommandError
 from cards.models import PhysicalCard
 from cards.models import BaseCard
@@ -257,6 +259,19 @@ class Command(BaseCommand):
             bc.rules_text = jcard['text']
         except KeyError:
             bc.rules_text = ''
+        if len(bc.rules_text) < 1:
+            if jcard['name'] == 'Plains':
+                bc.rules_text = '{T}: Add {W} to your mana pool.'
+            elif jcard['name'] == 'Island':
+                bc.rules_text = '{T}: Add {U} to your mana pool.'
+            elif jcard['name'] == 'Swamp':
+                bc.rules_text = '{T}: Add {B} to your mana pool.'
+            elif jcard['name'] == 'Mountain':
+                bc.rules_text = '{T}: Add {R} to your mana pool.'
+            elif jcard['name'] == 'Forest':
+                bc.rules_text = '{T}: Add {G} to your mana pool.'
+            elif jcard['name'] == 'Wastes':
+                bc.rules_text = '{T}: Add {C} to your mana pool.'
 
         try:
             bc.power = jcard['power']
@@ -317,7 +332,7 @@ class Command(BaseCommand):
                 is_perm = is_perm or ctypel == 'artifact' or ctypel == 'creature' or ctypel == 'enchantment' or ctypel == 'land' or ctypel == 'planeswalker'
 
         bc.ispermanent = is_perm
-                
+
         try:
             CardSubtype.objects.filter(basecard=bc).delete()
             subtype_counter = 0

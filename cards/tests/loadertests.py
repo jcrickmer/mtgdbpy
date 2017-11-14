@@ -645,23 +645,23 @@ class LoaderTestCase(TestCase):
     def test_isperm_0(self):
         card = self.load_card(self.induce_despair_json, "Induce Despair")
         self.assertFalse(card.ispermanent)
-        
+
     def test_isperm_1(self):
         card = self.load_card(self.huntmaster_json, "Huntmaster of the Fells")
         card2 = self.load_card(self.ravager_json, "Ravager of the Fells", loadhelper=False)
         self.assertTrue(card.ispermanent)
         self.assertTrue(card2.ispermanent)
-        
+
     def test_isperm_2(self):
         card = self.load_card(self.wear_json, "Wear")
         card2 = self.load_card(self.tear_json, "Tear", loadhelper=False)
         self.assertFalse(card.ispermanent)
         self.assertFalse(card2.ispermanent)
-        
+
     def test_isperm_3(self):
         card = self.load_card(self.magnivore_json, "Magnivore")
         self.assertTrue(card.ispermanent)
-        
+
     def test_isperm_4(self):
         card = self.load_card(self.colossus_sardia_json, "Colossus of Sardia")
         self.assertTrue(card.ispermanent)

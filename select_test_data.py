@@ -129,28 +129,60 @@ loadeddata = json.load(sys.stdin)
 
 # test to see if this is a set, or if it is a set of sets.
 data = {"cards": []}
+expsets = {}
+nameCounts = {}
+
 if "name" not in loadeddata:
     # must be a set of sets - a dictionary. let's iterate through each set within this dictionary, looking for sets...
     for mtgset in loadeddata:
         nl = loadeddata[mtgset]
+        expsets[mtgset] = {}
+        expsets[mtgset]["name"] = nl["name"]
+        expsets[mtgset]["code"] = nl["code"]
         if "name" in nl and "cards" in nl:
             # print "adding " + str(len(nl["cards"])) + " cards from " + nl["name"]
+            for card in nl["cards"]:
+                card["_loaderSet"] = mtgset
             data["cards"].extend(nl["cards"])
 else:
     data = loadeddata
 
 final_muids = list()
-final_muids.append(262875)  # Huntmaster of the Fells
-final_muids.append(262699)  # Ravager of the Fells
-final_muids.append(368950)  # Wear/Tear
+forcedList = list()
+forcedList.append(262875)  # Huntmaster of the Fells
+forcedList.append(262699)  # Ravager of the Fells
+forcedList.append(368950)  # Wear/Tear
+forcedList.append(433227)  # Plains
+forcedList.append(438468)  # Island
+forcedList.append(433233)  # Swamp
+forcedList.append(438500)  # Mountain
+forcedList.append(433239)  # Forest
+forcedList.append(407693)  # Wastes
+forcedList.append(287341)  # Desert
 
 # used for finding mciNumbers with letters
 mciNum_re = re.compile('^([0-9]+)([a-d])+$')
 
 
+# cards_list is a list of multiverseids (muids) to includein the in the output. This function appends to this list.
+# card_dict is the card object (as a dictionary)
+# allcards_list is the entire dataset of cards as a list that we are working from
 def add_card(cards_list, card_dict, allcards_list):
     if "multiverseid" in card_dict:
+        if card_dict["name"] not in nameCounts:
+            nameCounts[card_dict["name"]] = []
+        if card_dict["_loaderSet"] in nameCounts[card_dict["name"]]:
+            # if we exclude a card becuse it has already been selected by a rule, then
+            # we will signifcantly bloat the test set. So, let's just let it pass.
+            pass
+        elif len(nameCounts[card_dict["name"]]) > 3:
+            # Too many, we are done.
+            return 0
+        else:
+            nameCounts[card_dict["name"]].append(card_dict["_loaderSet"])
+
         cards_list.append(card_dict["multiverseid"])
+
         # going to use the mciNumber to see if there is a related card...
         if "mciNumber" in card_dict:
             mat = mciNum_re.match(card_dict["mciNumber"])
@@ -189,6 +221,13 @@ for spec_char in spec_chars:
                 continue
             sys.stderr.write(card["name"] + "\n")
             found = found + add_card(final_muids, card, data["cards"])
+
+
+# forcedList
+for muid in forcedList:
+    for card in data["cards"]:
+        if 'multiverseid' in card and card["multiverseid"] == muid:
+            add_card(final_muids, card, data["cards"])
 
 
 # each supertype
@@ -339,16 +378,44 @@ for cmc in range(0, 22):
             # print card["name"] + " - " + str(card["cmc"])
             found = found + add_card(final_muids, card, data["cards"])
 
+# grab some other versions of this card
+for cardName in nameCounts:
+    found = 0
+    for card in data["cards"]:
+        if card['name'] == cardName:
+            if found >= MAX_PER_CRITERION:
+                continue
+            found = found + add_card(final_muids, card, data["cards"])
 
 output = {}
-output["name"] = "MTG Test Data"
-output["code"] = "CNTest"
-output["cards"] = list()
 
-for card in data["cards"]:
-    if "multiverseid" in card and card["multiverseid"] in final_muids:
-        # print card["name"]
-        output["cards"].append(card)
-#    if card["name"] == "Alive":
-#        print json.dumps(card, indent=2)
+if False:
+    output["name"] = "MTG Test Data"
+    output["code"] = "CNTest"
+    output["cards"] = list()
+
+    for card in data["cards"]:
+        if "multiverseid" in card and card["multiverseid"] in final_muids:
+            # print card["name"]
+            output["cards"].append(card)
+    #    if card["name"] == "Alive":
+    #        print json.dumps(card, indent=2)
+else:
+    # We want to output as a collection of sets, not just one set.
+    output['LEA'] = {}
+    output['LEA']['name'] = 'Limited Edition Alpha'
+    output['LEA']['code'] = 'LEA'
+    output['LEA']['cards'] = []
+
+    explimit = 3
+    for card in data["cards"]:
+        if "multiverseid" in card and card["multiverseid"] in final_muids:
+            if card["_loaderSet"] not in output:
+                output[card["_loaderSet"]] = {}
+                output[card["_loaderSet"]]["name"] = expsets[card["_loaderSet"]]["name"]
+                output[card["_loaderSet"]]["code"] = expsets[card["_loaderSet"]]["code"]
+                output[card["_loaderSet"]]["cards"] = []
+            output[card["_loaderSet"]]["cards"].append(card)
+
 print json.dumps(output, indent=2)
+# print json.dumps(nameCounts, indent=2)
