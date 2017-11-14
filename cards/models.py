@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This is an auto-generated Django model module.
 # You'll have to do the following manually to clean this up:
@@ -194,6 +194,9 @@ class PhysicalCard(models.Model):
     def get_latest_url_part(self):
         card = self.get_latest_card()
         return str(card.multiverseid) + '-' + card.url_slug()
+
+    def get_searchable_document_selfref(self):
+        return self.get_searchable_document(include_names=False)
 
     def get_searchable_document(self, include_names=True):
         result = ''
