@@ -1029,7 +1029,7 @@ class Format(models.Model):
     max_cards_side = models.IntegerField(null=False, default=15)
     max_nonbl_card_count = models.IntegerField(null=False, default=4)
     uses_command_zone = models.BooleanField(default=False)
-    validator = models.CharField(max_length=100, null=True)
+    validator = models.CharField(max_length=100, null=True, blank=True)
     start_date = models.DateField(
         auto_now=False,
         auto_now_add=False,
@@ -1046,6 +1046,29 @@ class Format(models.Model):
     def __unicode__(self):
         return str(
             self.id) + " [Format: " + str(self.formatname) + " (" + self.format + ")]"
+
+class FormatExpansionSet(models.Model):
+    format = models.ForeignKey(Format)
+    expansionset = models.ForeignKey(ExpansionSet)
+    
+    class Meta:
+        managed = True
+        verbose_name_plural = 'Format Expansion Sets'
+
+    def __unicode__(self):
+        return "Format: " + str(self.format.format) + " - " + self.expansionset.name + " (" + str(self.expansionset.id) + ")"
+
+    
+class FormatBannedCard(models.Model):
+    format = models.ForeignKey(Format)
+    physicalcard = models.ForeignKey(PhysicalCard)
+    
+    class Meta:
+        managed = True
+        verbose_name_plural = 'Format Banned Cards'
+
+    def __unicode__(self):
+        return "Format: " + str(self.format.format) + " - " + self.physicalcard.get_card_name() + " (" + str(self.physicalcard.id) + ")"
 
 
 class FormatBasecard(models.Model):

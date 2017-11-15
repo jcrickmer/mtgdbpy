@@ -2,9 +2,12 @@
 
 from django.contrib import admin
 from cards.models import Color, Rarity, Card, BaseCard, Mark, ExpansionSet, Subtype, Type, CardType, CardSubtype, PhysicalCard
-from cards.models import Format
+from cards.models import Format, FormatExpansionSet, FormatBannedCard
 from django import forms
 
+from ajax_select import make_ajax_form
+from ajax_select.admin import AjaxSelectAdmin
+from ajax_select.fields import AutoCompleteSelectField
 
 class CardModelForm(forms.ModelForm):
     flavor_text = forms.CharField(widget=forms.Textarea)
@@ -112,6 +115,19 @@ class BaseCardAdmin(admin.ModelAdmin):
     inlines = [CardColorInline, CardTypeInline, CardSubtypeInline]
     form = BaseCardModelForm
 
+class FormatExpansionSetAdmin(admin.ModelAdmin):
+    readonly_fields = ('id',)
+    form = make_ajax_form(FormatExpansionSet, {
+        'expansionset':'expansionset'      # ForeignKeyField
+    })
+
+    
+class FormatBannedCardAdmin(admin.ModelAdmin):
+    readonly_fields = ('id',)
+    form = make_ajax_form(FormatBannedCard, {
+        'physicalcard':'physicalcard'      # ForeignKeyField
+    })
+    
 # Register your models here.
 admin.site.register(Color, ColorAdmin)
 admin.site.register(Rarity)
@@ -125,3 +141,5 @@ admin.site.register(CardType, CardTypeAdmin)
 admin.site.register(Subtype, SubtypeAdmin)
 admin.site.register(CardSubtype, CardSubtypeAdmin)
 admin.site.register(Format, FormatAdmin)
+admin.site.register(FormatExpansionSet, FormatExpansionSetAdmin)
+admin.site.register(FormatBannedCard, FormatBannedCardAdmin)

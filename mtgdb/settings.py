@@ -104,6 +104,8 @@ AJAX_LOOKUP_CHANNELS = {
     #  simple: search Person.objects.filter(name__icontains=q)
     #'deckcard'  : {'model': 'cards.PhysicalCard', 'search_field': 'id'},
     'deckcard': ('cards.lookups', 'PhysicalCardLookup'),
+    'physicalcard': ('cards.lookups', 'PhysicalCardLookup'),
+    'expansionset': ('cards.lookups', 'ExpansionSetLookup'),
 }
 
 # Internationalization
@@ -126,9 +128,10 @@ TEMPLATES = [
                  os.path.join(BASE_DIR, 'decks', 'templates'),
                  os.path.join(BASE_DIR, 'rules', 'templates'),
                  os.path.join(BASE_DIR, 'mtgdb', 'templates'),
-                 os.path.join('/home/jason/mtgdbpy/lib/python2.7/site-packages/django/contrib', 'admin', 'templates'),
+                 os.path.join('/home/jason/mtgdb/lib/python2.7/site-packages/django/contrib', 'admin', 'templates'),
                  '/home/jason/mtgdb/lib/python2.7/site-packages/django/contrib/admin/templates',
                  '/home/jason/mtgdb/lib/python2.7/site-packages/haystack/templates',
+                 '/home/jason/mtgdb/lib/python2.7/site-packages/ajax_select/templates',
                  ],
         'OPTIONS': {
             'context_processors': [
