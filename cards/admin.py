@@ -9,6 +9,7 @@ from ajax_select import make_ajax_form
 from ajax_select.admin import AjaxSelectAdmin
 from ajax_select.fields import AutoCompleteSelectField
 
+
 class CardModelForm(forms.ModelForm):
     flavor_text = forms.CharField(widget=forms.Textarea)
 
@@ -115,19 +116,20 @@ class BaseCardAdmin(admin.ModelAdmin):
     inlines = [CardColorInline, CardTypeInline, CardSubtypeInline]
     form = BaseCardModelForm
 
+
 class FormatExpansionSetAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
     form = make_ajax_form(FormatExpansionSet, {
-        'expansionset':'expansionset'      # ForeignKeyField
+        'expansionset': 'expansionset'      # ForeignKeyField
     })
 
-    
+
 class FormatBannedCardAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
     form = make_ajax_form(FormatBannedCard, {
-        'physicalcard':'physicalcard'      # ForeignKeyField
+        'physicalcard': 'physicalcard'      # ForeignKeyField
     })
-    
+
 # Register your models here.
 admin.site.register(Color, ColorAdmin)
 admin.site.register(Rarity)

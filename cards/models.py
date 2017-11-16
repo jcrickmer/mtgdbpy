@@ -12,7 +12,7 @@
 from __future__ import unicode_literals
 import sys
 from django.db import models
-from datetime import datetime
+from datetime import datetime, date
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
@@ -1018,6 +1018,18 @@ class FormatManager(models.Manager):
         return formats
 
 
+def ddvalstart(value):
+    ''' REVISIT  - THIS HAS NOT BEEN IMPLEMENTED '''
+    sys.stderr.write("ddvalstart val is " + str(value) + "\n")
+    if value is None:
+        return
+    if value == date(year=2015, month=3, day=5):
+        raise ValidationError(
+            _('%(value) is not an even number'),
+            params={'value': str(value)},
+        )
+
+
 class Format(models.Model):
     id = models.AutoField(primary_key=True)
     formatname = models.CharField(max_length=60, null=False)
@@ -1033,11 +1045,40 @@ class Format(models.Model):
     start_date = models.DateField(
         auto_now=False,
         auto_now_add=False,
-        null=True)
+        null=True,
+        validators=[ddvalstart])
     end_date = models.DateField(auto_now=False, auto_now_add=False, null=True)
 
     objects = models.Manager()
     cards = FormatManager()
+
+
+    def populate_format_cards(self):
+        ''' When you create a new format, you need to populate it with cards.
+            You do that by associating Expansion Sets with a Format, adding
+            some Banned Cards, and then running this command. This command
+            will clear out all of the FormatBaseCards, then add all cards
+            from the named Expansion Sets, except for the Banned Cards.
+        '''
+
+        # start from scratch. Delete all of the old cards.
+        FormatBasecard.objects.filter(format=self).delete()
+
+        # Now, go through all of the expansion sets associated with this
+        # format, and add all cards.
+        for expset in self.formatexpansionset_set.all():
+            for card in Card.objects.filter(expansionset=expset.expansionset).all():
+                fbc, created = FormatBasecard.objects.get_or_create(format=self, basecard=card.basecard)
+
+        # Now, delete all of the banned cards associated with this format.
+        for banned in self.formatbannedcard_set.all():
+            for basecard in BaseCard.objects.filter(physicalcard=banned.physicalcard).all():
+                FormatBasecard.objects.filter(format=self, basecard=basecard).delete()
+
+        # REVISIT - looking over the banned list before adding to the
+        # database may actually be more performant, but since this is
+        # a not-so-often admin function, I am not worried about it.
+        return
 
     class Meta:
         verbose_name_plural = 'Formats'
@@ -1047,10 +1088,11 @@ class Format(models.Model):
         return str(
             self.id) + " [Format: " + str(self.formatname) + " (" + self.format + ")]"
 
+
 class FormatExpansionSet(models.Model):
     format = models.ForeignKey(Format)
     expansionset = models.ForeignKey(ExpansionSet)
-    
+
     class Meta:
         managed = True
         verbose_name_plural = 'Format Expansion Sets'
@@ -1058,11 +1100,11 @@ class FormatExpansionSet(models.Model):
     def __unicode__(self):
         return "Format: " + str(self.format.format) + " - " + self.expansionset.name + " (" + str(self.expansionset.id) + ")"
 
-    
+
 class FormatBannedCard(models.Model):
     format = models.ForeignKey(Format)
     physicalcard = models.ForeignKey(PhysicalCard)
-    
+
     class Meta:
         managed = True
         verbose_name_plural = 'Format Banned Cards'

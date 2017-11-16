@@ -30,7 +30,7 @@ mysqladmin -S /tmp/testramdisk/mysql.sock -u root password tester
 echo "Running tests..."
 source /home/jason/mtgdb/bin/activate
 
-./manage.py test --settings=mtgdb.settings_test cards.tests.helpertests && ./manage.py test --settings=mtgdb.settings_test cards.tests.tests && ./manage.py test --settings=mtgdb.settings_test cards.tests.filingstringtests && ./manage.py test --settings=mtgdb.settings_test cards.tests.loadertests && ./manage.py test --settings=mtgdb.settings_test cards.tests.searchtests && ./manage.py test --settings=mtgdb.settings_test cards.tests.nametests && ./manage.py test --settings=mtgdb.settings_test decks.tests.tests && ./manage.py test --settings=mtgdb.settings_test decks.tests.parsertests && ./manage.py test --settings=mtgdb.settings_test decks.tests.stattests
+./manage.py test --settings=mtgdb.settings_test cards.tests.helpertests && ./manage.py test --settings=mtgdb.settings_test cards.tests.tests && ./manage.py test --settings=mtgdb.settings_test cards.tests.filingstringtests && ./manage.py test --settings=mtgdb.settings_test cards.tests.loadertests && ./manage.py test --settings=mtgdb.settings_test cards.tests.searchtests && ./manage.py test --settings=mtgdb.settings_test cards.tests.nametests && ./manage.py test --settings=mtgdb.settings_test decks.tests.tests && ./manage.py test --settings=mtgdb.settings_test decks.tests.parsertests && ./manage.py test --settings=mtgdb.settings_test decks.tests.stattests && ./manage.py test --settings=mtgdb.settings_test cards.tests.formattests
 
 echo "Tests completed!"
 echo "Shutting down MySQL..."

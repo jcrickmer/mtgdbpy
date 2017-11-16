@@ -27,7 +27,7 @@ class PhysicalCardLookup(LookupChannel):
         # return u"%s<div><i>%s</i></div>" % (escape(obj.name),escape(obj.email))
         return obj.get_card_name()
 
-    
+
 class ExpansionSetLookup(LookupChannel):
 
     model = ExpansionSet
