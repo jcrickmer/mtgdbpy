@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.contrib import admin
-from cards.models import Color, Rarity, Card, BaseCard, Mark, ExpansionSet, Subtype, Type, CardType, CardSubtype, PhysicalCard
+from cards.models import Color, Rarity, Card, BaseCard, Mark, ExpansionSet, Supertype, Subtype, Type, CardType, CardSubtype, PhysicalCard
 from cards.models import Format, FormatExpansionSet, FormatBannedCard
 from django import forms
 from django.db import models
@@ -14,7 +14,7 @@ import sys
 
 
 class CardModelForm(forms.ModelForm):
-    flavor_text = forms.CharField(widget=forms.Textarea)
+    flavor_text = forms.CharField(widget=forms.Textarea, required=False)
 
     class Meta:
         model = Card
@@ -22,7 +22,8 @@ class CardModelForm(forms.ModelForm):
 
 
 class CardAdmin(admin.ModelAdmin):
-    readonly_fields = ('id',)
+    search_fields = ['basecard__name', ]
+    readonly_fields = ('id', 'basecard')
     fields = [
         'id',
         'expansionset',
@@ -32,11 +33,18 @@ class CardAdmin(admin.ModelAdmin):
         'flavor_text',
         'card_number',
         'mark']
+
     form = CardModelForm
+
+    list_display = ('get_name', 'rarity', 'multiverseid', 'expansionset', 'card_number')
+
+    def get_name(self, obj):
+        return obj.basecard.name
+    get_name.short_description = 'Card Name'
 
 
 class BaseCardModelForm(forms.ModelForm):
-    rules_text = forms.CharField(widget=forms.Textarea)
+    rules_text = forms.CharField(widget=forms.Textarea, required=False)
 
     class Meta:
         model = BaseCard
@@ -60,6 +68,15 @@ class CardTypeInline(admin.TabularInline):
     readonly_fields = ('id',)
     ordering = ['position']
     model = BaseCard.types.through
+
+
+class CardSupertypeInline(admin.TabularInline):
+    readonly_fields = ('id',)
+    model = BaseCard.supertypes.through
+
+
+class SupertypeAdmin(admin.ModelAdmin):
+    readonly_fields = ('id',)
 
 
 class SubtypeAdmin(admin.ModelAdmin):
@@ -95,8 +112,15 @@ class CardColorInline(admin.TabularInline):
 
 
 class PhysicalCardAdmin(admin.ModelAdmin):
-    readonly_fields = ('id',)
-    fields = ['id', 'layout']
+    search_fields = ['basecard__name', ]
+    readonly_fields = ('id', 'get_name')
+    fields = ['id', 'get_name', 'layout']
+    list_display = ('id', 'get_name', 'layout')
+    list_display_links = ('id', 'get_name', )
+
+    def get_name(self, obj):
+        return obj.get_card_name()
+    get_name.short_description = 'Card Name'
 
 
 class FormatModelForm(forms.ModelForm):
@@ -119,12 +143,15 @@ class FormatAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
     inlines = [FormatBannedCardInline, ]
 
+    list_display = ('format', 'formatname', 'abbr', 'start_date', 'end_date')
+    list_display_links = ('format', )
+
     form = FormatModelForm
 
 
 class BaseCardAdmin(admin.ModelAdmin):
     search_fields = ['name', ]
-    readonly_fields = ('id', 'cmc')
+    readonly_fields = ('id', 'cmc', 'physicalcard')
     fields = [
         'id',
         'physicalcard',
@@ -135,8 +162,14 @@ class BaseCardAdmin(admin.ModelAdmin):
         'power',
         'toughness',
         'loyalty']
-    inlines = [CardColorInline, CardTypeInline, CardSubtypeInline]
+    inlines = [CardColorInline, CardSupertypeInline, CardTypeInline, CardSubtypeInline]
     form = BaseCardModelForm
+    list_display = ('name', 'get_pcard_id')
+    list_display_links = ('name', )
+
+    def get_pcard_id(self, obj):
+        return obj.id
+    get_pcard_id.short_description = 'Physical Card Id'
 
 
 class FormatExpansionSetAdmin(admin.ModelAdmin):
@@ -156,7 +189,7 @@ admin.site.register(ExpansionSet, ExpansionSetAdmin)
 admin.site.register(PhysicalCard, PhysicalCardAdmin)
 admin.site.register(Type, TypeAdmin)
 admin.site.register(CardType, CardTypeAdmin)
+admin.site.register(Supertype, SupertypeAdmin)
 admin.site.register(Subtype, SubtypeAdmin)
 admin.site.register(CardSubtype, CardSubtypeAdmin)
 admin.site.register(Format, FormatAdmin)
-#admin.site.register(FormatExpansionSet, FormatExpansionSetAdmin)
