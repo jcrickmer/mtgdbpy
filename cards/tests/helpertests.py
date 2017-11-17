@@ -5,6 +5,7 @@ from cards.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseC
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from datetime import datetime, date
 
 from cards.tests.helper import TestLoadHelper
 
@@ -121,6 +122,8 @@ class HelperTestCase(TestCase):
 
         asets = ExpansionSet.objects.all()
         self.assertEquals(asets.count(), 2)
+        fooset = ExpansionSet.objects.filter(abbr='FOO').first()
+        self.assertEquals(fooset.releasedate, date(year=2017, month=1, day=1))
 
     def test_physicalcards(self):
         tlh = TestLoadHelper()

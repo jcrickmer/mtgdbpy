@@ -4,10 +4,13 @@ from django.contrib import admin
 from cards.models import Color, Rarity, Card, BaseCard, Mark, ExpansionSet, Subtype, Type, CardType, CardSubtype, PhysicalCard
 from cards.models import Format, FormatExpansionSet, FormatBannedCard
 from django import forms
+from django.db import models
+from django.forms import SelectMultiple, ModelMultipleChoiceField
 
 from ajax_select import make_ajax_form
 from ajax_select.admin import AjaxSelectAdmin
 from ajax_select.fields import AutoCompleteSelectField
+import sys
 
 
 class CardModelForm(forms.ModelForm):
@@ -96,8 +99,27 @@ class PhysicalCardAdmin(admin.ModelAdmin):
     fields = ['id', 'layout']
 
 
+class FormatModelForm(forms.ModelForm):
+    expansionsets = ModelMultipleChoiceField(queryset=ExpansionSet.objects.all().order_by('-releasedate'))
+
+    class Meta:
+        model = Format
+        fields = '__all__'
+
+
+class FormatBannedCardInline(admin.TabularInline):
+    readonly_fields = ('id',)
+    model = Format.bannedcards.through
+    form = make_ajax_form(FormatBannedCard, {
+        'physicalcard': 'physicalcard'      # ForeignKeyField
+    })
+
+
 class FormatAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
+    inlines = [FormatBannedCardInline, ]
+
+    form = FormatModelForm
 
 
 class BaseCardAdmin(admin.ModelAdmin):
@@ -124,12 +146,6 @@ class FormatExpansionSetAdmin(admin.ModelAdmin):
     })
 
 
-class FormatBannedCardAdmin(admin.ModelAdmin):
-    readonly_fields = ('id',)
-    form = make_ajax_form(FormatBannedCard, {
-        'physicalcard': 'physicalcard'      # ForeignKeyField
-    })
-
 # Register your models here.
 admin.site.register(Color, ColorAdmin)
 admin.site.register(Rarity)
@@ -143,5 +159,4 @@ admin.site.register(CardType, CardTypeAdmin)
 admin.site.register(Subtype, SubtypeAdmin)
 admin.site.register(CardSubtype, CardSubtypeAdmin)
 admin.site.register(Format, FormatAdmin)
-admin.site.register(FormatExpansionSet, FormatExpansionSetAdmin)
-admin.site.register(FormatBannedCard, FormatBannedCardAdmin)
+#admin.site.register(FormatExpansionSet, FormatExpansionSetAdmin)

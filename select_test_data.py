@@ -139,6 +139,7 @@ if "name" not in loadeddata:
         expsets[mtgset] = {}
         expsets[mtgset]["name"] = nl["name"]
         expsets[mtgset]["code"] = nl["code"]
+        expsets[mtgset]["releaseDate"] = nl["releaseDate"]
         if "name" in nl and "cards" in nl:
             # print "adding " + str(len(nl["cards"])) + " cards from " + nl["name"]
             for card in nl["cards"]:
@@ -392,6 +393,7 @@ output = {}
 if False:
     output["name"] = "MTG Test Data"
     output["code"] = "CNTest"
+    output['releaseDate'] = '2017-06-01'
     output["cards"] = list()
 
     for card in data["cards"]:
@@ -405,6 +407,7 @@ else:
     output['LEA'] = {}
     output['LEA']['name'] = 'Limited Edition Alpha'
     output['LEA']['code'] = 'LEA'
+    output['LEA']['releaseDate'] = '1993-10-01'
     output['LEA']['cards'] = []
 
     explimit = 3
@@ -414,6 +417,7 @@ else:
                 output[card["_loaderSet"]] = {}
                 output[card["_loaderSet"]]["name"] = expsets[card["_loaderSet"]]["name"]
                 output[card["_loaderSet"]]["code"] = expsets[card["_loaderSet"]]["code"]
+                output[card['_loaderSet']]['releaseDate'] = expsets[card['_loaderSet']]['releaseDate']
                 output[card["_loaderSet"]]["cards"] = []
             output[card["_loaderSet"]]["cards"].append(card)
 

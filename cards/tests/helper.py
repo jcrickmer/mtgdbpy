@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from cards.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, Format, FormatBasecard, SearchPredicate, CardType, CardSubtype, CardColor
-from datetime import datetime
+from datetime import datetime, date
 from cards.management.commands import initcardsdatabase
 
 import sys
@@ -85,12 +85,13 @@ class TestLoadHelper():
             sto.save()
 
     def expansionset_example_loader(self):
-        esets = [['Sample Expansion Foo', 'FOO'],
-                 ['Sample Expansion Bar', 'BAR']]
+        esets = [['Sample Expansion Foo', 'FOO', '2017-01-01'],
+                 ['Sample Expansion Bar', 'BAR', '2017-04-04']]
         for eset in esets:
             eee = ExpansionSet()
             eee.name = eset[0]
             eee.abbr = eset[1]
+            eee.releasedate = eset[2]
             eee.save()
 
     def format_example_loader(self):

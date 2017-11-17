@@ -56,7 +56,10 @@ class Command(BaseCommand):
             for expkey in jblob.keys():
                 eblob = jblob[expkey]
                 try:
-                    expset = self.get_expset(eblob['name'], eblob['code'])
+                    reldate = None
+                    if 'releaseDate' in eblob:
+                        reldate = eblob['releaseDate']
+                    expset = self.get_expset(eblob['name'], eblob['code'], reldate)
                     sys.stderr.write("The expset is {}\n".format(expset))
                     for jcard in eblob['cards']:
                         self.handle_card(jcard, expset)
@@ -65,10 +68,14 @@ class Command(BaseCommand):
                     pass
         pass
 
-    def get_expset(self, name, code):
+    def get_expset(self, name, code, releasedate):
         expset = ExpansionSet.objects.filter(abbr=code).first()
         if expset is None:
-            expset = ExpansionSet(name=name, abbr=code)
+            expset = ExpansionSet(name=name, abbr=code, releasedate=releasedate)
+            expset.save()
+        elif releasedate is not None:
+            # Let's update release date just in case
+            expset.releasedate = releasedate
             expset.save()
         return expset
 

@@ -455,6 +455,10 @@ class ExpansionSet(models.Model):
     #id = models.IntegerField(primary_key=True)
     name = models.CharField(unique=True, max_length=128)
     abbr = models.CharField(unique=False, max_length=10)
+    releasedate = models.DateField(
+        auto_now=False,
+        auto_now_add=False,
+        null=True)
 
     class Meta:
         managed = True
@@ -1049,9 +1053,11 @@ class Format(models.Model):
         validators=[ddvalstart])
     end_date = models.DateField(auto_now=False, auto_now_add=False, null=True)
 
+    expansionsets = models.ManyToManyField(ExpansionSet, through='FormatExpansionSet')
+    bannedcards = models.ManyToManyField(PhysicalCard, through='FormatBannedCard')
+
     objects = models.Manager()
     cards = FormatManager()
-
 
     def populate_format_cards(self):
         ''' When you create a new format, you need to populate it with cards.
@@ -1094,6 +1100,7 @@ class FormatExpansionSet(models.Model):
     expansionset = models.ForeignKey(ExpansionSet)
 
     class Meta:
+        auto_created = True
         managed = True
         verbose_name_plural = 'Format Expansion Sets'
 
