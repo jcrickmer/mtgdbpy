@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from cards.models import Color, Rarity, Card, BaseCard, Mark, ExpansionSet, Supertype, Subtype, Type, CardType, CardSubtype, PhysicalCard
-from cards.models import Format, FormatExpansionSet, FormatBannedCard
+from cards.models import Format, FormatExpansionSet, FormatBannedCard, FormatBasecard
 from django import forms
 from django.db import models
 from django.forms import SelectMultiple, ModelMultipleChoiceField
@@ -140,13 +140,33 @@ class FormatBannedCardInline(admin.TabularInline):
 
 
 class FormatAdmin(admin.ModelAdmin):
-    readonly_fields = ('id',)
+    readonly_fields = ('id', 'cur_size')
     inlines = [FormatBannedCardInline, ]
 
-    list_display = ('format', 'formatname', 'abbr', 'start_date', 'end_date')
+    list_display = ('id', 'format', 'formatname', 'abbr', 'start_date', 'end_date')
     list_display_links = ('format', )
 
+    fields = ['id',
+              'format',
+              'formatname',
+              'abbr',
+              'start_date',
+              'end_date',
+              'min_cards_main',
+              'max_cards_main',
+              'min_cards_side',
+              'max_cards_side',
+              'max_nonbl_card_count',
+              'uses_command_zone',
+              'validator',
+              'cur_size',
+              'expansionsets',
+              ]
     form = FormatModelForm
+
+    def cur_size(self, obj):
+        return FormatBasecard.objects.filter(format=obj).count()
+    cur_size.short_description = 'Current Card Count'
 
 
 class BaseCardAdmin(admin.ModelAdmin):

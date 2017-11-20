@@ -63,8 +63,9 @@ class Command(BaseCommand):
                     sys.stderr.write("The expset is {}\n".format(expset))
                     for jcard in eblob['cards']:
                         self.handle_card(jcard, expset)
-                except:
+                except BaseException as e:
                     sys.stdout.write("COULD NOT get expansionset or handle_card threw an error.\n")
+                    sys.stdout.write(str(e))
                     pass
         pass
 
