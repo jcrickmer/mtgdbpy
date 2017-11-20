@@ -526,24 +526,7 @@ def detail(request, multiverseid=None, slug=None):
                 Card.objects.filter(
                     basecard__physicalcard__id=battle['winner_pcard_id']).order_by('-multiverseid').first() for battle in lost_battles]
 
-        similars = []
-        solrquerystring = cards[0].basecard.physicalcard.get_searchable_document(include_names=False, include_symbols=False)
-        solrqueryparts_list = solrquerystring.split()
-        orstring = " OR ".join(solrqueryparts_list)
-        sqs = SearchQuerySet().raw_search(query_string=orstring)
-        solrcount = 0
-        for sim_sqr in sqs.order_by('-score'):
-            if solrcount >= 18:
-                break
-            simcard = Card.objects.filter(
-                basecard__physicalcard_id=sim_sqr.pk,
-                basecard__cardposition__in=[
-                    BaseCard.FRONT,
-                    BaseCard.LEFT,
-                    BaseCard.UP]).order_by('-multiverseid').first()
-            if simcard is not None and int(cards[0].basecard.physicalcard.id) != int(sim_sqr.pk):
-                similars.append(simcard)
-                solrcount = solrcount + 1
+        similars = cards[0].basecard.physicalcard.find_similar_cards()
 
         response = render(request, 'cards/detail.html', {'request_mvid': multiverseid,
                                                          'primary_basecard_id': primary_basecard_id,
@@ -774,6 +757,7 @@ def battle(request, format="redirect"):
             card_a = Card.objects.filter(multiverseid__exact=request.GET.get('muid', request.session.get('battle_cont_muid'))).first()
         rand_source = 'querystring'
         first_card['basecard_id'] = card_a.basecard.id
+        first_card['physicalcard_id'] = card_a.basecard.physicalcard.id
         crsdb = CardRating.objects.filter(
             physicalcard=card_a.basecard.physicalcard,
             test__id__exact=test_id,
@@ -785,7 +769,7 @@ def battle(request, format="redirect"):
             first_card['sigma'] = crdb.sigma
         except IndexError:
             # no op
-            logger.error("Battle: bad ju-ju finding card ratings for basecard id " + str(card_a.basecard.id))
+            logger.error("Battle: bad ju-ju finding card ratings for physicalcard id " + str(card_a.basecard.physicalcard.id))
             pass
     else:
         fcsqls_xtra = ''
@@ -810,7 +794,7 @@ def battle(request, format="redirect"):
             query_params['x_ids'] = bb_ids_list
             if len(bb_ids_list) > 0:
                 fcsqls_xtra = ' AND pc.id IN %(x_ids)s '
-        fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id AND cr.format_id = fbc.format_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE pc.layout IN %(layouts)s AND fbc.format_id = %(formatid)s {} ORDER BY cr.sigma DESC, r ASC LIMIT 1'.format(
+        fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, bc.physicalcard_id, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id AND cr.format_id = fbc.format_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE pc.layout IN %(layouts)s AND fbc.format_id = %(formatid)s {} ORDER BY cr.sigma DESC, r ASC LIMIT 1'.format(
             fcsqls_xtra)
         #logger.error("First Card SQL: " + fcsqls)
         cursor.execute(fcsqls, params=query_params)
@@ -819,21 +803,31 @@ def battle(request, format="redirect"):
             'basecard_id': rows[0][0],
             'mu': rows[0][1],
             'sigma': rows[0][2],
+            'physicalcard_id': rows[0][3],
         }
         logger.debug("L795 Setting first card mu to {}".format(str(first_card['mu'])))
-        card_a = Card.objects.filter(basecard__id__exact=rows[0][0]).order_by('-multiverseid').first()
+        card_a = PhysicalCard.objects.get(pk=first_card['physicalcard_id']).get_latest_card()
 
     query_params['cardabcid'] = first_card['basecard_id']
+    query_params['cardapcid'] = first_card['physicalcard_id']
     while card_b is None:
+        simcard_max_results = 25 + (10 * find_iterations)
         query_params['lowermu'] = first_card['mu'] - ((1 + find_iterations) * first_card['sigma'])
         query_params['uppermu'] = first_card['mu'] + ((1 + find_iterations) * first_card['sigma'])
         # now let's get a card of similar level - make it a real battle
-        sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id AND cr.format_id = fbc.format_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE fbc.format_id = %(formatid)s AND fbc.basecard_id <> %(cardabcid)s AND cr.mu > %(lowermu)s AND cr.mu < %(uppermu)s AND pc.layout IN %(layouts)s ORDER BY r ASC LIMIT 1'
-        # Half the time, let's pick a card that is similar and in this format
-        if random.random() > 0.66:
+        sqls = ''
+
+        if random.random() < 0.66:
+            # 2/3 of the time, let's pick a random card
+            #sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id AND cr.format_id = fbc.format_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE fbc.format_id = %(formatid)s AND fbc.basecard_id <> %(cardabcid)s AND cr.mu > %(lowermu)s AND cr.mu < %(uppermu)s AND pc.layout IN %(layouts)s ORDER BY r ASC LIMIT 1'
+            sqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, pc.id, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id AND cr.format_id = fbc.format_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE fbc.format_id = %(formatid)s AND fbc.basecard_id <> %(cardabcid)s AND cr.mu > %(lowermu)s AND cr.mu < %(uppermu)s AND pc.layout IN %(layouts)s ORDER BY r ASC LIMIT 1'
+        else:
+            # 1/3 of the time, let's pick a card that is similar and in this format
             logger.debug("L806 Picking an opponent to {} based on simliar cards.".format(str(first_card['basecard_id'])))
-            sqls = 'SELECT sbc.id, cr.mu, cr.sigma, RAND() r FROM similarphysicalcard AS spc JOIN basecard bc ON spc.physicalcard_id = bc.physicalcard_id JOIN basecard sbc ON sbc.physicalcard_id = spc.sim_physicalcard_id AND sbc.cardposition IN (\'F\',\'L\',\'T\') JOIN formatbasecard simfbc ON sbc.id = simfbc.basecard_id AND simfbc.format_id = %(formatid)s JOIN cardrating cr ON cr.physicalcard_id = sbc.physicalcard_id AND cr.format_id = simfbc.format_id  WHERE bc.cardposition IN (\'F\',\'L\',\'T\') AND bc.id = %(cardabcid)s ORDER BY r ASC LIMIT 1'
-        #logger.error("Second Card SQL: " + sqls)
+            query_params['similar_pcard_ids'] = card_a.basecard.physicalcard.find_similar_card_ids(max_results=simcard_max_results)
+            #sqls = 'SELECT sbc.id, cr.mu, cr.sigma, bc.physicalcard_id, RAND() r FROM similarphysicalcard AS spc JOIN basecard bc ON spc.physicalcard_id = bc.physicalcard_id JOIN basecard sbc ON sbc.physicalcard_id = spc.sim_physicalcard_id AND sbc.cardposition IN (\'F\',\'L\',\'T\') JOIN formatbasecard simfbc ON sbc.id = simfbc.basecard_id AND simfbc.format_id = %(formatid)s JOIN cardrating cr ON cr.physicalcard_id = sbc.physicalcard_id AND cr.format_id = simfbc.format_id  WHERE bc.cardposition IN (\'F\',\'L\',\'T\') AND bc.id = %(cardabcid)s ORDER BY r ASC LIMIT 1'
+            sqls = '''SELECT bc.id, cr.mu, cr.sigma, pc.id, RAND() r FROM physicalcard AS pc JOIN cardrating AS cr ON cr.physicalcard_id = pc.id JOIN basecard bc ON bc.physicalcard_id = pc.id JOIN formatbasecard AS fbc ON fbc.basecard_id = bc.id WHERE fbc.format_id = %(formatid)s AND pc.id IN %(similar_pcard_ids)s ORDER BY r ASC LIMIT 1'''
+        logger.debug("Second Card SQL: " + sqls)
         cursor.execute(sqls, params=query_params)
         rows = cursor.fetchall()
         try:
@@ -841,6 +835,7 @@ def battle(request, format="redirect"):
                 'basecard_id': rows[0][0],
                 'mu': rows[0][1],
                 'sigma': rows[0][2],
+                'physicalcard_id': rows[0][3],
             }
             #logger.debug("L813 Setting second card mu to {}".format(str(second_card['mu'])))
         except IndexError:
@@ -849,9 +844,10 @@ def battle(request, format="redirect"):
             # so let's just iterate this one again...
             find_iterations = find_iterations + 1
             continue
-
+        logger.debug("L845 Second card is {}.".format(json.dumps(second_card)))
         #card_b_list = Card.objects.filter(basecard__id__exact=rows[1][0]).order_by('-multiverseid')
-        card_b = Card.objects.filter(basecard__id__exact=second_card['basecard_id']).order_by('-multiverseid').first()
+        #card_b = Card.objects.filter(basecard__id__exact=second_card['basecard_id']).order_by('-multiverseid').first()
+        card_b = PhysicalCard.objects.get(pk=second_card['physicalcard_id']).get_latest_card()
 
         # lastly, let's check to make sure that this battle has not already occured
         sqls = "SELECT 1 FROM battle WHERE session_key = '" + str(

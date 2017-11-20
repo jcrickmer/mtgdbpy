@@ -28,6 +28,8 @@ from operator import itemgetter
 
 from django.core.cache import cache
 
+from haystack.query import SearchQuerySet
+
 
 class Color(models.Model):
     id = models.CharField(primary_key=True, max_length=1)
@@ -180,6 +182,8 @@ class PhysicalCard(models.Model):
         return basecard
 
     def get_latest_card(self):
+        ''' Returns a Card object for this Physical card.
+        '''
         logger = logging.getLogger(__name__)
         #logger.error("PhysicalCard.get_latest_card: self is {}".format(str(self)))
         card = cache.get('c_pc' + str(self.id))
@@ -353,9 +357,36 @@ class PhysicalCard(models.Model):
 
         return result
 
+    def find_similar_card_ids(self, max_results=18):
+        similars = []
+        solrquerystring = self.get_searchable_document(include_names=False, include_symbols=False)
+        solrqueryparts_list = solrquerystring.split()
+        orstring = " OR ".join(solrqueryparts_list)
+        sqs = SearchQuerySet().raw_search(query_string=orstring)
+        solrcount = 0
+        for sim_sqr in sqs.order_by('-score'):
+            if solrcount >= max_results:
+                break
+            simcard_pk = int(sim_sqr.pk)
+            if int(self.id) != simcard_pk:
+                similars.append(simcard_pk)
+                solrcount = solrcount + 1
+        return similars
+
+    def find_similar_cards(self, max_results=18):
+        ''' Returns Card objects, not PhysicalCard objects.
+        '''
+        similars = self.find_similar_card_ids(max_results)
+        result = []
+        for sim_id in similars:
+            card = PhysicalCard.objects.get(pk=sim_id).get_latest_card()
+            result.append(card)
+        return result
+
     class Meta:
         managed = True
         db_table = 'physicalcard'
+        verbose_name = 'Physical Card'
         verbose_name_plural = 'Physical Cards'
 
     def __unicode__(self):
