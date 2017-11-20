@@ -23,4 +23,5 @@ urlpatterns = [
 
     url(r'^admin/lookups/', include(ajax_select_urls)),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^robots.txt$', serve, {'path': 'robots.txt', 'document_root': settings.STATIC_ROOT_CN}),
 ]
