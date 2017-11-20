@@ -19,6 +19,15 @@ class Command(BaseCommand):
     #args = '<poll_id poll_id ...>'
     help = 'Updates all CardRatings based on all Battles.'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--formatid',
+            dest='format_id',
+            type=int,
+            default=0,
+            help='The id of the format to update.'
+        )
+
     def handle(self, *args, **options):
         #logger = logging.getLogger(__name__)
 
@@ -31,7 +40,7 @@ class Command(BaseCommand):
         for test in tests:
             # get all of the formats
             #formats = Format.objects.all()
-            formats = Format.objects.filter(id=60)
+            formats = Format.objects.filter(id=options['format_id'])
 
             # iterate through each format
             for format in formats:
@@ -40,7 +49,7 @@ class Command(BaseCommand):
                 # the normal path.
                 battles = Battle.objects.filter(
                     test__id__exact=test.id,
-                    format__id__exact=format.id).order_by('battle_date')  # , winner_pcard__id__in=[1381, 933, 2059])
+                    format=format).order_by('battle_date')  # , winner_pcard__id__in=[1381, 933, 2059])
 
                 # IN THE FUTURE... when we have more data than we know what to
                 # do with, this is where we would probably want to load the
@@ -65,7 +74,7 @@ class Command(BaseCommand):
                         crsdb = CardRating.objects.filter(
                             physicalcard__id__exact=battle.winner_pcard.id,
                             test__id__exact=test.id,
-                            format__id__exact=format.id)
+                            format=format)
                         try:
                             crdb = crsdb[0]
                             card_a = Rating(mu=crdb.mu, sigma=crdb.sigma)
@@ -88,7 +97,7 @@ class Command(BaseCommand):
                         crsdb = CardRating.objects.filter(
                             physicalcard__id__exact=battle.loser_pcard.id,
                             test__id__exact=test.id,
-                            format__id__exact=format.id)
+                            format=format)
                         try:
                             crdb = crsdb[0]
                             card_b = Rating(mu=crdb.mu, sigma=crdb.sigma)
