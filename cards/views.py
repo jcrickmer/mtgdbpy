@@ -134,7 +134,7 @@ def predefsearch(request, terms=None):
         query_pred_array.append({"field": "type", "op": "and", "value": "Planeswalker", "hint": "typeandPlaneswalker"})
         request.session['sort_order'] = 'name'
     elif 'edh' in terms or 'commander' in terms:
-        query_pred_array.append({"field": "type", "op": "and", "value": "Legendary", "hint": "typeandLegendary"})
+        query_pred_array.append({"field": "supertype", "op": "and", "value": "Legendary", "hint": "supertypeandLegendary"})
         query_pred_array.append({"field": "type", "op": "and", "value": "Creature", "hint": "typeandCreature"})
         if 'tiny' in terms:
             cformat = Format.objects.filter(formatname='TinyLeaders',
@@ -177,7 +177,7 @@ def predefsearch(request, terms=None):
         sort_order = request.GET.get('sort', 'name')
         request.session['sort_order'] = sort_order
     request.session['query_pred_array'] = query_pred_array
-
+    #sys.stderr.write("L180: " + json.dumps(request.session['query_pred_array']) + "\n")
     if 'planeswalker' in terms:
         page_title_words.append('Planeswalkers')
     elif 'edh' in terms or 'commander' in terms:
@@ -304,6 +304,9 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
                 spred.value = -1
             else:
                 spred.value = subtype_lookup.id
+        elif pred['field'] == 'ispermanent':
+            spred.term = 'ispermanent'
+            spred.value = pred['value'] == 'permanent'
         elif pred['field'] == 'format':
             logger.debug("L291 format is " + str(pred['value']))
             format_lookup = Format.objects.filter(format__iexact=pred['value']).first()

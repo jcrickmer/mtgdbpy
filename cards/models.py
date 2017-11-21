@@ -659,6 +659,11 @@ class CardManager(models.Manager):
                     sql_p = ' bc.rules_text '
                     sql_p = sql_p + arg.text_sql_operator_and_value(safelocker)
                     terms.append(sql_p)
+                elif arg.term in ['ispermanent']:
+                    sql_p = ' bc.ispermanent '
+                    sql_p = sql_p + arg.numeric_sql_operator()
+                    sql_p = sql_p + str(arg.value) + ' '
+                    terms.append(sql_p)
                 elif arg.term in ['cmc', 'toughness', 'power', 'loyalty']:
                     sql_p = ' bc.' + arg.term + ' '
                     sql_p = sql_p + arg.numeric_sql_operator()

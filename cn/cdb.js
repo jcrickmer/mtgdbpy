@@ -19,6 +19,7 @@ $(function() {
                       'supertype':'Supertype',
                       'type':'Type',
                       'subtype':'Subtype',
+                      'ispermanent':'Permanent',
                       'rarity':'Rarity',
                       'format':'Format',
                      };

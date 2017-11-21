@@ -1535,6 +1535,44 @@ class CardManagerROTestCase(TestCase):
 
     # REVISIT - need test for enchantment creature
 
+    # REVISIT - need tests for supertype
+
+    ''' Is Permanent '''
+
+    def test_ispermanent_true(self):
+        a = SearchPredicate()
+        a.term = 'ispermanent'
+        a.value = True
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 257)
+
+    def test_ispermanent_nottrue(self):
+        a = SearchPredicate()
+        a.term = 'ispermanent'
+        a.value = True
+        a.negative = True
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 124)
+
+    def test_ispermanent_false(self):
+        a = SearchPredicate()
+        a.term = 'ispermanent'
+        a.value = False
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 124)
+
+    def test_ispermanent_notfalse(self):
+        a = SearchPredicate()
+        a.term = 'ispermanent'
+        a.value = False
+        a.negative = True
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 257)
+
     ''' Subtype equality '''
 
     def test_subtype_e_warrior(self):
