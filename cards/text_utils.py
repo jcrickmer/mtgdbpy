@@ -18,6 +18,10 @@ import re
 
 
 def filing_string(input):
+    if type(input) is str:
+        result = unicode(input, "ascii")
+    else:
+        result = input
     result = filing_string_rule_1(input)
     result = filing_string_rule_2(result)
     result = filing_string_rule_3(result)
@@ -56,202 +60,202 @@ def filing_string_rule_1(input):
 
 def filing_string_rule_2(input):
     result = input
-    result = re.sub(r'\u00c0', 'a', result)  # LATIN CAPITAL LETTER A WITH GRAVE
-    result = re.sub(r'\u00c1', 'a', result)  # LATIN CAPITAL LETTER A WITH ACUTE
-    result = re.sub(r'\u00c2', 'a', result)  # LATIN CAPITAL LETTER A WITH CIRCUMFLEX
-    result = re.sub(r'\u00c3', 'a', result)  # LATIN CAPITAL LETTER A WITH TILDE
-    result = re.sub(r'\u00c4', 'a', result)  # LATIN CAPITAL LETTER A WITH DIAERESIS
-    result = re.sub(r'\u00c5', 'a', result)  # LATIN CAPITAL LETTER A WITH RING ABOVE
-    result = re.sub(r'\u00c6', 'ae', result)  # LATIN CAPITAL LETTER AE
-    result = re.sub(r'\u00c7', 'c', result)  # LATIN CAPITAL LETTER C WITH CEDILLA
-    result = re.sub(r'\u00c8', 'e', result)  # LATIN CAPITAL LETTER E WITH GRAVE
-    result = re.sub(r'\u00c9', 'e', result)  # LATIN CAPITAL LETTER E WITH ACUTE
-    result = re.sub(r'\u00ca', 'e', result)  # LATIN CAPITAL LETTER E WITH CIRCUMFLEX
-    result = re.sub(r'\u00cb', 'e', result)  # LATIN CAPITAL LETTER E WITH DIAERESIS
-    result = re.sub(r'\u00cc', 'i', result)  # LATIN CAPITAL LETTER I WITH GRAVE
-    result = re.sub(r'\u00cd', 'i', result)  # LATIN CAPITAL LETTER I WITH ACUTE
-    result = re.sub(r'\u00ce', 'i', result)  # LATIN CAPITAL LETTER I WITH CIRCUMFLEX
-    result = re.sub(r'\u00cf', 'i', result)  # LATIN CAPITAL LETTER I WITH DIAERESIS
-    result = re.sub(r'\u00d0', 'd', result)  # LATIN CAPITAL LETTER ETH
-    result = re.sub(r'\u00d1', 'n', result)  # LATIN CAPITAL LETTER N WITH TILDE
-    result = re.sub(r'\u00d2', 'o', result)  # LATIN CAPITAL LETTER O WITH GRAVE
-    result = re.sub(r'\u00d3', 'o', result)  # LATIN CAPITAL LETTER O WITH ACUTE
-    result = re.sub(r'\u00d4', 'o', result)  # LATIN CAPITAL LETTER O WITH CIRCUMFLEX
-    result = re.sub(r'\u00d5', 'o', result)  # LATIN CAPITAL LETTER O WITH TILDE
-    result = re.sub(r'\u00d6', 'o', result)  # LATIN CAPITAL LETTER O WITH DIAERESIS
-    result = re.sub(r'\u00d7', ' ', result)  # MULTIPLICATION SIGN
-    result = re.sub(r'\u00d8', 'o', result)  # LATIN CAPITAL LETTER O WITH STROKE
-    result = re.sub(r'\u00d9', 'u', result)  # LATIN CAPITAL LETTER U WITH GRAVE
-    result = re.sub(r'\u00da', 'u', result)  # LATIN CAPITAL LETTER U WITH ACUTE
-    result = re.sub(r'\u00db', 'u', result)  # LATIN CAPITAL LETTER U WITH CIRCUMFLEX
-    result = re.sub(r'\u00dc', 'u', result)  # LATIN CAPITAL LETTER U WITH DIAERESIS
-    result = re.sub(r'\u00dd', 'y', result)  # LATIN CAPITAL LETTER Y WITH ACUTE
-    result = re.sub(r'\u00de', 'th', result)  # LATIN CAPITAL LETTER THORN
-    result = re.sub(r'\u00df', 's', result)  # LATIN SMALL LETTER SHARP S
-    result = re.sub(r'\u00e0', 'a', result)  # LATIN SMALL LETTER A WITH GRAVE
-    result = re.sub(r'\u00e1', 'a', result)  # LATIN SMALL LETTER A WITH ACUTE
-    result = re.sub(r'\u00e2', 'a', result)  # LATIN SMALL LETTER A WITH CIRCUMFLEX
-    result = re.sub(r'\u00e3', 'a', result)  # LATIN SMALL LETTER A WITH TILDE
-    result = re.sub(r'\u00e4', 'a', result)  # LATIN SMALL LETTER A WITH DIAERESIS
-    result = re.sub(r'\u00e5', 'a', result)  # LATIN SMALL LETTER A WITH RING ABOVE
-    result = re.sub(r'\u00e6', 'ae', result)  # LATIN SMALL LETTER AE
-    result = re.sub(r'\u00e7', 'c', result)  # LATIN SMALL LETTER C WITH CEDILLA
-    result = re.sub(r'\u00e8', 'e', result)  # LATIN SMALL LETTER E WITH GRAVE
-    result = re.sub(r'\u00e9', 'e', result)  # LATIN SMALL LETTER E WITH ACUTE
-    result = re.sub(r'\u00ea', 'e', result)  # LATIN SMALL LETTER E WITH CIRCUMFLEX
-    result = re.sub(r'\u00eb', 'e', result)  # LATIN SMALL LETTER E WITH DIAERESIS
-    result = re.sub(r'\u00ec', 'i', result)  # LATIN SMALL LETTER I WITH GRAVE
-    result = re.sub(r'\u00ed', 'i', result)  # LATIN SMALL LETTER I WITH ACUTE
-    result = re.sub(r'\u00ee', 'i', result)  # LATIN SMALL LETTER I WITH CIRCUMFLEX
-    result = re.sub(r'\u00ef', 'i', result)  # LATIN SMALL LETTER I WITH DIAERESIS
-    result = re.sub(r'\u00f0', 'd', result)  # LATIN SMALL LETTER ETH
-    result = re.sub(r'\u00f1', 'n', result)  # LATIN SMALL LETTER N WITH TILDE
-    result = re.sub(r'\u00f2', 'o', result)  # LATIN SMALL LETTER O WITH GRAVE
-    result = re.sub(r'\u00f3', 'o', result)  # LATIN SMALL LETTER O WITH ACUTE
-    result = re.sub(r'\u00f4', 'o', result)  # LATIN SMALL LETTER O WITH CIRCUMFLEX
-    result = re.sub(r'\u00f5', 'o', result)  # LATIN SMALL LETTER O WITH TILDE
-    result = re.sub(r'\u00f6', 'o', result)  # LATIN SMALL LETTER O WITH DIAERESIS
-    result = re.sub(r'\u00f7', ' ', result)  # DIVISION SIGN
-    result = re.sub(r'\u00f8', 'o', result)  # LATIN SMALL LETTER O WITH STROKE
-    result = re.sub(r'\u00f9', 'u', result)  # LATIN SMALL LETTER U WITH GRAVE
-    result = re.sub(r'\u00fa', 'u', result)  # LATIN SMALL LETTER U WITH ACUTE
-    result = re.sub(r'\u00fb', 'u', result)  # LATIN SMALL LETTER U WITH CIRCUMFLEX
-    result = re.sub(r'\u00fc', 'u', result)  # LATIN SMALL LETTER U WITH DIAERESIS
-    result = re.sub(r'\u00fd', 'y', result)  # LATIN SMALL LETTER Y WITH ACUTE
-    result = re.sub(r'\u00fe', 'th', result)  # LATIN SMALL LETTER THORN
-    result = re.sub(r'\u00ff', 'y', result)  # LATIN SMALL LETTER Y WITH DIAERESIS
-    result = re.sub(r'\u0100', 'a', result)  # LATIN CAPITAL LETTER A WITH MACRON
-    result = re.sub(r'\u0101', 'a', result)  # LATIN SMALL LETTER A WITH MACRON
-    result = re.sub(r'\u0102', 'a', result)  # LATIN CAPITAL LETTER A WITH BREVE
-    result = re.sub(r'\u0103', 'a', result)  # LATIN SMALL LETTER A WITH BREVE
-    result = re.sub(r'\u0104', 'a', result)  # LATIN CAPITAL LETTER A WITH OGONEK
-    result = re.sub(r'\u0105', 'a', result)  # LATIN SMALL LETTER A WITH OGONEK
-    result = re.sub(r'\u0106', 'c', result)  # LATIN CAPITAL LETTER C WITH ACUTE
-    result = re.sub(r'\u0107', 'c', result)  # LATIN SMALL LETTER C WITH ACUTE
-    result = re.sub(r'\u0108', 'c', result)  # LATIN CAPITAL LETTER C WITH CIRCUMFLEX
-    result = re.sub(r'\u0109', 'c', result)  # LATIN SMALL LETTER C WITH CIRCUMFLEX
-    result = re.sub(r'\u010a', 'c', result)  # LATIN CAPITAL LETTER C WITH DOT ABOVE
-    result = re.sub(r'\u010b', 'c', result)  # LATIN SMALL LETTER C WITH DOT ABOVE
-    result = re.sub(r'\u010c', 'c', result)  # LATIN CAPITAL LETTER C WITH CARON
-    result = re.sub(r'\u010d', 'c', result)  # LATIN SMALL LETTER C WITH CARON
-    result = re.sub(r'\u010e', 'd', result)  # LATIN CAPITAL LETTER D WITH CARON
-    result = re.sub(r'\u010f', 'd', result)  # LATIN SMALL LETTER D WITH CARON
-    result = re.sub(r'\u0110', 'd', result)  # LATIN CAPITAL LETTER D WITH STROKE
-    result = re.sub(r'\u0111', 'd', result)  # LATIN SMALL LETTER D WITH STROKE
-    result = re.sub(r'\u0112', 'e', result)  # LATIN CAPITAL LETTER E WITH MACRON
-    result = re.sub(r'\u0113', 'e', result)  # LATIN SMALL LETTER E WITH MACRON
-    result = re.sub(r'\u0114', 'e', result)  # LATIN CAPITAL LETTER E WITH BREVE
-    result = re.sub(r'\u0115', 'e', result)  # LATIN SMALL LETTER E WITH BREVE
-    result = re.sub(r'\u0116', 'e', result)  # LATIN CAPITAL LETTER E WITH DOT ABOVE
-    result = re.sub(r'\u0117', 'e', result)  # LATIN SMALL LETTER E WITH DOT ABOVE
-    result = re.sub(r'\u0118', 'e', result)  # LATIN CAPITAL LETTER E WITH OGONEK
-    result = re.sub(r'\u0119', 'e', result)  # LATIN SMALL LETTER E WITH OGONEK
-    result = re.sub(r'\u011a', 'e', result)  # LATIN CAPITAL LETTER E WITH CARON
-    result = re.sub(r'\u011b', 'e', result)  # LATIN SMALL LETTER E WITH CARON
-    result = re.sub(r'\u011c', 'g', result)  # LATIN CAPITAL LETTER G WITH CIRCUMFLEX
-    result = re.sub(r'\u011d', 'g', result)  # LATIN SMALL LETTER G WITH CIRCUMFLEX
-    result = re.sub(r'\u011e', 'g', result)  # LATIN CAPITAL LETTER G WITH BREVE
-    result = re.sub(r'\u011f', 'g', result)  # LATIN SMALL LETTER G WITH BREVE
-    result = re.sub(r'\u0120', 'g', result)  # LATIN CAPITAL LETTER G WITH DOT ABOVE
-    result = re.sub(r'\u0121', 'g', result)  # LATIN SMALL LETTER G WITH DOT ABOVE
-    result = re.sub(r'\u0122', 'g', result)  # LATIN CAPITAL LETTER G WITH CEDILLA
-    result = re.sub(r'\u0123', 'g', result)  # LATIN SMALL LETTER G WITH CEDILLA
-    result = re.sub(r'\u0124', 'h', result)  # LATIN CAPITAL LETTER H WITH CIRCUMFLEX
-    result = re.sub(r'\u0125', 'h', result)  # LATIN SMALL LETTER H WITH CIRCUMFLEX
-    result = re.sub(r'\u0126', 'h', result)  # LATIN CAPITAL LETTER H WITH STROKE
-    result = re.sub(r'\u0127', 'h', result)  # LATIN SMALL LETTER H WITH STROKE
-    result = re.sub(r'\u0128', 'i', result)  # LATIN CAPITAL LETTER I WITH TILDE
-    result = re.sub(r'\u0129', 'i', result)  # LATIN SMALL LETTER I WITH TILDE
-    result = re.sub(r'\u012a', 'i', result)  # LATIN CAPITAL LETTER I WITH MACRON
-    result = re.sub(r'\u012b', 'i', result)  # LATIN SMALL LETTER I WITH MACRON
-    result = re.sub(r'\u012c', 'i', result)  # LATIN CAPITAL LETTER I WITH BREVE
-    result = re.sub(r'\u012d', 'i', result)  # LATIN SMALL LETTER I WITH BREVE
-    result = re.sub(r'\u012e', 'i', result)  # LATIN CAPITAL LETTER I WITH OGONEK
-    result = re.sub(r'\u012f', 'i', result)  # LATIN SMALL LETTER I WITH OGONEK
-    result = re.sub(r'\u0130', 'i', result)  # LATIN CAPITAL LETTER I WITH DOT ABOVE
-    result = re.sub(r'\u0131', 'i', result)  # LATIN SMALL LETTER DOTLESS I
-    result = re.sub(r'\u0132', 'ij', result)  # LATIN CAPITAL LIGATURE IJ
-    result = re.sub(r'\u0133', 'ij', result)  # LATIN SMALL LIGATURE IJ
-    result = re.sub(r'\u0134', 'j', result)  # LATIN CAPITAL LETTER J WITH CIRCUMFLEX
-    result = re.sub(r'\u0135', 'j', result)  # LATIN SMALL LETTER J WITH CIRCUMFLEX
-    result = re.sub(r'\u0136', 'k', result)  # LATIN CAPITAL LETTER K WITH CEDILLA
-    result = re.sub(r'\u0137', 'k', result)  # LATIN SMALL LETTER K WITH CEDILLA
-    result = re.sub(r'\u0138', 'kr', result)  # LATIN SMALL LETTER KRA
-    result = re.sub(r'\u0139', 'l', result)  # LATIN CAPITAL LETTER L WITH ACUTE
-    result = re.sub(r'\u013a', 'l', result)  # LATIN SMALL LETTER L WITH ACUTE
-    result = re.sub(r'\u013b', 'l', result)  # LATIN CAPITAL LETTER L WITH CEDILLA
-    result = re.sub(r'\u013c', 'l', result)  # LATIN SMALL LETTER L WITH CEDILLA
-    result = re.sub(r'\u013d', 'l', result)  # LATIN CAPITAL LETTER L WITH CARON
-    result = re.sub(r'\u013e', 'l', result)  # LATIN SMALL LETTER L WITH CARON
-    result = re.sub(r'\u013f', 'l', result)  # LATIN CAPITAL LETTER L WITH MIDDLE DOT
-    result = re.sub(r'\u0140', 'l', result)  # LATIN SMALL LETTER L WITH MIDDLE DOT
-    result = re.sub(r'\u0141', 'l', result)  # LATIN CAPITAL LETTER L WITH STROKE
-    result = re.sub(r'\u0142', 'l', result)  # LATIN SMALL LETTER L WITH STROKE
-    result = re.sub(r'\u0143', 'n', result)  # LATIN CAPITAL LETTER N WITH ACUTE
-    result = re.sub(r'\u0144', 'n', result)  # LATIN SMALL LETTER N WITH ACUTE
-    result = re.sub(r'\u0145', 'n', result)  # LATIN CAPITAL LETTER N WITH CEDILLA
-    result = re.sub(r'\u0146', 'n', result)  # LATIN SMALL LETTER N WITH CEDILLA
-    result = re.sub(r'\u0147', 'n', result)  # LATIN CAPITAL LETTER N WITH CARON
-    result = re.sub(r'\u0148', 'n', result)  # LATIN SMALL LETTER N WITH CARON
-    result = re.sub(r'\u0149', 'n', result)  # LATIN SMALL LETTER N PRECEDED BY APOSTROPHE
-    result = re.sub(r'\u014a', 'n', result)  # LATIN CAPITAL LETTER ENG
-    result = re.sub(r'\u014b', 'n', result)  # LATIN SMALL LETTER ENG
-    result = re.sub(r'\u014c', 'o', result)  # LATIN CAPITAL LETTER O WITH MACRON
-    result = re.sub(r'\u014d', 'o', result)  # LATIN SMALL LETTER O WITH MACRON
-    result = re.sub(r'\u014e', 'o', result)  # LATIN CAPITAL LETTER O WITH BREVE
-    result = re.sub(r'\u014f', 'o', result)  # LATIN SMALL LETTER O WITH BREVE
-    result = re.sub(r'\u0150', 'o', result)  # LATIN CAPITAL LETTER O WITH DOUBLE ACUTE
-    result = re.sub(r'\u0151', 'o', result)  # LATIN SMALL LETTER O WITH DOUBLE ACUTE
-    result = re.sub(r'\u0152', 'oe', result)  # LATIN CAPITAL LIGATURE OE
-    result = re.sub(r'\u0153', 'oe', result)  # LATIN SMALL LIGATURE OE
-    result = re.sub(r'\u0154', 'r', result)  # LATIN CAPITAL LETTER R WITH ACUTE
-    result = re.sub(r'\u0155', 'r', result)  # LATIN SMALL LETTER R WITH ACUTE
-    result = re.sub(r'\u0156', 'r', result)  # LATIN CAPITAL LETTER R WITH CEDILLA
-    result = re.sub(r'\u0157', 'r', result)  # LATIN SMALL LETTER R WITH CEDILLA
-    result = re.sub(r'\u0158', 'r', result)  # LATIN CAPITAL LETTER R WITH CARON
-    result = re.sub(r'\u0159', 'r', result)  # LATIN SMALL LETTER R WITH CARON
-    result = re.sub(r'\u015a', 's', result)  # LATIN CAPITAL LETTER S WITH ACUTE
-    result = re.sub(r'\u015b', 's', result)  # LATIN SMALL LETTER S WITH ACUTE
-    result = re.sub(r'\u015c', 's', result)  # LATIN CAPITAL LETTER S WITH CIRCUMFLEX
-    result = re.sub(r'\u015d', 's', result)  # LATIN SMALL LETTER S WITH CIRCUMFLEX
-    result = re.sub(r'\u015e', 's', result)  # LATIN CAPITAL LETTER S WITH CEDILLA
-    result = re.sub(r'\u015f', 's', result)  # LATIN SMALL LETTER S WITH CEDILLA
-    result = re.sub(r'\u0160', 's', result)  # LATIN CAPITAL LETTER S WITH CARON
-    result = re.sub(r'\u0161', 's', result)  # LATIN SMALL LETTER S WITH CARON
-    result = re.sub(r'\u0162', 't', result)  # LATIN CAPITAL LETTER T WITH CEDILLA
-    result = re.sub(r'\u0163', 't', result)  # LATIN SMALL LETTER T WITH CEDILLA
-    result = re.sub(r'\u0164', 't', result)  # LATIN CAPITAL LETTER T WITH CARON
-    result = re.sub(r'\u0165', 't', result)  # LATIN SMALL LETTER T WITH CARON
-    result = re.sub(r'\u0166', 't', result)  # LATIN CAPITAL LETTER T WITH STROKE
-    result = re.sub(r'\u0167', 't', result)  # LATIN SMALL LETTER T WITH STROKE
-    result = re.sub(r'\u0168', 'u', result)  # LATIN CAPITAL LETTER U WITH TILDE
-    result = re.sub(r'\u0169', 'u', result)  # LATIN SMALL LETTER U WITH TILDE
-    result = re.sub(r'\u016a', 'u', result)  # LATIN CAPITAL LETTER U WITH MACRON
-    result = re.sub(r'\u016b', 'u', result)  # LATIN SMALL LETTER U WITH MACRON
-    result = re.sub(r'\u016c', 'u', result)  # LATIN CAPITAL LETTER U WITH BREVE
-    result = re.sub(r'\u016d', 'u', result)  # LATIN SMALL LETTER U WITH BREVE
-    result = re.sub(r'\u016e', 'u', result)  # LATIN CAPITAL LETTER U WITH RING ABOVE
-    result = re.sub(r'\u016f', 'u', result)  # LATIN SMALL LETTER U WITH RING ABOVE
-    result = re.sub(r'\u0170', 'u', result)  # LATIN CAPITAL LETTER U WITH DOUBLE ACUTE
-    result = re.sub(r'\u0171', 'u', result)  # LATIN SMALL LETTER U WITH DOUBLE ACUTE
-    result = re.sub(r'\u0172', 'u', result)  # LATIN CAPITAL LETTER U WITH OGONEK
-    result = re.sub(r'\u0173', 'u', result)  # LATIN SMALL LETTER U WITH OGONEK
-    result = re.sub(r'\u0174', 'w', result)  # LATIN CAPITAL LETTER W WITH CIRCUMFLEX
-    result = re.sub(r'\u0175', 'w', result)  # LATIN SMALL LETTER W WITH CIRCUMFLEX
-    result = re.sub(r'\u0176', 'y', result)  # LATIN CAPITAL LETTER Y WITH CIRCUMFLEX
-    result = re.sub(r'\u0177', 'y', result)  # LATIN SMALL LETTER Y WITH CIRCUMFLEX
-    result = re.sub(r'\u0178', 'y', result)  # LATIN CAPITAL LETTER Y WITH DIAERESIS
-    result = re.sub(r'\u0179', 'z', result)  # LATIN CAPITAL LETTER Z WITH ACUTE
-    result = re.sub(r'\u017a', 'z', result)  # LATIN SMALL LETTER Z WITH ACUTE
-    result = re.sub(r'\u017b', 'z', result)  # LATIN CAPITAL LETTER Z WITH DOT ABOVE
-    result = re.sub(r'\u017c', 'z', result)  # LATIN SMALL LETTER Z WITH DOT ABOVE
-    result = re.sub(r'\u017d', 'z', result)  # LATIN CAPITAL LETTER Z WITH CARON
-    result = re.sub(r'\u017e', 'z', result)  # LATIN SMALL LETTER Z WITH CARON
-    result = re.sub(r'\u017f', 's', result)  # LATIN SMALL LETTER LONG S
-    result = re.sub(r'\u0180', 'b', result)  # LATIN SMALL LETTER B WITH STROKE
-    result = re.sub(r'\u0181', 'b', result)  # LATIN CAPITAL LETTER B WITH HOOK
-    result = re.sub(r'\u0182', 'b', result)  # LATIN CAPITAL LETTER B WITH TOPBAR
-    result = re.sub(r'\u0183', 'b', result)  # LATIN SMALL LETTER B WITH TOPBAR
+    result = result.replace('\u00c0', 'a')  # LATIN CAPITAL LETTER A WITH GRAVE
+    result = result.replace('\u00c1', 'a')  # LATIN CAPITAL LETTER A WITH ACUTE
+    result = result.replace('\u00c2', 'a')  # LATIN CAPITAL LETTER A WITH CIRCUMFLEX
+    result = result.replace('\u00c3', 'a')  # LATIN CAPITAL LETTER A WITH TILDE
+    result = result.replace('\u00c4', 'a')  # LATIN CAPITAL LETTER A WITH DIAERESIS
+    result = result.replace('\u00c5', 'a')  # LATIN CAPITAL LETTER A WITH RING ABOVE
+    result = result.replace('\u00c6', 'ae')  # LATIN CAPITAL LETTER AE
+    result = result.replace('\u00c7', 'c')  # LATIN CAPITAL LETTER C WITH CEDILLA
+    result = result.replace('\u00c8', 'e')  # LATIN CAPITAL LETTER E WITH GRAVE
+    result = result.replace('\u00c9', 'e')  # LATIN CAPITAL LETTER E WITH ACUTE
+    result = result.replace('\u00ca', 'e')  # LATIN CAPITAL LETTER E WITH CIRCUMFLEX
+    result = result.replace('\u00cb', 'e')  # LATIN CAPITAL LETTER E WITH DIAERESIS
+    result = result.replace('\u00cc', 'i')  # LATIN CAPITAL LETTER I WITH GRAVE
+    result = result.replace('\u00cd', 'i')  # LATIN CAPITAL LETTER I WITH ACUTE
+    result = result.replace('\u00ce', 'i')  # LATIN CAPITAL LETTER I WITH CIRCUMFLEX
+    result = result.replace('\u00cf', 'i')  # LATIN CAPITAL LETTER I WITH DIAERESIS
+    result = result.replace('\u00d0', 'd')  # LATIN CAPITAL LETTER ETH
+    result = result.replace('\u00d1', 'n')  # LATIN CAPITAL LETTER N WITH TILDE
+    result = result.replace('\u00d2', 'o')  # LATIN CAPITAL LETTER O WITH GRAVE
+    result = result.replace('\u00d3', 'o')  # LATIN CAPITAL LETTER O WITH ACUTE
+    result = result.replace('\u00d4', 'o')  # LATIN CAPITAL LETTER O WITH CIRCUMFLEX
+    result = result.replace('\u00d5', 'o')  # LATIN CAPITAL LETTER O WITH TILDE
+    result = result.replace('\u00d6', 'o')  # LATIN CAPITAL LETTER O WITH DIAERESIS
+    result = result.replace('\u00d7', ' ')  # MULTIPLICATION SIGN
+    result = result.replace('\u00d8', 'o')  # LATIN CAPITAL LETTER O WITH STROKE
+    result = result.replace('\u00d9', 'u')  # LATIN CAPITAL LETTER U WITH GRAVE
+    result = result.replace('\u00da', 'u')  # LATIN CAPITAL LETTER U WITH ACUTE
+    result = result.replace('\u00db', 'u')  # LATIN CAPITAL LETTER U WITH CIRCUMFLEX
+    result = result.replace('\u00dc', 'u')  # LATIN CAPITAL LETTER U WITH DIAERESIS
+    result = result.replace('\u00dd', 'y')  # LATIN CAPITAL LETTER Y WITH ACUTE
+    result = result.replace('\u00de', 'th')  # LATIN CAPITAL LETTER THORN
+    result = result.replace('\u00df', 's')  # LATIN SMALL LETTER SHARP S
+    result = result.replace('\u00e0', 'a')  # LATIN SMALL LETTER A WITH GRAVE
+    result = result.replace('\u00e1', 'a')  # LATIN SMALL LETTER A WITH ACUTE
+    result = result.replace('\u00e2', 'a')  # LATIN SMALL LETTER A WITH CIRCUMFLEX
+    result = result.replace('\u00e3', 'a')  # LATIN SMALL LETTER A WITH TILDE
+    result = result.replace('\u00e4', 'a')  # LATIN SMALL LETTER A WITH DIAERESIS
+    result = result.replace('\u00e5', 'a')  # LATIN SMALL LETTER A WITH RING ABOVE
+    result = result.replace('\u00e6', 'ae')  # LATIN SMALL LETTER AE
+    result = result.replace('\u00e7', 'c')  # LATIN SMALL LETTER C WITH CEDILLA
+    result = result.replace('\u00e8', 'e')  # LATIN SMALL LETTER E WITH GRAVE
+    result = result.replace('\u00e9', 'e')  # LATIN SMALL LETTER E WITH ACUTE
+    result = result.replace('\u00ea', 'e')  # LATIN SMALL LETTER E WITH CIRCUMFLEX
+    result = result.replace('\u00eb', 'e')  # LATIN SMALL LETTER E WITH DIAERESIS
+    result = result.replace('\u00ec', 'i')  # LATIN SMALL LETTER I WITH GRAVE
+    result = result.replace('\u00ed', 'i')  # LATIN SMALL LETTER I WITH ACUTE
+    result = result.replace('\u00ee', 'i')  # LATIN SMALL LETTER I WITH CIRCUMFLEX
+    result = result.replace('\u00ef', 'i')  # LATIN SMALL LETTER I WITH DIAERESIS
+    result = result.replace('\u00f0', 'd')  # LATIN SMALL LETTER ETH
+    result = result.replace('\u00f1', 'n')  # LATIN SMALL LETTER N WITH TILDE
+    result = result.replace('\u00f2', 'o')  # LATIN SMALL LETTER O WITH GRAVE
+    result = result.replace('\u00f3', 'o')  # LATIN SMALL LETTER O WITH ACUTE
+    result = result.replace('\u00f4', 'o')  # LATIN SMALL LETTER O WITH CIRCUMFLEX
+    result = result.replace('\u00f5', 'o')  # LATIN SMALL LETTER O WITH TILDE
+    result = result.replace('\u00f6', 'o')  # LATIN SMALL LETTER O WITH DIAERESIS
+    result = result.replace('\u00f7', ' ')  # DIVISION SIGN
+    result = result.replace('\u00f8', 'o')  # LATIN SMALL LETTER O WITH STROKE
+    result = result.replace('\u00f9', 'u')  # LATIN SMALL LETTER U WITH GRAVE
+    result = result.replace('\u00fa', 'u')  # LATIN SMALL LETTER U WITH ACUTE
+    result = result.replace('\u00fb', 'u')  # LATIN SMALL LETTER U WITH CIRCUMFLEX
+    result = result.replace('\u00fc', 'u')  # LATIN SMALL LETTER U WITH DIAERESIS
+    result = result.replace('\u00fd', 'y')  # LATIN SMALL LETTER Y WITH ACUTE
+    result = result.replace('\u00fe', 'th')  # LATIN SMALL LETTER THORN
+    result = result.replace('\u00ff', 'y')  # LATIN SMALL LETTER Y WITH DIAERESIS
+    result = result.replace('\u0100', 'a')  # LATIN CAPITAL LETTER A WITH MACRON
+    result = result.replace('\u0101', 'a')  # LATIN SMALL LETTER A WITH MACRON
+    result = result.replace('\u0102', 'a')  # LATIN CAPITAL LETTER A WITH BREVE
+    result = result.replace('\u0103', 'a')  # LATIN SMALL LETTER A WITH BREVE
+    result = result.replace('\u0104', 'a')  # LATIN CAPITAL LETTER A WITH OGONEK
+    result = result.replace('\u0105', 'a')  # LATIN SMALL LETTER A WITH OGONEK
+    result = result.replace('\u0106', 'c')  # LATIN CAPITAL LETTER C WITH ACUTE
+    result = result.replace('\u0107', 'c')  # LATIN SMALL LETTER C WITH ACUTE
+    result = result.replace('\u0108', 'c')  # LATIN CAPITAL LETTER C WITH CIRCUMFLEX
+    result = result.replace('\u0109', 'c')  # LATIN SMALL LETTER C WITH CIRCUMFLEX
+    result = result.replace('\u010a', 'c')  # LATIN CAPITAL LETTER C WITH DOT ABOVE
+    result = result.replace('\u010b', 'c')  # LATIN SMALL LETTER C WITH DOT ABOVE
+    result = result.replace('\u010c', 'c')  # LATIN CAPITAL LETTER C WITH CARON
+    result = result.replace('\u010d', 'c')  # LATIN SMALL LETTER C WITH CARON
+    result = result.replace('\u010e', 'd')  # LATIN CAPITAL LETTER D WITH CARON
+    result = result.replace('\u010f', 'd')  # LATIN SMALL LETTER D WITH CARON
+    result = result.replace('\u0110', 'd')  # LATIN CAPITAL LETTER D WITH STROKE
+    result = result.replace('\u0111', 'd')  # LATIN SMALL LETTER D WITH STROKE
+    result = result.replace('\u0112', 'e')  # LATIN CAPITAL LETTER E WITH MACRON
+    result = result.replace('\u0113', 'e')  # LATIN SMALL LETTER E WITH MACRON
+    result = result.replace('\u0114', 'e')  # LATIN CAPITAL LETTER E WITH BREVE
+    result = result.replace('\u0115', 'e')  # LATIN SMALL LETTER E WITH BREVE
+    result = result.replace('\u0116', 'e')  # LATIN CAPITAL LETTER E WITH DOT ABOVE
+    result = result.replace('\u0117', 'e')  # LATIN SMALL LETTER E WITH DOT ABOVE
+    result = result.replace('\u0118', 'e')  # LATIN CAPITAL LETTER E WITH OGONEK
+    result = result.replace('\u0119', 'e')  # LATIN SMALL LETTER E WITH OGONEK
+    result = result.replace('\u011a', 'e')  # LATIN CAPITAL LETTER E WITH CARON
+    result = result.replace('\u011b', 'e')  # LATIN SMALL LETTER E WITH CARON
+    result = result.replace('\u011c', 'g')  # LATIN CAPITAL LETTER G WITH CIRCUMFLEX
+    result = result.replace('\u011d', 'g')  # LATIN SMALL LETTER G WITH CIRCUMFLEX
+    result = result.replace('\u011e', 'g')  # LATIN CAPITAL LETTER G WITH BREVE
+    result = result.replace('\u011f', 'g')  # LATIN SMALL LETTER G WITH BREVE
+    result = result.replace('\u0120', 'g')  # LATIN CAPITAL LETTER G WITH DOT ABOVE
+    result = result.replace('\u0121', 'g')  # LATIN SMALL LETTER G WITH DOT ABOVE
+    result = result.replace('\u0122', 'g')  # LATIN CAPITAL LETTER G WITH CEDILLA
+    result = result.replace('\u0123', 'g')  # LATIN SMALL LETTER G WITH CEDILLA
+    result = result.replace('\u0124', 'h')  # LATIN CAPITAL LETTER H WITH CIRCUMFLEX
+    result = result.replace('\u0125', 'h')  # LATIN SMALL LETTER H WITH CIRCUMFLEX
+    result = result.replace('\u0126', 'h')  # LATIN CAPITAL LETTER H WITH STROKE
+    result = result.replace('\u0127', 'h')  # LATIN SMALL LETTER H WITH STROKE
+    result = result.replace('\u0128', 'i')  # LATIN CAPITAL LETTER I WITH TILDE
+    result = result.replace('\u0129', 'i')  # LATIN SMALL LETTER I WITH TILDE
+    result = result.replace('\u012a', 'i')  # LATIN CAPITAL LETTER I WITH MACRON
+    result = result.replace('\u012b', 'i')  # LATIN SMALL LETTER I WITH MACRON
+    result = result.replace('\u012c', 'i')  # LATIN CAPITAL LETTER I WITH BREVE
+    result = result.replace('\u012d', 'i')  # LATIN SMALL LETTER I WITH BREVE
+    result = result.replace('\u012e', 'i')  # LATIN CAPITAL LETTER I WITH OGONEK
+    result = result.replace('\u012f', 'i')  # LATIN SMALL LETTER I WITH OGONEK
+    result = result.replace('\u0130', 'i')  # LATIN CAPITAL LETTER I WITH DOT ABOVE
+    result = result.replace('\u0131', 'i')  # LATIN SMALL LETTER DOTLESS I
+    result = result.replace('\u0132', 'ij')  # LATIN CAPITAL LIGATURE IJ
+    result = result.replace('\u0133', 'ij')  # LATIN SMALL LIGATURE IJ
+    result = result.replace('\u0134', 'j')  # LATIN CAPITAL LETTER J WITH CIRCUMFLEX
+    result = result.replace('\u0135', 'j')  # LATIN SMALL LETTER J WITH CIRCUMFLEX
+    result = result.replace('\u0136', 'k')  # LATIN CAPITAL LETTER K WITH CEDILLA
+    result = result.replace('\u0137', 'k')  # LATIN SMALL LETTER K WITH CEDILLA
+    result = result.replace('\u0138', 'kr')  # LATIN SMALL LETTER KRA
+    result = result.replace('\u0139', 'l')  # LATIN CAPITAL LETTER L WITH ACUTE
+    result = result.replace('\u013a', 'l')  # LATIN SMALL LETTER L WITH ACUTE
+    result = result.replace('\u013b', 'l')  # LATIN CAPITAL LETTER L WITH CEDILLA
+    result = result.replace('\u013c', 'l')  # LATIN SMALL LETTER L WITH CEDILLA
+    result = result.replace('\u013d', 'l')  # LATIN CAPITAL LETTER L WITH CARON
+    result = result.replace('\u013e', 'l')  # LATIN SMALL LETTER L WITH CARON
+    result = result.replace('\u013f', 'l')  # LATIN CAPITAL LETTER L WITH MIDDLE DOT
+    result = result.replace('\u0140', 'l')  # LATIN SMALL LETTER L WITH MIDDLE DOT
+    result = result.replace('\u0141', 'l')  # LATIN CAPITAL LETTER L WITH STROKE
+    result = result.replace('\u0142', 'l')  # LATIN SMALL LETTER L WITH STROKE
+    result = result.replace('\u0143', 'n')  # LATIN CAPITAL LETTER N WITH ACUTE
+    result = result.replace('\u0144', 'n')  # LATIN SMALL LETTER N WITH ACUTE
+    result = result.replace('\u0145', 'n')  # LATIN CAPITAL LETTER N WITH CEDILLA
+    result = result.replace('\u0146', 'n')  # LATIN SMALL LETTER N WITH CEDILLA
+    result = result.replace('\u0147', 'n')  # LATIN CAPITAL LETTER N WITH CARON
+    result = result.replace('\u0148', 'n')  # LATIN SMALL LETTER N WITH CARON
+    result = result.replace('\u0149', 'n')  # LATIN SMALL LETTER N PRECEDED BY APOSTROPHE
+    result = result.replace('\u014a', 'n')  # LATIN CAPITAL LETTER ENG
+    result = result.replace('\u014b', 'n')  # LATIN SMALL LETTER ENG
+    result = result.replace('\u014c', 'o')  # LATIN CAPITAL LETTER O WITH MACRON
+    result = result.replace('\u014d', 'o')  # LATIN SMALL LETTER O WITH MACRON
+    result = result.replace('\u014e', 'o')  # LATIN CAPITAL LETTER O WITH BREVE
+    result = result.replace('\u014f', 'o')  # LATIN SMALL LETTER O WITH BREVE
+    result = result.replace('\u0150', 'o')  # LATIN CAPITAL LETTER O WITH DOUBLE ACUTE
+    result = result.replace('\u0151', 'o')  # LATIN SMALL LETTER O WITH DOUBLE ACUTE
+    result = result.replace('\u0152', 'oe')  # LATIN CAPITAL LIGATURE OE
+    result = result.replace('\u0153', 'oe')  # LATIN SMALL LIGATURE OE
+    result = result.replace('\u0154', 'r')  # LATIN CAPITAL LETTER R WITH ACUTE
+    result = result.replace('\u0155', 'r')  # LATIN SMALL LETTER R WITH ACUTE
+    result = result.replace('\u0156', 'r')  # LATIN CAPITAL LETTER R WITH CEDILLA
+    result = result.replace('\u0157', 'r')  # LATIN SMALL LETTER R WITH CEDILLA
+    result = result.replace('\u0158', 'r')  # LATIN CAPITAL LETTER R WITH CARON
+    result = result.replace('\u0159', 'r')  # LATIN SMALL LETTER R WITH CARON
+    result = result.replace('\u015a', 's')  # LATIN CAPITAL LETTER S WITH ACUTE
+    result = result.replace('\u015b', 's')  # LATIN SMALL LETTER S WITH ACUTE
+    result = result.replace('\u015c', 's')  # LATIN CAPITAL LETTER S WITH CIRCUMFLEX
+    result = result.replace('\u015d', 's')  # LATIN SMALL LETTER S WITH CIRCUMFLEX
+    result = result.replace('\u015e', 's')  # LATIN CAPITAL LETTER S WITH CEDILLA
+    result = result.replace('\u015f', 's')  # LATIN SMALL LETTER S WITH CEDILLA
+    result = result.replace('\u0160', 's')  # LATIN CAPITAL LETTER S WITH CARON
+    result = result.replace('\u0161', 's')  # LATIN SMALL LETTER S WITH CARON
+    result = result.replace('\u0162', 't')  # LATIN CAPITAL LETTER T WITH CEDILLA
+    result = result.replace('\u0163', 't')  # LATIN SMALL LETTER T WITH CEDILLA
+    result = result.replace('\u0164', 't')  # LATIN CAPITAL LETTER T WITH CARON
+    result = result.replace('\u0165', 't')  # LATIN SMALL LETTER T WITH CARON
+    result = result.replace('\u0166', 't')  # LATIN CAPITAL LETTER T WITH STROKE
+    result = result.replace('\u0167', 't')  # LATIN SMALL LETTER T WITH STROKE
+    result = result.replace('\u0168', 'u')  # LATIN CAPITAL LETTER U WITH TILDE
+    result = result.replace('\u0169', 'u')  # LATIN SMALL LETTER U WITH TILDE
+    result = result.replace('\u016a', 'u')  # LATIN CAPITAL LETTER U WITH MACRON
+    result = result.replace('\u016b', 'u')  # LATIN SMALL LETTER U WITH MACRON
+    result = result.replace('\u016c', 'u')  # LATIN CAPITAL LETTER U WITH BREVE
+    result = result.replace('\u016d', 'u')  # LATIN SMALL LETTER U WITH BREVE
+    result = result.replace('\u016e', 'u')  # LATIN CAPITAL LETTER U WITH RING ABOVE
+    result = result.replace('\u016f', 'u')  # LATIN SMALL LETTER U WITH RING ABOVE
+    result = result.replace('\u0170', 'u')  # LATIN CAPITAL LETTER U WITH DOUBLE ACUTE
+    result = result.replace('\u0171', 'u')  # LATIN SMALL LETTER U WITH DOUBLE ACUTE
+    result = result.replace('\u0172', 'u')  # LATIN CAPITAL LETTER U WITH OGONEK
+    result = result.replace('\u0173', 'u')  # LATIN SMALL LETTER U WITH OGONEK
+    result = result.replace('\u0174', 'w')  # LATIN CAPITAL LETTER W WITH CIRCUMFLEX
+    result = result.replace('\u0175', 'w')  # LATIN SMALL LETTER W WITH CIRCUMFLEX
+    result = result.replace('\u0176', 'y')  # LATIN CAPITAL LETTER Y WITH CIRCUMFLEX
+    result = result.replace('\u0177', 'y')  # LATIN SMALL LETTER Y WITH CIRCUMFLEX
+    result = result.replace('\u0178', 'y')  # LATIN CAPITAL LETTER Y WITH DIAERESIS
+    result = result.replace('\u0179', 'z')  # LATIN CAPITAL LETTER Z WITH ACUTE
+    result = result.replace('\u017a', 'z')  # LATIN SMALL LETTER Z WITH ACUTE
+    result = result.replace('\u017b', 'z')  # LATIN CAPITAL LETTER Z WITH DOT ABOVE
+    result = result.replace('\u017c', 'z')  # LATIN SMALL LETTER Z WITH DOT ABOVE
+    result = result.replace('\u017d', 'z')  # LATIN CAPITAL LETTER Z WITH CARON
+    result = result.replace('\u017e', 'z')  # LATIN SMALL LETTER Z WITH CARON
+    result = result.replace('\u017f', 's')  # LATIN SMALL LETTER LONG S
+    result = result.replace('\u0180', 'b')  # LATIN SMALL LETTER B WITH STROKE
+    result = result.replace('\u0181', 'b')  # LATIN CAPITAL LETTER B WITH HOOK
+    result = result.replace('\u0182', 'b')  # LATIN CAPITAL LETTER B WITH TOPBAR
+    result = result.replace('\u0183', 'b')  # LATIN SMALL LETTER B WITH TOPBAR
 
     return result
 
@@ -311,9 +315,9 @@ def filing_string_rule_7(input):
 
 def filing_string_rule_8(input):
     result = input
-    result = re.sub(r'-', ' ', result)  # dash
-    result = re.sub(r'\u2013', ' ', result)  # endash
-    result = re.sub(r'\u2014', ' ', result)  # emdash
+    result = result.replace('-', ' ')  # dash
+    result = result.replace('\u2013', ' ')  # endash
+    result = result.replace('\u2014', ' ')  # emdash
     return result
 
 # Rule 9 and 10 - Initial articles.
@@ -349,7 +353,8 @@ def filing_string_rule_11(input):
     result = re.sub(r'(\D+)\.(\D+)', r'\1 \2', result)
     result = re.sub(r'(\D+)\.$', r'\1', result)
     result = re.sub(r'^\.', r'', result)
-    result = re.sub(r'\u2026', r' ', result)
+    #result = re.sub(r'\u2026', r' ', result)
+    result = result.replace('\u2026', ' ')
     return result
 
 
@@ -374,14 +379,14 @@ def filing_string_rule_13(input):
 
 def numFix(num_match):
     result = num_match.group(1)
-    result = re.sub(r',', '', result)
+    result = result.replace(',', '')
     val = int(result)
     return '%09d' % val
 
 
 def numFix2(num_match):
     result = num_match.group(2)
-    result = re.sub(r',', '', result)
+    result = result.replace(',', '')
     val = int(result)
     return num_match.group(1) + ('%09d' % val)
 
@@ -417,38 +422,40 @@ def filing_string_rule_15(input):
 def filing_string_rule_16(input):
     result = input
     ignored_punctuation = [
-        '!',
-        '"',
-        '#',
-        '$',
-        '%',
-        "'",
-        '(',
-        ')',
-        '*',
-        '+',
-        ',',
-        '-',
-        '/',
-        ':',
-        ';',
-        '<',
-        '=',
-        '>',
-        '?',
-        '[',
-        ']',
-        '\\',
-        '^',
-        '_',
-        '{',
-        '|',
-        '}',
-        '~']
+        u'!',
+        u'"',
+        u'#',
+        u'$',
+        u'%',
+        u"'",
+        u'(',
+        u')',
+        u'*',
+        u'+',
+        u',',
+        u'-',
+        u'/',
+        u':',
+        u';',
+        u'<',
+        u'=',
+        u'>',
+        u'?',
+        u'[',
+        u']',
+        u'\\',
+        u'^',
+        u'_',
+        u'{',
+        u'|',
+        u'}',
+        u'~']
     for u in range(161, 191):
-        ignored_punctuation.append(chr(u))
+        #ignored_punctuation.append(unicode(str(chr(u)), "ascii"))
+        ignored_punctuation.append(unichr(u))
 
     for symb in ignored_punctuation:
-        result = re.sub(re.escape(symb), '', result)
+        #result = re.sub(re.escape(symb), '', result)
+        result = result.replace(symb, '')
 
     return result

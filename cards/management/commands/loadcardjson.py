@@ -160,7 +160,7 @@ class Command(BaseCommand):
                 sys.stderr.write("UNABLE TO LOAD CARD WITH NO NAME!!\n")
 
     def add_basecard(self, jcard):
-        # Initially, I had tried to put all of the objecst into a
+        # Initially, I had tried to put all of the objects into a
         # list, and if everthing was good, we would .save() all of the
         # models in the list. Turns out that Django does not support
         # this. See https://code.djangoproject.com/ticket/10811. So I
@@ -218,42 +218,26 @@ class Command(BaseCommand):
         bc = BaseCard()
         bc.physicalcard = pc
         bc.cardposition = cardposition
-        try:
-            bc.name = jcard['name']
-        except KeyError:
-            # REVISIT - we now have an orphaned PhysicalCard
-            raise KeyError('JSON is missing attribute "name".')
 
-        try:
-            bc.mana_cost = jcard['manaCost']
-        except KeyError:
-            # REVISIT - we now have an orphaned PhysicalCard
-            #raise KeyError('JSON is missing attribute "manaCost".')
-            # let's assume that there is no mana cost sometimes. Like on lands. But maybe we should double-check... REVISIT
-            pass
+        # Name is going to be handled by update_basecard anyway...
+        #try:
+        #    bc.name = jcard['name']
+        #except KeyError:
+        #    # REVISIT - we now have an orphaned PhysicalCard
+        #    raise KeyError('JSON is missing attribute "name".')
 
-        try:
-            bc.cmc = jcard['cmc']
-        except KeyError:
-            # REVISIT - we now have an orphaned PhysicalCard
-            #raise KeyError('JSON is missing attribute "cmc".')
-            # let's assume that there is no mana cost sometimes. Like on lands. But maybe we should double-check... REVISIT
-            pass
-
-        try:
-            bc.rules_text = jcard['text']
-        except KeyError:
-            bc.rules_text = ''
+        # Rules text is going to be handled by update_basecard anyway...
+        #try:
+        #    bc.rules_text = jcard['text']
+        #except KeyError:
+        #    bc.rules_text = ''
 
         bc.save()
-
-        if 'types' not in jcard:
-            # What, no type?
-            raise KeyError('JSON is missing "types".')
 
         self.update_basecard(jcard, bc)
 
         return bc
+    
 
     def update_basecard(self, jcard, bc):
 
@@ -292,6 +276,22 @@ class Command(BaseCommand):
         try:
             bc.loyalty = jcard['loyalty']
         except KeyError:
+            pass
+
+        try:
+            bc.mana_cost = jcard['manaCost']
+        except KeyError:
+            # REVISIT - we now have an orphaned PhysicalCard
+            #raise KeyError('JSON is missing attribute "manaCost".')
+            # let's assume that there is no mana cost sometimes. Like on lands. But maybe we should double-check... REVISIT
+            pass
+
+        try:
+            bc.cmc = jcard['cmc']
+        except KeyError:
+            # REVISIT - we now have an orphaned PhysicalCard
+            #raise KeyError('JSON is missing attribute "cmc".')
+            # let's assume that there is no mana cost sometimes. Like on lands. But maybe we should double-check... REVISIT
             pass
 
         sptype_counter = 0
