@@ -34,6 +34,8 @@ from cards.models import Rarity
 from cards.models import Battle
 from cards.models import BattleTest
 from cards.models import CardRating
+from cards.models import Association
+from cards.models import AssociationCard
 
 from decks.models import FormatCardStat, FormatStat
 
@@ -531,6 +533,8 @@ def detail(request, multiverseid=None, slug=None):
 
         similars = cards[0].basecard.physicalcard.find_similar_cards()
 
+        associations = Association.objects.filter(associationcards=cards[0].basecard.physicalcard)
+
         response = render(request, 'cards/detail.html', {'request_mvid': multiverseid,
                                                          'primary_basecard_id': primary_basecard_id,
                                                          'cards': card_list,
@@ -539,6 +543,8 @@ def detail(request, multiverseid=None, slug=None):
                                                          'other_versions': twinCards,
                                                          'physicalCardTitle': cards[0].basecard.physicalcard.get_card_name(),
                                                          'card_format_details': card_format_details,
+                                                         'physicalcard': cards[0].basecard.physicalcard,
+                                                         'associations': associations,
                                                          'rulings': cards[0].basecard.get_rulings(),
                                                          'mod_card_stat': mod_fcstat,
                                                          'std_card_stat': std_fcstat,

@@ -220,16 +220,16 @@ class Command(BaseCommand):
         bc.cardposition = cardposition
 
         # Name is going to be handled by update_basecard anyway...
-        #try:
+        # try:
         #    bc.name = jcard['name']
-        #except KeyError:
+        # except KeyError:
         #    # REVISIT - we now have an orphaned PhysicalCard
         #    raise KeyError('JSON is missing attribute "name".')
 
         # Rules text is going to be handled by update_basecard anyway...
-        #try:
+        # try:
         #    bc.rules_text = jcard['text']
-        #except KeyError:
+        # except KeyError:
         #    bc.rules_text = ''
 
         bc.save()
@@ -237,7 +237,6 @@ class Command(BaseCommand):
         self.update_basecard(jcard, bc)
 
         return bc
-    
 
     def update_basecard(self, jcard, bc):
 

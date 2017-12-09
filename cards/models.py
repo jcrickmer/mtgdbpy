@@ -379,8 +379,11 @@ class PhysicalCard(models.Model):
         similars = self.find_similar_card_ids(max_results)
         result = []
         for sim_id in similars:
-            card = PhysicalCard.objects.get(pk=sim_id).get_latest_card()
-            result.append(card)
+            try:
+                card = PhysicalCard.objects.get(pk=sim_id).get_latest_card()
+                result.append(card)
+            except:
+                pass
         return result
 
     class Meta:
@@ -583,6 +586,12 @@ class CardManager(models.Manager):
         return cards
 
     def search(self, *args, **kwargs):
+        ''' Searches that contain a field SPECIFIC to a type (power and
+            toughness for Creatures, loyalty for Planeswalkers), will
+            LIMIT the search to just those cards. Thus, searching for
+            cards with toughness != 1 WILL NOT return Swamp (since
+            Swamp is not a creature).
+        '''
         logger = logging.getLogger(__name__)
         test_id = 1
 
@@ -663,6 +672,11 @@ class CardManager(models.Manager):
                     sql_p = ' bc.ispermanent '
                     sql_p = sql_p + arg.numeric_sql_operator()
                     sql_p = sql_p + str(arg.value) + ' '
+                    terms.append(sql_p)
+                elif arg.term in ['toughness', 'power'] and '*' in str(arg.value):
+                    # ONLY equality should be support here!! REVISIT
+                    sql_p = ' bc.' + arg.term + ' '
+                    sql_p = sql_p + arg.text_sql_operator_and_value(safelocker)
                     terms.append(sql_p)
                 elif arg.term in ['cmc', 'toughness', 'power', 'loyalty']:
                     sql_p = ' bc.' + arg.term + ' '
@@ -1251,3 +1265,39 @@ class SimilarPhysicalCard(models.Model):
     class Meta:
         managed = True
         db_table = 'similarphysicalcard'
+
+
+class Association(models.Model):
+    #id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=250, null=False)
+    classification = models.CharField(max_length=60, null=True)
+    description = models.TextField(null=True)
+    created_at = models.DateTimeField(
+        null=False,
+        auto_now_add=True)
+    updated_at = models.DateTimeField(
+        null=False,
+        auto_now=True)
+    associationcards = models.ManyToManyField(PhysicalCard, through='AssociationCard')
+
+    class Meta:
+        managed = True
+        db_table = 'association'
+        verbose_name = 'Association'
+        verbose_name_plural = 'Associations'
+
+    def __unicode__(self):
+        return unicode(self.name) + u' [' + unicode(self.id) + u']'
+
+
+class AssociationCard(models.Model):
+    #id = models.IntegerField(primary_key=True)
+    association = models.ForeignKey(Association)
+    physicalcard = models.ForeignKey(PhysicalCard, related_name='assocphysicalcard')
+
+    class Meta:
+        managed = True
+        db_table = 'associationcard'
+
+    def __unicode__(self):
+        return unicode(self.physicalcard) + u' => ' + unicode(self.association) + u' [' + unicode(self.id) + u']'

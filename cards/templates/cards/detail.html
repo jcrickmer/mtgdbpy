@@ -311,6 +311,46 @@ $('.panel-group').on('shown.bs.collapse', toggleChevron);
   </div>
 </div>
 
+{% if associations %}
+  <div class="associations-block">
+    <div class="row">
+      <div class="col-xs-12">
+        <h3>Cards Associated with {{physicalCardTitle}}</h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+        {% for assoc in associations %}
+          <div class="association-block">
+            <div class="row">
+              <div class="col-xs-12">
+                <h4 class="association-title">{{assoc.name}}{% if assoc.classification %} ({{assoc.classification}}){% endif %}</h4>
+              </div>
+            </div>
+              {% if assoc.description %}
+                <div class="row">
+                  <div class="col-xs-12 association-description">
+                    <p>{{assoc.description}}</p>
+                  </div>
+                </div>
+              {% endif %}
+            <div class="row">
+              {% for assocpc in assoc.associationcards.all %}
+                {% if assocpc != physicalcard %}
+                  <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
+                    <div class="text-center"><a href="{% url 'cards:detail' assocpc.get_latest_card.multiverseid assocpc.get_latest_card.url_slug %}"><img class="list_cardimage" src="{{ assocpc.get_latest_card.img_url }}" alt="{{ assocpc.get_card_name }}"/></a></div>
+                    <div class="text-center"><a href="{% url 'cards:detail' assocpc.get_latest_card.multiverseid assocpc.get_latest_card.url_slug %}">{{assocpc.get_card_name}}</a></div>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endif %}
+
 <div class="rulings-block">
   <div class="row">
     <div class="col-xs-12">

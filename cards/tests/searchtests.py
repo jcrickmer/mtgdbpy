@@ -11,13 +11,16 @@ import sys
 err = sys.stderr
 
 
+PLAYABLE_CARD_COUNT = 1617
+
 # class CardManagerROTestCase(FastFixtureTestCase):
 class CardManagerROTestCase(TestCase):
     fixtures = ['mtgdbapp_testdata', ]
 
     def test_all(self):
+        # SELECT count(id) FROM physicalcard WHERE layout NOT IN ('token','plane','scheme','phenomenon','vanguard');
         cards = Card.playables.search()
-        self.assertEquals(len(list(cards)), 381)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT)
 
     def test_name_one_full(self):
         a = SearchPredicate()
@@ -73,27 +76,30 @@ class CardManagerROTestCase(TestCase):
         a.negative = True
         cards = Card.playables.search(a)
         #err.write(str(cards.query) + "\n")
-        self.assertEquals(len(list(cards)), 381 - 3)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT - 3)
 
     ''' Rules Text equality '''
 
     def test_rules_e_flying(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.rules_text = 'Flying' AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'rules'
         a.value = 'flying'  # Delver double
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 1)
+        self.assertEquals(len(list(cards)), 6)
 
     def test_rules_c_flying(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.rules_text LIKE '%flying%' AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'rules'
         a.value = 'flying'
         a.operator = a.CONTAINS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 34)
+        self.assertEquals(len(list(cards)), 247)
 
     def test_rules_c_foo(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.rules_text LIKE '%foobar rainbows%' AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'rules'
         a.value = 'foobar rainbows'
@@ -102,36 +108,38 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 0)
 
     def test_rules_ne_flying(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') AND bc.physicalcard_id NOT IN (SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.rules_text = 'Flying' AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard')) GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'rules'
         a.value = 'flying'
         a.operator = a.EQUALS
         a.negative = True
         cards = Card.playables.search(a)
-        # Delver/Insectile throws this off. The correct answer is 381
-        self.assertEquals(len(list(cards)), 381 - 0)
+        self.assertEquals(len(list(cards)), 1611)
 
     def test_rules_nc_flying(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') AND bc.physicalcard_id NOT IN (SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.rules_text LIKE '%flying%' AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard')) GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'rules'
         a.value = 'flying'
         a.operator = a.CONTAINS
         a.negative = True
         cards = Card.playables.search(a)
-        # Delver/Insectile throws this off. The correct answer is 348
-        self.assertEquals(len(list(cards)), 381 - 33)
+        self.assertEquals(len(list(cards)), 1370)
 
     ''' CMC equality '''
 
     def test_cmc_e_0(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc = 0 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = 0
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 105)
+        self.assertEquals(len(list(cards)), 146)
 
     def test_cmc_e_n2(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc = -2 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = -2
@@ -140,14 +148,16 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 0)
 
     def test_cmc_e_1(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc = 1 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = 1
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 70)
+        self.assertEquals(len(list(cards)), 180)
 
     def test_cmc_e_100(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc = 100 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = 100
@@ -156,44 +166,49 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 0)
 
     def test_cmc_ne_0(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc <> 0 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = 0
         a.operator = a.EQUALS
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 278)
+        self.assertEquals(len(list(cards)), 1471)
 
     def test_cmc_ne_n2(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc <> -2 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = -2
         a.operator = a.EQUALS
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT)
 
     def test_cmc_ne_1(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc <> 1 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = 1
         a.operator = a.EQUALS
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 313)
+        self.assertEquals(len(list(cards)), 1439)
 
     def test_cmc_ne_100(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc <> 100 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = 100
         a.operator = a.EQUALS
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT)
 
     ''' CMC less than '''
 
     def test_cmc_lt_0(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc < 0 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = 0
@@ -202,6 +217,7 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 0)
 
     def test_cmc_lt_n2(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc < -2 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = -2
@@ -210,20 +226,22 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 0)
 
     def test_cmc_lt_1(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc < 1 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = 1
         a.operator = a.LESS_THAN
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 105)
+        self.assertEquals(len(list(cards)), 146)
 
     def test_cmc_lt_100(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc < 100 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = 100
         a.operator = a.LESS_THAN
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT)
 
     def test_cmc_nlt_0(self):
         a = SearchPredicate()
@@ -232,7 +250,7 @@ class CardManagerROTestCase(TestCase):
         a.operator = a.LESS_THAN
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT)
 
     def test_cmc_nlt_n2(self):
         a = SearchPredicate()
@@ -241,7 +259,7 @@ class CardManagerROTestCase(TestCase):
         a.operator = a.LESS_THAN
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT)
 
     def test_cmc_nlt_1(self):
         a = SearchPredicate()
@@ -250,7 +268,7 @@ class CardManagerROTestCase(TestCase):
         a.operator = a.LESS_THAN
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 278)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT - 146)
 
     def test_cmc_nlt_100(self):
         a = SearchPredicate()
@@ -264,12 +282,13 @@ class CardManagerROTestCase(TestCase):
     ''' CMC greater than '''
 
     def test_cmc_gt_0(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc > 0 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = 0
         a.operator = a.GREATER_THAN
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 278)
+        self.assertEquals(len(list(cards)), 1471)
 
     def test_cmc_gt_n2(self):
         a = SearchPredicate()
@@ -277,15 +296,16 @@ class CardManagerROTestCase(TestCase):
         a.value = -2
         a.operator = a.GREATER_THAN
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT)
 
     def test_cmc_gt_1(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc > 1 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = 1
         a.operator = a.GREATER_THAN
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 209)
+        self.assertEquals(len(list(cards)), 1293)
 
     def test_cmc_gt_100(self):
         a = SearchPredicate()
@@ -296,15 +316,17 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 0)
 
     def test_cmc_ngt_0(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc <= 0 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = 0
         a.operator = a.GREATER_THAN
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 105)
+        self.assertEquals(len(list(cards)), 146)
 
     def test_cmc_ngt_n2(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc <= -2 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = -2
@@ -314,13 +336,14 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 0)
 
     def test_cmc_ngt_1(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc <= 1 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = 1
         a.operator = a.GREATER_THAN
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 174)
+        self.assertEquals(len(list(cards)), 326)
 
     def test_cmc_ngt_100(self):
         a = SearchPredicate()
@@ -329,19 +352,21 @@ class CardManagerROTestCase(TestCase):
         a.operator = a.GREATER_THAN
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT)
 
     ''' Toughness equality '''
 
     def test_toughness_e_0(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness = 0 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 0
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 4)
+        self.assertEquals(len(list(cards)), 29)
 
     def test_toughness_e_n2(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness = -2 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = -2
@@ -350,14 +375,16 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 0)
 
     def test_toughness_e_1(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness = 1 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 1
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 34)
+        self.assertEquals(len(list(cards)), 258)
 
     def test_toughness_e_100(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness = 100 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 100
@@ -365,45 +392,68 @@ class CardManagerROTestCase(TestCase):
         cards = Card.playables.search(a)
         self.assertEquals(len(list(cards)), 0)
 
+    def test_toughness_e_1pstar(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness = '1+*' AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
+        a = SearchPredicate()
+        a.term = 'toughness'
+        a.value = '*+1'
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 5)
+
+    def test_toughness_e_star(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness = '*' AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
+        a = SearchPredicate()
+        a.term = 'toughness'
+        a.value = '*'
+        a.operator = a.EQUALS
+        cards = Card.playables.search(a)
+        self.assertEquals(len(list(cards)), 10)
+
     def test_toughness_ne_0(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness <> 0 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 0
         a.operator = a.EQUALS
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 111)
+        self.assertEquals(len(list(cards)), 968)
 
     def test_toughness_ne_n2(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness != '-2' AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = -2
         a.operator = a.EQUALS
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 115)
+        self.assertEquals(len(list(cards)), 997)
 
     def test_toughness_ne_1(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness != '1' AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 1
         a.operator = a.EQUALS
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 82)
+        self.assertEquals(len(list(cards)), 748)
 
     def test_toughness_ne_100(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness != '100' AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 100
         a.operator = a.EQUALS
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 115)
+        self.assertEquals(len(list(cards)), 997)
 
     ''' Toughness less than '''
 
     def test_toughness_lt_0(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness < 0 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 0
@@ -412,6 +462,7 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 0)
 
     def test_toughness_lt_n2(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness < -2 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = -2
@@ -420,49 +471,55 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 0)
 
     def test_toughness_lt_1(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness < 1 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 1
         a.operator = a.LESS_THAN
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 4)
+        self.assertEquals(len(list(cards)), 29)
 
     def test_toughness_lt_100(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness < 100 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 100
         a.operator = a.LESS_THAN
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 115)
+        self.assertEquals(len(list(cards)), 997)
 
     def test_toughness_nlt_0(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness >= 0 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 0
         a.operator = a.LESS_THAN
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 115)
+        self.assertEquals(len(list(cards)), 997)
 
     def test_toughness_nlt_n2(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness >= -2 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = -2
         a.operator = a.LESS_THAN
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 115)
+        self.assertEquals(len(list(cards)), 997)
 
     def test_toughness_nlt_1(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness >= 1 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 1
         a.operator = a.LESS_THAN
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 111)
+        self.assertEquals(len(list(cards)), 968)
 
     def test_toughness_nlt_100(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness >= 100 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 100
@@ -474,30 +531,34 @@ class CardManagerROTestCase(TestCase):
     ''' Toughness greater than '''
 
     def test_toughness_gt_0(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness > 0 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 0
         a.operator = a.GREATER_THAN
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 111)
+        self.assertEquals(len(list(cards)), 968)
 
     def test_toughness_gt_n2(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness > -2 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = -2
         a.operator = a.GREATER_THAN
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 115)
+        self.assertEquals(len(list(cards)), 997)
 
     def test_toughness_gt_1(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness > 1 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 1
         a.operator = a.GREATER_THAN
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 78)
+        self.assertEquals(len(list(cards)), 714)
 
     def test_toughness_gt_100(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness > 100 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 100
@@ -506,15 +567,17 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 0)
 
     def test_toughness_ngt_0(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness <= 0 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 0
         a.operator = a.GREATER_THAN
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 4)
+        self.assertEquals(len(list(cards)), 29)
 
     def test_toughness_ngt_n2(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness <= -2 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = -2
@@ -524,22 +587,24 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 0)
 
     def test_toughness_ngt_1(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness <= 1 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 1
         a.operator = a.GREATER_THAN
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 38)
+        self.assertEquals(len(list(cards)), 287)
 
     def test_toughness_ngt_100(self):
+        # SELECT pc.id FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.toughness <= 100 AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'toughness'
         a.value = 100
         a.operator = a.GREATER_THAN
         a.negative = True
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 115)
+        self.assertEquals(len(list(cards)), 997)
 
     ''' Power equality '''
 
@@ -1341,22 +1406,24 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 0)
 
     def test_rarity_ne_u(self):
+        # SELECT bc.physicalcard_id, bc.name, bc.filing_name FROM card JOIN basecard AS bc ON card.basecard_id = bc.id WHERE card.rarity NOT IN ('u','U') GROUP BY bc.physicalcard_id ORDER BY bc.filing_name;
         a = SearchPredicate()
         a.term = 'rarity'
         a.value = 'u'
         a.negative = True
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 300)
+        self.assertEquals(len(list(cards)), 1266)
 
     def test_rarity_ne_z(self):
+        # SELECT bc.physicalcard_id, bc.name, bc.filing_name FROM card JOIN basecard AS bc ON card.basecard_id = bc.id WHERE card.rarity NOT IN ('u','U') GROUP BY bc.physicalcard_id ORDER BY bc.filing_name;
         a = SearchPredicate()
         a.term = 'rarity'
         a.value = 'z'
         a.negative = True
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT)
 
     def test_rarity_ne_b(self):
         a = SearchPredicate()
@@ -1374,19 +1441,21 @@ class CardManagerROTestCase(TestCase):
         a.negative = True
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT)
 
     ''' Color equality '''
 
     def test_color_e_w(self):
+        # SELECT bc.physicalcard_id, bc.name , bc.filing_name FROM cardcolor AS cc JOIN basecard AS bc ON cc.basecard_id = bc.id WHERE cc.color_id IN ('w','W') GROUP BY bc.physicalcard_id ORDER BY bc.filing_name;
         a = SearchPredicate()
         a.term = 'color'
         a.value = 'w'
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 63)
+        self.assertEquals(len(list(cards)), 388)
 
     def test_color_e_z(self):
+        # SELECT bc.physicalcard_id, bc.name , bc.filing_name FROM cardcolor AS cc JOIN basecard AS bc ON cc.basecard_id = bc.id WHERE cc.color_id IN ('z','Z') GROUP BY bc.physicalcard_id ORDER BY bc.filing_name;
         a = SearchPredicate()
         a.term = 'color'
         a.value = 'z'
@@ -1395,20 +1464,22 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 0)
 
     def test_color_e_b(self):
+        # SELECT bc.physicalcard_id, bc.name , bc.filing_name FROM cardcolor AS cc JOIN basecard AS bc ON cc.basecard_id = bc.id WHERE cc.color_id IN ('b','B') GROUP BY bc.physicalcard_id ORDER BY bc.filing_name;
         a = SearchPredicate()
         a.term = 'color'
         a.value = 'b'
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 41)
+        self.assertEquals(len(list(cards)), 268)
 
     def test_color_e_c(self):
+        # SELECT bc.physicalcard_id, bc.name , bc.filing_name FROM cardcolor AS cc JOIN basecard AS bc ON cc.basecard_id = bc.id WHERE cc.color_id IN ('c','C') GROUP BY bc.physicalcard_id ORDER BY bc.filing_name;
         a = SearchPredicate()
         a.term = 'color'
         a.value = 'C'
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 134)
+        self.assertEquals(len(list(cards)), 108)
 
     def test_color_e_null(self):
         a = SearchPredicate()
@@ -1439,9 +1510,10 @@ class CardManagerROTestCase(TestCase):
         a.negative = True
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT)
 
     def test_color_ne_b(self):
+        # SELECT bc.physicalcard_id, bc.name , bc.filing_name FROM cardcolor AS cc JOIN basecard AS bc ON cc.basecard_id = bc.id WHERE bc.physicalcard_id NOT IN (SELECT bc.physicalcard_id FROM cardcolor AS cc JOIN basecard AS bc ON cc.basecard_id = bc.id WHERE color_id IN ('b','B')) GROUP BY bc.physicalcard_id ORDER BY bc.filing_name;
         a = SearchPredicate()
         a.term = 'color'
         a.value = 'b'
@@ -1449,9 +1521,10 @@ class CardManagerROTestCase(TestCase):
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
         #err.write(str(cards.query) + "\n")
-        self.assertEquals(len(list(cards)), 381 - 41)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT - 268) # negative of test_color_e_b()
 
     def test_color_ne_c(self):
+        # SELECT bc.physicalcard_id, bc.name , bc.filing_name FROM cardcolor AS cc JOIN basecard AS bc ON cc.basecard_id = bc.id WHERE bc.physicalcard_id NOT IN (SELECT bc.physicalcard_id FROM cardcolor AS cc JOIN basecard AS bc ON cc.basecard_id = bc.id WHERE color_id IN ('c','C')) GROUP BY bc.physicalcard_id ORDER BY bc.filing_name;
         a = SearchPredicate()
         a.term = 'color'
         a.value = 'C'
@@ -1459,7 +1532,7 @@ class CardManagerROTestCase(TestCase):
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
         #err.write(str(cards.query) + "\n")
-        self.assertEquals(len(list(cards)), 381 - 134)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT - 108) # negative of test_color_e_c()
 
     def test_color_ne_null(self):
         a = SearchPredicate()
@@ -1468,7 +1541,7 @@ class CardManagerROTestCase(TestCase):
         a.negative = True
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381)
+        self.assertEquals(len(list(cards)), PLAYABLE_CARD_COUNT)
 
     ''' Format equality '''
 
@@ -1501,37 +1574,41 @@ class CardManagerROTestCase(TestCase):
     ''' Type equality '''
 
     def test_type_e_creature(self):
+        # SELECT bc.physicalcard_id, bc.name , bc.filing_name FROM cardtype AS ct JOIN basecard AS bc ON ct.basecard_id = bc.id WHERE ct.type_id = 3 GROUP BY bc.physicalcard_id;
         a = SearchPredicate()
         a.term = 'type'
         a.value = 3
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 115)
+        self.assertEquals(len(list(cards)), 997)
 
     def test_type_e_instant(self):
+        # SELECT bc.physicalcard_id, bc.name , bc.filing_name FROM cardtype AS ct JOIN basecard AS bc ON ct.basecard_id = bc.id WHERE ct.type_id = 5 GROUP BY bc.physicalcard_id;
         a = SearchPredicate()
         a.term = 'type'
         a.value = 5
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 74)
+        self.assertEquals(len(list(cards)), 160)
 
     def test_type_e_legendary(self):
+        # SELECT bc.physicalcard_id, bc.name , bc.filing_name FROM cardsupertype AS cst JOIN basecard AS bc ON cst.basecard_id = bc.id WHERE cst.supertype_id = 1 GROUP BY bc.physicalcard_id;
         a = SearchPredicate()
-        a.term = 'type'
-        a.value = 7
+        a.term = 'supertype'
+        a.value = 1 # Legendary
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 25)
+        self.assertEquals(len(list(cards)), 152)
 
     def test_type_ne_creature(self):
+        # SELECT bc.physicalcard_id, bc.name , bc.filing_name FROM cardtype AS ct JOIN basecard AS bc ON ct.basecard_id = bc.id WHERE bc.physicalcard_id NOT IN (SELECT bc.physicalcard_id FROM cardtype AS ct JOIN basecard AS bc ON ct.basecard_id = bc.id WHERE ct.type_id = 3) GROUP BY bc.physicalcard_id;
         a = SearchPredicate()
         a.term = 'type'
-        a.value = 3
+        a.value = 3 # Creature
         a.negative = True
         a.operator = a.EQUALS
         cards = Card.playables.search(a)
-        self.assertEquals(len(list(cards)), 381 - 115)
+        self.assertEquals(len(list(cards)), 699)
 
     # REVISIT - need test for enchantment creature
 
@@ -1690,6 +1767,7 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 0)
 
     def test_subtype_cmc_multi(self):
+        # SELECT pc.id, bc.name, bc.cmc FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc < 2 AND bc.physicalcard_id IN (SELECT bc.physicalcard_id FROM cardsubtype AS cs JOIN basecard AS bc ON cs.basecard_id = bc.id WHERE cs.subtype_id = 109) AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = 2
@@ -1702,9 +1780,10 @@ class CardManagerROTestCase(TestCase):
         b.negative = False
         cards = Card.playables.search(a, b)
         #err.write(str(cards.query) + "\n")
-        self.assertEquals(len(list(cards)), 5)
+        self.assertEquals(len(list(cards)), 19)
 
     def test_subtype_cmc_multi(self):
+        # SELECT pc.id, bc.name, bc.cmc FROM basecard AS bc JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE bc.cmc < 2 AND bc.physicalcard_id IN (SELECT bc.physicalcard_id FROM cardsubtype AS cs JOIN basecard AS bc ON cs.basecard_id = bc.id WHERE cs.subtype_id = 109) AND bc.physicalcard_id IN (SELECT bc.physicalcard_id FROM formatbasecard AS fbc JOIN basecard AS bc ON fbc.basecard_id = bc.id WHERE fbc.format_id = 4) AND pc.layout NOT IN ('token','plane','scheme','phenomenon','vanguard') GROUP BY physicalcard_id;
         a = SearchPredicate()
         a.term = 'cmc'
         a.value = 2
@@ -1817,22 +1896,25 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(cards[18].basecard.filing_name, 'vendilion clique')
 
     def test_warrior_goblins(self):
+        # SELECT bc.physicalcard_id, bc.name , bc.filing_name FROM cardsubtype AS cs JOIN basecard AS bc ON cs.basecard_id = bc.id WHERE cs.subtype_id = 269 AND bc.physicalcard_id IN (SELECT bc.physicalcard_id FROM cardsubtype AS cs JOIN basecard AS bc ON cs.basecard_id = bc.id WHERE cs.subtype_id = 94) GROUP BY bc.physicalcard_id ORDER BY bc.filing_name;
         a = SearchPredicate()
         a.term = 'subtype'
         a.operator = a.EQUALS
-        a.value = 269
+        a.value = 269 # Goblin
         b = SearchPredicate()
         b.term = 'subtype'
         b.operator = b.EQUALS
-        b.value = 94
+        b.value = 94 # Warrior
         cards = Card.playables.search(a, b)
         #err.write(str(cards.query) + "\n")
-        self.assertEquals(len(list(cards)), 5)
-        self.assertEquals(cards[0].basecard.filing_name, 'akki avalanchers')
-        self.assertEquals(cards[1].basecard.filing_name, u'foundry street denizen')
-        self.assertEquals(cards[4].basecard.filing_name, 'mogg war marshal')
+        self.assertEquals(len(list(cards)), 8)
+        self.assertEquals(cards[0].basecard.filing_name, u'akki avalanchers')
+        self.assertEquals(cards[2].basecard.filing_name, u'foundry street denizen')
+        self.assertEquals(cards[7].basecard.filing_name, 'mogg war marshal')
 
     def test_white_green(self):
+        ### REVISIT!!!
+        # SELECT bc.physicalcard_id, bc.name , bc.filing_name FROM cardcolor AS cc JOIN basecard AS bc ON cc.basecard_id = bc.id WHERE cc.color_id IN ('G','g') AND bc.physicalcard_id IN (SELECT bc.physicalcard_id FROM cardcolor AS cc JOIN basecard AS bc ON cc.basecard_id = bc.id WHERE color_id IN ('W','w')) GROUP BY bc.physicalcard_id ORDER BY bc.filing_name;
         a = SearchPredicate()
         a.term = 'color'
         a.operator = a.EQUALS
@@ -1843,10 +1925,11 @@ class CardManagerROTestCase(TestCase):
         b.value = 'g'
         cards = Card.playables.search(a, b)
         #err.write(str(cards.query) + "\n")
-        self.assertEquals(len(list(cards)), 11)
+        self.assertEquals(len(list(cards)), 34)
         self.assertEquals(cards[0].basecard.filing_name, u'abzan charm')
-        self.assertEquals(cards[1].basecard.filing_name, u'anafenza the foremost')
-        self.assertEquals(cards[4].basecard.filing_name, u'kitchen finks')
+        self.assertEquals(cards[1].basecard.filing_name, u'ajani mentor of heroes')
+        self.assertEquals(cards[4].basecard.physicalcard.get_card_name(), u'Alive/Well')
+        self.assertEquals(cards[31].basecard.physicalcard.get_card_name(), u'Tamiyo, Field Researcher')
 
     def test_white_green_legendary_creatures(self):
         a = SearchPredicate()

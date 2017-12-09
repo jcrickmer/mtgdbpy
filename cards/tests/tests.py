@@ -213,15 +213,15 @@ class CardManagerROTestCase(TestCase):
     fixtures = ['mtgdbapp_testdata', ]
 
     def test_all_cards_search(self):
-        self.assertEquals(Card.objects.get_queryset().all().count(), 2015)
+        self.assertEquals(Card.objects.get_queryset().all().count(), 4189)
         allCards = Card.objects.get_queryset().all().order_by(
             'basecard__filing_name')
         first = allCards[0]
-        self.assertEquals(first.basecard.filing_name, 'abrupt decay')
+        self.assertEquals(first.basecard.filing_name, 'abandon hope')
         second = allCards[1]
-        self.assertEquals(second.basecard.filing_name, 'abzan charm')
+        self.assertEquals(second.basecard.filing_name, 'abbey gargoyles')
         sixtythird = allCards[62]
-        self.assertEquals(sixtythird.basecard.filing_name, 'bojuka bog')
+        self.assertEquals(sixtythird.basecard.filing_name, 'aladdins lamp')
 
     def test_latest_printing(self):
         tower_qs = Card.playables.get_latest_printing().filter(
@@ -243,8 +243,7 @@ class CardManagerROTestCase(TestCase):
             all_cards,
             format_id=4,
             test_id=1,
-            sort_order=-
-            1)
+            sort_order=-1)
         first = allCards[0]
         self.assertEquals(first.basecard.name, 'Elspeth, Sun\'s Champion')
         self.assertEquals(first.basecard.id, 6004)
@@ -343,7 +342,9 @@ class CardTestCase(TestCase):
         self.assertEquals(
             aberration.basecard.filing_name,
             'insectile aberration')
-        self.assertEquals(aberration.basecard.cmc, 0)
+        #self.assertEquals(aberration.basecard.cmc, 0)
+        # CMC for double-faced cards had a rules change!! https://magic.wizards.com/en/articles/archive/feature/shadows-over-innistrad-mechanics
+        self.assertEquals(aberration.basecard.cmc, 1)
         delver = aberration.get_double_faced_card()
         self.assertIsNotNone(delver)
         self.assertEquals(delver.basecard.name, 'Delver of Secrets')

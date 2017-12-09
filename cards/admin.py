@@ -3,6 +3,7 @@
 from django.contrib import admin
 from cards.models import Color, Rarity, Card, BaseCard, Mark, ExpansionSet, Supertype, Subtype, Type, CardType, CardSubtype, PhysicalCard
 from cards.models import Format, FormatExpansionSet, FormatBannedCard, FormatBasecard
+from cards.models import Association, AssociationCard
 from django import forms
 from django.db import models
 from django.forms import SelectMultiple, ModelMultipleChoiceField
@@ -199,6 +200,19 @@ class FormatExpansionSetAdmin(admin.ModelAdmin):
     })
 
 
+class AssociationCardInline(admin.TabularInline):
+    readonly_fields = ('id',)
+    model = Association.associationcards.through
+    form = make_ajax_form(AssociationCard, {
+        'physicalcard': 'physicalcard'      # ForeignKeyField
+    })
+
+
+class AssociationAdmin(admin.ModelAdmin):
+    readonly_fields = ('id',)
+    inlines = [AssociationCardInline, ]
+
+
 # Register your models here.
 admin.site.register(Color, ColorAdmin)
 admin.site.register(Rarity)
@@ -213,3 +227,4 @@ admin.site.register(Supertype, SupertypeAdmin)
 admin.site.register(Subtype, SubtypeAdmin)
 admin.site.register(CardSubtype, CardSubtypeAdmin)
 admin.site.register(Format, FormatAdmin)
+admin.site.register(Association, AssociationAdmin)

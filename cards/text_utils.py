@@ -18,7 +18,7 @@ import re
 
 
 def filing_string(input):
-    if type(input) is str:
+    if isinstance(input, str):
         result = unicode(input, "ascii")
     else:
         result = input
