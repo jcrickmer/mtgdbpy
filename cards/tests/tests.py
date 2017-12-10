@@ -343,7 +343,8 @@ class CardTestCase(TestCase):
             aberration.basecard.filing_name,
             'insectile aberration')
         #self.assertEquals(aberration.basecard.cmc, 0)
-        # CMC for double-faced cards had a rules change!! https://magic.wizards.com/en/articles/archive/feature/shadows-over-innistrad-mechanics
+        # CMC for double-faced cards had a rules change!!
+        # https://magic.wizards.com/en/articles/archive/feature/shadows-over-innistrad-mechanics
         self.assertEquals(aberration.basecard.cmc, 1)
         delver = aberration.get_double_faced_card()
         self.assertIsNotNone(delver)
