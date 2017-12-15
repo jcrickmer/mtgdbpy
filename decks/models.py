@@ -153,16 +153,18 @@ class Deck(models.Model):
         # Note that when matching the card name here we are getting everything but
         # a "+" or a "/". This will give us the first card in a double card like
         # Wear // Tear
-        req = re.compile(r'^([Ss][Bb]:\s*)?((\d+)x?\s+)?([^\+/]+)', re.UNICODE)
+        req = re.compile(r'^([SsCc][BbZz]:\s*)?((\d+)x?\s+)?([^\+/]+)', re.UNICODE)
         new_deckcards = list()
         exceptions = list()
         for line in cardlist.splitlines():
             is_sb = False
+            is_cz = False
             card_count = 1
             line = line.strip().lower()
             line_match = req.match(line)
             if line_match:
-                is_sb = line_match.group(1) or False
+                is_sb = (line_match.group(1) and 'sb:' in line.lower()) or False
+                is_cz = (line_match.group(1) and 'cz:' in line.lower()) or False
                 card_count = line_match.group(3) or 1
                 # getting close! Now let's see if it's a real card
                 # Let's do some quick clean-up of the card name...
@@ -178,6 +180,8 @@ class Deck(models.Model):
                     board_t = DeckCard.MAIN
                     if is_sb:
                         board_t = DeckCard.SIDE
+                    elif is_cz:
+                        board_t = DeckCard.COMMAND
                     dc = DeckCard(deck=self, cardcount=card_count, physicalcard=pc, board=board_t)
                     new_deckcards.append(dc)
                 else:
@@ -332,7 +336,8 @@ class DeckCard(models.Model):
     physicalcard = models.ForeignKey('cards.PhysicalCard', null=False)
     MAIN = 'main'
     SIDE = 'side'
-    BOARD_CHOICES = ((MAIN, MAIN), (SIDE, SIDE))
+    COMMAND = 'command'
+    BOARD_CHOICES = ((MAIN, MAIN), (SIDE, SIDE), (COMMAND, COMMAND))
     board = models.CharField(max_length=8, null=False, choices=BOARD_CHOICES, default=MAIN)
 
     class Meta:

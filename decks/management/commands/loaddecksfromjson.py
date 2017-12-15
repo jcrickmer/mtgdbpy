@@ -37,13 +37,14 @@ SCG_DECK_URL_KEY_RE = re.compile('deckid=(\d+)', re.IGNORECASE)
 class Command(BaseCommand):
     help = '''Load up some JSON and add it to the database, if needed.'''
 
+    def add_arguments(self, parser):
+        parser.add_argument('inputdir')
+
     def handle(self, *args, **options):
         #logger = logging.getLogger(__name__)
         # the first (and only) arg should be a filename
-        if len(args) < 1:
-            sys.stderr.write("No directory name given.\n")
-            return
-        directory = args[0]
+        directory = options['inputdir']
+
         if not os.access(directory, os.R_OK):
             sys.stderr.write("Cannot read directory '{}'.\n".format(filename))
             return
@@ -77,13 +78,13 @@ class Command(BaseCommand):
                     elif format_string.find('Tiny') > -1:
                         format_string = 'TinyLeaders'
                     db_format = Format.objects.filter(
-                        formatname=format_string,
+                        formatname__iexact=format_string,
                         start_date__lte=self.isodate(jblob['start_date']),
                         end_date__gte=self.isodate(jblob['end_date'])).first()
                     if db_format is not None:
                         db_tournament = Tournament.objects.filter(
                             format=db_format,
-                            name=jblob['name'],
+                            name__iexact=jblob['name'],
                             start_date=self.isodate(jblob['start_date'])).first()
                         if db_tournament is None:
                             # let's make one!
