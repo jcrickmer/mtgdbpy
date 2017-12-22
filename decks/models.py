@@ -40,6 +40,9 @@ class Tournament(models.Model):
     format = models.ForeignKey('cards.Format')
     start_date = models.DateField(null=False, blank=False)
     end_date = models.DateField(null=False, blank=False)
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        null=False)
 
     def __unicode__(self):
         return 'Tournament {} ({}, {}) [{}]'.format(str(self.name), str(self.format.formatname), str(self.start_date), str(self.id))
@@ -61,6 +64,9 @@ class Deck(models.Model):
     format = models.ForeignKey('cards.Format')
     cards = models.ManyToManyField(PhysicalCard, through='DeckCard')
     tournaments = models.ManyToManyField(Tournament, through='TournamentDeck', through_fields=('deck', 'tournament'))
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        null=False)
 
     # Returns the total number of cards in this deck.
     def get_card_count(self):
@@ -169,10 +175,6 @@ class Deck(models.Model):
                 # getting close! Now let's see if it's a real card
                 # Let's do some quick clean-up of the card name...
                 card_name = line_match.group(4).strip()
-                for sillyapos in [u'\u2019', r'\u2019', '\\' + 'u2019', u'’']:
-                    card_name = card_name.replace(sillyapos, u"'")
-                for sillydash in [u'–', u'—', u'‒', u'-']:
-                    card_name = card_name.replace(sillydash, '-')
                 card_name = self._fix_bad_spelling(card_name)
                 pc = PhysicalCard.objects.filter(basecard__name__iexact=card_name).first()
                 if pc is not None:
@@ -199,117 +201,123 @@ class Deck(models.Model):
                 dc.save()
 
     def _fix_bad_spelling(self, cardname):
-        fixes = {'aetherize': 'Ætherize',
-                 'aetherling': 'Ætherling',
-                 'aether spellbomb': 'Æther Spellbomb',
-                 'aetherspouts': 'Ætherspouts',
-                 'aether vial': 'Æther Vial',
-                 'ajani, mentor of theros': 'Ajani, Mentor of Heroes',
-                 'ajani, mentor to heroes': 'Ajani, Mentor of Heroes',
-                 'arc lighting': 'Arc Lightning',
-                 'back of nature': 'Back to Nature',
-                 'blood mon': 'Blood Moon',
-                 'bloodstained champion': 'Bloodsoaked Champion',
-                 'brandle shot': 'Brindle Shoat',
-                 'brimax, king of oreskos': 'Brimaz, King of Oreskos',
-                 'brindle shoal': 'Brindle Shoat',
-                 'brindlespout': 'Brindle Shoat',
-                 'cascade bluff': 'Cascade Bluffs',
-                 'chandra, pyromancer': 'Chandra, Pyromaster',
-                 'chandra pyromaster': 'Chandra, Pyromaster',
-                 'course of kruphix': 'Courser of Kruphix',
-                 'coves of koilos': 'Caves of Koilos',
-                 'crater\'s claw': 'Crater\'s Claws',
-                 'dauthi merceneary': 'Dauthi Mercenary',
-                 'death-head buzzard': 'Death\'s-Head Buzzard',
-                 'destructive reverly': 'Destructive Revelry',
-                 'disdainful stoke': 'Disdainful Stroke',
-                 'disdainful strike': 'Disdainful Stroke',
-                 'distinctive revelry': 'Destructive Revelry',
-                 'dromoka\'scommand': 'Dromoka\'s Command',
-                 'drowned in sorrow': 'Drown in Sorrow',
-                 'drown in silence': 'Drown in Sorrow',
-                 'drown on sorrow': 'Drown in Sorrow',
-                 'elpseth, sun\'s champion': 'Elspeth, Sun\'s Champion',
-                 'elspeth, knight errant': 'Elspeth, Knight-Errant',
-                 'elspeth sun\'s champion': 'Elspeth, Sun\'s Champion',
-                 'end hostility': 'End Hostilities',
-                 'entomber exach': 'Entomber Exarch',
-                 'erase in ice': 'Encase in Ice',
-                 'fatal conflagration': 'Fated Conflagration',
-                 'firedrinkner satyr': 'Firedrinker Satyr',
-                 'flames of the bloodhand': 'Flames of the Blood Hand',
-                 'fledling djinn': 'Fledgling Djinn',
-                 'flowstown hellion': 'Flowstone Hellion',
-                 'garruk, apex hunter': 'Garruk, Apex Predator',
-                 'gideon jury': 'Gideon Jura',
-                 'glare of heresey': 'Glare of Heresy',
-                 'god\'s willing': 'Gods Willing',
-                 'hornet\'s nest': 'Hornet Nest',
-                 'inferno itan': 'Inferno Titan',
-                 'jorubai, murk lurker': 'Jorubai Murk Lurker',
-                 'karn, liberated': 'Karn Liberated',
-                 'keranos, god of storm': 'Keranos, God of Storms',
-                 'keranos, god of the storms': 'Keranos, God of Storms',
-                 'laquatas\'s champion': 'Laquatus\'s Champion',
-                 'lighting bolt': 'Lightning Bolt',
-                 'lighting helix': 'Lightning Helix',
-                 'liliana, vess': 'Liliana Vess',
-                 'lilianna vess': 'Liliana Vess',
-                 'lingeroing souls': 'Lingering Souls',
-                 'manastery swiftspear': 'Monastery Swiftspear',
-                 'mirran crusade': 'Mirran Crusader',
-                 'mountains': 'Mountain',
-                 'moutain': 'Mountain',
-                 'nature\'s claw': 'Nature\'s Claim',
-                 'nihil spellsbomb': 'Nihil Spellbomb',
-                 'nissa worldwaker': 'Nissa, Worldwaker',
-                 'nissa, world waker': 'Nissa, Worldwaker',
-                 'paralyse': 'Paralyze',
-                 'phraika, god of affliction': 'Pharika, God of Affliction',
-                 'polukranos, world easter': 'Polukranos, World Eater',
-                 'read in bones': 'Read the Bones',
-                 'realm razor': 'Realm Razer',
-                 'reclamation angel': 'Restoration Angel',
-                 'repaer of the wilds': 'Reaper of the Wilds',
-                 'sadnsteppe citadel': 'Sandsteppe Citadel',
-                 'sarkhan, dragonspeaker': 'Sarkhan, the Dragonspeaker',
-                 'sarkhan, the dragonspear': 'Sarkhan, the Dragonspeaker',
-                 'satyr firedrinker': 'Firedrinker Satyr',
-                 'scaling tarn': 'Scalding Tarn',
-                 'seismic assulat': 'Seismic Assault',
-                 'self-inflected wound': 'Self-Inflicted Wound',
-                 'serum vision': 'Serum Visions',
-                 'setessan tectics': 'Setessan Tactics',
-                 'shief of the scale': 'Chief of the Scale',
-                 'sidisi, blood tyrant': 'Sidisi, Brood Tyrant',
-                 'simian grunt': 'Simian Grunts',
-                 'soldier of pantheon': 'Soldier of the Pantheon',
-                 'sorin, solemn visiot': 'Sorin, Solemn Visitor',
-                 'sorin, solemn visistor': 'Sorin, Solemn Visitor',
-                 'sorin solemn visitor': 'Sorin, Solemn Visitor',
-                 'stirring wildwoods': 'Stirring Wildwood',
-                 'swansong': 'Swan Song',
-                 'tassigur, the golden fang': 'Tasigur, the Golden Fang',
-                 'thoughseize': 'Thoughtseize',
-                 'thoughtsieze': 'Thoughtseize',
-                 'thoughtsize': 'Thoughtseize',
-                 'titan\'s strenght': 'Titan\'s Strength',
-                 'twinbolt': 'Twin Bolt',
-                 'unknown card': 'Unknown Card',
-                 'unravel the aether': 'Unravel the Æther',
-                 'urborg, tomb of yawghmoth': 'Urborg, Tomb of Yawgmoth',
-                 'valrous stance': 'Valorous Stance',
-                 'warden of he first tree': 'Warden of the First Tree',
-                 'wear &amp; tear': 'Wear',
-                 'xenagos, the reveelr': 'Xenagos, the Reveler',
-                 'young piromancer': 'Young Pyromancer',
-                 }
+        for sillyapos in [u'\u2019', r'\u2019', '\\' + 'u2019', u'’']:
+            cardname = cardname.replace(sillyapos, u"'")
+        for sillydash in [u'–', u'—', u'‒', u'-']:
+            cardname = cardname.replace(sillydash, '-')
 
-        if cardname.lower() in fixes:
-            cardname = fixes[cardname]
-
+        if cardname.lower() in self._spelling_fixes:
+            cardname = self._spelling_fixes[cardname]
+        cardname = cardname.replace(u'\u00C6', 'Ae')
+        cardname = cardname.replace(u'\u00E6', 'ae')
         return cardname
+
+    _spelling_fixes = {'aetherize': 'Ætherize',
+                       'aetherling': 'Ætherling',
+                       'aether spellbomb': 'Æther Spellbomb',
+                       'aetherspouts': 'Ætherspouts',
+                       'aether vial': 'Æther Vial',
+                       'ajani, mentor of theros': 'Ajani, Mentor of Heroes',
+                       'ajani, mentor to heroes': 'Ajani, Mentor of Heroes',
+                       'arc lighting': 'Arc Lightning',
+                       'back of nature': 'Back to Nature',
+                       'blood mon': 'Blood Moon',
+                       'bloodstained champion': 'Bloodsoaked Champion',
+                       'brandle shot': 'Brindle Shoat',
+                       'brimax, king of oreskos': 'Brimaz, King of Oreskos',
+                       'brindle shoal': 'Brindle Shoat',
+                       'brindlespout': 'Brindle Shoat',
+                       'cascade bluff': 'Cascade Bluffs',
+                       'chandra, pyromancer': 'Chandra, Pyromaster',
+                       'chandra pyromaster': 'Chandra, Pyromaster',
+                       'course of kruphix': 'Courser of Kruphix',
+                       'coves of koilos': 'Caves of Koilos',
+                       'crater\'s claw': 'Crater\'s Claws',
+                       'dauthi merceneary': 'Dauthi Mercenary',
+                       'death-head buzzard': 'Death\'s-Head Buzzard',
+                       'destructive reverly': 'Destructive Revelry',
+                       'disdainful stoke': 'Disdainful Stroke',
+                       'disdainful strike': 'Disdainful Stroke',
+                       'distinctive revelry': 'Destructive Revelry',
+                       'dromoka\'scommand': 'Dromoka\'s Command',
+                       'drowned in sorrow': 'Drown in Sorrow',
+                       'drown in silence': 'Drown in Sorrow',
+                       'drown on sorrow': 'Drown in Sorrow',
+                       'elpseth, sun\'s champion': 'Elspeth, Sun\'s Champion',
+                       'elspeth, knight errant': 'Elspeth, Knight-Errant',
+                       'elspeth sun\'s champion': 'Elspeth, Sun\'s Champion',
+                       'end hostility': 'End Hostilities',
+                       'entomber exach': 'Entomber Exarch',
+                       'erase in ice': 'Encase in Ice',
+                       'fatal conflagration': 'Fated Conflagration',
+                       'firedrinkner satyr': 'Firedrinker Satyr',
+                       'flames of the bloodhand': 'Flames of the Blood Hand',
+                       'fledling djinn': 'Fledgling Djinn',
+                       'flowstown hellion': 'Flowstone Hellion',
+                       'garruk, apex hunter': 'Garruk, Apex Predator',
+                       'gideon jury': 'Gideon Jura',
+                       'glare of heresey': 'Glare of Heresy',
+                       'god\'s willing': 'Gods Willing',
+                       'hornet\'s nest': 'Hornet Nest',
+                       'inferno itan': 'Inferno Titan',
+                       'jorubai, murk lurker': 'Jorubai Murk Lurker',
+                       'karn, liberated': 'Karn Liberated',
+                       'keranos, god of storm': 'Keranos, God of Storms',
+                       'keranos, god of the storms': 'Keranos, God of Storms',
+                       'laquatas\'s champion': 'Laquatus\'s Champion',
+                       'lighting bolt': 'Lightning Bolt',
+                       'lighting helix': 'Lightning Helix',
+                       'liliana, vess': 'Liliana Vess',
+                       'lilianna vess': 'Liliana Vess',
+                       'lingeroing souls': 'Lingering Souls',
+                       'manastery swiftspear': 'Monastery Swiftspear',
+                       'mirran crusade': 'Mirran Crusader',
+                       'mountains': 'Mountain',
+                       'moutain': 'Mountain',
+                       'nature\'s claw': 'Nature\'s Claim',
+                       'nihil spellsbomb': 'Nihil Spellbomb',
+                       'nissa worldwaker': 'Nissa, Worldwaker',
+                       'nissa, world waker': 'Nissa, Worldwaker',
+                       'paralyse': 'Paralyze',
+                       'phraika, god of affliction': 'Pharika, God of Affliction',
+                       'polukranos, world easter': 'Polukranos, World Eater',
+                       'read in bones': 'Read the Bones',
+                       'realm razor': 'Realm Razer',
+                       'reclamation angel': 'Restoration Angel',
+                       'repaer of the wilds': 'Reaper of the Wilds',
+                       'sadnsteppe citadel': 'Sandsteppe Citadel',
+                       'sarkhan, dragonspeaker': 'Sarkhan, the Dragonspeaker',
+                       'sarkhan, the dragonspear': 'Sarkhan, the Dragonspeaker',
+                       'satyr firedrinker': 'Firedrinker Satyr',
+                       'scaling tarn': 'Scalding Tarn',
+                       'seismic assulat': 'Seismic Assault',
+                       'self-inflected wound': 'Self-Inflicted Wound',
+                       'serum vision': 'Serum Visions',
+                       'setessan tectics': 'Setessan Tactics',
+                       'shief of the scale': 'Chief of the Scale',
+                       'sidisi, blood tyrant': 'Sidisi, Brood Tyrant',
+                       'simian grunt': 'Simian Grunts',
+                       'soldier of pantheon': 'Soldier of the Pantheon',
+                       'sorin, solemn visiot': 'Sorin, Solemn Visitor',
+                       'sorin, solemn visistor': 'Sorin, Solemn Visitor',
+                       'sorin solemn visitor': 'Sorin, Solemn Visitor',
+                       'stirring wildwoods': 'Stirring Wildwood',
+                       'swansong': 'Swan Song',
+                       'tassigur, the golden fang': 'Tasigur, the Golden Fang',
+                       'thoughseize': 'Thoughtseize',
+                       'thoughtsieze': 'Thoughtseize',
+                       'thoughtsize': 'Thoughtseize',
+                       'titan\'s strenght': 'Titan\'s Strength',
+                       'twinbolt': 'Twin Bolt',
+                       'unknown card': 'Unknown Card',
+                       'unravel the aether': 'Unravel the Æther',
+                       'urborg, tomb of yawghmoth': 'Urborg, Tomb of Yawgmoth',
+                       'valrous stance': 'Valorous Stance',
+                       'warden of he first tree': 'Warden of the First Tree',
+                       'wear &amp; tear': 'Wear',
+                       'xenagos, the reveelr': 'Xenagos, the Reveler',
+                       'young piromancer': 'Young Pyromancer',
+                       }
 
     def cards_as_text(self):
         result = ''
@@ -375,7 +383,7 @@ def safelog(msg):
 
 class FormatStat(models.Model):
     # Number of decks that have to be in a tournament for it to qualify
-    MIN_DECKS_IN_TOURNAMENT = 8
+    MIN_DECKS_IN_TOURNAMENT = 1
 
     id = models.AutoField(primary_key=True)
     format = models.ForeignKey('cards.Format')
@@ -620,11 +628,10 @@ class FormatCardStat(models.Model):
                 #safelog('        str took %.03f sec.' % t.interval)
 
     def __unicode__(self):
-        return 'FormatCardStat f="{}" c="{}": dc={}, oc={}, s={}'.format(
+        return 'FormatCardStat f="{}" c="{}": dc={}, oc={}'.format(
             self.format.format, self.physicalcard.get_card_name(), str(
                 self.deck_count), str(
-                self.occurence_count), str(
-                self.is_staple()))
+                self.occurence_count))
 
     class Meta:
         managed = True
