@@ -8,7 +8,7 @@ from cards.models import Format
 from cards.models import PhysicalCard
 #from decks.models import CardsNotFoundException
 #from optparse import make_option
-
+from pytz import reference
 from datetime import datetime, timedelta
 
 from cards.view_utils import convertSymbolsToHTML, make_links_to_cards
@@ -36,24 +36,57 @@ SCG_DECK_URL_KEY_RE = re.compile('deckid=(\d+)', re.IGNORECASE)
 
 class Command(BaseCommand):
     help = '''Load up some JSON and add it to the database, if needed.'''
+    only_newer = True
+    localtime = reference.LocalTimezone()
+    start_time = None
 
     def add_arguments(self, parser):
-        parser.add_argument('inputdir')
+        parser.add_argument('-i', '--inputdir',
+                            dest='inputdir',
+                            default='/var/deckfecth/json',
+                            help='The directory to read deck_* and tournament_* json files from.')
+        parser.add_argument('-a', '--all',
+                            dest='only_newer',
+                            action='store_false',
+                            default=True,
+                            help='Load all files in the inputdir, not just newer files.')
 
     def handle(self, *args, **options):
         #logger = logging.getLogger(__name__)
         # the first (and only) arg should be a filename
         directory = options['inputdir']
+        self.only_newer = options['only_newer']
+        
+        self.start_time = datetime.now()
 
         if not os.access(directory, os.R_OK):
             sys.stderr.write("Cannot read directory '{}'.\n".format(filename))
             return
 
+        # let's figure out the last time we ran.
+        sema_filename = join(directory, 'last_complete.semaphore')
+        last_start_time = datetime(2000, 1, 1, 0, 0, 0, 0, self.localtime)
+        
+        try:
+            sema_in = open(sema_filename, 'r')
+            lst_str = sema_in.readline()
+            last_start_time = dtparse(lst_str)
+            last_start_time = last_start_time.replace(tzinfo=self.localtime)
+            sema_in.close()
+        except:
+            sys.stderr.write("Cannot read the {} file. Proceeding anyway...\n".format(sema_filename))
+            
         onlyfiles = [f for f in listdir(directory) if isfile(join(directory, f))]
         for filename in onlyfiles:
             if filename.find('tournament_') > -1:  # and False: # REVISIT - commented out for the moment!
                 filehandler = open(join(directory, filename))
+                filetime = datetime.fromtimestamp(os.path.getmtime(join(directory, filename)))
+                filetime = filetime.replace(tzinfo=self.localtime)
+                if self.only_newer and filetime < last_start_time:
+                    continue
+                    
                 jblob = json.load(filehandler)
+                    
                 #{"url": "/en/content/2011-great-britain-national-championship", "tournament_format": null, "name": "Great Britain National Championship", "start_date": "2011-08-19"}
                 if jblob['name'].lower().find('test deck') > -1:
                     sys.stdout.write("Tournament: skipped test deck tournament: {}\n".format(jblob['name']))
@@ -97,12 +130,16 @@ class Command(BaseCommand):
                             db_tournament.save()
                             sys.stdout.write("Tournament: created {}\n".format(jblob['name']))
                         else:
-                            if turl.find('/node/') < 0:
-                                db_tournament.url = turl
-                                sys.stdout.write("Tournament: updated {}\n".format(jblob['name']))
-                                db_tournament.save()
+                            if filetime > db_tournament.updated_at or not self.only_newer:
+                                # let's update!!
+                                if turl.find('/node/') < 0:
+                                    db_tournament.url = turl
+                                    sys.stdout.write("Tournament: updated {}\n".format(jblob['name']))
+                                    db_tournament.save()
+                                else:
+                                    sys.stdout.write("Tournament: skipped updated with node {}\n".format(jblob['name']))
                             else:
-                                sys.stdout.write("Tournament: skipped updated with node {}\n".format(jblob['name']))
+                                sys.stdout.write("Tournament: not newer... skipped {}\n".format(jblob['name']))
                     else:
                         sys.stdout.write("Tournament: skipped no format '{}' found in db {}\n".format(format_string, jblob['name']))
 
@@ -113,9 +150,13 @@ class Command(BaseCommand):
             if filename.find('deck_') > -1:
                 ###fqfilename = join(directory, filename)
                 # print "last modified: %s" % time.ctime(getmtime(fqfilename))
-                # REVISIT - nothing processes because I was working on only processing the mostrecent files...
-                # continue
                 filehandler = open(join(directory, filename))
+                
+                filetime = datetime.fromtimestamp(os.path.getmtime(join(directory, filename)))
+                filetime = filetime.replace(tzinfo=self.localtime)
+                if self.only_newer and filetime < last_start_time:
+                    continue
+
                 jblob = json.load(filehandler)
 
                 # let's test if jblob is a set JSON
@@ -137,7 +178,7 @@ class Command(BaseCommand):
                             tournament_url = tu_match.group(1)
                             tournament_name = tu_match.group(2)
                         # find a real tournament that we match to
-                        sys.stdout.write("HERE with '{}' and '{}'\n".format(tournament_url, tournament_name))
+                        #sys.stdout.write("HERE with '{}' and '{}'\n".format(tournament_url, tournament_name))
                         tourna = Tournament.objects.filter(url=tournament_url).first()  # exclude(format__formatname='Unknown').first()
                     elif 'tournament_name' in jblob and 'deck_format' in jblob:
                         # Let's look for tournaments by name and date instead
@@ -148,6 +189,9 @@ class Command(BaseCommand):
 
                     # Let's see if we already have a deck for this.
                     deck = None
+
+                    # Should we skip writing this deck to the database?
+                    skip_deck = False
 
                     # We are going to look at the "deckid" parameter that StarCityGames decks have and match on just that id.
                     dukey_m = SCG_DECK_URL_KEY_RE.search(jblob['url'])
@@ -184,18 +228,22 @@ class Command(BaseCommand):
                             deck = Deck.objects.filter(url=jblob['url']).first()  # reload
 
                     else:
-                        # for kicks, let's update name and authorname, since it could be that the
-                        # scrapy crawler gets better at figuring those things out
-                        deck.name = jblob['name']
-                        deck.authorname = jblob['author']
-                        deck.url = jblob['url']
-                        deck.save()
-                        sys.stdout.write("Deck: updated {}\n".format(jblob['name']))
+                        if filetime > deck.updated_at or not self.only_newer:
+                            # for kicks, let's update name and authorname, since it could be that the
+                            # scrapy crawler gets better at figuring those things out
+                            deck.name = jblob['name']
+                            deck.authorname = jblob['author']
+                            deck.url = jblob['url']
+                            deck.save()
+                            sys.stdout.write("Deck: updated {}\n".format(jblob['name']))
+                        else:
+                            skip_deck = True
+                            sys.stdout.write("Deck: not newer... skipped {}\n".format(jblob['name']))
 
                     #sys.stdout.write("Deck: {} (db card count {})\n".format(jblob['name'], deck.get_card_count()))
                     #sys.stdout.write("  URL: {}\n".format(jblob['url']))
 
-                    if deck is not None:
+                    if deck is not None and not skip_deck:
                         # now we have to add cards to the deck...
                         cardtext = '\n'.join(jblob['mainboard_cards'])
                         if 'sideboard_cards' in jblob and jblob['sideboard_cards'] is not None and len(jblob['sideboard_cards']) > 0:
@@ -231,6 +279,10 @@ class Command(BaseCommand):
                                 sys.stdout.write("TournamentDeck: updated for {}\n".format(jblob['name']))
                         else:
                             sys.stdout.write("Deck: skipped no valid tournament {}\n".format(jblob['name']))
+        sema = open(join(directory, 'last_complete.semaphore'), 'w')
+        sema.write(str(self.start_time))
+        sema.write("\n")
+        sema.close()
 
     def isodate(self, datestring):
         try:

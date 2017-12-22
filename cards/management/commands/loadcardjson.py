@@ -47,7 +47,11 @@ class Command(BaseCommand):
         if 'name' in jblob and 'code' in jblob and 'cards' in jblob:
             sys.stdout.write("File is a set JSON for '{}' ({}) with {} cards.\n".format(jblob['name'], jblob['code'], len(jblob['cards'])))
 
-            expset = self.get_expset(jblob['name'], jblob['code'])
+            reldate = None
+            if 'releaseDate' in jblob:
+                reldate = jblob['releaseDate']
+
+            expset = self.get_expset(jblob['name'], jblob['code'], reldate)
             for jcard in jblob['cards']:
                 self.handle_card(jcard, expset)
         # maybe it is AllSets

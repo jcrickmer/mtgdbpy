@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}{{ physicalCardTitle }}{% endblock %}
-{% block pagetitle %}{{ physicalCardTitle }}{% if std_card_stat.is_staple %} <span class="staple-standard">Standard Staple</span> {% endif %}{% if mod_card_stat.is_staple %} <span class="staple-modern">Modern Staple</span> {% endif %}{% endblock %}
+{% block pagetitle %}{{ physicalCardTitle }}{% if std_card_stat.is_staple %} <span class="staple-standard">Standard Staple</span> {% endif %}{% if mod_card_stat.is_staple %} <span class="staple-modern">Modern Staple</span> {% endif %}{% if edh_card_stat.is_staple %} <span class="staple-commander">Commander Staple</span> {% endif %}{% endblock %}
 {% block description %}Magic: The Gathering card {{ physicalCardTitle }} information and analysis{% endblock %}
 
 {% block subsearchnav %}
@@ -30,13 +30,14 @@ function drawCardStatsChart(formatname) {
     // Create the data table.
     var data = new google.visualization.DataTable();
     data.addColumn('string', 'Format Start Date');
-    data.addColumn('number', '% of Decks');
+    performatter = new google.visualization.NumberFormat({pattern:'#.##%'});
+    data.addColumn({type:'number', label:'% of Decks', pattern:performatter});
     data.addColumn('number', 'Avg # of Cards');
     for (var p = 0; p < cardstats.length; p++) {
         var myrow = [cardstats[p].format_start_date, cardstats[p].in_decks_percentage / 100, cardstats[p].average_card_count_in_deck];
         data.addRow(myrow);
     }
-
+    performatter.format(data, 1)
     var options = {
         chart: {
           /*title: '% of All Cards in Format',*/
@@ -46,7 +47,7 @@ function drawCardStatsChart(formatname) {
         fontName: 'Arial',
         colors: ['#4d5f8b','#e19d29'],
         width: Math.min(800, $('#collapse-' + formatname + '-meta').innerWidth()),
-        height: 220,
+        height: 360,
         series: {
           // Gives each series an axis name that matches the Y-axis below.
           0: {axis: '% of Decks', targetAxisIndex: 0, curveType: 'function', fontName: 'Arial', },
