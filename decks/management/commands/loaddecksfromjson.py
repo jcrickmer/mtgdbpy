@@ -198,7 +198,8 @@ class Command(BaseCommand):
                     if deck is not None:
                         # now we have to add cards to the deck...
                         cardtext = '\n'.join(jblob['mainboard_cards'])
-                        cardtext = cardtext + '\nSB:' + '\nSB: '.join(jblob['sideboard_cards'])
+                        if 'sideboard_cards' in jblob and jblob['sideboard_cards'] is not None and len(jblob['sideboard_cards']) > 0:
+                            cardtext = cardtext + '\nSB:' + '\nSB: '.join(jblob['sideboard_cards'])
                         #sys.stdout.write(cardtext + "\n")
                         # REVISIT - just updating them all for now. Shouldn't hurt since
                         # set_cards_from_text deletes all of the current card associations, right?
