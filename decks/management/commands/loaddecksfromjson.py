@@ -56,7 +56,7 @@ class Command(BaseCommand):
         # the first (and only) arg should be a filename
         directory = options['inputdir']
         self.only_newer = options['only_newer']
-        
+
         self.start_time = datetime.now()
 
         if not os.access(directory, os.R_OK):
@@ -66,7 +66,7 @@ class Command(BaseCommand):
         # let's figure out the last time we ran.
         sema_filename = join(directory, 'last_complete.semaphore')
         last_start_time = datetime(2000, 1, 1, 0, 0, 0, 0, self.localtime)
-        
+
         try:
             sema_in = open(sema_filename, 'r')
             lst_str = sema_in.readline()
@@ -75,7 +75,7 @@ class Command(BaseCommand):
             sema_in.close()
         except:
             sys.stderr.write("Cannot read the {} file. Proceeding anyway...\n".format(sema_filename))
-            
+
         onlyfiles = [f for f in listdir(directory) if isfile(join(directory, f))]
         for filename in onlyfiles:
             if filename.find('tournament_') > -1:  # and False: # REVISIT - commented out for the moment!
@@ -84,9 +84,9 @@ class Command(BaseCommand):
                 filetime = filetime.replace(tzinfo=self.localtime)
                 if self.only_newer and filetime < last_start_time:
                     continue
-                    
+
                 jblob = json.load(filehandler)
-                    
+
                 #{"url": "/en/content/2011-great-britain-national-championship", "tournament_format": null, "name": "Great Britain National Championship", "start_date": "2011-08-19"}
                 if jblob['name'].lower().find('test deck') > -1:
                     sys.stdout.write("Tournament: skipped test deck tournament: {}\n".format(jblob['name']))
@@ -151,7 +151,7 @@ class Command(BaseCommand):
                 ###fqfilename = join(directory, filename)
                 # print "last modified: %s" % time.ctime(getmtime(fqfilename))
                 filehandler = open(join(directory, filename))
-                
+
                 filetime = datetime.fromtimestamp(os.path.getmtime(join(directory, filename)))
                 filetime = filetime.replace(tzinfo=self.localtime)
                 if self.only_newer and filetime < last_start_time:
