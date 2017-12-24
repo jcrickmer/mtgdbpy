@@ -784,6 +784,13 @@ class CardManager(models.Manager):
                             not_basecard_ids = cursor.fetchall()
                             if len(not_basecard_ids) > 0:
                                 sql_s = sql_s + ' AND bc.id NOT IN (' + ','.join(str(n[0]) for n in not_basecard_ids) + ') '
+                        elif arg.term == 'supertype':
+                            sql_not = 'SELECT cspt.basecard_id FROM cardsupertype AS cspt WHERE cspt.supertype_id = ' + \
+                                str(arg.value) + ' AND cspt.basecard_id IN (' + ','.join(str(i) for i in bc_ids) + ')'
+                            cursor.execute(sql_not)
+                            not_basecard_ids = cursor.fetchall()
+                            if len(not_basecard_ids) > 0:
+                                sql_s = sql_s + ' AND bc.id NOT IN (' + ','.join(str(n[0]) for n in not_basecard_ids) + ') '
                     except ProgrammingError as pe:
                         logger.error("CardManager.search: SQL error in: {}".format(sql_not))
                         raise pe
@@ -794,8 +801,8 @@ class CardManager(models.Manager):
             pass
         else:
             sql_s = sql_s + ' GROUP BY ' + 'pc.id '
-        #sql_s = sql_s + ' bc.id HAVING max(c.multiverseid) '
-        #sql_s = sql_s + ' HAVING max(c.multiverseid) '
+            #sql_s = sql_s + ' bc.id HAVING max(c.multiverseid) '
+            #sql_s = sql_s + ' HAVING max(c.multiverseid) '
 
         sql_s = sql_s + ' ORDER BY '
         sql_s = sql_s + ', '.join(str(str(arg.sqlname()) + ' ' + arg.direction) for arg in sortds)
