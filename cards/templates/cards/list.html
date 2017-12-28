@@ -4,6 +4,8 @@
 {% block title %}{{thepagetitle}}{% endblock %}
 
 {% block content %}
+{% load cache %}
+{% cache 500 search predicates_js sort_order cards.number %}
   <style>
 div.page-header {
   padding-bottom: 0px;
@@ -90,5 +92,5 @@ $(function() {
 {% else %}
   <p>No cards are available.</p>
 {% endif %}
-
+{% endcache %}
 {% endblock %}
