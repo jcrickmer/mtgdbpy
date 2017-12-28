@@ -188,6 +188,7 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+CARDS_SEARCH_CACHE_TIME = 60 * 15
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/

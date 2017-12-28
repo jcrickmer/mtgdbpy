@@ -11,6 +11,7 @@
 # into your database.
 from __future__ import unicode_literals
 import sys
+from django.conf import settings
 from django.db import models
 from datetime import datetime, date
 from django.utils import timezone
@@ -29,6 +30,8 @@ from operator import itemgetter
 from django.core.cache import cache
 
 from haystack.query import SearchQuerySet
+
+import time
 
 
 class Color(models.Model):
@@ -192,7 +195,7 @@ class PhysicalCard(models.Model):
             if bc is None:
                 logger.error("PhysicalCard.get_latest_card: ouch. bc is None")
             card = bc.card_set.all().order_by('-multiverseid').first()
-            cache.set('c_pc' + str(self.id), card, 300)
+            cache.set('c_pc' + str(self.id), card, settings.CARDS_SEARCH_CACHE_TIME)
         return card
 
     def get_latest_url_part(self):
@@ -601,7 +604,7 @@ class CardManager(models.Manager):
         pre_where_clause = ''
         # This version gets the one with the last multiverseid (ostinsibly, the latest one), but it is really, really slow. And take the HAVING clause out if you are using this one.
         #sql_s = '''SELECT c.id, c.basecard_id FROM physicalcard AS pc JOIN basecard AS bc ON pc.id = bc.physicalcard_id JOIN card AS c ON c.basecard_id = bc.id INNER JOIN (SELECT basecard_id, MAX(multiverseid) AS multiverseid FROM card GROUP BY basecard_id) AS cm ON cm.basecard_id = c.basecard_id AND cm.multiverseid = c.multiverseid LEFT JOIN formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 '''
-        sql_s = '''SELECT c.id, c.basecard_id FROM physicalcard AS pc JOIN basecard AS bc ON pc.id = bc.physicalcard_id JOIN card AS c ON c.basecard_id = bc.id LEFT JOIN formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 '''
+        sql_s = '''SELECT c.id, c.basecard_id FROM physicalcard AS pc JOIN basecard AS bc ON pc.id = bc.physicalcard_id JOIN card AS c ON c.basecard_id = bc.id LEFT JOIN cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 '''
 
         terms = []
         not_terms = []
@@ -627,6 +630,7 @@ class CardManager(models.Manager):
             else:
                 all_args.append(arg)
 
+        add_formatbasecard_leftjoin = False
         # We must grab the format first
         for arg in all_args:
             if isinstance(arg, SortDirective):
@@ -638,6 +642,9 @@ class CardManager(models.Manager):
                     safelocker['sarg' + str(safelocker['_counter'])] = specified_format
                     safelocker['_counter'] = safelocker['_counter'] + 1
                     terms.append(sql_p)
+                    add_formatbasecard_leftjoin = True
+        if add_formatbasecard_leftjoin:
+            sql_s = sql_s + ''' LEFT JOIN formatbasecard AS f ON f.basecard_id = bc.id '''
 
         if len(sortds) == 0:
             namesort = SortDirective()
@@ -808,9 +815,11 @@ class CardManager(models.Manager):
         sql_s = sql_s + ', '.join(str(str(arg.sqlname()) + ' ' + arg.direction) for arg in sortds)
 
         logger = logging.getLogger(__name__)
-        #logger.error("Card Search SQL: " + sql_s)
-
+        #logger.debug("Card Search SQL: " + sql_s)
+        #timer_start = time.time()
         cards = self.raw(sql_s, params=safelocker)
+        #logger.debug("Card Search time: {}".format(time.time() - timer_start))
+        #logger.debug("Card Search SQL query: {}".format(cards))
 
         return cards
 
