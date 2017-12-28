@@ -298,7 +298,7 @@ def filing_string_rule_6(input):
     result = input
     return result
 
-# Rule 7 - Trreat bracketed data as signifcant
+# Rule 7 - Treat bracketed data as signifcant
 #
 # No-op
 
@@ -345,15 +345,41 @@ def filing_string_rule_10(input):
 #
 # Essentially, make periods and ellipses into spaces
 
+_rule_11_m_0 = r'^\.(\d+)'
+_rule_11_r_0 = r'0.\1'
+_rule_11_m_1 = r' \.(\d+)'
+_rule_11_r_1 = r' 0.\1'
+_rule_11_m_2 = r'(\D+)\.(\D+)'
+_rule_11_r_2 = r'\1 \2'
+_rule_11_m_3 = r'(\D+)\.$'
+_rule_11_r_3 = r'\1'
+_rule_11_m_4 = r'^\.'
+_rule_11_r_4 = r''
+
 
 def filing_string_rule_11(input):
     result = input
-    result = re.sub(r'^\.(\d+)', r'0.\1', result)
-    result = re.sub(r' \.(\d+)', r' 0.\1', result)
-    result = re.sub(r'(\D+)\.(\D+)', r'\1 \2', result)
-    result = re.sub(r'(\D+)\.$', r'\1', result)
-    result = re.sub(r'^\.', r'', result)
-    #result = re.sub(r'\u2026', r' ', result)
+    # Remember, Python's regexp only matches NON-OVERLAPPING occurances. So 'B.F.M. Big...' will not have all of the periods removed on the
+    # first go.
+    MAX_ITER = 20
+    iter_count = 0
+    running_sub_count = 1
+    while running_sub_count > 0 and iter_count < MAX_ITER:
+        iter_count = iter_count + 1
+        # reset count...
+        running_sub_count = 0
+        result, num_of_subs = re.subn(_rule_11_m_0, _rule_11_r_0, result)
+        running_sub_count = running_sub_count + num_of_subs
+        result, num_of_subs = re.subn(_rule_11_m_1, _rule_11_r_1, result)
+        running_sub_count = running_sub_count + num_of_subs
+        result, num_of_subs = re.subn(_rule_11_m_2, _rule_11_r_2, result)
+        running_sub_count = running_sub_count + num_of_subs
+        result, num_of_subs = re.subn(_rule_11_m_3, _rule_11_r_3, result)
+        running_sub_count = running_sub_count + num_of_subs
+        result, num_of_subs = re.subn(_rule_11_m_4, _rule_11_r_4, result)
+        running_sub_count = running_sub_count + num_of_subs
+        #result, num_of_subs = re.subn(r'\u2026', r' ', result)
+        #running_sub_count = running_sub_count + num_of_subs
     result = result.replace('\u2026', ' ')
     return result
 
