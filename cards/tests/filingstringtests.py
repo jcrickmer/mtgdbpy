@@ -270,3 +270,8 @@ class FilingStringTestCase(TestCase):
         val = u"hello ! # $ % ' ( ) * + , - / : ; < > = ? [ ] \\ ^ _ { | } ~ there"
         result = filing_string(val)
         self.assertEquals(result, u'hello                             there')
+
+    def test_bfm_rule_11(self):
+        val = u"B.F.M. (Big Furry Monster)"
+        result = filing_string(val)
+        self.assertEquals(result, u'b f m  big furry monster')
