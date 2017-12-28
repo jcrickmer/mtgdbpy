@@ -41,6 +41,9 @@ from decks.models import FormatCardStat, FormatStat
 
 from django.db.models import Q
 from datetime import datetime, timedelta
+import time
+
+from django.core.cache import cache
 
 # import the logging library
 import logging
@@ -244,7 +247,8 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
     # Get an instance of a logger
     logger = logging.getLogger(__name__)
     # logger.error(request)
-
+    start_time = time.time()
+    logger.debug("L247 start")
     # Let's get the array of predicates from the session
     if query_pred_array is None:
         query_pred_array = []
@@ -252,6 +256,8 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
             query_pred_array = request.session.get('query_pred_array')
 
     spreds = []
+    latest_time = time.time()
+    logger.debug("L258 {}".format(str(latest_time - start_time)))
     for pred in query_pred_array:
         # check to see if it is a sort order or a search predicate
         if 'field' not in pred:
@@ -317,10 +323,15 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
             else:
                 spred.value = format_lookup.id
         spreds.append(spred)
+        latest_time = time.time()
+        logger.debug("L325 {}".format(str(latest_time - start_time)))
 
     if request.GET.get('sort', False):
         sort_order = request.GET.get('sort', 'name')
         request.session['sort_order'] = sort_order
+
+    latest_time = time.time()
+    logger.debug("L332 {}".format(str(latest_time - start_time)))
 
     sort_by_filing_name_added = False
     if request.session.get('sort_order', False):
@@ -340,6 +351,9 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
             sort_by_filing_name_added = True
         spreds.append(sd)
 
+    latest_time = time.time()
+    logger.debug("L355 {}".format(str(latest_time - start_time)))
+
     # Let's make sure to always sort by filing_name as the last
     # condition. If we do not, then MySQL (and any SQL RDBMS, I
     # imagine) will return an undefined sort order when order by
@@ -354,10 +368,39 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
         sd.term = 'name'
         spreds.append(sd)
 
-    card_list = Card.playables.search(spreds)
+    latest_time = time.time()
+    logger.debug("L372 {}".format(str(latest_time - start_time)))
 
-    paginator = Paginator(list(card_list), 25)
+    cache_key_base = u'{},{}'.format(str([xx['hint'] for xx in query_pred_array]), request.session.get('sort_order'))
+    cache_key_base = cache_key_base.replace(u' ', u'_')
+    cache_key_list = 'cl:{}'.format(cache_key_base)
+    cache_key_page = 'cp:{}'.format(cache_key_base)
+    card_list = cache.get(cache_key_list)
+    logger.debug("L379 cache returned {} for {}".format(str(card_list is not None), cache_key_list))
+    if card_list is None:
+        latest_time = time.time()
+        logger.debug("L382 {}".format(str(latest_time - start_time)))
+        card_list = Card.playables.search(spreds)
+        cache.set(cache_key_list, card_list, settings.CARDS_SEARCH_CACHE_TIME)
+
+    latest_time = time.time()
+    logger.debug("L387 {}".format(str(latest_time - start_time)))
+    list_for_paging = cache.get(cache_key_page)
+    logger.debug("L389 cache returned {} for {}".format(str(list_for_paging is not None), cache_key_page))
+
+    if list_for_paging is None:
+        list_for_paging = list(card_list)
+        cache.set(cache_key_page, list_for_paging, settings.CARDS_SEARCH_CACHE_TIME)
+
+    logger.debug("L395 card list is {}".format(str(len(list_for_paging))))
+    latest_time = time.time()
+    logger.debug("L387 {}".format(str(latest_time - start_time)))
+
+    paginator = Paginator(list_for_paging, 25)
     page = request.GET.get('page', request.session.get("curpage", 1))
+
+    latest_time = time.time()
+    logger.debug("L403 {}".format(str(latest_time - start_time)))
     try:
         cards = paginator.page(page)
         request.session["curpage"] = page
@@ -367,6 +410,10 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
     except EmptyPage:
         cards = paginator.page(paginator.num_pages)
         request.session["curpage"] = paginator.num_pages
+
+    latest_time = time.time()
+    logger.debug("L415 {}".format(str(latest_time - start_time)))
+
     context = {
         'ellided_prev_page': max(0, int(page) - 4),
         'ellided_next_page': min(paginator.num_pages, int(page) + 4),
@@ -375,10 +422,25 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
         'sort_order': request.session.get('sort_order', 'name'),
         'predicates': query_pred_array,
         'predicates_js': json.dumps(query_pred_array),
+        'CARDS_SEARCH_CACHE_TIME': settings.CARDS_SEARCH_CACHE_TIME,
+        'cache_key_page': cache_key_page,
     }
+
+    latest_time = time.time()
+    logger.debug("L430 {}".format(str(latest_time - start_time)))
+
     context['current_formats'] = Format.objects.filter(start_date__lte=datetime.today(),
                                                        end_date__gte=datetime.today()).order_by('format')
-    return render(request, 'cards/list.html', context)
+
+    latest_time = time.time()
+    logger.debug("L436 {}".format(str(latest_time - start_time)))
+
+    httpResp = render(request, 'cards/list.html', context)
+
+    latest_time = time.time()
+    logger.debug("L441 {}".format(str(latest_time - start_time)))
+
+    return httpResp
 
 
 def detail(request, multiverseid=None, slug=None):

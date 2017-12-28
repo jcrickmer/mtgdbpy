@@ -5,7 +5,7 @@
 
 {% block content %}
 {% load cache %}
-{% cache 500 search predicates_js sort_order cards.number %}
+{% cache CARDS_SEARCH_CACHE_TIME search cache_key_page cards.number %}
   <style>
 div.page-header {
   padding-bottom: 0px;
