@@ -589,6 +589,65 @@ class CardManager(models.Manager):
         return cards
 
     def search(self, *args, **kwargs):
+        ''' Yea know, if there are NO terms, and just some sorting, let's make this easy on ourselves. '''
+        logger = logging.getLogger(__name__)
+        has_search_predicates = False
+        sortds = []
+        all_args = []
+
+        timer_start = time.time()
+        for arg in args:
+            if isinstance(arg, list):
+                for subarg in arg:
+                    all_args.append(subarg)
+            else:
+                all_args.append(arg)
+        for arg in all_args:
+            if isinstance(arg, SortDirective):
+                sortds.append(arg)
+            elif isinstance(arg, SearchPredicate):
+                has_search_predicates = True
+                continue
+        if not has_search_predicates:
+            # let's do it SIMPLE
+            if not sortds:
+                sd = SortDirective()
+                sd.term = 'name'
+                sortds.append(sd)
+            positions = ','.join("'{}'".format(v) for v in [BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP])
+            layouts = ','.join(
+                "'{}'".format(v) for v in [
+                    PhysicalCard.TOKEN,
+                    PhysicalCard.PLANE,
+                    PhysicalCard.SCHEME,
+                    PhysicalCard.PHENOMENON,
+                    PhysicalCard.VANGUARD])
+            cru_join = ''
+            add_cardratings = False
+            for sdir in sortds:
+                if sdir.term == 'cardrating' and not add_cardratings:
+                    add_cardratings = True
+                    cru_join = ' LEFT JOIN cardrating AS crs ON crs.physicalcard_id = pc.id AND crs.test_id = 1 AND crs.format_id = {}'.format(
+                        str(sdir.crs_format_id))
+
+            sql_s = 'SELECT c.id FROM card AS c JOIN basecard AS bc ON c.basecard_id = bc.id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id {} WHERE bc.cardposition IN ({}) AND pc.layout NOT IN ({}) GROUP BY bc.id HAVING MAX(c.multiverseid) '.format(
+                cru_join,
+                positions,
+                layouts)
+
+            sql_s = sql_s + ' ORDER BY '
+            sql_s = sql_s + ', '.join(str(str(arg.sqlname()) + ' ' + arg.direction) for arg in sortds)
+
+            cards = self.raw(sql_s)
+            logger.debug("CardManager.search() time: {}".format(time.time() - timer_start))
+            logger.debug("CardManager.search() SQL query: {}".format(cards))
+            return cards
+        else:
+            # better use the more advanced search tools
+            #logger.debug("L636: trying the hard way.")
+            return self.search_harder(all_args, kwargs)
+
+    def search_harder(self, *args, **kwargs):
         ''' Searches that contain a field SPECIFIC to a type (power and
             toughness for Creatures, loyalty for Planeswalkers), will
             LIMIT the search to just those cards. Thus, searching for
