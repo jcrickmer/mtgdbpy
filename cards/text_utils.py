@@ -41,7 +41,7 @@ def filing_string(input):
     result = filing_string_rule_15(result)
     result = result.strip()
     if len(result) == 0:
-        result = '_'
+        result = 'blank'
     return result
 
 # Rule 1 - General Principle
