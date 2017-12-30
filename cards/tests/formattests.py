@@ -456,3 +456,81 @@ class FormatTestCase(TestCase):
         ff.populate_format_cards()
 
         self.assertEquals(len(ff.formatbasecard_set.all()), 5)  # Cavern, Plains, Forest, Island, Swamp
+
+    def test_format_copy(self):
+        ff = Format.objects.create()
+        ff.format = 'CopyTest0'
+        ff.formatname = 'Standard'
+        ff.abbr = 'STD'
+        ff.start_date = date(year=2017, month=7, day=1)
+        ff.end_date = date(year=2017, month=10, day=31)
+
+        ff.save()
+
+        expset1 = ExpansionSet.objects.create()
+        expset1.name = 'C MultAndalve1'
+        expset1.abbr = 'CMAND1'
+        expset1.save()
+        expset2 = ExpansionSet.objects.create()
+        expset2.name = 'C MultAndalve2'
+        expset2.abbr = 'CMAND2'
+        expset2.save()
+        expset3 = ExpansionSet.objects.create()
+        expset3.name = 'CMultAndalve3'
+        expset3.abbr = 'CMAND3'
+        expset3.save()
+
+        fes1 = FormatExpansionSet.objects.create(format=ff, expansionset=expset1)
+        fes1.save()
+        fes2 = FormatExpansionSet.objects.create(format=ff, expansionset=expset2)
+        fes2.save()
+
+        bcard0 = self.load_card(self.black_lotus_json, 'Black Lotus', loadhelper=False, set_abbr='CMAND1')
+        bcard1 = self.load_card(self.cavern_of_souls_json, 'Cavern of Souls', loadhelper=False, set_abbr='CMAND1')
+        bcard2 = self.load_card(self.plains_json, 'Plains', loadhelper=False, set_abbr='CMAND1')
+        bcard3 = self.load_card(self.forest_json, 'Forest', loadhelper=False, set_abbr='CMAND1')
+        bcard4 = self.load_card(self.plains_json, 'Plains', loadhelper=False, set_abbr='CMAND2')
+        bcard5 = self.load_card(self.island_json, 'Island', loadhelper=False, set_abbr='CMAND2')
+        bcard6 = self.load_card(self.swamp_json, 'Swamp', loadhelper=False, set_abbr='CMAND2')
+        bcard7 = self.load_card(self.mountain_json, 'Mountain', loadhelper=False, set_abbr='CMAND3')
+
+        fbc = FormatBannedCard.objects.create(format=ff, physicalcard=bcard0.physicalcard)
+        fbc.save()
+
+        self.assertEquals(Card.objects.filter(expansionset=expset1).count(), 4)
+        self.assertEquals(Card.objects.filter(expansionset=expset2).count(), 3)
+        self.assertEquals(Card.objects.filter(expansionset=expset3).count(), 1)
+
+        self.assertEquals(len(ff.formatexpansionset_set.all()), 2)
+
+        self.assertEquals(len(ff.formatbasecard_set.all()), 0)
+
+        ff.populate_format_cards()
+
+        self.assertEquals(len(ff.formatbasecard_set.all()), 5)  # Cavern, Plains, Forest, Island, Swamp
+
+        gg = Format.cards.copy_format(ff)
+
+        self.assertEquals(gg.format, 'Copy of CopyTest0')
+        self.assertEquals(len(gg.formatexpansionset_set.all()), 2)
+
+        self.assertEquals(gg.bannedcards.all().count(), 1)
+        self.assertEquals(len(gg.formatbasecard_set.all()), 0)
+
+        gg.populate_format_cards()
+
+        self.assertEquals(len(gg.formatbasecard_set.all()), 5)  # Cavern, Plains, Forest, Island, Swamp
+
+        self.assertNotEqual(ff.format, gg.format)
+        self.assertNotEqual(ff.id, gg.id)
+        self.assertEquals(ff.formatname, gg.formatname)
+        self.assertEquals(ff.abbr, gg.abbr)
+        self.assertEquals(ff.min_cards_main, gg.min_cards_main)
+        self.assertEquals(ff.max_cards_main, gg.max_cards_main)
+        self.assertEquals(ff.min_cards_side, gg.min_cards_side)
+        self.assertEquals(ff.max_cards_side, gg.max_cards_side)
+        self.assertEquals(ff.max_nonbl_card_count, gg.max_nonbl_card_count)
+        self.assertEquals(ff.uses_command_zone, gg.uses_command_zone)
+        self.assertEquals(ff.validator, gg.validator)
+        self.assertEquals(ff.start_date, gg.start_date)
+        self.assertEquals(ff.end_date, gg.end_date)
