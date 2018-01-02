@@ -1146,6 +1146,40 @@ class FormatManager(models.Manager):
                                         end_date__gte=datetime.today())
         return formats
 
+    def copy_format(self, format, new_name_of_format=None):
+        new_format = Format()
+        new_format.formatname = format.formatname
+        if new_name_of_format:
+            new_format.format = new_name_of_format
+        else:
+            new_format.format = u'Copy of {}'.format(format.format)
+        new_format.abbr = format.abbr
+        new_format.min_cards_main = format.min_cards_main
+        new_format.max_cards_main = format.max_cards_main
+        new_format.min_cards_side = format.min_cards_side
+        new_format.max_cards_side = format.max_cards_side
+        new_format.max_nonbl_card_count = format.max_nonbl_card_count
+        new_format.uses_command_zone = format.uses_command_zone
+        new_format.validator = format.validator
+        new_format.start_date = format.start_date
+        new_format.end_date = format.end_date
+        new_format.save()
+        # just want to make sure that we aren't keeping any old references and creating hard-to-find bugs
+        result = Format.objects.get(pk=new_format.id)
+
+        for expset in format.expansionsets.all():
+            fes = FormatExpansionSet()
+            fes.format = result
+            fes.expansionset = expset
+            fes.save()
+        for bannedcard in format.bannedcards.all():
+            banned = FormatBannedCard()
+            banned.format = result
+            banned.physicalcard = bannedcard
+            banned.save()
+
+        return result
+
 
 def ddvalstart(value):
     ''' REVISIT  - THIS HAS NOT BEEN IMPLEMENTED '''

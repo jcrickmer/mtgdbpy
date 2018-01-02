@@ -13,6 +13,13 @@ from ajax_select.admin import AjaxSelectAdmin
 from ajax_select.fields import AutoCompleteSelectField
 import sys
 
+from django.utils.html import format_html
+from django.conf.urls import url
+from django.core.urlresolvers import reverse
+from .forms import CopyFormatForm
+from django.http import HttpResponseRedirect
+from django.template.response import TemplateResponse
+
 
 class CardModelForm(forms.ModelForm):
     flavor_text = forms.CharField(widget=forms.Textarea, required=False)
@@ -144,7 +151,7 @@ class FormatAdmin(admin.ModelAdmin):
     readonly_fields = ('id', 'cur_size')
     inlines = [FormatBannedCardInline, ]
 
-    list_display = ('id', 'format', 'formatname', 'abbr', 'start_date', 'end_date')
+    list_display = ('id', 'format', 'formatname', 'abbr', 'start_date', 'end_date', 'format_actions')
     list_display_links = ('format', )
 
     fields = ['id',
@@ -164,6 +171,55 @@ class FormatAdmin(admin.ModelAdmin):
               'expansionsets',
               ]
     form = FormatModelForm
+
+    def get_urls(self):
+        urls = super(FormatAdmin, self).get_urls()
+        custom_urls = [
+            url(
+                r'^(?P<format_id>.+)/copy/$',
+                self.admin_site.admin_view(self.process_copy),
+                name='format-copy',
+            ),
+        ]
+        return custom_urls + urls
+
+    def format_actions(self, obj):
+        return format_html(
+            '<a class="button" href="{}">Copy</a>',
+            reverse('admin:format-copy', args=[obj.pk]),
+        )
+    format_actions.short_description = 'Format Actions'
+    format_actions.allow_tags = True
+
+    def process_copy(self, request, format_id, *args, **kwargs):
+        return self.process_action(
+            request=request,
+            format_id=format_id,
+            action_form=CopyFormatForm,
+            action_title='Copy',
+        )
+
+    def process_action(self, request, format_id, action_form, action_title):
+        format = self.get_object(request, format_id)
+        if request.method != 'POST':
+            form = action_form(initial={'new_name_of_format': 'Copy of {}'.format(format.format)})
+        else:
+            form = action_form(request.POST)
+            if form.is_valid():
+                new_format = form.save(format, request.user)
+                self.message_user(request, 'Success')
+                url = reverse('admin:cards_format_change', args=[new_format.pk], current_app=self.admin_site.name, )
+                return HttpResponseRedirect(url)
+        context = self.admin_site.each_context(request)
+        context['opts'] = self.model._meta
+        context['form'] = form
+        context['format'] = format
+        context['title'] = action_title
+        return TemplateResponse(
+            request,
+            'admin/format_actions.html',
+            context,
+        )
 
     def cur_size(self, obj):
         return FormatBasecard.objects.filter(format=obj).count()
