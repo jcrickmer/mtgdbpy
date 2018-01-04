@@ -44,6 +44,9 @@ from datetime import datetime, timedelta
 import time
 
 from django.core.cache import cache
+from django.core.cache.utils import make_template_fragment_key
+ 
+from cards.view_utils import invalidate_template_fragment
 
 # import the logging library
 import logging
@@ -1036,11 +1039,11 @@ def winbattle(request):
     if request.GET.get('test_id', False):
         test = BattleTest.objects.get(pk=request.GET.get('test_id'))
 
-    #logger.error("winner physical: " + str(winning_card.basecard.physicalcard.id))
-    #logger.error("loser physical: " + str(losing_card.basecard.physicalcard.id))
-    #logger.error("format: " + str(format))
-    #logger.error("test: " + str(test))
-    #logger.error("session: " + request.session.session_key)
+    #logger.debug("winner physical: " + str(winning_card.basecard.physicalcard.id))
+    #logger.debug("loser physical: " + str(losing_card.basecard.physicalcard.id))
+    #logger.debug("format: " + str(format))
+    #logger.debug("test: " + str(test))
+    #logger.debug("session: " + request.session.session_key)
     battle = Battle(test=test,
                     format=format,
                     winner_pcard=winning_card.basecard.physicalcard,
@@ -1103,6 +1106,22 @@ def updateRatings(battle):
     crdb_l.sigma = rating_l.sigma
     crdb_l.save()
 
+    # Lastly, let's invalidate any page caches for those files so that the details page has the most recent details!
+    temp_frag_name = 'card_details_html'
+    icards = Card.objects.filter(basecard__physicalcard=battle.winner_pcard)
+    for icard in icards:
+        # this commented out section was just for testing/debugging
+        #cache_key = make_template_fragment_key(temp_frag_name, vary_on=[icard.multiverseid,])
+        #i_have_it = cache.get(cache_key) is not None
+        #if i_have_it:
+        #    sys.stderr.write("Battle cache invalidation - key '{}' is there\n".format(cache_key))
+        #else:
+        #    sys.stderr.write("Battle cache invalidation - key '{}' is NOT there\n".format(cache_key))
+        invalidate_template_fragment(temp_frag_name, icard.multiverseid)
+    icards = Card.objects.filter(basecard__physicalcard=battle.loser_pcard)
+    for icard in icards:
+        invalidate_template_fragment(temp_frag_name, icard.multiverseid)
+    
     return
 
 
