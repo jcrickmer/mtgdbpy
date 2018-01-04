@@ -2,6 +2,18 @@
 
 from django.utils.safestring import mark_safe
 import re
+from django.core.cache import cache
+from django.core.cache.utils import make_template_fragment_key
+import sys
+
+def invalidate_template_fragment(fragment_name, *variables):
+    cache_key = make_template_fragment_key(fragment_name, vary_on=variables) 
+    #i_have_it = cache.get(cache_key) is not None
+    #if i_have_it:
+    #    sys.stderr.write("UTIL cache invalidation - key '{}' is there\n".format(cache_key))
+    #else:
+    #    sys.stderr.write("UTIL cache invalidation - key '{}' is NOT there\n".format(cache_key))
+    cache.delete(cache_key)
 
 
 def convertSymbolsToHTML(text):

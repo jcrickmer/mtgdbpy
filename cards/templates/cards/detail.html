@@ -20,6 +20,9 @@ $(function() {
 </div>
 {% endblock %}
 {% block content %}
+{% load cache %}
+{% cache 3600 card_details_html request_mvid %}
+{% comment %} note that this cache will be invalidated by cards.views.battle {% endcomment %}
 <script type="text/javascript">
 // Load the Visualization API and the piechart package.
 //google.load('visualization', '1.1', {'packages':['line']});
@@ -296,17 +299,15 @@ function drawCardStatsChart(formatname) {
                     <div id="playedwith-{{details.format.formatname}}"></div>
                       <div class="row">
                         <div class="col-xs-12">
-                          <div class="association-block">
-                            <div class="row">
-                              {% for cpwpc in card_playedwith %}
-                                <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
-                                  <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}"><img class="list_cardimage" src="{{ cpwpc.img_url }}" alt=" cpwpc.basecard.name }}"/></a></div>
-                                  <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}">{{cpwpc.basecard.name}}</a></div>
-                                </div>
-                              {% empty %}
-                                <div class="col-xs-12">{{physicalCardTitle}} does not show up in any decks in {{details.format.formatname}}.</div>
-                              {% endfor %}
-                            </div>
+                          <div class="row">
+                            {% for cpwpc in card_playedwith %}
+                              <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
+                                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}"><img class="list_cardimage" src="{{ cpwpc.img_url }}" alt=" cpwpc.basecard.name }}"/></a></div>
+                                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}">{{cpwpc.basecard.name}}</a></div>
+                              </div>
+                            {% empty %}
+                              <div class="col-xs-12">{{physicalCardTitle}} does not show up in any decks in {{details.format.formatname}}.</div>
+                            {% endfor %}
                           </div>
                         </div>
                       </div>
@@ -318,7 +319,7 @@ function drawCardStatsChart(formatname) {
           {%endfor%}
         </div>
       </div>
-    </div>
+    <!-- </div> not sure why we have an extra div close -->
   {% endfor %}
 </div>
 <script>
@@ -406,4 +407,5 @@ $('.panel-group').on('shown.bs.collapse', toggleChevron);
 </div>
 
 <div style="margin-top: 20px;" class="row"><div class="col-xs-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_mvid}}" target="_blank">View on Gatherer</a></div></div>
+{% endcache %}
 {% endblock %}
