@@ -263,6 +263,8 @@ class Command(BaseCommand):
                             deck.name = jblob['name']
                             deck.authorname = jblob['author']
                             deck.url = jblob['url']
+                            if 'page_part' in jblob:
+                                deck.url = '{}#deck{}'.format(jblob['url'], jblob['page_part'])
                             deck.format = None
                             try:
                                 db_format_q = Format.objects.filter(
@@ -292,6 +294,7 @@ class Command(BaseCommand):
                     if deck is not None and not skip_deck:
                         # now we have to add cards to the deck...
                         if is_create or not deck_meta_only:
+                            sys.stdout.write("  creating or updating deck list...\n")
                             cardtext = '\n'.join(jblob['mainboard_cards'])
                             if 'sideboard_cards' in jblob and jblob['sideboard_cards'] is not None and len(jblob['sideboard_cards']) > 0:
                                 cardtext = cardtext + '\nSB:' + '\nSB: '.join(jblob['sideboard_cards'])
@@ -300,7 +303,7 @@ class Command(BaseCommand):
                             #sys.stdout.write(cardtext + "\n")
                             # REVISIT - just updating them all for now. Shouldn't hurt since
                             # set_cards_from_text deletes all of the current card associations, right?
-                            if deck.get_card_count() == 0 or True:
+                            if True or deck.get_card_count() == 0:
                                 try:
                                     deck.set_cards_from_text(cardtext)
                                 except Deck.CardsNotFoundException as cnfe:

@@ -150,16 +150,17 @@ class Deck(models.Model):
         def __unicode__(self):
             return 'CardsNotFoundException: "{}"'.format(','.join(str(c) for c in self.cnfes))
 
+    # Note that when matching the card name here we are getting everything but
+    # a "+" or a "/". This will give us the first card in a double card like
+    # Wear // Tear
+    req = re.compile(r'^([SsCc][BbZz]:\s*)?((\d+)x?\s+)?([^\+/]+)', re.UNICODE)
+        
     def set_cards_from_text(self, cardlist):
         '''Go through each line and try to determine what the card is
         and how many should be present. If there are no errors, then
         delete/replace all of the existing DeckCards with these new
         DeckCards.'''
 
-        # Note that when matching the card name here we are getting everything but
-        # a "+" or a "/". This will give us the first card in a double card like
-        # Wear // Tear
-        req = re.compile(r'^([SsCc][BbZz]:\s*)?((\d+)x?\s+)?([^\+/]+)', re.UNICODE)
         new_deckcards = list()
         exceptions = list()
         for line in cardlist.splitlines():
@@ -167,7 +168,7 @@ class Deck(models.Model):
             is_cz = False
             card_count = 1
             line = line.strip().lower()
-            line_match = req.match(line)
+            line_match = Deck.req.match(line)
             if line_match:
                 is_sb = (line_match.group(1) and 'sb:' in line.lower()) or False
                 is_cz = (line_match.group(1) and 'cz:' in line.lower()) or False
@@ -176,7 +177,8 @@ class Deck(models.Model):
                 # Let's do some quick clean-up of the card name...
                 card_name = line_match.group(4).strip()
                 card_name = self._fix_bad_spelling(card_name)
-                pc = PhysicalCard.objects.filter(basecard__name__iexact=card_name).first()
+                pc_cache_key = u'cardname_' + card_name.replace(' ','_')
+                pc = cache.get_or_set(pc_cache_key, PhysicalCard.objects.filter(basecard__name__iexact=card_name).first(), 60*60*24)
                 if pc is not None:
                     # winner!
                     board_t = DeckCard.MAIN
