@@ -561,8 +561,15 @@ def detail(request, multiverseid=None, slug=None):
         mod_fcstat = None
         std_fcstat = None
         edh_fcstat = None
+        cpw_cache_key = 'pc-{}_cpw'.format(str(cards[0].basecard.physicalcard.id))
+        cpw_cache_update_needed = False
+        card_playedwiths = cache.get(cpw_cache_key, dict())
         formats = Format.cards.current_legal_formats(cards[0])
         card_format_details = {}
+
+        # this is the amount of time that we are going to look back for decks in formats
+        two_years_ago = datetime.now() - timedelta(days=2 * 365)
+
         for ff in formats:
             dets = {}
             card_format_details[ff.format] = dets
@@ -576,6 +583,13 @@ def detail(request, multiverseid=None, slug=None):
             elif ff.formatname == 'Commander':
                 edh_fcstat = FormatCardStat.objects.filter(physicalcard=cards[0].basecard.physicalcard, format=ff).first()
                 card_stats.append(edh_fcstat)
+            if ff.formatname not in card_playedwiths:
+                card_playedwiths[
+                    ff.formatname] = cards[0].basecard.physicalcard.find_played_with_cards(
+                    Format.objects.filter(
+                        formatname=ff.formatname,
+                        start_date__gte=two_years_ago))
+                cpw_cache_update_needed = True
             dets['rating'] = cards[0].basecard.physicalcard.cardrating_set.filter(test_id=1, format_id=ff.id).first()
             dets['wincount'] = Battle.objects.filter(winner_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).count()
             dets['losecount'] = Battle.objects.filter(loser_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).count()
@@ -597,6 +611,9 @@ def detail(request, multiverseid=None, slug=None):
                 Card.objects.filter(
                     basecard__physicalcard__id=battle['winner_pcard_id']).order_by('-multiverseid').first() for battle in lost_battles]
 
+        if cpw_cache_update_needed:
+            cache.set(cpw_cache_key, card_playedwiths, 60 * 60 * 24)
+
         similars = cards[0].basecard.physicalcard.find_similar_cards()
 
         associations = Association.objects.filter(associationcards=cards[0].basecard.physicalcard)
@@ -615,6 +632,7 @@ def detail(request, multiverseid=None, slug=None):
                                                          'mod_card_stat': mod_fcstat,
                                                          'std_card_stat': std_fcstat,
                                                          'edh_card_stat': edh_fcstat,
+                                                         'card_playedwiths': card_playedwiths,
                                                          'card_stats': card_stats,
                                                          #'rules_text_html': mark_safe(card.basecard.rules_text),
                                                          #'flavor_text_html': mark_safe(card.flavor_text),
