@@ -226,7 +226,7 @@ function drawCardStatsChart(formatname) {
                 <div class="panel-heading" role="tab" id="heading-{{details.format.formatname}}-meta">
                   <h5 class="panel-title">
                     <a data-toggle="collapse" data-parent="#accordion-{{details.format.formatname}}" href="#collapse-{{details.format.formatname}}-meta" aria-expanded="false" aria-controls="collapse-{{details.format.formatname}}-meta">
-                      <i class="indicator glyphicon glyphicon-menu-right pull-left" style="font-size: 90%; padding-right: 5px;"></i> Metagame Statistics
+                      <i class="indicator glyphicon glyphicon-menu-right pull-left" style="font-size: 90%; padding-right: 5px;"></i> Metagame Statistics 
                     </a> {% if card_stat.is_staple %} <span class="staple-{{details.format.formatname|lower}}">{{details.format.formatname}} Staple</span> {% endif %}
                   </h5>
                 </div>
@@ -281,6 +281,41 @@ function drawCardStatsChart(formatname) {
               </div>
             </div>
           </div>
+          {% for card_playedwith_key,card_playedwith in card_playedwiths.items %}
+            {% if card_playedwith_key == details.format.formatname %}
+              <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="heading-{{details.format.formatname}}-playedwith">
+                  <h5 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion-{{details.format.formatname}}" href="#collapse-{{details.format.formatname}}-playedwith" aria-expanded="false" aria-controls="collapse-{{details.format.formatname}}-playedwith">
+                      <i class="indicator glyphicon glyphicon-menu-right pull-left" style="font-size: 90%; padding-right: 5px;"></i> Cards commonly played with {{physicalCardTitle}} in {{details.format.formatname}}
+                    </a>
+                  </h5>
+                </div>
+                <div id="collapse-{{details.format.formatname}}-playedwith" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{details.format.formatname}}-playedwith">
+                  <div class="panel-body">
+                    <div id="playedwith-{{details.format.formatname}}"></div>
+                      <div class="row">
+                        <div class="col-xs-12">
+                          <div class="association-block">
+                            <div class="row">
+                              {% for cpwpc in card_playedwith %}
+                                <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
+                                  <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}"><img class="list_cardimage" src="{{ cpwpc.img_url }}" alt=" cpwpc.basecard.name }}"/></a></div>
+                                  <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}">{{cpwpc.basecard.name}}</a></div>
+                                </div>
+                              {% empty %}
+                                <div class="col-xs-12">{{physicalCardTitle}} does not show up in any decks in {{details.format.formatname}}.</div>
+                              {% endfor %}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {%endif%}
+          {%endfor%}
         </div>
       </div>
     </div>

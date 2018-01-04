@@ -13,7 +13,7 @@ from __future__ import unicode_literals
 import sys
 from django.conf import settings
 from django.db import models
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
@@ -387,6 +387,31 @@ class PhysicalCard(models.Model):
                 result.append(card)
             except:
                 pass
+        return result
+
+    def find_played_with_cards(self, format_list, max_results=18):
+        ''' Returns a list of Card objects for cards that get played in the formats that are specified in the list. For instance, the
+            format_list could be all of the formats that have the formatname 'Standard'.
+        '''
+        format_ids = list()
+        for f in format_list:
+            if isinstance(f, Format):
+                format_ids.append(f.id)
+            else:
+                format_ids.append(f)
+        format_ids_str = ','.join(str(i) for i in format_ids)
+        query_str = u'''SELECT bc.physicalcard_id, SUM(dc.cardcount) AS tcc FROM deck JOIN deckcard AS dc ON deck.id = dc.deck_id JOIN basecard AS bc ON bc.physicalcard_id = dc.physicalcard_id AND bc.cardposition IN ('{}','{}','{}') JOIN deck AS jdeck ON deck.id = jdeck.id JOIN deckcard AS jdc ON jdc.deck_id = jdeck.id AND jdc.physicalcard_id = {} WHERE  dc.physicalcard_id != {} AND deck.format_id IN ({}) GROUP BY bc.physicalcard_id ORDER BY tcc DESC LIMIT {}'''.format(
+            BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP, str(
+                self.id), str(
+                self.id), format_ids_str, str(max_results))
+        #sys.stderr.write("Q: {}\n".format(query_str))
+        cursor = connection.cursor()
+        cursor.execute(query_str)
+        q_results = cursor.fetchall()
+        pcard_ids = [row[0] for row in q_results]
+        result = [PhysicalCard.objects.get(pk=pc_id).get_latest_card() for pc_id in pcard_ids]
+        #sys.stderr.write("R: {}\n".format("\n".join(str(i) for i in result)))
+
         return result
 
     class Meta:

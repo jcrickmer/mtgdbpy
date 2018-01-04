@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand, CommandError
+from django.db.utils import IntegrityError
 from decks.models import Deck
 from decks.models import Tournament
 from decks.models import TournamentDeck
@@ -45,6 +46,13 @@ class Command(BaseCommand):
                             dest='inputdir',
                             default='/var/deckfecth/json',
                             help='The directory to read deck_* and tournament_* json files from.')
+        parser.add_argument(
+            '-d',
+            '--deckmetaonly',
+            dest='deck_meta_only',
+            action='store_true',
+            default=False,
+            help='If it is an update, only update the deck and not the card list. If it is a create, the card list is still created.')
         parser.add_argument('-a', '--all',
                             dest='only_newer',
                             action='store_false',
@@ -55,6 +63,7 @@ class Command(BaseCommand):
         #logger = logging.getLogger(__name__)
         # the first (and only) arg should be a filename
         directory = options['inputdir']
+        deck_meta_only = options['deck_meta_only']
         self.only_newer = options['only_newer']
 
         self.start_time = datetime.now()
@@ -189,7 +198,8 @@ class Command(BaseCommand):
 
                     # Let's see if we already have a deck for this.
                     deck = None
-
+                    sys.stdout.write("Deck: {} - {} by {}\n".format(jblob['url'], jblob['name'], jblob['author']))
+                    is_create = False
                     # Should we skip writing this deck to the database?
                     skip_deck = False
 
@@ -203,6 +213,8 @@ class Command(BaseCommand):
                         deck = Deck.objects.filter(url=jblob['url']).first()
                     if deck is None:
                         # no deck, so let's add it!
+                        sys.stdout.write("  creating...\n")
+                        is_create = True
                         deck = Deck(url=jblob['url'], visibility=Deck.HIDDEN)
                         deck.name = jblob['name']
                         deck.authorname = jblob['author']
@@ -214,18 +226,25 @@ class Command(BaseCommand):
                                     formatname=jblob['deck_format'], start_date__lte=self.isodate(
                                         jblob['tournament_date']), end_date__gte=self.isodate(
                                         jblob['tournament_date'])).first()
-                                deck.format = db_format
+                                deck.format = db_format_q
                             except ValueError:
                                 # Looks like we cannot find a valid format because we don't have a real
                                 # deck_format or a real tournament_date.
-                                sys.stdout.write("Deck: skipped '{}' because a valid format cannot be found\n".format(jblob['name']))
+                                sys.stdout.write(
+                                    "  skipped because a valid format cannot be found for '{}' on date '{}'\n".format(
+                                        jblob['deck_format'],
+                                        jblob['tournament_date']))
                                 deck = None
                                 pass
 
                         if deck is not None:
-                            deck.save()
-                            sys.stdout.write("Deck: created {}\n".format(jblob['name']))
-                            deck = Deck.objects.filter(url=jblob['url']).first()  # reload
+                            try:
+                                deck.save()
+                                sys.stdout.write("  Created deck {}!\n".format(str(deck.id)))
+                                deck = Deck.objects.filter(url=jblob['url']).first()  # reload
+                            except IntegrityError as ie:
+                                sys.stdout.write("  Could not create deck! Integrity error: {}\n".format(str(ie)))
+                                deck = None
 
                     else:
                         if filetime > deck.updated_at or not self.only_newer:
@@ -234,33 +253,53 @@ class Command(BaseCommand):
                             deck.name = jblob['name']
                             deck.authorname = jblob['author']
                             deck.url = jblob['url']
+                            deck.format = None
+                            try:
+                                db_format_q = Format.objects.filter(
+                                    formatname=jblob['deck_format'], start_date__lte=self.isodate(
+                                        jblob['tournament_date']), end_date__gte=self.isodate(
+                                        jblob['tournament_date'])).first()
+                                deck.format = db_format_q
+                            except ValueError as ve:
+                                # Looks like we cannot find a valid format because we don't have a real
+                                # deck_format or a real tournament_date.
+                                sys.stdout.write(
+                                    "  updating '{}' even though could not find a valid format for '{}' on date {} - {}\n".format(
+                                        jblob['name'],
+                                        jblob['deck_format'],
+                                        jblob['tournament_date'],
+                                        str(ve)))
+                                deck.format = None
                             deck.save()
-                            sys.stdout.write("Deck: updated {}\n".format(jblob['name']))
+                            sys.stdout.write("  Updated!\n")
                         else:
                             skip_deck = True
-                            sys.stdout.write("Deck: not newer... skipped {}\n".format(jblob['name']))
+                            sys.stdout.write("  not newer... skipped {}\n".format(jblob['url']))
 
                     #sys.stdout.write("Deck: {} (db card count {})\n".format(jblob['name'], deck.get_card_count()))
                     #sys.stdout.write("  URL: {}\n".format(jblob['url']))
 
                     if deck is not None and not skip_deck:
                         # now we have to add cards to the deck...
-                        cardtext = '\n'.join(jblob['mainboard_cards'])
-                        if 'sideboard_cards' in jblob and jblob['sideboard_cards'] is not None and len(jblob['sideboard_cards']) > 0:
-                            cardtext = cardtext + '\nSB:' + '\nSB: '.join(jblob['sideboard_cards'])
-                        #sys.stdout.write(cardtext + "\n")
-                        # REVISIT - just updating them all for now. Shouldn't hurt since
-                        # set_cards_from_text deletes all of the current card associations, right?
-                        if deck.get_card_count() == 0 or True:
-                            try:
-                                deck.set_cards_from_text(cardtext)
-                            except Deck.CardsNotFoundException as cnfe:
-                                for g in cnfe.cnfes:
-                                    try:
-                                        sys.stdout.write("ERROR: Could not find card " + str(g.text) + " in file {}\n".format(filename))
-                                    except UnicodeEncodeError:
-                                        sys.stdout.write(
-                                            "ERROR: Could not find card BUT I CAN'T TELL YOU ABOUT IT BECAUSE UNICODE IN PYTHON SUCKS in {}\n".format(filename))
+                        if is_create or not deck_meta_only:
+                            cardtext = '\n'.join(jblob['mainboard_cards'])
+                            if 'sideboard_cards' in jblob and jblob['sideboard_cards'] is not None and len(jblob['sideboard_cards']) > 0:
+                                cardtext = cardtext + '\nSB:' + '\nSB: '.join(jblob['sideboard_cards'])
+                            #sys.stdout.write(cardtext + "\n")
+                            # REVISIT - just updating them all for now. Shouldn't hurt since
+                            # set_cards_from_text deletes all of the current card associations, right?
+                            if deck.get_card_count() == 0 or True:
+                                try:
+                                    deck.set_cards_from_text(cardtext)
+                                except Deck.CardsNotFoundException as cnfe:
+                                    for g in cnfe.cnfes:
+                                        try:
+                                            sys.stdout.write("  ERROR: Could not find card " +
+                                                             str(g.text) +
+                                                             " in file {}\n".format(filename))
+                                        except UnicodeEncodeError:
+                                            sys.stdout.write(
+                                                "  ERROR: Could not find card BUT I CAN'T TELL YOU ABOUT IT BECAUSE UNICODE IN PYTHON SUCKS in {}\n".format(filename))
 
                         if tourna is not None and tourna.name is not None and tourna.name.lower().find('test deck') < 0:
                             # Now we will associate the deck to a tournament
@@ -271,14 +310,14 @@ class Command(BaseCommand):
                             if td is None:
                                 td = TournamentDeck(deck=deck, tournament=tourna, place=place)
                                 td.save()
-                                sys.stdout.write("TournamentDeck: created for {}\n".format(jblob['name']))
+                                sys.stdout.write("  TournamentDeck: created for {}\n".format(jblob['name']))
                                 td = TournamentDeck.objects.filter(deck=deck, tournament=tourna).first()  # RELOAD
                             else:
                                 td.place = place
                                 td.save()
-                                sys.stdout.write("TournamentDeck: updated for {}\n".format(jblob['name']))
+                                sys.stdout.write("  TournamentDeck: updated for {}\n".format(jblob['name']))
                         else:
-                            sys.stdout.write("Deck: skipped no valid tournament {}\n".format(jblob['name']))
+                            sys.stdout.write("  TournamentDeck: skipped no valid tournament {}\n".format(jblob['name']))
         sema = open(join(directory, 'last_complete.semaphore'), 'w')
         sema.write(str(self.start_time))
         sema.write("\n")
