@@ -210,12 +210,22 @@ class Command(BaseCommand):
                         deck = Deck.objects.filter(url__icontains='deckid={}'.format(dukey_m.group(1))).first()
                         #sys.stdout.write("** MATCHED: deck is {}\n".format(str(deck)))
                     else:
-                        deck = Deck.objects.filter(url=jblob['url']).first()
+                        if 'page_part' in jblob:
+                            if jblob['page_part'] == '0' or jblob['page_part'] == 0:
+                                deck = Deck.objects.filter(url=jblob['url']).first()
+                                if deck is None:
+                                    deck = Deck.objects.filter(url='{}#deck{}'.format(jblob['url'], jblob['page_part'])).first()
+                            else:
+                                deck = Deck.objects.filter(url='{}#deck{}'.format(jblob['url'], jblob['page_part'])).first()
+                        else:
+                            deck = Deck.objects.filter(url=jblob['url']).first()
                     if deck is None:
                         # no deck, so let's add it!
                         sys.stdout.write("  creating...\n")
                         is_create = True
                         deck = Deck(url=jblob['url'], visibility=Deck.HIDDEN)
+                        if 'page_part' in jblob:
+                            deck.url = '{}#deck{}'.format(jblob['url'], jblob['page_part'])
                         deck.name = jblob['name']
                         deck.authorname = jblob['author']
                         if tourna is not None and tourna.format is not None:
@@ -241,7 +251,7 @@ class Command(BaseCommand):
                             try:
                                 deck.save()
                                 sys.stdout.write("  Created deck {}!\n".format(str(deck.id)))
-                                deck = Deck.objects.filter(url=jblob['url']).first()  # reload
+                                deck = Deck.objects.get(pk=deck.id)  # reload
                             except IntegrityError as ie:
                                 sys.stdout.write("  Could not create deck! Integrity error: {}\n".format(str(ie)))
                                 deck = None
@@ -285,6 +295,8 @@ class Command(BaseCommand):
                             cardtext = '\n'.join(jblob['mainboard_cards'])
                             if 'sideboard_cards' in jblob and jblob['sideboard_cards'] is not None and len(jblob['sideboard_cards']) > 0:
                                 cardtext = cardtext + '\nSB:' + '\nSB: '.join(jblob['sideboard_cards'])
+                            if 'commandzone_cards' in jblob and jblob['commandzone_cards'] is not None and len(jblob['commandzone_cards']) > 0:
+                                cardtext = cardtext + '\nCZ:' + '\nCZ: '.join(jblob['commandzone_cards'])
                             #sys.stdout.write(cardtext + "\n")
                             # REVISIT - just updating them all for now. Shouldn't hurt since
                             # set_cards_from_text deletes all of the current card associations, right?
