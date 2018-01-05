@@ -69,7 +69,7 @@ class Command(BaseCommand):
         self.start_time = datetime.now()
 
         if not os.access(directory, os.R_OK):
-            sys.stderr.write("Cannot read directory '{}'.\n".format(filename))
+            sys.stderr.write("Cannot read directory '{}'.\n".format(directory))
             return
 
         # let's figure out the last time we ran.
@@ -298,7 +298,8 @@ class Command(BaseCommand):
                             cardtext = '\n'.join(jblob['mainboard_cards'])
                             if 'sideboard_cards' in jblob and jblob['sideboard_cards'] is not None and len(jblob['sideboard_cards']) > 0:
                                 cardtext = cardtext + '\nSB:' + '\nSB: '.join(jblob['sideboard_cards'])
-                            if 'commandzone_cards' in jblob and jblob['commandzone_cards'] is not None and len(jblob['commandzone_cards']) > 0:
+                            if 'commandzone_cards' in jblob and jblob[
+                                    'commandzone_cards'] is not None and len(jblob['commandzone_cards']) > 0:
                                 cardtext = cardtext + '\nCZ:' + '\nCZ: '.join(jblob['commandzone_cards'])
                             #sys.stdout.write(cardtext + "\n")
                             # REVISIT - just updating them all for now. Shouldn't hurt since
