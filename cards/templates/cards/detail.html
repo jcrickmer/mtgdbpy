@@ -21,8 +21,7 @@ $(function() {
 {% endblock %}
 {% block content %}
 {% load cache %}
-{% cache 3600 card_details_html request_mvid %}
-{% comment %} note that this cache will be invalidated by cards.views.battle {% endcomment %}
+{% cache PAGE_CACHE_TIME card_details_html request_mvid %}
 <script type="text/javascript">
 // Load the Visualization API and the piechart package.
 //google.load('visualization', '1.1', {'packages':['line']});
@@ -409,3 +408,4 @@ $('.panel-group').on('shown.bs.collapse', toggleChevron);
 <div style="margin-top: 20px;" class="row"><div class="col-xs-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_mvid}}" target="_blank">View on Gatherer</a></div></div>
 {% endcache %}
 {% endblock %}
+

@@ -154,7 +154,7 @@ class Deck(models.Model):
     # a "+" or a "/". This will give us the first card in a double card like
     # Wear // Tear
     req = re.compile(r'^([SsCc][BbZz]:\s*)?((\d+)x?\s+)?([^\+/]+)', re.UNICODE)
-        
+
     def set_cards_from_text(self, cardlist):
         '''Go through each line and try to determine what the card is
         and how many should be present. If there are no errors, then
@@ -177,8 +177,8 @@ class Deck(models.Model):
                 # Let's do some quick clean-up of the card name...
                 card_name = line_match.group(4).strip()
                 card_name = self._fix_bad_spelling(card_name)
-                pc_cache_key = u'cardname_' + card_name.replace(' ','_')
-                pc = cache.get_or_set(pc_cache_key, PhysicalCard.objects.filter(basecard__name__iexact=card_name).first(), 60*60*24)
+                pc_cache_key = u'cardname_' + card_name.replace(' ', '_')
+                pc = cache.get_or_set(pc_cache_key, PhysicalCard.objects.filter(basecard__name__iexact=card_name).first(), 60 * 60 * 24)
                 if pc is not None:
                     # winner!
                     board_t = DeckCard.MAIN

@@ -4,6 +4,8 @@
 {% block title %}{{formatname}} Format Statistics{% endblock %}
 
 {% block content %}
+{% load cache %}
+{% cache 900 card_formatstats_html formatname %}
 <style>
 .deckdata {
 background-color: #a2b1d3;
@@ -86,4 +88,5 @@ width: 95px;
 </tr>
 {% endfor %}
 </table>
+{% endcache %}
 {% endblock %}
