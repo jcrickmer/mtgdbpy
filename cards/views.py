@@ -45,7 +45,7 @@ import time
 
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
- 
+
 from cards.view_utils import invalidate_template_fragment
 
 # import the logging library
@@ -447,6 +447,7 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
 
 
 def detail(request, multiverseid=None, slug=None):
+    PAGE_CACHE_TIME = 3600
     logger = logging.getLogger(__name__)
     cards = []
     primary_basecard_id = None
@@ -476,7 +477,7 @@ def detail(request, multiverseid=None, slug=None):
     # Let's see if the slub matching my filing name
     if slug is not None:
         slugws = slug.lower().replace('-', ' ')
-        logger.debug("slug is now \"" + slugws + "\"")
+        #logger.debug("slug is now \"" + slugws + "\"")
         amatch = False
         for acard in cards:
             if amatch:
@@ -494,6 +495,26 @@ def detail(request, multiverseid=None, slug=None):
             permanent=True,
             multiverseid=multiverseid,
             slug=newslug)
+
+    # ASSERT - if we have gotten this far, then we can just rely on the page in cache, if it is in cache
+    full_page_cache_key = make_template_fragment_key('card_details_html', [multiverseid, ])
+    from_cache = False
+    if cache.get(full_page_cache_key) is not None:
+        sys.stderr.write("details.html: getting cached page for key {}\n".format(full_page_cache_key))
+        # sys.stderr.write(cache.get(full_page_cache_key))
+        # sys.stderr.write("\n")
+        # we can skip most of the logic now - there are only a few variables we need to put into context
+        from_cache = True
+        cached_context = {'PAGE_CACHE_TIME': PAGE_CACHE_TIME,
+                          'request_mvid': multiverseid,
+                          'mod_card_stat': cache.get('fcs_pc-{}_f-{}'.format(cards[0].basecard.physicalcard.id, 'Modern'), {'is_staple': False}),
+                          'std_card_stat': cache.get('fcs_pc-{}_f-{}'.format(cards[0].basecard.physicalcard.id, 'Standard'), {'is_staple': False}),
+                          'edh_card_stat': cache.get('fcs_pc-{}_f-{}'.format(cards[0].basecard.physicalcard.id, 'Commander'), {'is_staple': False}),
+                          'from_cache': from_cache,
+                          'physicalCardTitle': cards[0].basecard.physicalcard.get_card_name(),
+                          }
+        response = render(request, 'cards/detail.html', cached_context)
+        return response
 
     backCards = []
     if len(cards) > 0:
@@ -578,13 +599,34 @@ def detail(request, multiverseid=None, slug=None):
             card_format_details[ff.format] = dets
             dets['format'] = ff
             if ff.formatname == 'Standard':
-                std_fcstat = FormatCardStat.objects.filter(physicalcard=cards[0].basecard.physicalcard, format=ff).first()
+                std_fcstat = cache.get_or_set(
+                    'fcs_pc-{}_f-{}'.format(
+                        cards[0].basecard.physicalcard.id,
+                        ff.formatname),
+                    FormatCardStat.objects.filter(
+                        physicalcard=cards[0].basecard.physicalcard,
+                        format=ff).first(),
+                    PAGE_CACHE_TIME)
                 card_stats.append(std_fcstat)
             elif ff.formatname == 'Modern':
-                mod_fcstat = FormatCardStat.objects.filter(physicalcard=cards[0].basecard.physicalcard, format=ff).first()
+                mod_fcstat = cache.get_or_set(
+                    'fcs_pc-{}_f-{}'.format(
+                        cards[0].basecard.physicalcard.id,
+                        ff.formatname),
+                    FormatCardStat.objects.filter(
+                        physicalcard=cards[0].basecard.physicalcard,
+                        format=ff).first(),
+                    PAGE_CACHE_TIME)
                 card_stats.append(mod_fcstat)
             elif ff.formatname == 'Commander':
-                edh_fcstat = FormatCardStat.objects.filter(physicalcard=cards[0].basecard.physicalcard, format=ff).first()
+                edh_fcstat = cache.get_or_set(
+                    'fcs_pc-{}_f-{}'.format(
+                        cards[0].basecard.physicalcard.id,
+                        ff.formatname),
+                    FormatCardStat.objects.filter(
+                        physicalcard=cards[0].basecard.physicalcard,
+                        format=ff).first(),
+                    PAGE_CACHE_TIME)
                 card_stats.append(edh_fcstat)
             if ff.formatname not in card_playedwiths:
                 card_playedwiths[
@@ -621,7 +663,8 @@ def detail(request, multiverseid=None, slug=None):
 
         associations = Association.objects.filter(associationcards=cards[0].basecard.physicalcard)
 
-        response = render(request, 'cards/detail.html', {'request_mvid': multiverseid,
+        response = render(request, 'cards/detail.html', {'PAGE_CACHE_TIME': PAGE_CACHE_TIME,
+                                                         'request_mvid': multiverseid,
                                                          'primary_basecard_id': primary_basecard_id,
                                                          'cards': card_list,
                                                          'keywords': cards[0].basecard.physicalcard.cardkeyword_set.all().order_by('-kwscore'),
@@ -629,6 +672,7 @@ def detail(request, multiverseid=None, slug=None):
                                                          'other_versions': twinCards,
                                                          'physicalCardTitle': cards[0].basecard.physicalcard.get_card_name(),
                                                          'card_format_details': card_format_details,
+                                                         'from_cache': from_cache,
                                                          'physicalcard': cards[0].basecard.physicalcard,
                                                          'associations': associations,
                                                          'rulings': cards[0].basecard.get_rulings(),
@@ -739,6 +783,14 @@ def formatstats(request, formatname="modern"):
     except IndexError:
         raise Http404
     context['formatname'] = top_format.formatname
+
+    # leverage full page cache if it is available
+    full_page_cache_key = make_template_fragment_key('card_formatstats_html', [context['formatname'], ])
+    from_cache = False
+    if cache.get(full_page_cache_key) is not None:
+        response = render(request, 'cards/formatstats.html', context)
+        return response
+
     up_raw_sql = '''
 SELECT s1.physicalcard_id AS id,
        100 * s2.percentage_of_all_cards AS prev_percentage,
@@ -1113,15 +1165,15 @@ def updateRatings(battle):
         # this commented out section was just for testing/debugging
         #cache_key = make_template_fragment_key(temp_frag_name, vary_on=[icard.multiverseid,])
         #i_have_it = cache.get(cache_key) is not None
-        #if i_have_it:
+        # if i_have_it:
         #    sys.stderr.write("Battle cache invalidation - key '{}' is there\n".format(cache_key))
-        #else:
+        # else:
         #    sys.stderr.write("Battle cache invalidation - key '{}' is NOT there\n".format(cache_key))
         invalidate_template_fragment(temp_frag_name, icard.multiverseid)
     icards = Card.objects.filter(basecard__physicalcard=battle.loser_pcard)
     for icard in icards:
         invalidate_template_fragment(temp_frag_name, icard.multiverseid)
-    
+
     return
 
 
