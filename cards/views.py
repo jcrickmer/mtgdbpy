@@ -506,6 +506,7 @@ def detail(request, multiverseid=None, slug=None):
         # we can skip most of the logic now - there are only a few variables we need to put into context
         from_cache = True
         cached_context = {'PAGE_CACHE_TIME': PAGE_CACHE_TIME,
+                          'physicalcard':cards[0].basecard.physicalcard,
                           'request_mvid': multiverseid,
                           'mod_card_stat': cache.get('fcs_pc-{}_f-{}'.format(cards[0].basecard.physicalcard.id, 'Modern'), {'is_staple': False}),
                           'std_card_stat': cache.get('fcs_pc-{}_f-{}'.format(cards[0].basecard.physicalcard.id, 'Standard'), {'is_staple': False}),

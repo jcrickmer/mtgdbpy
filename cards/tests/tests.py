@@ -397,7 +397,96 @@ class CardTestCase(TestCase):
         startbc = BaseCard.objects.filter(name='Insectile Aberration').first()
         self.assertIsNotNone(startbc)
         self.assertFalse(startbc.is_land())
+        
+    def test_card_get_first_0(self):
+        start_card = Card.objects.filter(basecard__cardposition=BaseCard.FRONT, basecard__name='Delver of Secrets').first()
+        self.assertIsNotNone(start_card)
+        start_id = start_card.id
+        start_mvid = start_card.multiverseid
+        start_name = start_card.basecard.name
+        result_card = start_card.get_first_card()
+        self.assertEqual(start_id, result_card.id)
+        self.assertEqual(start_mvid, result_card.multiverseid)
+        self.assertEqual(start_name, result_card.basecard.name)
 
+    def test_card_get_first_1(self):
+        start_card = Card.objects.filter(basecard__cardposition=BaseCard.FRONT, basecard__name='Plains').first()
+        self.assertIsNotNone(start_card)
+        start_id = start_card.id
+        start_mvid = start_card.multiverseid
+        start_name = start_card.basecard.name
+        result_card = start_card.get_first_card()
+        self.assertEqual(start_id, result_card.id)
+        self.assertEqual(start_mvid, result_card.multiverseid)
+        self.assertEqual(start_name, result_card.basecard.name)
+
+    def test_card_get_first_2(self):
+        start_card = Card.objects.filter(basecard__cardposition=BaseCard.BACK, basecard__name='Insectile Aberration').first()
+        self.assertIsNotNone(start_card)
+        start_id = start_card.id
+        start_mvid = start_card.multiverseid
+        start_name = start_card.basecard.name
+        result_card = start_card.get_first_card()
+        self.assertNotEqual(start_id, result_card.id)
+        self.assertNotEqual(start_mvid, result_card.multiverseid)
+        self.assertNotEqual(start_name, result_card.basecard.name)
+        self.assertEqual(u'Delver of Secrets', result_card.basecard.name)
+
+    def test_card_get_second_0(self):
+        start_card = Card.objects.filter(basecard__cardposition=BaseCard.FRONT, basecard__name='Delver of Secrets').first()
+        self.assertIsNotNone(start_card)
+        start_id = start_card.id
+        start_mvid = start_card.multiverseid
+        start_name = start_card.basecard.name
+        result_card = start_card.get_second_card()
+        self.assertNotEqual(start_id, result_card.id)
+        self.assertNotEqual(start_mvid, result_card.multiverseid)
+        self.assertNotEqual(start_name, result_card.basecard.name)
+        self.assertEqual(u'Insectile Aberration', result_card.basecard.name)
+
+    def test_card_get_second_1(self):
+        start_card = Card.objects.filter(basecard__cardposition=BaseCard.FRONT, basecard__name='Plains').first()
+        self.assertIsNotNone(start_card)
+        result_card = start_card.get_second_card()
+        self.assertIsNone(result_card)
+
+    def test_card_get_second_2(self):
+        start_card = Card.objects.filter(basecard__cardposition=BaseCard.BACK, basecard__name='Insectile Aberration').first()
+        self.assertIsNotNone(start_card)
+        start_id = start_card.id
+        start_mvid = start_card.multiverseid
+        start_name = start_card.basecard.name
+        result_card = start_card.get_second_card()
+        self.assertEqual(start_id, result_card.id)
+        self.assertEqual(start_mvid, result_card.multiverseid)
+        self.assertEqual(start_name, result_card.basecard.name)
+        
+    def test_card_get_all_0(self):
+        start_card = Card.objects.filter(basecard__cardposition=BaseCard.FRONT, basecard__name='Delver of Secrets').first()
+        self.assertIsNotNone(start_card)
+        result = start_card.get_all_cards()
+        self.assertEqual(2, len(result))
+        self.assertEqual(u'Delver of Secrets', result[0].basecard.name)
+        self.assertEqual(u'Insectile Aberration', result[1].basecard.name)
+        self.assertEqual(result[0].expansionset_id, result[1].expansionset_id)
+        
+    def test_card_get_all_1(self):
+        start_card = Card.objects.filter(basecard__cardposition=BaseCard.BACK, basecard__name='Insectile Aberration').first()
+        self.assertIsNotNone(start_card)
+        result = start_card.get_all_cards()
+        self.assertEqual(2, len(result))
+        self.assertEqual(u'Delver of Secrets', result[0].basecard.name)
+        self.assertEqual(u'Insectile Aberration', result[1].basecard.name)
+        self.assertEqual(result[0].expansionset_id, result[1].expansionset_id)
+
+    def test_card_get_all_2(self):
+        start_card = Card.objects.filter(basecard__cardposition=BaseCard.FRONT, basecard__name='Swamp').first()
+        self.assertIsNotNone(start_card)
+        result = start_card.get_all_cards()
+        self.assertEqual(2, len(result))
+        self.assertEqual(u'Swamp', result[0].basecard.name)
+        self.assertIsNone(result[1])
+        
 
 class ViewsTestCase(TestCase):
 

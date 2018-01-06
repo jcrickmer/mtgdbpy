@@ -899,7 +899,7 @@ class CardManager(models.Manager):
         sql_s = sql_s + ', '.join(str(str(arg.sqlname()) + ' ' + arg.direction) for arg in sortds)
 
         logger = logging.getLogger(__name__)
-        #logger.debug("Card Search SQL: " + sql_s)
+        logger.debug("Card Search SQL: " + sql_s)
         #timer_start = time.time()
         cards = self.raw(sql_s, params=safelocker)
         #logger.debug("Card Search time: {}".format(time.time() - timer_start))
@@ -1071,6 +1071,30 @@ class Card(models.Model):
     def url_slug(self):
         return self.basecard.filing_name.replace(' ', '-').lower()
 
+    def get_first_card(self):
+        """
+        Returns the Front, Up, or Left Card for this card. It could
+        just be this current Card object, or it might be its pair. Will
+        not return None.
+        """
+        result = self
+        if self.basecard.cardposition not in (BaseCard.FRONT, BaseCard.UP, BaseCard.LEFT):
+            result = Card.objects.filter(basecard__physicalcard=self.basecard.physicalcard, expansionset_id=self.expansionset.id, basecard__cardposition__in=[BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP]).first()
+        return result
+    
+    def get_second_card(self):
+        """
+        Returns the Back, Down, or Right Card for this card. It could
+        just be this current Card object, or it might be its pair. Will
+        return None if there is no second Card.
+        """
+        result = None
+        if self.basecard.cardposition in (BaseCard.FRONT, BaseCard.UP, BaseCard.LEFT):
+            result = Card.objects.filter(basecard__physicalcard=self.basecard.physicalcard, expansionset_id=self.expansionset.id, basecard__cardposition__in=[BaseCard.BACK, BaseCard.RIGHT, BaseCard.DOWN]).first()
+        else:
+            result = self
+        return result
+    
     def get_double_faced_card(self):
         """
         Return the double-faced card for Innastrad (and similiar)
@@ -1095,6 +1119,14 @@ class Card(models.Model):
             result = None
         return result
 
+    def get_all_cards(self):
+        """
+        Returns a tuple of all of the cards, in order.
+        """
+        first = self.get_first_card()
+        second = self.get_second_card()
+        return (first, second)
+    
     class Meta:
         managed = True
         db_table = 'card'
