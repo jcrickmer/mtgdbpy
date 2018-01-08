@@ -540,7 +540,7 @@ class FormatCardStat(models.Model):
         self.deck_count = 0
         self.occurence_count = 0
         self.average_card_count_in_deck = 0.0
-        if self.formatstat is not None and self.formatstat.tournamentdeck_count > 0:
+        if self.formatstat is not None and float(self.formatstat.tournamentdeck_count) > 0.0:
             cstats = DeckCard.objects.filter(deck__tournaments__id__in=self.formatstat.qualified_tourn_ids,
                                              physicalcard=self.physicalcard).aggregate(Count('deck', distinct=True),
                                                                                        Sum('cardcount'),
@@ -548,7 +548,12 @@ class FormatCardStat(models.Model):
             self.deck_count = cstats['deck__count'] or 0
             self.occurence_count = cstats['cardcount__sum'] or 0
             self.average_card_count_in_deck = cstats['cardcount__avg'] or 0.0
-            self.percentage_of_all_cards = float(self.occurence_count) / float(self.formatstat.tournamentdeckcard_count)
+            try:
+                self.percentage_of_all_cards = float(self.occurence_count) / float(self.formatstat.tournamentdeckcard_count)
+            except:
+                self.percentage_of_all_cards = 0.0
+                # getting some DivByZero exceptions - not sure how
+                pass
         return
 
     def calc_average_card_count_in_deck(self):
