@@ -36,6 +36,7 @@ from cards.models import BattleTest
 from cards.models import CardRating
 from cards.models import Association
 from cards.models import AssociationCard
+from cards.models import CardBattleStats
 
 from decks.models import FormatCardStat, FormatStat
 
@@ -446,246 +447,118 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
     return httpResp
 
 
+def detail_by_slug(request, slug=None):
+    if slug is not None:
+        slugws = slug.lower().replace('-', ' ')
+        tcards = Card.objects.filter(basecard__filing_name=slugws).order_by('-multiverseid')
+        if len(tcards) > 0:
+            if request.is_ajax():
+                return detail_ajax(request, tcards)
+            else:
+                return redirect('cards:detail', permanent=True, multiverseid=tcards[0].multiverseid, slug=slug)
+    raise Http404
+
+
+def detail_by_multiverseid(request, multiverseid=None):
+    if multiverseid is not None:
+        try:
+            int(multiverseid)
+        except:
+            raise Http404
+        tcards = Card.objects.filter(multiverseid=multiverseid).order_by('card_number')
+        if len(tcards) > 0:
+            if request.is_ajax():
+                return detail_ajax(request, tcards)
+            else:
+                return redirect('cards:detail', permanent=True, multiverseid=tcards[0].multiverseid, slug=tcards[0].url_slug())
+    raise Http404
+
+
 def detail(request, multiverseid=None, slug=None):
     PAGE_CACHE_TIME = 3600
     logger = logging.getLogger(__name__)
-    cards = []
-    primary_basecard_id = None
+    tcard = None
     try:
-        if multiverseid is not None:
-            cards = Card.objects.filter(
-                multiverseid=multiverseid).order_by('card_number')
-            primary_basecard_id = cards[0].basecard.id
-        elif slug is not None:
-            slugws = slug.lower().replace('-', ' ')
-            cards = Card.objects.filter(
-                basecard__filing_name=slugws).order_by('card_number')
-            if len(cards) > 0:
-                multiverseid = cards[0].multiverseid
-                return redirect(
-                    'cards:detail',
-                    permanent=True,
-                    multiverseid=multiverseid,
-                    slug=slug)
-            else:
-                raise Http404
-        else:
-            raise Http404
-    except Card.DoesNotExist:
+        tcard = Card.objects.filter(
+            multiverseid=multiverseid,
+            basecard__filing_name__iexact=slug.lower().replace(
+                '-',
+                ' ')).order_by('card_number').first()
+    except:
         raise Http404
 
-    # Let's see if the slub matching my filing name
-    if slug is not None:
-        slugws = slug.lower().replace('-', ' ')
-        #logger.debug("slug is now \"" + slugws + "\"")
-        amatch = False
-        for acard in cards:
-            if amatch:
-                break
-            amatch = amatch or (slugws == acard.basecard.filing_name)
-        if not amatch:
-            raise Http404
-    elif not request.is_ajax():
-        # we have a card with a filing_name, let's just redirect them...
-        # But only redirect if it is NOT an ajax request. Let's make it easy on
-        # our ajax friends.
-        newslug = cards[0].basecard.filing_name.replace(' ', '-')
-        return redirect(
-            'cards:detail',
-            permanent=True,
-            multiverseid=multiverseid,
-            slug=newslug)
-
-    # ASSERT - if we have gotten this far, then we can just rely on the page in cache, if it is in cache
-    full_page_cache_key = make_template_fragment_key('card_details_html', [multiverseid, ])
-    from_cache = False
-    if cache.get(full_page_cache_key) is not None:
-        sys.stderr.write("details.html: getting cached page for key {}\n".format(full_page_cache_key))
-        # sys.stderr.write(cache.get(full_page_cache_key))
-        # sys.stderr.write("\n")
-        # we can skip most of the logic now - there are only a few variables we need to put into context
-        from_cache = True
-        cached_context = {'PAGE_CACHE_TIME': PAGE_CACHE_TIME,
-                          'request_mvid': multiverseid,
-                          'mod_card_stat': cache.get('fcs_pc-{}_f-{}'.format(cards[0].basecard.physicalcard.id, 'Modern'), {'is_staple': False}),
-                          'std_card_stat': cache.get('fcs_pc-{}_f-{}'.format(cards[0].basecard.physicalcard.id, 'Standard'), {'is_staple': False}),
-                          'edh_card_stat': cache.get('fcs_pc-{}_f-{}'.format(cards[0].basecard.physicalcard.id, 'Commander'), {'is_staple': False}),
-                          'from_cache': from_cache,
-                          'physicalCardTitle': cards[0].basecard.physicalcard.get_card_name(),
-                          }
-        response = render(request, 'cards/detail.html', cached_context)
-        return response
-
-    backCards = []
-    if len(cards) > 0:
-        backCards = Card.objects.filter(
-            basecard__physicalcard__id=cards[0].basecard.physicalcard.id,
-            expansionset__id=cards[0].expansionset.id)
-        logger.error(backCards)
-    cards = cards | backCards
-    twinCards = Card.objects.filter(
-        basecard__id=cards[0].basecard.id).order_by('multiverseid')
-    response = HttpResponse("Lame. Something must be broken.")
-    jcards = []
-    card_list = []
-    card_titles = []
-    for card in cards:
-        #logger.error('rules text: ' + card.rules_text_html())
-        if card.basecard.name in card_titles:
-            continue
-        card_titles.append(card.basecard.name)
-
-        if request.is_ajax():
-            response_dict = {}
-            jcard = {
-                'name': card.basecard.name,
-                'mana_cost': card.basecard.mana_cost,
-                'mana_cost_html': card.mana_cost_html(),
-                'type': [
-                    tt.type for tt in card.basecard.types.all()],
-                'supertype': [
-                    spt.supertype for spt in card.basecard.supertypes.all()],
-                'subtype': [
-                    st.subtype for st in card.basecard.subtypes.all()],
-                'text': card.rules_text_html(),
-                'flavor_text': card.flavor_text,
-                'mark': '',
-                'cmc': card.basecard.cmc,
-                'multiverseid': card.multiverseid,
-                'expansionset': {
-                    'name': card.expansionset.name,
-                    'abbr': card.expansionset.abbr},
-                'rarity': card.rarity.rarity,
-                'card_number': card.card_number,
-                'img_url': card.img_url(),
-                'power': card.basecard.power,
-                'toughness': card.basecard.toughness,
-                'loyalty': card.basecard.loyalty,
-                'colors': [
-                    cc.color for cc in card.basecard.colors.all()]}
-            try:
-                if card.mark is not None:
-                    jcard['mark'] = card.mark.mark
-            except Mark.DoesNotExist:
-                1
-                #jcard.mark = ''
-            jcards.append(jcard)
-        card_list.append({'card': card, })
+    cards = tcard.get_all_cards()
 
     if request.is_ajax():
-        response_dict.update({'status': 'success',
-                              'physicalCardTitle': card.basecard.physicalcard.get_card_name(),
-                              'cards': jcards,
-                              })
-        response = HttpResponse(
-            json.dumps(response_dict),
-            content_type='application/javascript')
-    else:
-        card_stats = []
-        mod_fcstat = None
-        std_fcstat = None
-        edh_fcstat = None
-        cpw_cache_key = 'pc-{}_cpw'.format(str(cards[0].basecard.physicalcard.id))
-        cpw_cache_update_needed = False
-        card_playedwiths = cache.get(cpw_cache_key, dict())
-        formats = Format.cards.current_legal_formats(cards[0])
-        card_format_details = {}
+        return detail_ajax(request, cards)
 
-        # this is the amount of time that we are going to look back for decks in formats
-        two_years_ago = datetime.now() - timedelta(days=2 * 365)
+    physicalcard = cards[0].basecard.physicalcard
+    formatcardstats = FormatCardStat.objects.filter(
+        physicalcard=physicalcard,
+        format__in=physicalcard.legal_formats()).order_by('format__formatname')
+    formatbasecards = FormatBasecard.objects.filter(
+        basecard=cards[0].basecard,
+        format__in=physicalcard.legal_formats()).order_by('format__formatname')
+    cardbattlestats = list()
+    for fcs in formatcardstats:
+        cbs = CardBattleStats(physicalcard, fcs.format)
+        cardbattlestats.append(cbs)
+    associations = Association.objects.filter(associationcards=physicalcard)
 
-        for ff in formats:
-            dets = {}
-            card_format_details[ff.format] = dets
-            dets['format'] = ff
-            if ff.formatname == 'Standard':
-                std_fcstat = cache.get_or_set(
-                    'fcs_pc-{}_f-{}'.format(
-                        cards[0].basecard.physicalcard.id,
-                        ff.formatname),
-                    FormatCardStat.objects.filter(
-                        physicalcard=cards[0].basecard.physicalcard,
-                        format=ff).first(),
-                    PAGE_CACHE_TIME)
-                card_stats.append(std_fcstat)
-            elif ff.formatname == 'Modern':
-                mod_fcstat = cache.get_or_set(
-                    'fcs_pc-{}_f-{}'.format(
-                        cards[0].basecard.physicalcard.id,
-                        ff.formatname),
-                    FormatCardStat.objects.filter(
-                        physicalcard=cards[0].basecard.physicalcard,
-                        format=ff).first(),
-                    PAGE_CACHE_TIME)
-                card_stats.append(mod_fcstat)
-            elif ff.formatname == 'Commander':
-                edh_fcstat = cache.get_or_set(
-                    'fcs_pc-{}_f-{}'.format(
-                        cards[0].basecard.physicalcard.id,
-                        ff.formatname),
-                    FormatCardStat.objects.filter(
-                        physicalcard=cards[0].basecard.physicalcard,
-                        format=ff).first(),
-                    PAGE_CACHE_TIME)
-                card_stats.append(edh_fcstat)
-            if ff.formatname not in card_playedwiths:
-                card_playedwiths[
-                    ff.formatname] = cards[0].basecard.physicalcard.find_played_with_cards(
-                    Format.objects.filter(
-                        formatname=ff.formatname,
-                        start_date__gte=two_years_ago))
-                cpw_cache_update_needed = True
-            dets['rating'] = cards[0].basecard.physicalcard.cardrating_set.filter(test_id=1, format_id=ff.id).first()
-            dets['wincount'] = Battle.objects.filter(winner_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).count()
-            dets['losecount'] = Battle.objects.filter(loser_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).count()
-            dets['battlecount'] = dets['wincount'] + dets['losecount']
-            if dets['battlecount'] > 0:
-                dets['winpercentage'] = 100 * float(dets['wincount']) / float(dets['battlecount'])
-                dets['losepercentage'] = 100 * float(dets['losecount']) / float(dets['battlecount'])
-            else:
-                dets['winpercentage'] = 'n/a'
-                dets['losepercentage'] = 'n/a'
-            won_battles = Battle.objects.filter(winner_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).values(
-                'loser_pcard_id').annotate(num_wins=Count('loser_pcard_id')).order_by('-num_wins')[:6]
-            dets['card_wins'] = [
-                Card.objects.filter(
-                    basecard__physicalcard__id=battle['loser_pcard_id']).order_by('-multiverseid').first() for battle in won_battles]
-            lost_battles = Battle.objects.filter(loser_pcard=cards[0].basecard.physicalcard, test_id=1, format_id=ff.id).values(
-                'winner_pcard_id').annotate(num_losses=Count('winner_pcard_id')).order_by('-num_losses')[:6]
-            dets['card_losses'] = [
-                Card.objects.filter(
-                    basecard__physicalcard__id=battle['winner_pcard_id']).order_by('-multiverseid').first() for battle in lost_battles]
+    context = {'PAGE_CACHE_TIME': PAGE_CACHE_TIME,
+               'physicalcard': physicalcard,
+               'request_mvid': multiverseid,
+               'cards': cards,
+               'formatcardstats': formatcardstats,
+               'cardbattlestats': cardbattlestats,
+               'formatbasecards': formatbasecards,
+               'associations': associations,
+               }
+    response = render(request, 'cards/detail.html', context)
+    return response
 
-        if cpw_cache_update_needed:
-            cache.set(cpw_cache_key, card_playedwiths, 60 * 60 * 24)
 
-        similars = cards[0].basecard.physicalcard.find_similar_cards()
+def detail_ajax(request, cards):
+    response_dict = {}
+    jcards = list()
+    for card in cards:
+        jcard = {
+            'name': card.basecard.name,
+            'mana_cost': card.basecard.mana_cost,
+            'mana_cost_html': card.mana_cost_html(),
+            'type': [tt.type for tt in card.basecard.types.all()],
+            'supertype': [spt.supertype for spt in card.basecard.supertypes.all()],
+            'subtype': [st.subtype for st in card.basecard.subtypes.all()],
+            'text': card.rules_text_html(),
+            'flavor_text': card.flavor_text,
+            'mark': '',
+            'cmc': card.basecard.cmc,
+            'multiverseid': card.multiverseid,
+            'expansionset': {
+                'name': card.expansionset.name,
+                'abbr': card.expansionset.abbr},
+            'rarity': card.rarity.rarity,
+            'card_number': card.card_number,
+            'img_url': card.img_url(),
+            'power': card.basecard.power,
+            'toughness': card.basecard.toughness,
+            'loyalty': card.basecard.loyalty,
+            'colors': [cc.color for cc in card.basecard.colors.all()]
+        }
+        try:
+            jcard['mark'] = card.mark.mark
+        except:
+            pass
 
-        associations = Association.objects.filter(associationcards=cards[0].basecard.physicalcard)
+        jcards.append(jcard)
 
-        response = render(request, 'cards/detail.html', {'PAGE_CACHE_TIME': PAGE_CACHE_TIME,
-                                                         'request_mvid': multiverseid,
-                                                         'primary_basecard_id': primary_basecard_id,
-                                                         'cards': card_list,
-                                                         'keywords': cards[0].basecard.physicalcard.cardkeyword_set.all().order_by('-kwscore'),
-                                                         'similars': similars,
-                                                         'other_versions': twinCards,
-                                                         'physicalCardTitle': cards[0].basecard.physicalcard.get_card_name(),
-                                                         'card_format_details': card_format_details,
-                                                         'from_cache': from_cache,
-                                                         'physicalcard': cards[0].basecard.physicalcard,
-                                                         'associations': associations,
-                                                         'rulings': cards[0].basecard.get_rulings(),
-                                                         'mod_card_stat': mod_fcstat,
-                                                         'std_card_stat': std_fcstat,
-                                                         'edh_card_stat': edh_fcstat,
-                                                         'card_playedwiths': card_playedwiths,
-                                                         'card_stats': card_stats,
-                                                         #'rules_text_html': mark_safe(card.basecard.rules_text),
-                                                         #'flavor_text_html': mark_safe(card.flavor_text),
-                                                         #'mana_cost_html': mana_cost_html,
-                                                         #'img_url': img_url, })
-                                                         })
+    response_dict.update({'status': 'success',
+                          'physicalCardTitle': cards[0].basecard.physicalcard.get_card_name(),
+                          'cards': jcards,
+                          })
+    response = HttpResponse(
+        json.dumps(response_dict),
+        content_type='application/javascript')
     return response
 
 
@@ -899,8 +772,18 @@ def battle(request, format="redirect"):
     rand_source = 'random'
 
     # this is a BATTLE CHEAT so that you can battle a specific card
-    if request.GET.get('muid', False) or request.session.get('battle_cont_muid', False) or request.GET.get('bcid', False):
-        if request.GET.get('bcid', False):
+    if request.GET.get(
+            'muid',
+            False) or request.session.get(
+            'battle_cont_muid',
+            False) or request.GET.get(
+                'bcid',
+                False) or request.GET.get(
+                    'pcid',
+            False):
+        if request.GET.get('pcid', False):
+            card_a = PhysicalCard.objects.get(pk=int(request.GET.get('pcid', 1))).get_latest_card()
+        elif request.GET.get('bcid', False):
             card_a = Card.objects.filter(basecard__id__exact=int(request.GET.get('bcid', 1))).order_by('-multiverseid').first()
         else:
             card_a = Card.objects.filter(multiverseid__exact=request.GET.get('muid', request.session.get('battle_cont_muid'))).first()

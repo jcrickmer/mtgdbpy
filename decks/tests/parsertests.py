@@ -11,6 +11,7 @@ from cards.models import PhysicalCard, Format, Color, BaseCard, Card
 from decks.models import Deck, DeckCard
 
 from cards.tests.helper import TestLoadHelper
+from django.core.cache import cache
 
 import sys
 err = sys.stderr
@@ -21,6 +22,7 @@ class DecksTestCase(TestCase):
     exempt_from_fixture_bundling = True
 
     def test_empty(self):
+        cache.clear()
         tlh = TestLoadHelper()
         tlh.basics_loader()
 
@@ -41,6 +43,7 @@ class DecksTestCase(TestCase):
         self.assertEquals(tdeck.get_card_count(), 0)
 
     def test_deck_mountain(self):
+        cache.clear()
         tlh = TestLoadHelper()
         tlh.basics_loader()
 
@@ -61,6 +64,7 @@ class DecksTestCase(TestCase):
         self.assertEquals(tdeck.get_card_count(), 1)
 
     def test_deck_1mountain(self):
+        cache.clear()
         tlh = TestLoadHelper()
         tlh.basics_loader()
 
@@ -81,6 +85,7 @@ class DecksTestCase(TestCase):
         self.assertEquals(tdeck.get_card_count(), 1)
 
     def test_deck_1xmountain(self):
+        cache.clear()
         tlh = TestLoadHelper()
         tlh.basics_loader()
 
@@ -101,6 +106,7 @@ class DecksTestCase(TestCase):
         self.assertEquals(tdeck.get_card_count(), 1)
 
     def test_deck_7mountain(self):
+        cache.clear()
         tlh = TestLoadHelper()
         tlh.basics_loader()
 
@@ -127,6 +133,7 @@ class DecksTestCase(TestCase):
             self.assertEquals(dc.physicalcard.get_card_name(), 'Mountain')
 
     def test_deck_2cards(self):
+        cache.clear()
         tlh = TestLoadHelper()
         tlh.basics_loader()
 
@@ -158,6 +165,7 @@ class DecksTestCase(TestCase):
         self.assertEquals(dc.physicalcard.get_card_name(), 'Island')
 
     def test_deck_emptylines(self):
+        cache.clear()
         tlh = TestLoadHelper()
         tlh.basics_loader()
 
@@ -181,6 +189,7 @@ class DecksTestCase(TestCase):
         self.assertEquals(tdeck.get_card_count(), 16)
 
     def test_deck_2cardssb(self):
+        cache.clear()
         tlh = TestLoadHelper()
         tlh.basics_loader()
 
@@ -202,6 +211,7 @@ sb: 4x Island'''
         self.assertEquals(tdeck.get_card_count(), 7)
 
     def test_deck_badname(self):
+        cache.clear()
         tlh = TestLoadHelper()
         tlh.basics_loader()
 
@@ -226,6 +236,7 @@ sb: 4x Island'''
         self.assertEquals(tdeck.get_card_count(), 0)
 
     def test_deck_badname_nosave(self):
+        cache.clear()
         tlh = TestLoadHelper()
         tlh.basics_loader()
 

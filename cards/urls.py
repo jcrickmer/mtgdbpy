@@ -20,7 +20,7 @@ urlpatterns = [
     # format stats
     url(r'stats/(?P<formatname>[a-zA-Z-]+)/$', views.formatstats, name='formatstats'),
     # ex: /cards/5/
-    url(r'^(?P<multiverseid>\d+)/$', views.detail, name='detail'),
+    url(r'^(?P<multiverseid>\d+)/$', views.detail_by_multiverseid, name='detail_by_multiverseid'),
     # ex: /cards/376251-augur-of-bolas/
     url(r'^(?P<multiverseid>\d+)-(?P<slug>[a-zA-Z0-9-]+)/$', views.detail, name='detail'),
     # ex: /cards/battle/
@@ -28,7 +28,7 @@ urlpatterns = [
     url(r'^battle/(?P<format>[a-zA-Z-]+)/$', views.battle, name='battle'),
     url(r'^_winbattle$', views.winbattle, name='winbattle'),
     # ex: /cards/augur-of-bolas/
-    url(r'^(?P<slug>[a-zA-Z-]+)/$', views.detail, name='detail'),
+    url(r'^(?P<slug>[a-zA-Z-]+)/$', views.detail_by_slug, name='detail_by_slug'),
     url(r'^_textsearch/', include('haystack.urls')),
     url(r'^_nameauto/', views.autocomplete, name='autocomplete'),
     url(r'^_clustertest/(?P<test_id>[0-9]+)', utilviews.cardclustertest, name='cardclustertest'),
