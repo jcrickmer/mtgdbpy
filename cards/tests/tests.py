@@ -2,11 +2,12 @@
 
 from django.test import TestCase, TransactionTestCase
 from django_nose import FastFixtureTestCase
-from cards.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, FormatBasecard, SearchPredicate
+from cards.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, FormatBasecard, SearchPredicate, Format
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from cards.tests.helper import TestLoadHelper
+from datetime import datetime
 
 import sys
 err = sys.stderr
@@ -118,20 +119,12 @@ class PhysicalCardTestCase(TestCase):
         self.assertEquals(PhysicalCard.LEVELER, 'leveler')
         self.assertEquals(PhysicalCard.VANGUARD, 'vanguard')
 
-    def test_physicalcard_cardrating_none(self):
+    def test_physicalcard_cardratings_none(self):
         pc = PhysicalCard()
         pc.save()
 
-        self.assertRaises(
-            CardRating.DoesNotExist,
-            pc.get_cardrating,
-            None,
-            None)
-        self.assertRaises(
-            CardRating.DoesNotExist,
-            pc.get_cardrating,
-            35432,
-            4652)
+        self.assertEquals(pc.get_cardratings().count(), 0)
+        self.assertEquals(pc.get_cardratings(test_id=4652).count(), 0)
 
 
 class BaseCardTestCase(TestCase):
@@ -238,35 +231,62 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(delver_qs[0].multiverseid, 226749)
 
     def test_standard_cards_sort_rating(self):
+        format = Format.objects.get(pk=4)
         all_cards = Card.playables.get_queryset()
-        allCards = Card.playables.in_cardrating_order(
-            all_cards,
-            format_id=4,
-            test_id=1,
-            sort_order=-1)
+        allCards = Card.playables.in_cardrating_order(all_cards, format_id=format.id, test_id=1, sort_order=-1)
         first = allCards[0]
         self.assertEquals(first.basecard.name, 'Elspeth, Sun\'s Champion')
         self.assertEquals(first.basecard.id, 6004)
         self.assertGreaterEqual(
-            first.basecard.physicalcard.get_cardrating(
-                4, 1).mu, allCards[1].basecard.physicalcard.get_cardrating(
-                4, 1).mu)
+            first.basecard.physicalcard.get_cardratings(
+                start_date=datetime(
+                    2014, 10, 1), end_date=datetime(
+                    2014, 10, 1)).filter(
+                format_id=format.id).first().mu, allCards[1].basecard.physicalcard.get_cardratings(
+                        start_date=datetime(
+                            2014, 10, 1), end_date=datetime(
+                                2014, 10, 1)).filter(
+                                    format_id=format.id).first().mu)
         self.assertGreaterEqual(
-            allCards[1].basecard.physicalcard.get_cardrating(
-                4, 1).mu, allCards[2].basecard.physicalcard.get_cardrating(
-                4, 1).mu)
+            allCards[1].basecard.physicalcard.get_cardratings(
+                start_date=datetime(
+                    2014, 10, 1), end_date=datetime(
+                    2014, 10, 1)).filter(
+                format_id=format.id).first().mu, allCards[2].basecard.physicalcard.get_cardratings(
+                        start_date=datetime(
+                            2014, 10, 1), end_date=datetime(
+                                2014, 10, 1)).filter(
+                                    format_id=format.id).first().mu)
         self.assertGreaterEqual(
-            allCards[2].basecard.physicalcard.get_cardrating(
-                4, 1).mu, allCards[3].basecard.physicalcard.get_cardrating(
-                4, 1).mu)
+            allCards[2].basecard.physicalcard.get_cardratings(
+                start_date=datetime(
+                    2014, 10, 1), end_date=datetime(
+                    2014, 10, 1)).filter(
+                format_id=format.id).first().mu, allCards[3].basecard.physicalcard.get_cardratings(
+                        start_date=datetime(
+                            2014, 10, 1), end_date=datetime(
+                                2014, 10, 1)).filter(
+                                    format_id=format.id).first().mu)
         self.assertGreaterEqual(
-            allCards[3].basecard.physicalcard.get_cardrating(
-                4, 1).mu, allCards[4].basecard.physicalcard.get_cardrating(
-                4, 1).mu)
+            allCards[3].basecard.physicalcard.get_cardratings(
+                start_date=datetime(
+                    2014, 10, 1), end_date=datetime(
+                    2014, 10, 1)).filter(
+                format_id=format.id).first().mu, allCards[4].basecard.physicalcard.get_cardratings(
+                        start_date=datetime(
+                            2014, 10, 1), end_date=datetime(
+                                2014, 10, 1)).filter(
+                                    format_id=format.id).first().mu)
         self.assertGreaterEqual(
-            allCards[4].basecard.physicalcard.get_cardrating(
-                4, 1).mu, allCards[5].basecard.physicalcard.get_cardrating(
-                4, 1).mu)
+            allCards[4].basecard.physicalcard.get_cardratings(
+                start_date=datetime(
+                    2014, 10, 1), end_date=datetime(
+                    2014, 10, 1)).filter(
+                format_id=format.id).first().mu, allCards[5].basecard.physicalcard.get_cardratings(
+                        start_date=datetime(
+                            2014, 10, 1), end_date=datetime(
+                                2014, 10, 1)).filter(
+                                    format_id=format.id).first().mu)
 
     def test_modern_cards_sort_rating_desc(self):
         all_cards = Card.playables.get_queryset()
@@ -280,9 +300,7 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(first.basecard.name, 'Lightning Bolt')
         self.assertEquals(first.id, 68647)
         self.assertEquals(
-            first.basecard.physicalcard.get_cardrating(
-                1,
-                1).mu,
+            CardRating.objects.filter(physicalcard=first.basecard.physicalcard, format_id=1, test_id=1).first().mu,
             44.5023075558582)
 
     def test_modern_cards_sort_rating_asc(self):
@@ -296,9 +314,7 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(first.basecard.name, 'Abzan Charm')
         self.assertEquals(first.id, 64961)
         self.assertEquals(
-            first.basecard.physicalcard.get_cardrating(
-                1,
-                1).mu,
+            CardRating.objects.filter(physicalcard=first.basecard.physicalcard, format_id=1, test_id=1).first().mu,
             25)
 
     def test_modern_cards_name_term_sort_rating_desc(self):
@@ -316,9 +332,7 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(first.basecard.name, 'Path to Exile')
         self.assertEquals(first.basecard.id, 2047)
         self.assertEquals(
-            first.basecard.physicalcard.get_cardrating(
-                1,
-                1).mu,
+            CardRating.objects.filter(physicalcard=first.basecard.physicalcard, format_id=1, test_id=1).first().mu,
             34.0947162161112)
 
 
@@ -336,6 +350,13 @@ class CardTestCase(TestCase):
             delver.basecard.physicalcard.id,
             aberration.basecard.physicalcard.id)
 
+    def test_get_double_faced_cardX(self):
+        delver = Card.playables.get_latest_printing().filter(
+            basecard__filing_name__exact='delver of secrets').first()
+        self.assertEquals(delver.basecard.name, 'Delver of Secrets')
+        self.assertEquals(delver, delver.get_first_card())
+        self.assertEquals(delver.get_double_faced_card(), delver.get_second_card())
+        
     def test_get_double_faced_card_reverse(self):
         aberration = Card.playables.get_latest_printing().filter(
             basecard__name__exact='Insectile Aberration').first()
@@ -353,6 +374,12 @@ class CardTestCase(TestCase):
         self.assertEquals(
             delver.basecard.physicalcard.id,
             aberration.basecard.physicalcard.id)
+        
+    def test_get_double_faced_card_reverseX(self):
+        aberration = Card.playables.get_latest_printing().filter(
+            basecard__name__exact='Insectile Aberration').first()
+        self.assertEquals(aberration, aberration.get_second_card())
+        self.assertEquals(aberration.get_double_faced_card(), aberration.get_first_card())
 
     def test_get_double_faced_card_not(self):
         mss = Card.playables.get_latest_printing().filter(
@@ -360,6 +387,15 @@ class CardTestCase(TestCase):
         self.assertEquals(mss.basecard.name, 'Monastery Swiftspear')
         foo = mss.get_double_faced_card()
         self.assertIsNone(foo)
+
+    def test_get_double_faced_card_notX(self):
+        mss = Card.playables.get_latest_printing().filter(
+            basecard__filing_name__exact='monastery swiftspear').first()
+        self.assertEquals(mss.basecard.name, 'Monastery Swiftspear')
+        foo = mss.get_first_card()
+        self.assertEquals(mss, foo)
+        bar = mss.get_second_card()
+        self.assertIsNone(bar)
 
     def test_pcard_get_face_basecard0(self):
         startbc = BaseCard.objects.filter(cardposition=BaseCard.FRONT, name='Island').first()
@@ -397,7 +433,7 @@ class CardTestCase(TestCase):
         startbc = BaseCard.objects.filter(name='Insectile Aberration').first()
         self.assertIsNotNone(startbc)
         self.assertFalse(startbc.is_land())
-        
+
     def test_card_get_first_0(self):
         start_card = Card.objects.filter(basecard__cardposition=BaseCard.FRONT, basecard__name='Delver of Secrets').first()
         self.assertIsNotNone(start_card)
@@ -460,7 +496,7 @@ class CardTestCase(TestCase):
         self.assertEqual(start_id, result_card.id)
         self.assertEqual(start_mvid, result_card.multiverseid)
         self.assertEqual(start_name, result_card.basecard.name)
-        
+
     def test_card_get_all_0(self):
         start_card = Card.objects.filter(basecard__cardposition=BaseCard.FRONT, basecard__name='Delver of Secrets').first()
         self.assertIsNotNone(start_card)
@@ -469,7 +505,7 @@ class CardTestCase(TestCase):
         self.assertEqual(u'Delver of Secrets', result[0].basecard.name)
         self.assertEqual(u'Insectile Aberration', result[1].basecard.name)
         self.assertEqual(result[0].expansionset_id, result[1].expansionset_id)
-        
+
     def test_card_get_all_1(self):
         start_card = Card.objects.filter(basecard__cardposition=BaseCard.BACK, basecard__name='Insectile Aberration').first()
         self.assertIsNotNone(start_card)
@@ -486,7 +522,7 @@ class CardTestCase(TestCase):
         self.assertEqual(2, len(result))
         self.assertEqual(u'Swamp', result[0].basecard.name)
         self.assertIsNone(result[1])
-        
+
 
 class ViewsTestCase(TestCase):
 

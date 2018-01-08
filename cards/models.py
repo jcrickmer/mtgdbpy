@@ -135,17 +135,21 @@ class PhysicalCard(models.Model):
         choices=LAYOUT_CHOICES,
         default=NORMAL)
 
-    def get_cardrating(self, format_id, test_id):
-        # shortcut to get the CardRating for a given format and test.
-        # This is accessible in templates
-        return self.cardrating_set.get(format__id=format_id, test__id=test_id)
+    def get_cardratings(self, start_date=datetime.today(), end_date=datetime.today(), test_id=1):
+        """ Shortcut to get the CardRating for a given Format and BattleTest for this PhysicalCard.
 
-    def get_cardrating_safe(self, format_id, test_id=1):
-        try:
-            return self.get_cardrating(format_id, test_id)
-        except CardRating.DoesNotExist:
-            # , format=Format.objects.get(pk=format_id), test=BattleTest.objects.get(pk=test_id))
-            return CardRating(physicalcard=self)
+        This is meant to be accessible in templates for display.
+
+        Arguments:
+        start_date -- datetime.datetime object that represents the start of the Format search.
+        end_date -- datetime.datetime object that represents the last day of the Format search.
+
+        Returns: QuerySet of CardRating objects, ordered by Format.formatname.
+        """
+        return self.cardrating_set.filter(
+            format__start_date__lte=start_date,
+            format__end_date__gte=end_date,
+            test__id=test_id).order_by('format__formatname')
 
     def get_last_updated(self):
         return max(bc.updated_at for bc in self.basecard_set.all())
@@ -185,8 +189,8 @@ class PhysicalCard(models.Model):
         return basecard
 
     def get_latest_card(self):
-        ''' Returns a Card object for this Physical card.
-        '''
+        """ Returns a Card object for this Physical card.
+        """
         logger = logging.getLogger(__name__)
         #logger.error("PhysicalCard.get_latest_card: self is {}".format(str(self)))
         card = cache.get('c_pc' + str(self.id))
@@ -390,9 +394,9 @@ class PhysicalCard(models.Model):
         return result
 
     def find_played_with_cards(self, format_list, max_results=18):
-        ''' Returns a list of Card objects for cards that get played in the formats that are specified in the list. For instance, the
+        """ Returns a list of Card objects for cards that get played in the formats that are specified in the list. For instance, the
             format_list could be all of the formats that have the formatname 'Standard'.
-        '''
+        """
         format_ids = list()
         for f in format_list:
             if isinstance(f, Format):
@@ -413,6 +417,21 @@ class PhysicalCard(models.Model):
         #sys.stderr.write("R: {}\n".format("\n".join(str(i) for i in result)))
 
         return result
+
+    def legal_formats(self, start_date=datetime.today(), end_date=datetime.today()):
+        """ Get the legal Formats for this card as of the given dates.
+
+        Given a start_date (datetime) and end_date (datetime), returns a QuerySet of Format objects in which this card is/was legal.
+
+        Arguments:
+        start_date -- datetime.datetime object that represents the start of the format search.
+        end_date -- datetime.datetime object that represents the last day of the format search.
+
+        Returns: QuerySet of Format objects.
+        """
+        return Format.objects.filter(formatbasecard__basecard=self.get_face_basecard(),
+                                     start_date__lte=start_date,
+                                     end_date__gte=end_date)
 
     class Meta:
         managed = True
@@ -664,8 +683,8 @@ class CardManager(models.Manager):
             sql_s = sql_s + ', '.join(str(str(arg.sqlname()) + ' ' + arg.direction) for arg in sortds)
 
             cards = self.raw(sql_s)
-            logger.debug("CardManager.search() time: {}".format(time.time() - timer_start))
-            logger.debug("CardManager.search() SQL query: {}".format(cards))
+            #logger.debug("CardManager.search() time: {}".format(time.time() - timer_start))
+            #logger.debug("CardManager.search() SQL query: {}".format(cards))
             return cards
         else:
             # better use the more advanced search tools
@@ -899,7 +918,7 @@ class CardManager(models.Manager):
         sql_s = sql_s + ', '.join(str(str(arg.sqlname()) + ' ' + arg.direction) for arg in sortds)
 
         logger = logging.getLogger(__name__)
-        logger.debug("Card Search SQL: " + sql_s)
+        #logger.debug("Card Search SQL: " + sql_s)
         #timer_start = time.time()
         cards = self.raw(sql_s, params=safelocker)
         #logger.debug("Card Search time: {}".format(time.time() - timer_start))
@@ -1072,36 +1091,44 @@ class Card(models.Model):
         return self.basecard.filing_name.replace(' ', '-').lower()
 
     def get_first_card(self):
-        """
-        Returns the Front, Up, or Left Card for this card. It could
-        just be this current Card object, or it might be its pair. Will
-        not return None.
+        """ Returns the Front, Up, or Left Card for this card.
+
+        The result could just be this current Card object, or it might be its pair. Will not return None.
         """
         result = self
         if self.basecard.cardposition not in (BaseCard.FRONT, BaseCard.UP, BaseCard.LEFT):
-            result = Card.objects.filter(basecard__physicalcard=self.basecard.physicalcard, expansionset_id=self.expansionset.id, basecard__cardposition__in=[BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP]).first()
+            result = Card.objects.filter(
+                basecard__physicalcard=self.basecard.physicalcard,
+                expansionset_id=self.expansionset.id,
+                basecard__cardposition__in=[
+                    BaseCard.FRONT,
+                    BaseCard.LEFT,
+                    BaseCard.UP]).first()
         return result
-    
+
     def get_second_card(self):
-        """
-        Returns the Back, Down, or Right Card for this card. It could
-        just be this current Card object, or it might be its pair. Will
-        return None if there is no second Card.
+        """ Returns the Back, Down, or Right Card for this card.
+
+        The result could just be this current Card object, or it might be its pair. Will return None if there is no second Card.
         """
         result = None
         if self.basecard.cardposition in (BaseCard.FRONT, BaseCard.UP, BaseCard.LEFT):
-            result = Card.objects.filter(basecard__physicalcard=self.basecard.physicalcard, expansionset_id=self.expansionset.id, basecard__cardposition__in=[BaseCard.BACK, BaseCard.RIGHT, BaseCard.DOWN]).first()
+            result = Card.objects.filter(
+                basecard__physicalcard=self.basecard.physicalcard,
+                expansionset_id=self.expansionset.id,
+                basecard__cardposition__in=[
+                    BaseCard.BACK,
+                    BaseCard.RIGHT,
+                    BaseCard.DOWN]).first()
         else:
             result = self
         return result
-    
+
     def get_double_faced_card(self):
-        """
-        Return the double-faced card for Innastrad (and similiar)
-        cards. Returns None if there is no second side to the card. If
-        it is double-faced, this will always return the other face
-        (e.g., 'Delver of Secrerts' returns 'Insectile Aberation';
-        'Insectile Aberation' returns 'Delver of Secrets').
+        """ Return the double-faced card for Innastrad (and similiar) cards.
+
+        Returns None if there is no second side to the card. If it is double-faced, this will always return the other face (e.g., 'Delver
+        of Secrerts' returns 'Insectile Aberation'; 'Insectile Aberation' returns 'Delver of Secrets').
         """
         result = None
         if self.basecard.physicalcard.layout != PhysicalCard.DOUBLE:
@@ -1120,13 +1147,22 @@ class Card(models.Model):
         return result
 
     def get_all_cards(self):
-        """
-        Returns a tuple of all of the cards, in order.
+        """ Returns a tuple of all of the cards, in order.
         """
         first = self.get_first_card()
         second = self.get_second_card()
         return (first, second)
-    
+
+    def get_all_versions(self):
+        """ Returns a QuerySet of Cards that are first cards (Up, Front, Left) that share this card's PhysicalCard.
+        """
+        return Card.objects.filter(
+            basecard__physicalcard=self.basecard.physicalcard,
+            basecard__cardposition__in=[
+                BaseCard.FRONT,
+                BaseCard.LEFT,
+                BaseCard.UP]).order_by('multiverseid')
+
     class Meta:
         managed = True
         db_table = 'card'
@@ -1194,7 +1230,8 @@ class CardType(models.Model):
 class FormatManager(models.Manager):
 
     def current_legal_formats(self, card):
-        # Look up all of the formats where this card is currently legal.
+        """ Look up all of the formats where this card is currently legal.
+        """
         # formats = FormatBasecard.objects.filter(basecard__id=card.basecard.id,
         #                                        format__start_date__lte=datetime.today(),
         #                                        format__end_date__gte=datetime.today())
@@ -1239,7 +1276,7 @@ class FormatManager(models.Manager):
 
 
 def ddvalstart(value):
-    ''' REVISIT  - THIS HAS NOT BEEN IMPLEMENTED '''
+    # REVISIT  - THIS HAS NOT BEEN IMPLEMENTED
     sys.stderr.write("ddvalstart val is " + str(value) + "\n")
     if value is None:
         return
@@ -1276,12 +1313,12 @@ class Format(models.Model):
     cards = FormatManager()
 
     def populate_format_cards(self):
-        ''' When you create a new format, you need to populate it with cards.
-            You do that by associating Expansion Sets with a Format, adding
-            some Banned Cards, and then running this command. This command
-            will clear out all of the FormatBaseCards, then add all cards
-            from the named Expansion Sets, except for the Banned Cards.
-        '''
+        """ Remove all FormatBasecards for this format and then add new ones based on recalcuating.
+
+        When you create a new format, you need to populate it with cards. You do that by associating Expansion Sets with a Format, adding
+        some Banned Cards, and then running this command. This command will clear out all of the FormatBaseCards, then add all cards from
+        the named Expansion Sets, except for the Banned Cards.
+        """
 
         # start from scratch. Delete all of the old cards.
         FormatBasecard.objects.filter(format=self).delete()
@@ -1340,6 +1377,39 @@ class FormatBasecard(models.Model):
     format = models.ForeignKey(Format)
     basecard = models.ForeignKey(BaseCard)
 
+    def won_battles(self):
+        """ Get all Battles won for this card in this format.
+
+        This is a handy shortcut for templates looking to get won battles from the FormatBasecard.
+
+        Returns: QuerySet of Battles
+        """
+        return self.basecard.physicalcard.won_battles.filter(format=self.format)
+
+    def lost_battles(self):
+        """ Get all Battles lost for this card in this format.
+
+        This is a handy shortcut for templates looking to get lost battles from the FormatBasecard.
+
+        Returns: QuerySet of Battles
+        """
+        return self.basecard.physicalcard.lost_battles.filter(format=self.format)
+
+    def cards_played_with(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=18):
+        """ Gets Cards that this BaseCard has played with in this Format over some period of time.
+
+        Arguments:
+        lookback_timeframe -- the start time from which to look for Formats that have the same formatname as self.format. Defaults to 2
+                              years ago from today.
+        max_results -- maximum number of results to return. Defaults to 18. (The underlying query is not a native ORM QuerySet, so typical
+                       QuerySet result set limiting doesn't work.)
+
+        Returns: list of Card objects that self.basecard is played with in self.format.formatname since lookback_timeframe.
+        """
+        formats = Format.objects.filter(formatname=self.format.formatname,
+                                        start_date__gte=lookback_timeframe)
+        return self.basecard.physicalcard.find_played_with_cards(formats, max_results=max_results)
+
     class Meta:
         verbose_name_plural = 'Format Base Cards'
         unique_together = ('format', 'basecard',)
@@ -1354,8 +1424,8 @@ class Battle(models.Model):
     #id = models.IntegerField(primary_key=True)
     test = models.ForeignKey('BattleTest')
     format = models.ForeignKey('Format')
-    winner_pcard = models.ForeignKey('PhysicalCard', related_name='winner')
-    loser_pcard = models.ForeignKey('PhysicalCard', related_name='loser')
+    winner_pcard = models.ForeignKey('PhysicalCard', related_name='won_battles')
+    loser_pcard = models.ForeignKey('PhysicalCard', related_name='lost_battles')
     battle_date = models.DateTimeField(
         auto_now_add=True,
         null=False)
@@ -1409,6 +1479,86 @@ class CardRating(models.Model):
     def __unicode__(self):
         return "[CardRating " + str(self.id) + ": " + str(self.physicalcard.id) + " mu=" + str(self.mu) + " sigma=" + str(
             self.sigma) + " for format \"" + str(self.format.format) + ", test \"" + str(self.test.name) + "\"]"
+
+
+class CardBattleStats():
+    """ Transient/volatile class for battle statistics for a PhysicalCard and a Format.
+    """
+    
+    def __init__(self, physicalcard, format):
+        # REVISIT - need to add BattleTest here instead of defaulting to 1 for test_id
+        self.physicalcard = physicalcard
+        self.format = format
+
+    def __unicode__(self):
+        try:
+            return u'[CardBattleStats for "{}" in "{}"]'.format(self.physicalcard.get_card_name(), self.format.format)
+        except:
+            return u'[CardBattleStats for [{}] in [{}]]'.format(self.physicalcard.id, self.format.id)
+        
+    def won_battles(self):
+        """ Annotated dictionary of PhysicalCard.ids and the number of times that PhysicalCard has been beaten by self.physicalcard in
+        self.format.
+
+        Returns: annotated QuerySet of cards this self.physicalcard has beaten in self.format.
+        """
+        result = Battle.objects.filter(winner_pcard=self.physicalcard, test_id=1, format=self.format).values(
+            'loser_pcard_id').annotate(num_wins=Count('loser_pcard_id')).order_by('-num_wins')
+        return result
+
+    def lost_battles(self):
+        """ Annotated dictionary of PhysicalCard.ids and the number of times that PhysicalCard has beaten self.physicalcard in
+        self.format.
+
+        Returns: annotated QuerySet of cards this self.physicalcard has lost to in self.format.
+        """
+        result = Battle.objects.filter(loser_pcard=self.physicalcard, test_id=1, format=self.format).values(
+            'winner_pcard_id').annotate(num_losses=Count('winner_pcard_id')).order_by('-num_losses')
+        return result
+
+    def win_count(self):
+        """ Number of times self.physicalcard has won in self.format.
+        """
+        return Battle.objects.filter(winner_pcard=self.physicalcard, test_id=1, format=self.format).count()
+
+    def loss_count(self):
+        """ Number of times self.physicalcard has lost in self.format.
+        """
+        return Battle.objects.filter(loser_pcard=self.physicalcard, test_id=1, format=self.format).count()
+
+    def battle_count(self):
+        """ Number of times self.physicalcard has battled in self.format.
+        """
+        return self.win_count() + self.loss_count()
+
+    def win_percentage(self, return_on_div_by_zero='n/a'):
+        """ Percentage of times self.physicalcard has won battles in self.format.
+
+        Arguments:
+        return_on_div_by_zero -- value to return if there is a division by zero error. Defaults to the string 'n/a'.
+
+        Returns: float that is a percentage number (e.g., 10.5 is returned for 10.5%, not 0.105). If self.physicalcard has never battled
+                 in self.format, then return_on_div_by_zero is returned.
+        """
+        if self.battle_count() > 0:
+            return 100.0 * float(self.win_count()) / float(self.battle_count())
+        else:
+            return return_on_div_by_zero
+
+    def loss_percentage(self, return_on_div_by_zero='n/a'):
+        """ Percentage of times self.physicalcard has lost battles in self.format.
+
+        Arguments:
+        return_on_div_by_zero -- value to return if there is a division by zero error. Defaults to the string 'n/a'.
+
+        Returns: float that is a percentage number (e.g., 10.5 is returned for 10.5%, not 0.105). If self.physicalcard has never battled
+                 in self.format, then return_on_div_by_zero is returned.
+        """
+        if self.battle_count() > 0:
+            return 100.0 * float(self.loss_count()) / float(self.battle_count())
+        else:
+            return return_on_div_by_zero
+
 
 
 class CardKeyword(models.Model):
