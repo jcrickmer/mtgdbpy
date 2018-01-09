@@ -404,17 +404,21 @@ class PhysicalCard(models.Model):
             else:
                 format_ids.append(f)
         format_ids_str = ','.join(str(i) for i in format_ids)
-        query_str = u'''SELECT bc.physicalcard_id, SUM(dc.cardcount) AS tcc FROM deck JOIN deckcard AS dc ON deck.id = dc.deck_id JOIN basecard AS bc ON bc.physicalcard_id = dc.physicalcard_id AND bc.cardposition IN ('{}','{}','{}') JOIN deck AS jdeck ON deck.id = jdeck.id JOIN deckcard AS jdc ON jdc.deck_id = jdeck.id AND jdc.physicalcard_id = {} WHERE  dc.physicalcard_id != {} AND deck.format_id IN ({}) GROUP BY bc.physicalcard_id ORDER BY tcc DESC LIMIT {}'''.format(
-            BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP, str(
-                self.id), str(
-                self.id), format_ids_str, str(max_results))
-        #sys.stderr.write("Q: {}\n".format(query_str))
-        cursor = connection.cursor()
-        cursor.execute(query_str)
-        q_results = cursor.fetchall()
-        pcard_ids = [row[0] for row in q_results]
-        result = [PhysicalCard.objects.get(pk=pc_id).get_latest_card() for pc_id in pcard_ids]
-        #sys.stderr.write("R: {}\n".format("\n".join(str(i) for i in result)))
+        _cache_key = 'pc.fpwc_{}_{}'.format(self.id, format_ids_str)
+        result = cache.get(_cache_key)
+        if result is None:
+            query_str = u'''SELECT bc.physicalcard_id, SUM(dc.cardcount) AS tcc FROM deck JOIN deckcard AS dc ON deck.id = dc.deck_id JOIN basecard AS bc ON bc.physicalcard_id = dc.physicalcard_id AND bc.cardposition IN ('{}','{}','{}') JOIN deck AS jdeck ON deck.id = jdeck.id JOIN deckcard AS jdc ON jdc.deck_id = jdeck.id AND jdc.physicalcard_id = {} WHERE  dc.physicalcard_id != {} AND deck.format_id IN ({}) GROUP BY bc.physicalcard_id ORDER BY tcc DESC LIMIT {}'''.format(
+                BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP, str(
+                    self.id), str(
+                    self.id), format_ids_str, str(max_results))
+            #sys.stderr.write("Q: {}\n".format(query_str))
+            cursor = connection.cursor()
+            cursor.execute(query_str)
+            q_results = cursor.fetchall()
+            pcard_ids = [row[0] for row in q_results]
+            result = [PhysicalCard.objects.get(pk=pc_id).get_latest_card() for pc_id in pcard_ids]
+            cache.set(_cache_key, result, 60*60*18)
+            #sys.stderr.write("R: {}\n".format("\n".join(str(i) for i in result)))
 
         return result
 
