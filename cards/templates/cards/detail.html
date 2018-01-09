@@ -166,7 +166,7 @@ function drawCardStatsChart(formatname) {
               <td>{% for tcolor in card.basecard.colors.all %}{{ tcolor.color }} {% empty %}Colorless{% endfor %}</td>
             </tr>
             <tr>
-              <td class="cardattr">card.ninja Card&nbsp;Rating</td>
+              <td class="cardattr">Pat's Card&nbsp;Rating</td>
               <td>
                 {% for lf in physicalcard.legal_formats %}
                   <span class="hidden-xs-inline">{{lf.formatname}}</span><span class="visible-xs-inline">{{lf.abbr}}</span>:
@@ -256,7 +256,7 @@ function drawCardStatsChart(formatname) {
                 <div class="panel-heading" role="tab" id="heading-{{format.formatname|lower}}-rating">
                   <h5 class="panel-title">
                     <a data-toggle="collapse" data-parent="#accordion-{{format.formatname|lower}}" href="#collapse-{{format.formatname|lower}}-rating" aria-expanded="false" aria-controls="collapse-{{format.formatname|lower}}-rating">
-                      <i class="indicator glyphicon glyphicon-menu-right pull-left" style="font-size: 90%; padding-right: 5px;"></i> card.ninja Card Rating: {{cr.cardninjaRating|floatformat:2 }}
+                      <i class="indicator glyphicon glyphicon-menu-right pull-left" style="font-size: 90%; padding-right: 5px;"></i> Pat's Card Rating: {{cr.cardninjaRating|floatformat:2 }}
                     </a>
                   </h5>
                 </div>
@@ -269,7 +269,7 @@ function drawCardStatsChart(formatname) {
                         <div><b>Wins</b> - {{cbs.win_count}} ({{cbs.win_percentage|floatformat:1}}%)</div>
                         {% if cbs.win_count > 0 %}
                           <!-- WON BATTLES -->
-                          <div>{{ physicalcard.get_card_name }} has beaten these cards in card.ninja Battles:</div>
+                          <div>{{ physicalcard.get_card_name }} has beaten these cards in Pat's Card Battles:</div>
                           <div class="row">
                             {% for fbc in formatbasecards %}
                               {% if fbc.format.formatname == format.formatname %}
@@ -286,7 +286,7 @@ function drawCardStatsChart(formatname) {
                         <div><b>Losses</b> - {{cbs.loss_count}} ({{cbs.loss_percentage|floatformat:1}}%)</div>
                         {% if cbs.loss_count > 0 %}
                           <!-- LOST BATTLES -->
-                          <div>{{ physicalcard.get_card_name }} has lost to these cards in card.ninja Battles:</div>
+                          <div>{{ physicalcard.get_card_name }} has lost to these cards in Pat's Card Battles:</div>
                           <div class="row">
                             {% for fbc in formatbasecards %}
                               {% if fbc.format.formatname == format.formatname %}
