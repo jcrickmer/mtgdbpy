@@ -124,7 +124,6 @@ class PhysicalCardTestCase(TestCase):
         pc.save()
 
         self.assertEquals(pc.get_cardratings().count(), 0)
-        self.assertEquals(pc.get_cardratings(test_id=4652).count(), 0)
 
 
 class BaseCardTestCase(TestCase):
@@ -233,7 +232,7 @@ class CardManagerROTestCase(TestCase):
     def test_standard_cards_sort_rating(self):
         format = Format.objects.get(pk=4)
         all_cards = Card.playables.get_queryset()
-        allCards = Card.playables.in_cardrating_order(all_cards, format_id=format.id, test_id=1, sort_order=-1)
+        allCards = Card.playables.in_cardrating_order(all_cards, format_id=format.id, sort_order=-1)
         first = allCards[0]
         self.assertEquals(first.basecard.name, 'Elspeth, Sun\'s Champion')
         self.assertEquals(first.basecard.id, 6004)
@@ -293,14 +292,12 @@ class CardManagerROTestCase(TestCase):
         allCards = Card.playables.in_cardrating_order(
             all_cards,
             format_id=1,
-            test_id=1,
-            sort_order=-
-            1)
+            sort_order=-1)
         first = allCards[0]
         self.assertEquals(first.basecard.name, 'Lightning Bolt')
         self.assertEquals(first.id, 68647)
         self.assertEquals(
-            CardRating.objects.filter(physicalcard=first.basecard.physicalcard, format_id=1, test_id=1).first().mu,
+            CardRating.objects.filter(physicalcard=first.basecard.physicalcard, format_id=1).first().mu,
             44.5023075558582)
 
     def test_modern_cards_sort_rating_asc(self):
@@ -308,13 +305,12 @@ class CardManagerROTestCase(TestCase):
         allCards = Card.playables.in_cardrating_order(
             all_cards,
             format_id=1,
-            test_id=1,
             sort_order=1)
         first = allCards[0]
         self.assertEquals(first.basecard.name, 'Abzan Charm')
         self.assertEquals(first.id, 64961)
         self.assertEquals(
-            CardRating.objects.filter(physicalcard=first.basecard.physicalcard, format_id=1, test_id=1).first().mu,
+            CardRating.objects.filter(physicalcard=first.basecard.physicalcard, format_id=1).first().mu,
             25)
 
     def test_modern_cards_name_term_sort_rating_desc(self):
@@ -326,13 +322,12 @@ class CardManagerROTestCase(TestCase):
         cards = Card.playables.in_cardrating_order(
             card_list,
             format_id=1,
-            test_id=1,
             sort_order=-1)
         first = cards[0]
         self.assertEquals(first.basecard.name, 'Path to Exile')
         self.assertEquals(first.basecard.id, 2047)
         self.assertEquals(
-            CardRating.objects.filter(physicalcard=first.basecard.physicalcard, format_id=1, test_id=1).first().mu,
+            CardRating.objects.filter(physicalcard=first.basecard.physicalcard, format_id=1).first().mu,
             34.0947162161112)
 
 

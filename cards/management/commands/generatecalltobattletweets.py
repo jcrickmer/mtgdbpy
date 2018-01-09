@@ -178,8 +178,8 @@ class BaseCardRandomizer():
     def produce_tweet(self):
         self.tweet = ''
 
-        fc_cr = CardRating.objects.filter(physicalcard=self.first_card.basecard.physicalcard, format=self.cur_format, test__id=1).first()
-        cc_cr = CardRating.objects.filter(physicalcard=self.comp_card.basecard.physicalcard, format=self.cur_format, test__id=1).first()
+        fc_cr = CardRating.objects.filter(physicalcard=self.first_card.basecard.physicalcard, format=self.cur_format).first()
+        cc_cr = CardRating.objects.filter(physicalcard=self.comp_card.basecard.physicalcard, format=self.cur_format).first()
 
         comp_word = 'worse'
         if fc_cr.mu > cc_cr.mu:
@@ -291,7 +291,7 @@ class OriginsCardRandomizer(BaseCardRandomizer):
         card_list = Card.playables.search(spreds)
 
         self.first_card = card_list[0]
-        fc_cr = CardRating.objects.filter(physicalcard=self.first_card.basecard.physicalcard, format=self.cur_format, test__id=1).first()
+        fc_cr = CardRating.objects.filter(physicalcard=self.first_card.basecard.physicalcard, format=self.cur_format).first()
         #sys.stderr.write("first card is {}\n".format(self.first_card.basecard.name))
         #sys.stderr.write("first card rating sigma {}, mu {} \n".format(fc_cr.sigma, fc_cr.mu))
 
@@ -332,8 +332,8 @@ class OriginsCardRandomizer(BaseCardRandomizer):
     def produce_tweet(self):
         self.tweet = ''
 
-        fc_cr = CardRating.objects.filter(physicalcard=self.first_card.basecard.physicalcard, format=self.cur_format, test__id=1).first()
-        cc_cr = CardRating.objects.filter(physicalcard=self.comp_card.basecard.physicalcard, format=self.cur_format, test__id=1).first()
+        fc_cr = CardRating.objects.filter(physicalcard=self.first_card.basecard.physicalcard, format=self.cur_format).first()
+        cc_cr = CardRating.objects.filter(physicalcard=self.comp_card.basecard.physicalcard, format=self.cur_format).first()
 
         comp_word = 'worse'
         if fc_cr.mu > cc_cr.mu:
@@ -639,7 +639,7 @@ class MM2CardRandomizer(BaseCardRandomizer):
         card_list = Card.playables.search(spreds)
 
         self.first_card = card_list[0]
-        fc_cr = CardRating.objects.filter(physicalcard=self.first_card.basecard.physicalcard, format=self.cur_format, test__id=1).first()
+        fc_cr = CardRating.objects.filter(physicalcard=self.first_card.basecard.physicalcard, format=self.cur_format).first()
         #sys.stderr.write("first card is {}\n".format(self.first_card.basecard.name))
         #sys.stderr.write("first card rating sigma {}, mu {} \n".format(fc_cr.sigma, fc_cr.mu))
 
@@ -680,8 +680,8 @@ class MM2CardRandomizer(BaseCardRandomizer):
     def produce_tweet(self):
         self.tweet = ''
 
-        fc_cr = CardRating.objects.filter(physicalcard=self.first_card.basecard.physicalcard, format=self.cur_format, test__id=1).first()
-        cc_cr = CardRating.objects.filter(physicalcard=self.comp_card.basecard.physicalcard, format=self.cur_format, test__id=1).first()
+        fc_cr = CardRating.objects.filter(physicalcard=self.first_card.basecard.physicalcard, format=self.cur_format).first()
+        cc_cr = CardRating.objects.filter(physicalcard=self.comp_card.basecard.physicalcard, format=self.cur_format).first()
 
         comp_word = 'worse'
         if fc_cr.mu > cc_cr.mu:

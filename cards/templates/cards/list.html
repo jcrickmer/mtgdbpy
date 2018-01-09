@@ -75,9 +75,7 @@ $(function() {
             <div class="cn_r_{{format.abbr}}">{{format.abbr}}:&nbsp;<span id="cr_{{card.multiverseid}}_{{format.id}}"></span></div>
 	  {% endfor %}
         {% for cardrating in card.basecard.physicalcard.cardrating_set.all %}
-          {% if cardrating.test.id == 1 %}
-            <script>$("#cr_{{card.multiverseid}}_{{cardrating.format.id}}").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
-          {% endif %}
+          <script>$("#cr_{{card.multiverseid}}_{{cardrating.format.id}}").html("{{cardrating.cardninjaRating|floatformat:1 }}");</script>
         {% endfor%}
         </td>
       </tr>

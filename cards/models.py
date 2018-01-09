@@ -135,8 +135,8 @@ class PhysicalCard(models.Model):
         choices=LAYOUT_CHOICES,
         default=NORMAL)
 
-    def get_cardratings(self, start_date=datetime.today(), end_date=datetime.today(), test_id=1):
-        """ Shortcut to get the CardRating for a given Format and BattleTest for this PhysicalCard.
+    def get_cardratings(self, start_date=datetime.today(), end_date=datetime.today()):
+        """ Shortcut to get the CardRating for a given Format for this PhysicalCard.
 
         This is meant to be accessible in templates for display.
 
@@ -148,8 +148,7 @@ class PhysicalCard(models.Model):
         """
         return self.cardrating_set.filter(
             format__start_date__lte=start_date,
-            format__end_date__gte=end_date,
-            test__id=test_id).order_by('format__formatname')
+            format__end_date__gte=end_date).order_by('format__formatname')
 
     def get_last_updated(self):
         return max(bc.updated_at for bc in self.basecard_set.all())
@@ -381,14 +380,16 @@ class PhysicalCard(models.Model):
         return similars
 
     def find_similar_cards(self, max_results=18):
-        ''' Returns Card objects, not PhysicalCard objects.
-        '''
+        """ Returns Card objects, not PhysicalCard objects.
+        """
         similars = self.find_similar_card_ids(max_results)
         result = []
         for sim_id in similars:
             try:
                 card = PhysicalCard.objects.get(pk=sim_id).get_latest_card()
-                result.append(card)
+                if card is not None:
+                    # found issue with '1996 World Champion'. Has a PhysicalCard and BaseCard, but no Card.
+                    result.append(card)
             except:
                 pass
         return result
@@ -600,15 +601,14 @@ class CardManager(models.Manager):
             self,
             queryset,
             format_id=1,
-            test_id=1,
             sort_order=1):
         #cursor = connection.cursor()
-        #sql = 'SELECT bc.name, max(c.multiverseid), pc.id, cr.mu FROM physicalcard pc JOIN basecard bc ON pc.id = bc.physicalcard_id JOIN card c ON bc.id = c.basecard_id JOIN cardrating cr ON cr.physicalcard_id = pc.id WHERE cr.format_id = ' + str(format_id) + ' AND cr.test_id = ' + str(test_id) + ' GROUP BY pc.id ORDER BY cr.mu'
+        #sql = 'SELECT bc.name, max(c.multiverseid), pc.id, cr.mu FROM physicalcard pc JOIN basecard bc ON pc.id = bc.physicalcard_id JOIN card c ON bc.id = c.basecard_id JOIN cardrating cr ON cr.physicalcard_id = pc.id WHERE cr.format_id = ' + str(format_id) + ' GROUP BY pc.id ORDER BY cr.mu'
         # cursor.execute(sql)
         #context['winners'] = cursor.fetchall()
 
         # Try 2
-        #cr_qs = CardRating.objects.filter(format_id=format_id, test_id=test_id).order_by('mu')
+        #cr_qs = CardRating.objects.filter(format_id=format_id).order_by('mu')
         #result = {}
         #qs = self.get_queryset().filter(*args, **kwargs)
         # for card in qs:
@@ -627,8 +627,6 @@ class CardManager(models.Manager):
         cards = self.raw(
             'SELECT c.id FROM physicalcard pc JOIN basecard bc ON pc.id = bc.physicalcard_id JOIN card c ON bc.id = c.basecard_id JOIN cardrating cr ON cr.physicalcard_id = pc.id WHERE cr.format_id = ' +
             str(format_id) +
-            ' AND cr.test_id = ' +
-            str(test_id) +
             ' AND c.id IN (' +
             ','.join(str(card.id) for card in queryset) +
             ') GROUP BY pc.id HAVING max(c.multiverseid) ORDER BY cr.mu ' +
@@ -675,7 +673,7 @@ class CardManager(models.Manager):
             for sdir in sortds:
                 if sdir.term == 'cardrating' and not add_cardratings:
                     add_cardratings = True
-                    cru_join = ' LEFT JOIN cardrating AS crs ON crs.physicalcard_id = pc.id AND crs.test_id = 1 AND crs.format_id = {}'.format(
+                    cru_join = ' LEFT JOIN cardrating AS crs ON crs.physicalcard_id = pc.id AND crs.format_id = {}'.format(
                         str(sdir.crs_format_id))
 
             sql_s = 'SELECT c.id FROM card AS c JOIN basecard AS bc ON c.basecard_id = bc.id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id {} WHERE bc.cardposition IN ({}) AND pc.layout NOT IN ({}) GROUP BY bc.id HAVING MAX(c.multiverseid) '.format(
@@ -703,15 +701,14 @@ class CardManager(models.Manager):
             Swamp is not a creature).
         '''
         logger = logging.getLogger(__name__)
-        test_id = 1
 
         # use this to create unique table aliases as we add joins
         jcounter = 0
 
         pre_where_clause = ''
         # This version gets the one with the last multiverseid (ostinsibly, the latest one), but it is really, really slow. And take the HAVING clause out if you are using this one.
-        #sql_s = '''SELECT c.id, c.basecard_id FROM physicalcard AS pc JOIN basecard AS bc ON pc.id = bc.physicalcard_id JOIN card AS c ON c.basecard_id = bc.id INNER JOIN (SELECT basecard_id, MAX(multiverseid) AS multiverseid FROM card GROUP BY basecard_id) AS cm ON cm.basecard_id = c.basecard_id AND cm.multiverseid = c.multiverseid LEFT JOIN formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 '''
-        sql_s = '''SELECT c.id, c.basecard_id FROM physicalcard AS pc JOIN basecard AS bc ON pc.id = bc.physicalcard_id JOIN card AS c ON c.basecard_id = bc.id LEFT JOIN cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 '''
+        #sql_s = '''SELECT c.id, c.basecard_id FROM physicalcard AS pc JOIN basecard AS bc ON pc.id = bc.physicalcard_id JOIN card AS c ON c.basecard_id = bc.id INNER JOIN (SELECT basecard_id, MAX(multiverseid) AS multiverseid FROM card GROUP BY basecard_id) AS cm ON cm.basecard_id = c.basecard_id AND cm.multiverseid = c.multiverseid LEFT JOIN formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN cardrating AS cr ON cr.physicalcard_id = pc.id '''
+        sql_s = '''SELECT c.id, c.basecard_id FROM physicalcard AS pc JOIN basecard AS bc ON pc.id = bc.physicalcard_id JOIN card AS c ON c.basecard_id = bc.id LEFT JOIN cardrating AS cr ON cr.physicalcard_id = pc.id '''
 
         terms = []
         not_terms = []
@@ -762,7 +759,7 @@ class CardManager(models.Manager):
             for sd in sortds:
                 # If we are sorting for card rating, we need to inject into the search criteria the format that we care about.
                 if sd.term == 'cardrating':
-                    pre_where_clause = ' LEFT JOIN cardrating AS crs ON crs.physicalcard_id = pc.id AND crs.test_id = 1 AND crs.format_id = ' + \
+                    pre_where_clause = ' LEFT JOIN cardrating AS crs ON crs.physicalcard_id = pc.id AND crs.format_id = ' + \
                         str(sd.crs_format_id)
 
         # Now we can process all of the other terms
@@ -872,7 +869,7 @@ class CardManager(models.Manager):
             card_ids = cursor.fetchall()
             bc_ids = [row[1] for row in card_ids]
             if len(bc_ids) > 0:
-                sql_s = 'SELECT c.id FROM physicalcard AS pc JOIN basecard AS bc ON pc.id = bc.physicalcard_id JOIN card AS c ON c.basecard_id = bc.id LEFT JOIN cardcolor AS cc ON cc.basecard_id = bc.id LEFT JOIN formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN cardrating AS cr ON cr.physicalcard_id = pc.id AND cr.test_id = 1 ' + \
+                sql_s = 'SELECT c.id FROM physicalcard AS pc JOIN basecard AS bc ON pc.id = bc.physicalcard_id JOIN card AS c ON c.basecard_id = bc.id LEFT JOIN cardcolor AS cc ON cc.basecard_id = bc.id LEFT JOIN formatbasecard AS f ON f.basecard_id = bc.id LEFT JOIN cardrating AS cr ON cr.physicalcard_id = pc.id ' + \
                     pre_where_clause + ' WHERE bc.id IN (' + ','.join(str(i) for i in bc_ids) + ') '
                 for arg in not_terms:
                     # Now that we have all of these ids, let's use them to filter out those types that we do not want.
@@ -1426,7 +1423,6 @@ class FormatBasecard(models.Model):
 
 class Battle(models.Model):
     #id = models.IntegerField(primary_key=True)
-    test = models.ForeignKey('BattleTest')
     format = models.ForeignKey('Format')
     winner_pcard = models.ForeignKey('PhysicalCard', related_name='won_battles')
     loser_pcard = models.ForeignKey('PhysicalCard', related_name='lost_battles')
@@ -1449,21 +1445,11 @@ class Battle(models.Model):
             " > " + str(self.loser_pcard.id) + " in " + self.format.format + "]"
 
 
-class BattleTest(models.Model):
-    #id = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length=100)
-
-    class Meta:
-        verbose_name_plural = 'Battle Tests'
-        db_table = 'battletest'
-
-
 class CardRating(models.Model):
     id = models.AutoField(primary_key=True)
     physicalcard = models.ForeignKey('PhysicalCard')
     mu = models.FloatField(default=25.0, null=False)
     sigma = models.FloatField(default=25.0 / 3.0, null=False)
-    test = models.ForeignKey('BattleTest')
     format = models.ForeignKey('Format')
     updated_at = models.DateTimeField(
         auto_now=True,
@@ -1477,12 +1463,12 @@ class CardRating(models.Model):
 
     class Meta:
         verbose_name_plural = 'Card Ratings'
-        unique_together = ('physicalcard', 'format', 'test')
+        unique_together = ('physicalcard', 'format')
         db_table = 'cardrating'
 
     def __unicode__(self):
         return "[CardRating " + str(self.id) + ": " + str(self.physicalcard.id) + " mu=" + str(self.mu) + " sigma=" + str(
-            self.sigma) + " for format \"" + str(self.format.format) + ", test \"" + str(self.test.name) + "\"]"
+            self.sigma) + " for format \"" + str(self.format.format) + "\"]"
 
 
 class CardBattleStats():
@@ -1491,7 +1477,6 @@ class CardBattleStats():
     """
 
     def __init__(self, physicalcard, format):
-        # REVISIT - need to add BattleTest here instead of defaulting to 1 for test_id
         self.physicalcard = physicalcard
         self.format = format
 
@@ -1507,7 +1492,7 @@ class CardBattleStats():
 
         Returns: annotated QuerySet of cards this self.physicalcard has beaten in self.format.
         """
-        result = Battle.objects.filter(winner_pcard=self.physicalcard, test_id=1, format=self.format).values(
+        result = Battle.objects.filter(winner_pcard=self.physicalcard, format=self.format).values(
             'loser_pcard_id').annotate(num_wins=Count('loser_pcard_id')).order_by('-num_wins')
         return result
 
@@ -1517,19 +1502,19 @@ class CardBattleStats():
 
         Returns: annotated QuerySet of cards this self.physicalcard has lost to in self.format.
         """
-        result = Battle.objects.filter(loser_pcard=self.physicalcard, test_id=1, format=self.format).values(
+        result = Battle.objects.filter(loser_pcard=self.physicalcard, format=self.format).values(
             'winner_pcard_id').annotate(num_losses=Count('winner_pcard_id')).order_by('-num_losses')
         return result
 
     def win_count(self):
         """ Number of times self.physicalcard has won in self.format.
         """
-        return Battle.objects.filter(winner_pcard=self.physicalcard, test_id=1, format=self.format).count()
+        return Battle.objects.filter(winner_pcard=self.physicalcard, format=self.format).count()
 
     def loss_count(self):
         """ Number of times self.physicalcard has lost in self.format.
         """
-        return Battle.objects.filter(loser_pcard=self.physicalcard, test_id=1, format=self.format).count()
+        return Battle.objects.filter(loser_pcard=self.physicalcard, format=self.format).count()
 
     def battle_count(self):
         """ Number of times self.physicalcard has battled in self.format.
