@@ -356,7 +356,7 @@ class CardTestCase(TestCase):
         self.assertEquals(delver.basecard.name, 'Delver of Secrets')
         self.assertEquals(delver, delver.get_first_card())
         self.assertEquals(delver.get_double_faced_card(), delver.get_second_card())
-        
+
     def test_get_double_faced_card_reverse(self):
         aberration = Card.playables.get_latest_printing().filter(
             basecard__name__exact='Insectile Aberration').first()
@@ -374,7 +374,7 @@ class CardTestCase(TestCase):
         self.assertEquals(
             delver.basecard.physicalcard.id,
             aberration.basecard.physicalcard.id)
-        
+
     def test_get_double_faced_card_reverseX(self):
         aberration = Card.playables.get_latest_printing().filter(
             basecard__name__exact='Insectile Aberration').first()

@@ -11,7 +11,6 @@ admin.autodiscover()
 urlpatterns = [
     url(r'^cards/admin/', include(admin.site.urls)),
     url(r'^cards/', include('cards.urls', namespace="cards")),
-    url(r'^rules/', include('rules.urls', namespace="rules")),
     url(r'^decks/', include('decks.urls', namespace="decks")),
     url(r'^cn/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT_CN}),
     url(r'^fonts/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT_CN}),

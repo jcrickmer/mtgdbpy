@@ -417,7 +417,7 @@ class PhysicalCard(models.Model):
             q_results = cursor.fetchall()
             pcard_ids = [row[0] for row in q_results]
             result = [PhysicalCard.objects.get(pk=pc_id).get_latest_card() for pc_id in pcard_ids]
-            cache.set(_cache_key, result, 60*60*18)
+            cache.set(_cache_key, result, 60 * 60 * 18)  # 18 hours
             #sys.stderr.write("R: {}\n".format("\n".join(str(i) for i in result)))
 
         return result
@@ -1486,9 +1486,10 @@ class CardRating(models.Model):
 
 
 class CardBattleStats():
+
     """ Transient/volatile class for battle statistics for a PhysicalCard and a Format.
     """
-    
+
     def __init__(self, physicalcard, format):
         # REVISIT - need to add BattleTest here instead of defaulting to 1 for test_id
         self.physicalcard = physicalcard
@@ -1499,7 +1500,7 @@ class CardBattleStats():
             return u'[CardBattleStats for "{}" in "{}"]'.format(self.physicalcard.get_card_name(), self.format.format)
         except:
             return u'[CardBattleStats for [{}] in [{}]]'.format(self.physicalcard.id, self.format.id)
-        
+
     def won_battles(self):
         """ Annotated dictionary of PhysicalCard.ids and the number of times that PhysicalCard has been beaten by self.physicalcard in
         self.format.
@@ -1562,7 +1563,6 @@ class CardBattleStats():
             return 100.0 * float(self.loss_count()) / float(self.battle_count())
         else:
             return return_on_div_by_zero
-
 
 
 class CardKeyword(models.Model):
