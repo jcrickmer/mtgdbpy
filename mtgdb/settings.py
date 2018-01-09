@@ -31,12 +31,13 @@ ALLOWED_HOSTS = ['127.0.0.1', 'smoker']
 INTERNAL_IPS = (
     '127.0.0.1',
     'localhost',
-    '192.168.1.6',
-    '192.168.1.7',
-    '192.168.1.8',
-    '192.168.1.11',
-    '192.168.1.18',
-    '192.168.1.19',
+    '192.168.0.6',
+    '192.168.0.7',
+    '192.168.0.8',
+    '192.168.0.11',
+    '192.168.0.18',
+    '192.168.0.19',
+    '192.168.0.13',
     'smoker')
 
 # Application definition
@@ -54,7 +55,6 @@ INSTALLED_APPS = [
     'haystack',
     'cards',
     'decks',
-    'rules',
 ]
 
 MIDDLEWARE_CLASSES = (
@@ -127,7 +127,6 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'cards', 'templates'),
                  os.path.join(BASE_DIR, 'decks', 'templates'),
-                 os.path.join(BASE_DIR, 'rules', 'templates'),
                  os.path.join(BASE_DIR, 'mtgdb', 'templates'),
                  os.path.join('/home/jason/mtgdb/lib/python2.7/site-packages/django/contrib', 'admin', 'templates'),
                  '/home/jason/mtgdb/lib/python2.7/site-packages/django/contrib/admin/templates',

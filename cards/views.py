@@ -32,7 +32,6 @@ from cards.models import FormatBasecard
 from cards.models import Ruling
 from cards.models import Rarity
 from cards.models import Battle
-from cards.models import BattleTest
 from cards.models import CardRating
 from cards.models import Association
 from cards.models import AssociationCard
@@ -682,7 +681,7 @@ SELECT s1.physicalcard_id AS id,
  ORDER BY delta DESC LIMIT 50'''
 
     foo = PhysicalCard.objects.raw(up_raw_sql, [top_format.id, next_format.id])
-    up_cr = CardRating.objects.filter(test_id=1, format=top_format, physicalcard_id__in=[g.id for g in foo])
+    up_cr = CardRating.objects.filter(format=top_format, physicalcard_id__in=[g.id for g in foo])
     context['trendingup'] = foo
     context['trendingup_cr'] = up_cr
 
@@ -703,7 +702,7 @@ SELECT s1.physicalcard_id AS id,
  WHERE s1.percentage_of_all_cards < s2.percentage_of_all_cards
  ORDER BY delta DESC LIMIT 50'''
     tdown = PhysicalCard.objects.raw(down_raw_sql, [top_format.id, next_format.id])
-    down_cr = CardRating.objects.filter(test_id=1, format=top_format, physicalcard_id__in=[g.id for g in tdown])
+    down_cr = CardRating.objects.filter(format=top_format, physicalcard_id__in=[g.id for g in tdown])
     context['trendingdown'] = tdown
     context['trendingdown_cr'] = down_cr
 
@@ -723,7 +722,7 @@ SELECT s1.physicalcard_id AS id,
        LEFT JOIN formatstat fs2 ON fs2.format_id = s2.format_id
  ORDER BY s1.percentage_of_all_cards DESC LIMIT 100'''
     top = PhysicalCard.objects.raw(top_raw_sql, [top_format.id, next_format.id])
-    top_cr = CardRating.objects.filter(test_id=1, format=top_format, physicalcard_id__in=[g.id for g in top])
+    top_cr = CardRating.objects.filter(format=top_format, physicalcard_id__in=[g.id for g in top])
     context['top'] = top
     context['top_cr'] = top_cr
 
@@ -746,9 +745,6 @@ def battle(request, format="redirect"):
         start_date__lte=datetime.today(),
         end_date__gte=datetime.today()).order_by('-end_date').first()
     format_id = format_obj.id
-
-    # Only contemplating one test right now. This is the id of the battletest table in the database.
-    test_id = 1
 
     # Going straight to the DB on this...
     cursor = connection.cursor()
@@ -792,7 +788,6 @@ def battle(request, format="redirect"):
         first_card['physicalcard_id'] = card_a.basecard.physicalcard.id
         crsdb = CardRating.objects.filter(
             physicalcard=card_a.basecard.physicalcard,
-            test__id__exact=test_id,
             format=format_obj)
         try:
             crdb = crsdb[0]
@@ -918,7 +913,6 @@ def battle(request, format="redirect"):
                'card_b': card_b,
                'first_card': first_card,
                'second_card': second_card,
-               'test_id': test_id,
                'format_id': format_id,
                'format': format_obj,
                'rand_source': rand_source,
@@ -955,7 +949,6 @@ def winbattle(request):
     losing_card = None
     format = None
     format_nick = 'standard'
-    test = None
     if request.GET.get('winner', False):
         card_w_list = Card.objects.filter(
             multiverseid__exact=request.GET.get(
@@ -971,16 +964,12 @@ def winbattle(request):
     if request.GET.get('format_id', False):
         format = Format.objects.get(pk=request.GET.get('format_id'))
         format_nick = format.formatname.lower()
-    if request.GET.get('test_id', False):
-        test = BattleTest.objects.get(pk=request.GET.get('test_id'))
 
     #logger.debug("winner physical: " + str(winning_card.basecard.physicalcard.id))
     #logger.debug("loser physical: " + str(losing_card.basecard.physicalcard.id))
     #logger.debug("format: " + str(format))
-    #logger.debug("test: " + str(test))
     #logger.debug("session: " + request.session.session_key)
-    battle = Battle(test=test,
-                    format=format,
+    battle = Battle(format=format,
                     winner_pcard=winning_card.basecard.physicalcard,
                     loser_pcard=losing_card.basecard.physicalcard,
                     session_key=request.session.session_key)
@@ -1005,7 +994,6 @@ def updateRatings(battle):
 
     crsdb_w = CardRating.objects.filter(
         physicalcard__id__exact=battle.winner_pcard.id,
-        test__id__exact=battle.test.id,
         format__id__exact=battle.format.id)
     try:
         crdb_w = crsdb_w[0]
@@ -1018,7 +1006,6 @@ def updateRatings(battle):
 
     crsdb_l = CardRating.objects.filter(
         physicalcard__id__exact=battle.loser_pcard.id,
-        test__id__exact=battle.test.id,
         format__id__exact=battle.format.id)
     try:
         crdb_l = crsdb_l[0]
@@ -1074,7 +1061,6 @@ def ratings(request, format_id=0):
 
     format = get_object_or_404(Format, pk=format_id)
 
-    test_id = 1
     # dummy test harness to just get some ratings...
     context = {}
     context['format'] = format
@@ -1110,11 +1096,9 @@ def ratings(request, format_id=0):
     context['tester'] = collections.OrderedDict(sorted(battles_histo.items(), key=lambda t: int(t[0])))
 
     context['battle_count'] = Battle.objects.filter(
-        format__id__exact=format_id,
-        test__id__exact=test_id).count()
+        format__id__exact=format_id).count()
     bc = Battle.objects.filter(
-        format__id__exact=format_id,
-        test__id__exact=test_id).aggregate(
+        format__id__exact=format_id).aggregate(
         Count(
             'session_key',
             distinct=True))

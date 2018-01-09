@@ -69,8 +69,8 @@ class Command(BaseCommand):
                     out.write(card.basecard.name)
                     out.write('</a> ')
 
-                    wincount = Battle.objects.filter(winner_pcard=card.basecard.physicalcard, test_id=1, format=format_obj).count()
-                    losecount = Battle.objects.filter(loser_pcard=card.basecard.physicalcard, test_id=1, format=format_obj).count()
+                    wincount = Battle.objects.filter(winner_pcard=card.basecard.physicalcard, format=format_obj).count()
+                    losecount = Battle.objects.filter(loser_pcard=card.basecard.physicalcard, format=format_obj).count()
                     battlecount = wincount + losecount
                     out.write('[battles: ' + str(battlecount) + ' (' + str(wincount) + '-' + str(losecount) + ')]')
                     out.write('<br/>\n')

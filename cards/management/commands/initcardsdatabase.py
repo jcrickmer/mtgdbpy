@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from cards.models import Color
 from cards.models import Rarity
-from cards.models import BattleTest
 
 #from django.core.exceptions import DoesNotExist
 
@@ -19,8 +18,6 @@ class Command(BaseCommand):
         self.init_colors()
 
         self.init_rarities()
-
-        self.init_battletests()
 
     def init_colors(self):
         colors = [['W', 'white'],
@@ -60,7 +57,3 @@ class Command(BaseCommand):
             dbr.rarity = rarity[1]
             dbr.sortorder = rarity[2]
             dbr.save()
-
-    def init_battletests(self):
-        bt = BattleTest(name='subjective')
-        bt.save()

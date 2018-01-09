@@ -2320,7 +2320,7 @@ class CardManagerROTestCase(TestCase):
         self.assertEquals(len(list(cards)), 618)
         self.assertEquals(cards[0].basecard.name, 'Abandon Hope')
         self.assertEquals(cards[1].basecard.name, "Abrupt Decay")
-        self.assertEquals(cards[254].basecard.name, 'Gruul Turf')
+        self.assertEquals(cards[255].basecard.name, 'Gruul Turf')
 
     def test_sort_name_multi_desc(self):
         # SELECT pc.id, bc.name, bc.cmc FROM basecard AS bc JOIN physicalcard AS
@@ -2339,8 +2339,8 @@ class CardManagerROTestCase(TestCase):
         #err.write(str(cards.query) + "\n")
         self.assertEquals(len(list(cards)), 618)
         self.assertEquals(cards[616].basecard.name, 'Abrupt Decay')
-        self.assertEquals(cards[4].basecard.name, "Young Pyromancer")
-        self.assertEquals(cards[0].basecard.name, '_____')
+        self.assertEquals(cards[3].basecard.name, "Young Pyromancer")
+        self.assertEquals(cards[0].basecard.name, 'Zodiac Rabbit')
 
     def test_sort_cr_multi(self):
         # SELECT pc.id, bc.name, cr.mu FROM basecard AS bc JOIN physicalcard AS pc
