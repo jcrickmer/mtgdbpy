@@ -7,10 +7,16 @@ from django.views.generic import ListView
 import logging
 from django.core.cache import cache
 from django.db.models import Max, Min, Count, Sum, Avg
+from django.conf import settings
 
+BASE_CONTEXT = {'settings':{
+    'HOME_URL':settings.HOME_URL,
+    'DECKBOX_URL':settings.DECKBOX_URL,
+    }
+        }
 
 def index(request):
-    context = dict()
+    context = BASE_CONTEXT.copy()
     return render(request, 'decks/index.html', context)
 
 
@@ -20,7 +26,7 @@ def deck(request, deck_id=None):
         deck = Deck.objects.get(pk=deck_id)
     except Deck.DoesNotExist:
         raise Http404
-    context = dict()
+    context = BASE_CONTEXT.copy()
     context['deck'] = deck
     context['cdeck'] = dict()
     context['cdeck']['deck'] = deck
@@ -28,7 +34,7 @@ def deck(request, deck_id=None):
 
 
 def clusters(request):
-    context = dict()
+    context = BASE_CONTEXT.copy()
     clusters = DeckCluster.objects.all()
     context['clusters'] = clusters
     return render(request, 'decks/clusters.html', context)
@@ -42,7 +48,7 @@ def cluster(request, cluster_id=None):
     except DeckCluster.DoesNotExist:
         raise Http404
 
-    context = dict()
+    context = BASE_CONTEXT.copy()
     context['cluster'] = cluster
     context['decks'] = list()
     closest_decks = DeckClusterDeck.objects.filter(deckcluster=cluster).order_by('distance')[0:3]
@@ -60,7 +66,7 @@ def cluster_list(request, cluster_id=None, order='distance'):
     except DeckCluster.DoesNotExist:
         raise Http404
 
-    context = dict()
+    context = BASE_CONTEXT.copy()
     context['cluster'] = cluster
     context['decks'] = list()
     decks = DeckClusterDeck.objects.filter(deckcluster=cluster).order_by(order)[0:5]
@@ -87,7 +93,7 @@ def cluster_cards(request, cluster_id=None):
     except DeckCluster.DoesNotExist:
         raise Http404
 
-    context = dict()
+    context = BASE_CONTEXT.copy()
     context['cluster'] = cluster
 
     cards_sql = '''SELECT dc.physicalcard_id as id, SUM(dc.cardcount) as card_count, COUNT(dcdm.deck_id) AS deck_main_count, COUNT(dcds.deck_id) AS deck_side_count, AVG(dc.cardcount) AS card_average FROM deckcard AS dc LEFT JOIN deck dmain ON dc.deck_id = dmain.id LEFT JOIN deckclusterdeck dcdm ON dcdm.deck_id = dmain.id AND dc.board = 'MAIN' AND dcdm.deckcluster_id = %s LEFT JOIN deck dside ON dc.deck_id = dside.id LEFT JOIN deckclusterdeck dcds ON dcds.deck_id = dside.id AND dc.board = 'SIDE' AND dcds.deckcluster_id = %s WHERE (dcdm.deckcluster_id = %s OR dcdm.deckcluster_id IS NULL) AND (dcds.deckcluster_id = %s OR dcds.deckcluster_id IS NULL) AND (dcdm.deckcluster_id IS NOT NULL OR dcds.deckcluster_id IS NOT NULL) GROUP BY dc.physicalcard_id ORDER BY card_count DESC'''
@@ -108,7 +114,7 @@ def tournament(request, tournament_id=None):
     except Tournament.DoesNotExist:
         raise Http404
 
-    context = dict()
+    context = BASE_CONTEXT.copy()
     context['tournament'] = tournament
     tdecks = TournamentDeck.objects.filter(tournament=tournament).order_by('place')
     context['tournament_decks'] = tdecks

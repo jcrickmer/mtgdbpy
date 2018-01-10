@@ -93,9 +93,14 @@ color_slang = [['azorius', ['white', 'blue']],
 # the card.
 #
 
+BASE_CONTEXT = {'settings':{
+    'HOME_URL':settings.HOME_URL,
+    'DECKBOX_URL':settings.DECKBOX_URL,
+    }
+        }
 
 def index(request):
-    context = {}
+    context = BASE_CONTEXT.copy()
     try:
         request.session['query_pred_array'] is None
     except KeyError:
@@ -417,7 +422,8 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
     latest_time = time.time()
     logger.debug("L415 {}".format(str(latest_time - start_time)))
 
-    context = {
+    context = BASE_CONTEXT.copy()
+    context.update({
         'ellided_prev_page': max(0, int(page) - 4),
         'ellided_next_page': min(paginator.num_pages, int(page) + 4),
         'cards': cards,
@@ -427,7 +433,7 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
         'predicates_js': json.dumps(query_pred_array),
         'CARDS_SEARCH_CACHE_TIME': settings.CARDS_SEARCH_CACHE_TIME,
         'cache_key_page': cache_key_page,
-    }
+    })
 
     latest_time = time.time()
     logger.debug("L430 {}".format(str(latest_time - start_time)))
@@ -504,7 +510,8 @@ def detail(request, multiverseid=None, slug=None):
         cardbattlestats.append(cbs)
     associations = Association.objects.filter(associationcards=physicalcard)
 
-    context = {'PAGE_CACHE_TIME': PAGE_CACHE_TIME,
+    context = BASE_CONTEXT.copy()
+    context.update({'PAGE_CACHE_TIME': PAGE_CACHE_TIME,
                'physicalcard': physicalcard,
                'request_mvid': multiverseid,
                'cards': cards,
@@ -512,7 +519,7 @@ def detail(request, multiverseid=None, slug=None):
                'cardbattlestats': cardbattlestats,
                'formatbasecards': formatbasecards,
                'associations': associations,
-               }
+               })
     response = render(request, 'cards/detail.html', context)
     return response
 
@@ -636,7 +643,7 @@ def cardstats(request, formatname=None, physicalcard_id=None, multiverseid=None)
 
 
 def formats(request, formatname="modern"):
-    context = dict()
+    context = BASE_CONTEXT.copy()
     context['formats'] = Format.objects.filter(start_date__lte=datetime.today(),
                                                end_date__gte=datetime.today())
 
@@ -645,7 +652,7 @@ def formats(request, formatname="modern"):
 
 
 def formatstats(request, formatname="modern"):
-    context = dict()
+    context = BASE_CONTEXT.copy()
     top_formats = Format.objects.filter(formatname__iexact=formatname).order_by('-start_date')
     top_format = None
     next_format = None
@@ -909,14 +916,15 @@ def battle(request, format="redirect"):
     if card_b.basecard.cardposition not in [BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP]:
         card_b = PhysicalCard.objects.get(pk=card_b.basecard.physicalcard.id).get_latest_card()
 
-    context = {'card_a': card_a,
+    context = BASE_CONTEXT.copy()
+    context.update({'card_a': card_a,
                'card_b': card_b,
                'first_card': first_card,
                'second_card': second_card,
                'format_id': format_id,
                'format': format_obj,
                'rand_source': rand_source,
-               }
+               })
     if random.random() > 0.5:
         y_a = context['card_a']
         context['card_a'] = context['card_b']
@@ -1062,7 +1070,7 @@ def ratings(request, format_id=0):
     format = get_object_or_404(Format, pk=format_id)
 
     # dummy test harness to just get some ratings...
-    context = {}
+    context = BASE_CONTEXT.copy()
     context['format'] = format
 
     context['cards_count'] = FormatBasecard.objects.filter(

@@ -47,13 +47,14 @@ $.widget.bridge('uibutton', $.ui.button);
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a href="/" class="navbar-brand"><img class="logo-dark-bg" src="/cn/cardninja_light_sm.png" alt="Pat's Games"></a>
+          <a href="{{settings.HOME_URL}}" class="navbar-brand">Pat's Games</a>
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul class="nav navbar-nav">
             <li id="top-menu-home" class=""><a href="/">Home</a></li>
             <li id="top-menu-search" class="active"><a href="{% url 'cards:index' %}">Card Database</a></li>
             <li id="top-menu-battle"><a href="{% url 'cards:battle' %}">Card Battle</a></li>
+            <li id="top-menu-deckbox"><a href="{{settings.DECKBOX_URL}}">Deckbox</a></li>
           </ul>
         </div>
       </div>
@@ -95,7 +96,7 @@ $.widget.bridge('uibutton', $.ui.button);
 	</div>
     <footer class="footer">
       <div class="container">
-        <p>&copy; 2015-2018 Jason Crickmer. All rights reserved. Additional <a rel="nofollow" href="/copyrights/">copyrights</a>.</p>
+        <p>&copy; 2018 Pat's Games. All rights reserved. Additional <a rel="nofollow" href="/copyrights/">copyrights</a>.</p>
         <ul class="footer-links">
           <li><a rel="nofollow" href="/terms-of-use/">Terms of Use</a></li>
           <li class="muted">|</li>
