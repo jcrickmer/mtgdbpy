@@ -6,7 +6,7 @@ DEFAULT_CHARSET = 'utf-8'
 
 DEBUG = TEMPLATE_DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'card.ninja', '172-31-44-78', 'ip-172-31-47-162', '172.31.47.162', 'staging.magiccards.tech','34.215.208.197']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '172-31-44-78', 'ip-172-31-47-162', '172.31.47.162', 'spellbook.patsgames.com', '34.215.208.197']
 INTERNAL_IPS = ()
 #DATABASE_NAME = 'production'
 #DATABASE_USER = 'app'
@@ -15,11 +15,12 @@ INTERNAL_IPS = ()
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mtgdbpy',
+        'NAME': 'mtgdb',
         'USER': 'root',
         'PASSWORD': 'godzilla'
     },
 }
+HAYSTACK_CONNECTIONS['default']['URL'] = 'http://127.0.0.1:8983/solr/mtgdb'
 
 LOGGING = {
     'version': 1,
@@ -61,9 +62,7 @@ LOGGING = {
     },
 }
 
-STATIC_ROOT = "/opt/mtgdb-staging/cstatic/"
-
-STATIC_ROOT_CN = '/opt/mtgdb-staging/cn'
+STATIC_ROOT_CN = '/opt/mtgdb-prod/cn'
 STATIC_ROOT_CARD_IMAGES = '/var/mtgdb/card_images'
 DYNAMIC_IMAGE_FILE_ROOT = '/var/mtgdb/cn_dyn_root'
 
@@ -74,4 +73,4 @@ USE_BITLY = True
 OAUTH_TOKEN = 'XXXXX'
 OAUTH_TOKEN_SECRET = 'XXXXX'
 
-BETTER_BATTLE_PATH = '/opt/mtgdb-staging'
+BETTER_BATTLE_PATH = '/opt/mtgdb-prod'

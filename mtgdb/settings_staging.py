@@ -21,13 +21,7 @@ DATABASES = {
     },
 }
 
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
-        'URL': 'http://127.0.0.1:8983/solr/mtgdb_staging',
-        'INCLUDE_SPELLING': True,
-    },
-}
+HAYSTACK_CONNECTIONS['default']['URL'] = 'http://127.0.0.1:8983/solr/mtgdb_staging'
 
 LOGGING = {
     'version': 1,
@@ -36,12 +30,12 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': '/tmp/debug.log',
+            'filename': '/tmp/mtgdb-staging_debug.log',
         },
         'applogfile': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join('/tmp/', 'mtgdb_debug.log'),
+            'filename': os.path.join('/tmp/', 'mtgdb-staging_debug_app.log'),
             'maxBytes': 1024 * 1024 * 15,  # 15MB
             'backupCount': 10,
         },
@@ -68,12 +62,8 @@ LOGGING = {
         },
     },
 }
-TEMPLATES[0]['DIRS'].append(os.path.join('/opt/mtgdb-staging_env/lib/python2.7/site-packages/django/contrib', 'admin', 'templates'))
-TEMPLATES[0]['DIRS'].append('/opt/mtgdb-staging_env/lib/python2.7/site-packages/django/contrib/admin/templates')
-TEMPLATES[0]['DIRS'].append('/opt/mtgdb-staging_env/lib/python2.7/site-packages/haystack/templates')
-TEMPLATES[0]['DIRS'].append('/opt/mtgdb-staging_env/lib/python2.7/site-packages/ajax_select/templates')
 
-STATIC_ROOT = "/opt/mtgdb-staging_env/lib/python2.7/site-packages/django/contrib/admin/static"
+STATIC_ROOT = os.path.join(SITE_PACKAGES_DIR, "django",'contrib','admin','static')
 STATIC_ROOT_CN = '/opt/mtgdb-staging/cn'
 STATIC_ROOT_CARD_IMAGES = '/var/mtgdb/card_images'
 DYNAMIC_IMAGE_FILE_ROOT = '/var/mtgdb/cn_dyn_root'

@@ -12,8 +12,9 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+from distutils.sysconfig import get_python_lib;
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-
+SITE_PACKAGES_DIR = str(get_python_lib())
 DEFAULT_CHARSET = 'utf-8'
 
 # Quick-start development settings - unsuitable for production
@@ -79,7 +80,7 @@ WSGI_APPLICATION = 'mtgdb.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mtgdbdev',
+        'NAME': 'mtgdb',
                 'USER': 'root',
                 'PASSWORD': 'godzilla'
     },
@@ -88,7 +89,7 @@ DATABASES = {
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
-        'URL': 'http://127.0.0.1:8983/solr/mtgdbdev',
+        'URL': 'http://127.0.0.1:8983/solr/mtgdb',
         # ...or for multicore...
         # 'URL': 'http://127.0.0.1:8983/solr/mysite',
         # NOTE: when turning this on for the first time, a "rebuild_index" is
@@ -128,10 +129,9 @@ TEMPLATES = [
         'DIRS': [os.path.join(BASE_DIR, 'cards', 'templates'),
                  os.path.join(BASE_DIR, 'decks', 'templates'),
                  os.path.join(BASE_DIR, 'mtgdb', 'templates'),
-                 os.path.join('/home/jason/mtgdb/lib/python2.7/site-packages/django/contrib', 'admin', 'templates'),
-                 '/home/jason/mtgdb/lib/python2.7/site-packages/django/contrib/admin/templates',
-                 '/home/jason/mtgdb/lib/python2.7/site-packages/haystack/templates',
-                 '/home/jason/mtgdb/lib/python2.7/site-packages/ajax_select/templates',
+                 os.path.join(SITE_PACKAGES_DIR, 'django', 'contrib', 'admin', 'templates'),
+                 os.path.join(SITE_PACKAGES_DIR, 'haystack', 'templates'),
+                 os.path.join(SITE_PACKAGES_DIR, 'ajax_select', 'templates'),
                  ],
         'OPTIONS': {
             'context_processors': [
