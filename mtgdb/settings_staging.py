@@ -6,7 +6,7 @@ DEFAULT_CHARSET = 'utf-8'
 
 DEBUG = TEMPLATE_DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'card.ninja', '172-31-44-78', 'ip-172-31-47-162', '172.31.47.162', 'staging.magiccards.tech','34.215.208.197']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '172-31-44-78', 'ip-172-31-47-162', '172.31.47.162', 'staging.magiccards.tech','34.215.208.197']
 INTERNAL_IPS = ()
 #DATABASE_NAME = 'production'
 #DATABASE_USER = 'app'
@@ -41,7 +41,7 @@ LOGGING = {
         'applogfile': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join('/tmp/', 'mtgdb_debug.log'),
+            'filename': os.path.join('/tmp/', 'mtgdb-staging_debug.log'),
             'maxBytes': 1024 * 1024 * 15,  # 15MB
             'backupCount': 10,
         },
