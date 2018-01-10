@@ -30,7 +30,7 @@ pbr==0.10.8
 pep8==1.7.0
 Pillow==2.7.0
 pycoin==0.52
-pyOpenSSL==0.13
+pyOpenSSL==17.5.0
 pysolr==3.6.0
 python-dateutil==2.4.2
 python-ptrace==0.8.1
