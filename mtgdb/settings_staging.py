@@ -35,11 +35,7 @@ LOGGING = {
         'applogfile': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-<<<<<<< HEAD
-            'filename': os.path.join('/tmp/', 'mtgdb-staging_debug.log'),
-=======
             'filename': os.path.join('/tmp/', 'mtgdb-staging_debug_app.log'),
->>>>>>> b3a02ccc99722a21a045de393e8b3c0ff368380a
             'maxBytes': 1024 * 1024 * 15,  # 15MB
             'backupCount': 10,
         },
