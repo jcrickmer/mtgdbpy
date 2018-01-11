@@ -490,3 +490,46 @@ red #DD5F32
 dark gray #2D2D2D
 white on color: #EEEEEE
 **/
+div #pricing-container {
+}
+table.pricing-table {
+    border: 1px solid #92B06A;
+    border-radius: 3px;
+}
+tr.table-header-row {
+}
+th.pricing-header {
+    background-color: #92B06A;
+    text-align: center;
+    font-weight: bold;
+    font-size: large;
+}
+tr.price-row {
+    border-top: 1px solid #ADC4CC;
+}
+tr.price-current-card {
+}
+tr.price-on-sale {
+}
+td.price-expansion {
+}
+td.price-printing {
+}
+td.price-price {
+    text-align: right;
+}
+tr.price-on-sale td.price-price {
+    color: #E19D29;
+    font-weight: bold;
+}
+.pricing-login-prompt {
+    font-weight: bold;
+    text-align: center;
+    border: 3px solid #92B06A;
+    padding: 7px;
+}
+td.pricing-table-add {
+    border-top: 1px solid #ADC4CC;
+    font-weight: bold;
+    text-align: center;
+}

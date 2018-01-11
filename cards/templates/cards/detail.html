@@ -456,9 +456,9 @@ drawPrices = function(val) {
             }
             $("#pricing-table").append("<tr class='" + tr_css_classes + "'><td class='price-expansion'><a href='/cards/" + cp.mvid + "/'>" + xp_ident + "</a></td><td class='price-printing'>" + cp.printing + "</td><td class='price-price'>$" + cp.price + "</td></tr>");
         }
-        $("#pricing-table").append("<tr><td colspan='3'><a href='https://www.patsgames.com/cgi-bin/custFCsearchV22.pl?CNAME={{physicalcard.get_card_name|urlencode}}&CSET=ANY&VALUE=GET+CARD&STARTNUM=0' target='deckbox'>Add to Deckbox</a></td></tr>");
+        $("#pricing-table").append("<tr><td colspan='3' class='pricing-table-add'><a href='https://www.patsgames.com/cgi-bin/custFCsearchV22.pl?CNAME={{physicalcard.get_card_name|urlencode}}&CSET=ANY&VALUE=GET+CARD&STARTNUM=0' target='deckbox'>Add to Deckbox</a></td></tr>");
     } else {
-        $("#pricing-container").append("<div class='pricing-login-prompt'><a href='{{settings.DECKBOX_LOGIN_URL}}' target='deckbox'>Log in to Pat\'s Games to see prices!</div>");
+        $("#pricing-container").append("<div class='pricing-login-prompt'><a href='{{settings.DECKBOX_LOGIN_URL}}' target='deckbox'>Log in to Pat\'s Games<br>to see prices!</div>");
     }
 };
 google.setOnLoadCallback(function() {

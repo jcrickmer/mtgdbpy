@@ -42,6 +42,7 @@ from decks.models import FormatCardStat, FormatStat
 from django.db.models import Q
 from datetime import datetime, timedelta
 import time
+import random
 
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
@@ -596,7 +597,7 @@ def card_price_ajax_stub(request, multiverseid=None):
                     'name': vcard.basecard.physicalcard.get_card_name(),
                     'expansionset': {'name': vcard.expansionset.name, 'abbr': vcard.expansionset.abbr, },
                     'price': 0.75,
-                    'on_sale': False,
+                    'on_sale': random.random() > 0.8,
                     'printing': printing,
                 }
                 jcards.append(jcard)
