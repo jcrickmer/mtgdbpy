@@ -97,6 +97,7 @@ BASE_CONTEXT = {'settings': {
     'HOME_URL': settings.HOME_URL,
     'DECKBOX_URL': settings.DECKBOX_URL,
     'DECKBOX_LOGIN_URL': settings.DECKBOX_LOGIN_URL,
+    'DECKBOX_PRICE_URL_BASE': settings.DECKBOX_PRICE_URL_BASE,
 }
 }
 
@@ -564,6 +565,45 @@ def detail_ajax(request, cards):
                           'physicalCardTitle': cards[0].basecard.physicalcard.get_card_name(),
                           'cards': jcards,
                           })
+    response = HttpResponse(
+        json.dumps(response_dict),
+        content_type='application/javascript')
+    return response
+
+
+def card_price_ajax_stub(request, multiverseid=None):
+    response_dict = {}
+    if not request.session.get('deckbox_session_id'):
+        multiverseid = None
+        response_dict.update({'status': 'error',
+                              'message': 'No authorization.', })
+
+    card = None
+    if multiverseid is not None:
+        try:
+            multiverseid = int(multiverseid)
+            card = Card.objects.filter(multiverseid=multiverseid).order_by('card_number').first()
+        except:
+            response_dict.update({'status': 'error',
+                                  'message': 'No such card for given multiverseid.', })
+    jcards = list()
+    if card:
+        cards = card.get_all_versions()[:8]
+        for vcard in cards:
+            for printing in ('normal', 'foil'):
+                jcard = {
+                    'mvid': vcard.multiverseid,
+                    'name': vcard.basecard.physicalcard.get_card_name(),
+                    'expansionset': {'name': vcard.expansionset.name, 'abbr': vcard.expansionset.abbr, },
+                    'price': 0.75,
+                    'on_sale': False,
+                    'printing': printing,
+                }
+                jcards.append(jcard)
+    if jcards:
+        response_dict.update({'status': 'ok',
+                              'cards': jcards,
+                              })
     response = HttpResponse(
         json.dumps(response_dict),
         content_type='application/javascript')
