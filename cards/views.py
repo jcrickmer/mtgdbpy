@@ -42,6 +42,7 @@ from decks.models import FormatCardStat, FormatStat
 from django.db.models import Q
 from datetime import datetime, timedelta
 import time
+import random
 
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
@@ -93,11 +94,14 @@ color_slang = [['azorius', ['white', 'blue']],
 # the card.
 #
 
-BASE_CONTEXT = {'settings':{
-    'HOME_URL':settings.HOME_URL,
-    'DECKBOX_URL':settings.DECKBOX_URL,
-    }
-        }
+BASE_CONTEXT = {'settings': {
+    'HOME_URL': settings.HOME_URL,
+    'DECKBOX_URL': settings.DECKBOX_URL,
+    'DECKBOX_LOGIN_URL': settings.DECKBOX_LOGIN_URL,
+    'DECKBOX_PRICE_URL_BASE': settings.DECKBOX_PRICE_URL_BASE,
+}
+}
+
 
 def index(request):
     context = BASE_CONTEXT.copy()
@@ -512,14 +516,14 @@ def detail(request, multiverseid=None, slug=None):
 
     context = BASE_CONTEXT.copy()
     context.update({'PAGE_CACHE_TIME': PAGE_CACHE_TIME,
-               'physicalcard': physicalcard,
-               'request_mvid': multiverseid,
-               'cards': cards,
-               'formatcardstats': formatcardstats,
-               'cardbattlestats': cardbattlestats,
-               'formatbasecards': formatbasecards,
-               'associations': associations,
-               })
+                    'physicalcard': physicalcard,
+                    'request_mvid': multiverseid,
+                    'cards': cards,
+                    'formatcardstats': formatcardstats,
+                    'cardbattlestats': cardbattlestats,
+                    'formatbasecards': formatbasecards,
+                    'associations': associations,
+                    })
     response = render(request, 'cards/detail.html', context)
     return response
 
@@ -562,6 +566,45 @@ def detail_ajax(request, cards):
                           'physicalCardTitle': cards[0].basecard.physicalcard.get_card_name(),
                           'cards': jcards,
                           })
+    response = HttpResponse(
+        json.dumps(response_dict),
+        content_type='application/javascript')
+    return response
+
+
+def card_price_ajax_stub(request, multiverseid=None):
+    response_dict = {}
+    if not request.session.get('deckbox_session_id'):
+        multiverseid = None
+        response_dict.update({'status': 'error',
+                              'message': 'No authorization.', })
+
+    card = None
+    if multiverseid is not None:
+        try:
+            multiverseid = int(multiverseid)
+            card = Card.objects.filter(multiverseid=multiverseid).order_by('card_number').first()
+        except:
+            response_dict.update({'status': 'error',
+                                  'message': 'No such card for given multiverseid.', })
+    jcards = list()
+    if card:
+        cards = card.get_all_versions()[:8]
+        for vcard in cards:
+            for printing in ('normal', 'foil'):
+                jcard = {
+                    'mvid': vcard.multiverseid,
+                    'name': vcard.basecard.physicalcard.get_card_name(),
+                    'expansionset': {'name': vcard.expansionset.name, 'abbr': vcard.expansionset.abbr, },
+                    'price': 0.75,
+                    'on_sale': random.random() > 0.8,
+                    'printing': printing,
+                }
+                jcards.append(jcard)
+    if jcards:
+        response_dict.update({'status': 'ok',
+                              'cards': jcards,
+                              })
     response = HttpResponse(
         json.dumps(response_dict),
         content_type='application/javascript')
@@ -918,13 +961,13 @@ def battle(request, format="redirect"):
 
     context = BASE_CONTEXT.copy()
     context.update({'card_a': card_a,
-               'card_b': card_b,
-               'first_card': first_card,
-               'second_card': second_card,
-               'format_id': format_id,
-               'format': format_obj,
-               'rand_source': rand_source,
-               })
+                    'card_b': card_b,
+                    'first_card': first_card,
+                    'second_card': second_card,
+                    'format_id': format_id,
+                    'format': format_obj,
+                    'rand_source': rand_source,
+                    })
     if random.random() > 0.5:
         y_a = context['card_a']
         context['card_a'] = context['card_b']

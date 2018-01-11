@@ -7,7 +7,7 @@
     <meta name="robots" content="index, follow">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Pat's Games Card Database{% endblock %} - cards.patsgames.com</title>
+    <title>{% block title %}Pat's Games - Spellbook Magic Card Database{% endblock %} - spellbook.patsgames.com</title>
     <script>window.origTitle = document.title;</script>
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
@@ -54,7 +54,11 @@ $.widget.bridge('uibutton', $.ui.button);
             <li id="top-menu-home" class=""><a href="/">Home</a></li>
             <li id="top-menu-search" class="active"><a href="{% url 'cards:index' %}">Card Database</a></li>
             <li id="top-menu-battle"><a href="{% url 'cards:battle' %}">Card Battle</a></li>
-            <li id="top-menu-deckbox"><a href="{{settings.DECKBOX_URL}}">Deckbox</a></li>
+            {% if request.session.deckbox_session_id %}
+              <li id="top-menu-deckbox"><a href="{{settings.DECKBOX_URL}}" target="deckbox">Deckbox</a></li>
+            {% else %}
+              <li id="top-menu-deckbox"><a href="{{settings.DECKBOX_LOGIN_URL}}" target="deckbox">Login</a></li>
+            {% endif %}
           </ul>
         </div>
       </div>
@@ -96,7 +100,8 @@ $.widget.bridge('uibutton', $.ui.button);
 	</div>
     <footer class="footer">
       <div class="container">
-        <p>&copy; 2018 Pat's Games. All rights reserved. Additional <a rel="nofollow" href="/copyrights/">copyrights</a>.</p>
+        <p>&copy; 2018 Pat's Games and Jason Crickmer. All rights reserved.</p>
+        <!--
         <ul class="footer-links">
           <li><a rel="nofollow" href="/terms-of-use/">Terms of Use</a></li>
           <li class="muted">|</li>
@@ -106,6 +111,7 @@ $.widget.bridge('uibutton', $.ui.button);
           <li class="muted">|</li>
           <li><a rel="nofollow" href="/business-inquiries/">Business Inquiries</a></li>
         </ul>
+        -->
       </div>
     </footer>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>

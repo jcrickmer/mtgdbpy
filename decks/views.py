@@ -9,11 +9,14 @@ from django.core.cache import cache
 from django.db.models import Max, Min, Count, Sum, Avg
 from django.conf import settings
 
-BASE_CONTEXT = {'settings':{
-    'HOME_URL':settings.HOME_URL,
-    'DECKBOX_URL':settings.DECKBOX_URL,
-    }
-        }
+BASE_CONTEXT = {'settings': {
+    'HOME_URL': settings.HOME_URL,
+    'DECKBOX_URL': settings.DECKBOX_URL,
+    'DECKBOX_LOGIN_URL': settings.DECKBOX_LOGIN_URL,
+    'DECKBOX_PRICE_URL_BASE': settings.DECKBOX_PRICE_URL_BASE,
+}
+}
+
 
 def index(request):
     context = BASE_CONTEXT.copy()

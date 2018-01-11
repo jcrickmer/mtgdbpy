@@ -50,6 +50,31 @@ $(function() {
 		}
 		return cardstats;
 	};
+    cn.getCardPrices = function(multiverseId, url_base, handler_func) {
+        var cardprices;
+        $.ajax({
+                url: url_base + multiverseId,
+                dataType: "json",
+                async: true,
+                handler_func: handler_func,
+                complete: function(data) {
+                    var envelop = data.responseJSON;
+                    if (envelop.status == 'ok') {
+                        if (window.cn.cardprices == null) {
+                            window.cn.cardprices = envelop.cards;
+                        } else {
+                            for (var t = 0; t < envelop.cards.length; t++) {
+                                window.cn.cardprices.push(envelop.cards[t]);
+                            }
+                        }
+                    }
+                    if (this.handler_func != null && typeof this.handler_func == "function") {
+                        this.handler_func(window.cn.cardprices);
+                    }
+                }
+            });
+        return;
+    };
     cn.initToolTips = function() {  
         $(document).uitooltip({
             items: "[data-mid]", 
