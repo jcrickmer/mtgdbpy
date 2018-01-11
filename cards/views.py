@@ -93,11 +93,13 @@ color_slang = [['azorius', ['white', 'blue']],
 # the card.
 #
 
-BASE_CONTEXT = {'settings':{
-    'HOME_URL':settings.HOME_URL,
-    'DECKBOX_URL':settings.DECKBOX_URL,
-    }
-        }
+BASE_CONTEXT = {'settings': {
+    'HOME_URL': settings.HOME_URL,
+    'DECKBOX_URL': settings.DECKBOX_URL,
+    'DECKBOX_LOGIN_URL': settings.DECKBOX_LOGIN_URL,
+}
+}
+
 
 def index(request):
     context = BASE_CONTEXT.copy()
@@ -512,14 +514,14 @@ def detail(request, multiverseid=None, slug=None):
 
     context = BASE_CONTEXT.copy()
     context.update({'PAGE_CACHE_TIME': PAGE_CACHE_TIME,
-               'physicalcard': physicalcard,
-               'request_mvid': multiverseid,
-               'cards': cards,
-               'formatcardstats': formatcardstats,
-               'cardbattlestats': cardbattlestats,
-               'formatbasecards': formatbasecards,
-               'associations': associations,
-               })
+                    'physicalcard': physicalcard,
+                    'request_mvid': multiverseid,
+                    'cards': cards,
+                    'formatcardstats': formatcardstats,
+                    'cardbattlestats': cardbattlestats,
+                    'formatbasecards': formatbasecards,
+                    'associations': associations,
+                    })
     response = render(request, 'cards/detail.html', context)
     return response
 
@@ -918,13 +920,13 @@ def battle(request, format="redirect"):
 
     context = BASE_CONTEXT.copy()
     context.update({'card_a': card_a,
-               'card_b': card_b,
-               'first_card': first_card,
-               'second_card': second_card,
-               'format_id': format_id,
-               'format': format_obj,
-               'rand_source': rand_source,
-               })
+                    'card_b': card_b,
+                    'first_card': first_card,
+                    'second_card': second_card,
+                    'format_id': format_id,
+                    'format': format_obj,
+                    'rand_source': rand_source,
+                    })
     if random.random() > 0.5:
         y_a = context['card_a']
         context['card_a'] = context['card_b']
