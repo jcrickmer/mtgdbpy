@@ -24,10 +24,10 @@ class DeckboxMiddleware(object):
         deckbox_order_uuid_str = request.COOKIES.get(settings.DECKBOX_ORDER_COOKIE_KEY)
         try:
             deckbox_order_id = str(uuid.UUID(deckbox_order_uuid_str))
-            request.order['deckbox_order_id'] = deckbox_order_id
+            request.session['deckbox_order_id'] = deckbox_order_id
         except:
             #sys.stderr.write("killed Deckbox order: {}\n".format(sys.exc_info()[0]))
-            request.order['deckbox_order_id'] = None
+            request.session['deckbox_order_id'] = None
 
     def process_response(self, request, response):
         return response
