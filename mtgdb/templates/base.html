@@ -53,7 +53,6 @@ $.widget.bridge('uibutton', $.ui.button);
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul class="nav navbar-nav">
-            <li id="top-menu-home" class=""><a href="/">Home</a></li>
             <li id="top-menu-search" class="active"><a href="{% url 'cards:index' %}">Card Database</a></li>
             <li id="top-menu-battle"><a href="{% url 'cards:battle' %}">Card Battle</a></li>
             {% if request.session.deckbox_session_id %}

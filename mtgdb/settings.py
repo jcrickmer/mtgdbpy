@@ -224,3 +224,4 @@ DECKBOX_URL = 'https://www.patsgames.com/cgi-bin/custCheckoutV2.pl'
 DECKBOX_SESSION_COOKIE_KEY = 'PGCUST'
 DECKBOX_ORDER_COOKIE_KEY = 'JPHQQQQ'
 DECKBOX_PRICE_URL_BASE = "/cards/_cardpricetest/"
+DECKBOX_AUTH_SECRET = "patsgamesRocks"

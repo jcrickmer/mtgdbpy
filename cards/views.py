@@ -38,6 +38,7 @@ from cards.models import AssociationCard
 from cards.models import CardBattleStats
 
 from decks.models import FormatCardStat, FormatStat
+from cards.deckbox import generate_auth_key
 
 from django.db.models import Q
 from datetime import datetime, timedelta
@@ -523,6 +524,7 @@ def detail(request, multiverseid=None, slug=None):
                     'cardbattlestats': cardbattlestats,
                     'formatbasecards': formatbasecards,
                     'associations': associations,
+                    'auth_key': generate_auth_key(multiverseid, request.session.get('deckbox_session_id')),
                     })
     response = render(request, 'cards/detail.html', context)
     return response
@@ -574,7 +576,11 @@ def detail_ajax(request, cards):
 
 def card_price_ajax_stub(request, multiverseid=None):
     response_dict = {}
-    if not request.session.get('deckbox_session_id'):
+    auth_key = request.GET.get('key', None) or request.POST.get('key', None)
+    sys.stderr.write("card_price_ajax_stub auth_key is '{}'\n".format(auth_key))
+    if not auth_key or not request.session.get('deckbox_session_id') or str(auth_key).lower() != generate_auth_key(
+            multiverseid,
+            request.session.get('deckbox_session_id')).lower():
         multiverseid = None
         response_dict.update({'status': 'error',
                               'message': 'No authorization.', })
@@ -587,24 +593,54 @@ def card_price_ajax_stub(request, multiverseid=None):
         except:
             response_dict.update({'status': 'error',
                                   'message': 'No such card for given multiverseid.', })
-    jcards = list()
-    if card:
-        cards = card.get_all_versions()[:8]
-        for vcard in cards:
-            for printing in ('normal', 'foil'):
+    if False:
+        # The original format
+        jcards = list()
+        if card:
+            cards = card.get_all_versions()[:8]
+            for vcard in cards:
+                for printing in ('normal', 'foil'):
+                    jcard = {
+                        'mvid': vcard.multiverseid,
+                        'name': vcard.basecard.physicalcard.get_card_name(),
+                        'expansionset': {'name': vcard.expansionset.name, 'abbr': vcard.expansionset.abbr, },
+                        'price': 0.75,
+                        'on_sale': random.random() > 0.8,
+                        'printing': printing,
+                    }
+                    jcards.append(jcard)
+        if jcards:
+            response_dict.update({'status': 'ok',
+                                  'cards': jcards,
+                                  })
+    else:
+        # The Jim/Deckbox format
+        jcards = list()
+        if card:
+            cards = card.get_all_versions()[:8]
+            response_dict.update({'name': card.basecard.physicalcard.get_card_name()})
+            for vcard in cards:
+                fs = 0
+                if random.random() > 0.8:
+                    fs = 1
                 jcard = {
                     'mvid': vcard.multiverseid,
-                    'name': vcard.basecard.physicalcard.get_card_name(),
-                    'expansionset': {'name': vcard.expansionset.name, 'abbr': vcard.expansionset.abbr, },
-                    'price': 0.75,
-                    'on_sale': random.random() > 0.8,
-                    'printing': printing,
+                    'setname': vcard.expansionset.name,
+                    'normalprice': 0.75,
+                    'normalsale': fs
                 }
+                if random.random() > 0.6:
+                    fs = 0
+                    if random.random() > 0.8:
+                        fs = 1
+                    jcard['foil'] = 1.25
+                    jcard['foilsale'] = fs
                 jcards.append(jcard)
-    if jcards:
-        response_dict.update({'status': 'ok',
-                              'cards': jcards,
-                              })
+        if jcards:
+            response_dict.update({'status': 'OK',
+                                  'prices': jcards,
+                                  })
+
     response = HttpResponse(
         json.dumps(response_dict),
         content_type='application/javascript')

@@ -462,7 +462,7 @@ drawPrices = function(val) {
     }
 };
 google.setOnLoadCallback(function() {
-    cn.getCardPrices({{request_mvid}}, "{{settings.DECKBOX_PRICE_URL_BASE}}", drawPrices);
+    cn.getCardPrices({{request_mvid}}, "{{settings.DECKBOX_PRICE_URL_BASE}}", "{{auth_key}}", drawPrices);
 });
 </script>
 {% endcache %}
