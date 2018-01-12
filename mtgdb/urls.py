@@ -9,6 +9,7 @@ from ajax_select import urls as ajax_select_urls
 admin.autodiscover()
 
 urlpatterns = [
+    url(r'^cards/admin/lookups/', include(ajax_select_urls)),
     url(r'^cards/admin/', include(admin.site.urls)),
     url(r'^cards/', include('cards.urls', namespace="cards")),
     url(r'^decks/', include('decks.urls', namespace="decks")),

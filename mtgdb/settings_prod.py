@@ -74,3 +74,11 @@ OAUTH_TOKEN = 'XXXXX'
 OAUTH_TOKEN_SECRET = 'XXXXX'
 
 BETTER_BATTLE_PATH = '/opt/mtgdb-prod'
+
+HOME_URL = 'http://www.patsgames.com/'
+DECKBOX_LOGIN_URL = 'https://www.patsgames.com/cgi-bin/custLoginV2.pl'
+DECKBOX_URL = 'https://www.patsgames.com/cgi-bin/custCheckoutV2.pl'
+DECKBOX_SESSION_COOKIE_KEY = 'PGCUST'
+DECKBOX_ORDER_COOKIE_KEY = 'JPHQQQQ'
+DECKBOX_PRICE_URL_BASE = 'https://www.patsgames.com/cgi-bin/getCardInfo.pl?mvid='
+DECKBOX_AUTH_SECRET = "patsgamesRocks"
