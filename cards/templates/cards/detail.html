@@ -211,7 +211,7 @@ function drawCardStatsChart(formatname) {
           </tbody>
         </table>
       </div>
-      <div class="col-sm-1 col-md-3 col-lg-3"></div>
+      <div class="col-sm-1 col-md-3 col-lg-3" id="pricing-container"></div>
     </div>
   {% endif %}
 {% endfor %}
@@ -429,6 +429,42 @@ $('.panel-group').on('shown.bs.collapse', toggleChevron);
 </div>
 
 <div style="margin-top: 20px;" class="row"><div class="col-xs-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_mvid}}" target="_blank">View on Gatherer</a></div></div>
+<script type="text/javascript">
+drawPrices = function(val) {
+    if (window.cn.cardprices != null && window.cn.cardprices.length > 0) {
+        $("#pricing-container").append("<table class='pricing-table' id='pricing-table'><tr class='table-header-row'><th class='pricing-header' colspan='3'>Pat's Prices</th></tr></table>");
+        for (var f = 0; f < window.cn.cardprices.length; f++) {
+            var cp = window.cn.cardprices[f]; 
+            var xp_ident = '';
+            if (cp.expansionset != null) {
+                if (cp.expansionset.abbr != null) {
+                    xp_ident = cp.expansionset.abbr; 
+                }
+                if (cp.expansionset.name != null) {
+                    xp_ident = cp.expansionset.name; 
+                }
+            }
+            var tr_css_classes = 'price-row';
+            if (cp.on_sale != null && cp.on_sale != 'false' && cp.on_sale != 'False' && cp.on_sale != '0' && cp.on_sale != 0 && cp.on_sale) {
+                tr_css_classes = tr_css_classes + ' price-on-sale'; 
+            }
+            if (cp.multiverseid != null && parseInt(cp.multiverseid) == parseInt('{{request_mvid}}')) {
+                tr_css_classes = tr_css_classes + ' price-current-card'; 
+            }
+            if (cp.mvid != null && parseInt(cp.mvid) == parseInt('{{request_mvid}}')) {
+                tr_css_classes = tr_css_classes + ' price-current-card'; 
+            }
+            $("#pricing-table").append("<tr class='" + tr_css_classes + "'><td class='price-expansion'><a href='/cards/" + cp.mvid + "/'>" + xp_ident + "</a></td><td class='price-printing'>" + cp.printing + "</td><td class='price-price'>$" + cp.price + "</td></tr>");
+        }
+        $("#pricing-table").append("<tr><td colspan='3' class='pricing-table-add'><a href='https://www.patsgames.com/cgi-bin/custFCsearchV22.pl?CNAME={{physicalcard.get_card_name|urlencode}}&CSET=ANY&VALUE=GET+CARD&STARTNUM=0' target='deckbox'>Add to Deckbox</a></td></tr>");
+    } else {
+        $("#pricing-container").append("<div class='pricing-login-prompt'><a href='{{settings.DECKBOX_LOGIN_URL}}' target='deckbox'>Log in to Pat\'s Games<br>to see prices!</div>");
+    }
+};
+google.setOnLoadCallback(function() {
+    cn.getCardPrices({{request_mvid}}, "{{settings.DECKBOX_PRICE_URL_BASE}}", "{{auth_key}}", drawPrices);
+});
+</script>
 {% endcache %}
 {% endblock %}
 

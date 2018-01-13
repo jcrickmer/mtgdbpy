@@ -33,4 +33,6 @@ urlpatterns = [
     url(r'^_nameauto/', views.autocomplete, name='autocomplete'),
     url(r'^_clustertest/(?P<test_id>[0-9]+)', utilviews.cardclustertest, name='cardclustertest'),
     url(r'^_clustertest/', utilviews.cardclustertest, name='cardclustertest'),
+    url(r'^_cardpricetest/(?P<multiverseid>\S+)/?$', views.card_price_ajax_stub, name='card_price_ajax_stub'),
+
 ]

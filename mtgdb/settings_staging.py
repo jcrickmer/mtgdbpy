@@ -6,7 +6,16 @@ DEFAULT_CHARSET = 'utf-8'
 
 DEBUG = TEMPLATE_DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '172-31-44-78', 'ip-172-31-47-162', '172.31.47.162', 'staging.magiccards.tech','34.215.208.197']
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    'card.ninja',
+    '172-31-44-78',
+    'ip-172-31-47-162',
+    '172.31.47.162',
+    'staging.magiccards.tech',
+    '34.215.208.197']
+
 INTERNAL_IPS = ()
 #DATABASE_NAME = 'production'
 #DATABASE_USER = 'app'
@@ -35,11 +44,7 @@ LOGGING = {
         'applogfile': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-<<<<<<< HEAD
-            'filename': os.path.join('/tmp/', 'mtgdb-staging_debug.log'),
-=======
             'filename': os.path.join('/tmp/', 'mtgdb-staging_debug_app.log'),
->>>>>>> b3a02ccc99722a21a045de393e8b3c0ff368380a
             'maxBytes': 1024 * 1024 * 15,  # 15MB
             'backupCount': 10,
         },
@@ -67,7 +72,7 @@ LOGGING = {
     },
 }
 
-STATIC_ROOT = os.path.join(SITE_PACKAGES_DIR, "django",'contrib','admin','static')
+STATIC_ROOT = os.path.join(SITE_PACKAGES_DIR, "django", 'contrib', 'admin', 'static')
 STATIC_ROOT_CN = '/opt/mtgdb-staging/cn'
 STATIC_ROOT_CARD_IMAGES = '/var/mtgdb/card_images'
 DYNAMIC_IMAGE_FILE_ROOT = '/var/mtgdb/cn_dyn_root'

@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
-from distutils.sysconfig import get_python_lib;
+from distutils.sysconfig import get_python_lib
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SITE_PACKAGES_DIR = str(get_python_lib())
 DEFAULT_CHARSET = 'utf-8'
@@ -67,6 +67,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'cards.deckbox_middleware.DeckboxMiddleware',
 )
 
 ROOT_URLCONF = 'mtgdb.urls'
@@ -142,6 +143,7 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'django.template.context_processors.tz',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',
             ],
         }
     }
@@ -217,6 +219,9 @@ OAUTH_TOKEN_SECRET = 'XXXXXXXX'
 BETTER_BATTLE_PATH = '/home/jason/projects/mtgdb'
 
 HOME_URL = 'http://www.patsgames.com/'
+DECKBOX_LOGIN_URL = 'https://www.patsgames.com/cgi-bin/custLoginV2.pl'
 DECKBOX_URL = 'https://www.patsgames.com/cgi-bin/custCheckoutV2.pl'
-DECKBOX_LOGIN_COOKIE_KEY = 'PGCUST'
+DECKBOX_SESSION_COOKIE_KEY = 'PGCUST'
 DECKBOX_ORDER_COOKIE_KEY = 'JPHQQQQ'
+DECKBOX_PRICE_URL_BASE = "/cards/_cardpricetest/"
+DECKBOX_AUTH_SECRET = "patsgamesRocks"
