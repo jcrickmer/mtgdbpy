@@ -677,7 +677,7 @@ def cardstats(request, formatname=None, physicalcard_id=None, multiverseid=None)
                 result['status'] = 'error'
                 result['status_message'] = 'card cannot be found'
     if result['status'] == 'ok':
-        fffs = Format.objects.filter(formatname=latest_format.formatname, start_date__gt=datetime(2013, 9, 15)).order_by('start_date')
+        fffs = Format.objects.filter(formatname=latest_format.formatname, start_date__gt=datetime(2013, 9, 15), start_date__lte=datetime.today()).order_by('start_date')
         stats = list()
         for fff in fffs:
             fcstat = FormatCardStat.objects.filter(
@@ -732,7 +732,7 @@ def formats(request, formatname="modern"):
 
 def formatstats(request, formatname="modern"):
     context = BASE_CONTEXT.copy()
-    top_formats = Format.objects.filter(formatname__iexact=formatname).order_by('-start_date')
+    top_formats = Format.objects.filter(formatname__iexact=formatname, end_date__lte=datetime.today()).order_by('-start_date')
     top_format = None
     next_format = None
     try:

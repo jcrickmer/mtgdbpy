@@ -17,7 +17,8 @@ def generate_auth_key(payload, session_id, secret=None):
         if secret is None:
             secret = settings.DECKBOX_AUTH_SECRET
         m = hashlib.md5()
-        m.update('{}:{}:{}'.format(secret, session_id, payload))
+        #m.update('{}:{}:{}'.format(secret, session_id, payload))
+        m.update('{}:{}'.format(secret, payload))
         return m.hexdigest()
     except:
         return None

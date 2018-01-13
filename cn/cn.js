@@ -62,6 +62,10 @@ $(function() {
                 url: call_url,
                 dataType: "json",
                 async: true,
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
                 handler_func: handler_func,
                 complete: function(data) {
                     var envelop = data.responseJSON;
@@ -76,7 +80,7 @@ $(function() {
                             for (var qq = 0 ; qq < envelop.prices.length ; qq++) {
                                 mcard = {};
                                 mcard["name"] = envelop.name;
-                                mcard["price"] = envelop.prices[qq].normalprice;
+                                mcard["price"] = envelop.prices[qq].normalprice.toFixed(2);
                                 mcard["on_sale"] = envelop.prices[qq].normalsale == 1;
                                 mcard["mvid"] = envelop.prices[qq].mvid;
                                 mcard["printing"] = "normal"
@@ -86,6 +90,7 @@ $(function() {
                                     fcard = {};
                                     fcard["name"] = envelop.name;
                                     fcard["price"] = envelop.prices[qq].foil || envelop.prices[qq].foilprice;
+                                    fcard["price"] = fcard["price"].toFixed(2);
                                     fcard["on_sale"] = envelop.prices[qq].foilsale == 1;
                                     fcard["mvid"] = envelop.prices[qq].mvid;
                                     fcard["printing"] = "foil"
