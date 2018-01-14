@@ -430,9 +430,10 @@ $('.panel-group').on('shown.bs.collapse', toggleChevron);
 
 <div style="margin-top: 20px;" class="row"><div class="col-xs-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_mvid}}" target="_blank">View on Gatherer</a></div></div>
 <script type="text/javascript">
+var pbmk = {{auth_keys_json|safe}};  
 drawPrices = function(val) {
     if (window.cn.cardprices != null && window.cn.cardprices.length > 0) {
-        $("#pricing-container").append("<table class='pricing-table' id='pricing-table'><tr class='table-header-row'><th class='pricing-header' colspan='3'>Pat's Prices</th></tr></table>");
+        $("#pricing-container").append("<table class='pricing-table' id='pricing-table'><tr class='table-header-row'><th class='pricing-header' colspan='3'>Pat's Prices</th></tr></table>"); 
         for (var f = 0; f < window.cn.cardprices.length; f++) {
             var cp = window.cn.cardprices[f]; 
             var xp_ident = '';
@@ -466,8 +467,27 @@ drawPrices = function(val) {
         $("#pricing-container").append("<div class='pricing-login-prompt'><a href='{{settings.DECKBOX_LOGIN_URL}}' target='deckbox'>Log in to Pat\'s Games<br>to see prices!</div>");
     }
 };
+checkPrices = function(val) {
+    if (window.cn.cardprices != null && window.cn.cardprices.length > 0) {
+        if (window.cn.cardprices.length == 1 && (window.cn.cardprices[0].price = "99999999.99" || window.cn.cardprices[0].name == "")) {
+            // let's try again
+            console.log("trying prices again...");
+            for (var pp = 0; pp < pbmk.length; pp++) {
+                if (pbmk[pp].length == 2) {
+                    // let's try this one.
+                    pbmk[pp][2] = true;
+                    console.dir(pbmk[pp]);
+                    cn.getCardPrices(pbmk[pp][0], "{{settings.DECKBOX_PRICE_URL_BASE}}", pbmk[pp][1], checkPrices);
+                }
+            }
+        } else {
+            drawPrices(val);
+        }
+    }
+};
 google.setOnLoadCallback(function() {
-    cn.getCardPrices({{request_mvid}}, "{{settings.DECKBOX_PRICE_URL_BASE}}", "{{auth_key}}", drawPrices);
+    pbmk[0][2] = true;
+    cn.getCardPrices(pbmk[0][0], "{{settings.DECKBOX_PRICE_URL_BASE}}", pbmk[0][1], checkPrices);
 });
 </script>
 {% endcache %}

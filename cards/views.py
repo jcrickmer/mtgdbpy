@@ -515,6 +515,10 @@ def detail(request, multiverseid=None, slug=None):
         cardbattlestats.append(cbs)
     associations = Association.objects.filter(associationcards=physicalcard)
 
+    # get all multiverseids so that we can more robustly get a price for this card.
+    mvid_auth_key_pairs = list()
+    for cmv in cards[0].get_all_versions():
+        mvid_auth_key_pairs.append((cmv.multiverseid, generate_auth_key(cmv.multiverseid, request.session.get('deckbox_session_id'))))
     context = BASE_CONTEXT.copy()
     context.update({'PAGE_CACHE_TIME': PAGE_CACHE_TIME,
                     'physicalcard': physicalcard,
@@ -525,6 +529,8 @@ def detail(request, multiverseid=None, slug=None):
                     'formatbasecards': formatbasecards,
                     'associations': associations,
                     'auth_key': generate_auth_key(multiverseid, request.session.get('deckbox_session_id')),
+                    'auth_keys': mvid_auth_key_pairs,
+                    'auth_keys_json': json.dumps(mvid_auth_key_pairs),
                     })
     response = render(request, 'cards/detail.html', context)
     return response
