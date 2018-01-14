@@ -58,6 +58,17 @@ $(function() {
             call_url = call_url + "&";
         }
         call_url = call_url + "key=" + auth_key;
+        window.hasCallCard = function() {
+            result = false;
+            if (window.cn.cardprices != null) {
+                for (var ggg = 0; ggg < window.cn.cardprices.length; ggg++) {
+                    if (window.cn.cardprices[ggg]) {
+                        result = result || window.cn.cardprices[ggg].price == "99999999.99" || window.cn.cardprices[ggg].price == 99999999.99;
+                    }
+                }
+            }
+            return result;
+        };
         $.ajax({
                 url: call_url,
                 dataType: "json",
@@ -74,7 +85,7 @@ $(function() {
                             window.cn.cardprices = new Array();
                         }
                         // Could be one of two formats. First, check Deckbox format...
-                        if (envelop.prices && envelop.prices instanceof Array) {
+                        if (envelop.prices && envelop.prices instanceof Array && ! window.hasCallCard()) {
                             // each item in the array should be like this:
                             // {"mvid": 9999999, "setname": "xxxxx", "normalprice": 99.99, "normalsale": 0|1, "foil": 999.99, "foilsale": 0|1}
                             for (var qq = 0 ; qq < envelop.prices.length ; qq++) {

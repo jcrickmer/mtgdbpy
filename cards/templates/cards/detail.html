@@ -469,14 +469,12 @@ drawPrices = function(val) {
 };
 checkPrices = function(val) {
     if (window.cn.cardprices != null && window.cn.cardprices.length > 0) {
-        if (window.cn.cardprices.length == 1 && (window.cn.cardprices[0].price = "99999999.99" || window.cn.cardprices[0].name == "")) {
+        if (window.cn.cardprices.length == 1 && (window.cn.cardprices[0].price == "99999999.99" || window.cn.cardprices[0].price == 99999999.99 || window.cn.cardprices[0].name == "")) {
             // let's try again
-            console.log("trying prices again...");
             for (var pp = 0; pp < pbmk.length; pp++) {
                 if (pbmk[pp].length == 2) {
                     // let's try this one.
                     pbmk[pp][2] = true;
-                    console.dir(pbmk[pp]);
                     cn.getCardPrices(pbmk[pp][0], "{{settings.DECKBOX_PRICE_URL_BASE}}", pbmk[pp][1], checkPrices);
                 }
             }
