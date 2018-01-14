@@ -198,9 +198,9 @@ $(function() {
     <h3>Top Cards per Format</h3>
     <style>li.common-search { margin-right: 18px; margin-bottom: 9px; display: inline-block; }</style>
     <ul style="padding-left: 0;">
-      <li class="common-search"><a href="stats/commander/">Commander</a></li>
-      <li class="common-search"><a href="stats/modern/">Modern</a></li>
-      <li class="common-search"><a href="stats/standard/">Standard</a></li>
+      {% for cff in current_formats %}
+        <li class="common-search"><a href="stats/{{cff.formatname|lower}}/">{{cff.formatname}}</a></li>
+      {% endfor %}
     </ul>
   </div>
 </div>

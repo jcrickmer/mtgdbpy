@@ -738,7 +738,7 @@ def formats(request, formatname="modern"):
 
 def formatstats(request, formatname="modern"):
     context = BASE_CONTEXT.copy()
-    top_formats = Format.objects.filter(formatname__iexact=formatname, end_date__lte=datetime.today()).order_by('-start_date')
+    top_formats = Format.objects.filter(formatname__iexact=formatname, start_date__lte=datetime.today()).order_by('-start_date')
     top_format = None
     next_format = None
     try:
