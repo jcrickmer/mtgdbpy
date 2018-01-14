@@ -40,9 +40,9 @@ $('#top-menu-battle').addClass('active');
 </div>
 <div class="row">
   <div class="col-xs-12 col-sm-offset-3 col-sm-6 text-info text-center">
-    <a href="/cards/battle/standard/">Standard</a> |
-    <a href="/cards/battle/modern/">Modern</a> |
-    <a href="/cards/battle/commander/">Commander</a>
+    {% for curfor in current_formats %}
+      <a href="{% url 'cards:battle' curfor.formatname|lower %}">{{curfor.formatname}}</a> |
+    {% endfor %}
   </div>
 </div>
 <!-- card loaded from {{rand_source}} -->

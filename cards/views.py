@@ -995,6 +995,8 @@ def battle(request, format="redirect"):
     if card_b.basecard.cardposition not in [BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP]:
         card_b = PhysicalCard.objects.get(pk=card_b.basecard.physicalcard.id).get_latest_card()
 
+    # let's get a list of current formats...
+    cur_formats = Format.objects.filter(start_date__lte=datetime.today(), end_date__gte=datetime.today())
     context = BASE_CONTEXT.copy()
     context.update({'card_a': card_a,
                     'card_b': card_b,
@@ -1003,6 +1005,7 @@ def battle(request, format="redirect"):
                     'format_id': format_id,
                     'format': format_obj,
                     'rand_source': rand_source,
+                    'current_formats': cur_formats,
                     })
     if random.random() > 0.5:
         y_a = context['card_a']
