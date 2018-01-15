@@ -34,5 +34,6 @@ urlpatterns = [
     url(r'^_clustertest/(?P<test_id>[0-9]+)', utilviews.cardclustertest, name='cardclustertest'),
     url(r'^_clustertest/', utilviews.cardclustertest, name='cardclustertest'),
     url(r'^_cardpricetest/(?P<multiverseid>\S+)/?$', views.card_price_ajax_stub, name='card_price_ajax_stub'),
+    url(r'^_ucp/$', views.update_card_price, name='update_card_price'),
 
 ]

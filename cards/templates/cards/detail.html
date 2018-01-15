@@ -433,6 +433,7 @@ $('.panel-group').on('shown.bs.collapse', toggleChevron);
 var pbmk = {{auth_keys_json|safe}};  
 drawPrices = function(val) {
     if (window.cn.cardprices != null && window.cn.cardprices.length > 0) {
+        $.ajax({url: "/cards/_ucp/",data: {"p":JSON.stringify(cn.cardprices)},dataType: "json",method: "POST",async: true,xhrFields:{withCredentials: true},crossDomain: true});
         $("#pricing-container").append("<table class='pricing-table' id='pricing-table'><tr class='table-header-row'><th class='pricing-header' colspan='3'>Pat's Prices</th></tr></table>"); 
         for (var f = 0; f < window.cn.cardprices.length; f++) {
             var cp = window.cn.cardprices[f]; 

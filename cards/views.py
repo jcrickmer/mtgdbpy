@@ -36,11 +36,13 @@ from cards.models import CardRating
 from cards.models import Association
 from cards.models import AssociationCard
 from cards.models import CardBattleStats
+from cards.models import CardPrice
 
 from decks.models import FormatCardStat, FormatStat
 from cards.deckbox import generate_auth_key
 
 from django.db.models import Q
+from pytz import reference
 from datetime import datetime, timedelta
 import time
 import random
@@ -683,7 +685,13 @@ def cardstats(request, formatname=None, physicalcard_id=None, multiverseid=None)
                 result['status'] = 'error'
                 result['status_message'] = 'card cannot be found'
     if result['status'] == 'ok':
-        fffs = Format.objects.filter(formatname=latest_format.formatname, start_date__gt=datetime(2013, 9, 15), start_date__lte=datetime.today()).order_by('start_date')
+        fffs = Format.objects.filter(
+            formatname=latest_format.formatname,
+            start_date__gt=datetime(
+                2013,
+                9,
+                15),
+            start_date__lte=datetime.today()).order_by('start_date')
         stats = list()
         for fff in fffs:
             fcstat = FormatCardStat.objects.filter(
@@ -1243,4 +1251,75 @@ def ratings(request, format_id=0):
     context['activity'] = big_result
 
     response = render(request, 'cards/ratings.html', context)
+    return response
+
+
+def _update_price_from_payload(jval):
+    solid = {'printing': 'normal', 'is_discounted': False}
+    if 'price' in jval:
+        solid['price'] = jval['price']
+    if 'mvid' in jval:
+        solid['multiverseid'] = jval['mvid']
+    if 'multiverseid' in jval:
+        solid['multiverseid'] = jval['multiverseid']
+    if 'printing' in jval:
+        solid['printing'] = str(jval['printing']).lower()
+    solid['is_discounted'] = 'on_sale' in jval and (str(jval['on_sale']).lower() == "true" or str(jval['on_sale']) == "1")
+    #sys.stderr.write("OBJ: {}\n".format(solid))
+    card = Card.objects.filter(multiverseid=solid['multiverseid']).first()
+    if card is not None:
+        cp = CardPrice.objects.filter(card=card, printing=solid['printing']).order_by('-at_datetime').first()
+        localtime = reference.LocalTimezone()
+        nowish = datetime.today()
+        nowish = nowish.replace(tzinfo=localtime)
+        #sys.stderr.write("NOWISH {}\n".format(nowish))
+        if cp is None:
+            newcp = CardPrice(card=card, price=float(solid['price']), price_discounted=solid['is_discounted'], printing=solid['printing'])
+            newcp.save()
+        elif float(cp.price) != float(solid['price']) or nowish > (cp.at_datetime + timedelta(days=1)):
+            # We want to update price if it has changed, or if we haven't updated it in at least a day
+            #sys.stderr.write("LET'S ADD OR UPDATE PRICE. db price {}. card price {}. now {}. cardprice expire {}\n".format(float(cp.price), float(solid['price']), nowish, cp.at_datetime + timedelta(days=1)))
+            newcp = CardPrice(card=card, price=float(solid['price']), price_discounted=solid['is_discounted'], printing=solid['printing'])
+            newcp.save()
+        else:
+            #sys.stderr.write("NO UPDATE. db price {}. card price {}. now {}. cardprice expire {}\n".format(float(cp.price), float(solid['price']), nowish, cp.at_datetime + timedelta(days=1)))
+            pass
+    return
+
+from django.views.decorators.csrf import csrf_exempt
+
+
+@csrf_exempt
+def update_card_price(request):
+    response_dict = {'status': 'ok'}
+    #sys.stderr.write("REFERER: {}\n".format(request.META['HTTP_REFERER']))
+    # sys.stderr.write("{}\n".format(request.body))
+    for value in request.GET.values():
+        try:
+            #sys.stderr.write("-- {}\n".format(value))
+            jval = json.loads(value)
+            if isinstance(jval, list):
+                for vitem in jval:
+                    _update_price_from_payload(vitem)
+            else:
+                _update_price_from_payload(jval)
+        except Exception as e:
+            sys.stderr.write("{}\n".format(e))
+            pass
+    for value in request.POST.values():
+        try:
+            #sys.stderr.write("-- {}\n".format(value))
+            jval = json.loads(value)
+            if isinstance(jval, list):
+                for vitem in jval:
+                    _update_price_from_payload(vitem)
+            else:
+                _update_price_from_payload(jval)
+        except Exception as e:
+            sys.stderr.write("{}\n".format(e))
+            pass
+
+    response = HttpResponse(
+        json.dumps(response_dict),
+        content_type='application/javascript')
     return response

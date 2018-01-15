@@ -1606,3 +1606,39 @@ class AssociationCard(models.Model):
 
     def __unicode__(self):
         return unicode(self.physicalcard) + u' => ' + unicode(self.association) + u' [' + unicode(self.id) + u']'
+
+
+class CardPrice(models.Model):
+
+    """ Price of a card.
+    """
+
+    # BOOKMARK - make a Manager for this that can return interpolated results
+    # via on overriden QuerySet class. That would be cool. Like
+    # InterpolatedQuerySet or something like that.
+
+    #id = models.IntegerField(primary_key=True)
+    card = models.ForeignKey(Card)
+    at_datetime = models.DateTimeField(
+        null=False,
+        auto_now=True)
+    price = models.FloatField(default=0.0, null=False)
+    price_discounted = models.BooleanField(null=False, default=False)
+
+    # "normal", "foil", etc...
+    printing = models.CharField(max_length=25)
+
+    interpolated = False
+
+    class Meta:
+        managed = True
+        db_table = 'cardprice'
+
+    def __unicode__(self):
+        return u'{}-{} ({}) [{}]: ${}'.format(
+            unicode(
+                self.card.multiverseid), unicode(
+                self.card.basecad.physicalcard.get_card_name()), unicode(
+                self.printing), unicode(
+                    self.at_datetime), unicode(
+                        self.price))
