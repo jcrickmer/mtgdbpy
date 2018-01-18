@@ -537,6 +537,12 @@ def detail(request, multiverseid=None, slug=None):
     response = render(request, 'cards/detail.html', context)
     return response
 
+def sims_test(request):
+    #cards = Card.objects.filter(basecard__name__in=['Kessig Wolf Run', 'Jace, Memory Adept', 'Fatal Push', 'Slagstorm', 'Rogue Refiner', 'Arcbound Ravager', 'Delver of Secrets','Nether Traitor'])
+    # 370510, 226749, 423724, 370728, 373323, 116742, 423802, 214054
+    cards = Card.objects.filter(multiverseid__in=[370510, 226749, 423724, 370728, 373323, 116742, 423802, 214054])
+    response = render(request, 'cards/sims_test.html', {'cards': cards})
+    return response
 
 def detail_ajax(request, cards):
     response_dict = {}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+  {% for card in cards %}
+    <div style="border-bottom: 2px solid #606060;" class="row">
+      <div class="row">
+        <div class="col-xs-12">
+          <h2>{{card.basecard.physicalcard.get_card_name}}</h2>
+          <pre>{{card.basecard.physicalcard.get_searchable_document_selfref_nosymbols|safe}}</pre>
+        </div>
+      </div>
+      <div class="row">
+        {% for scard in card.basecard.physicalcard.find_similar_cards|slice:"20" %}
+          <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+            <div class="text-center"><img src="{{scard.img_url}}" class="grid_cardimage"></div>
+            <div class="text-center">{{scard.basecard.physicalcard.get_card_name}}</div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+{% endblock%}
