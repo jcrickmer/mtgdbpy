@@ -102,6 +102,7 @@ class PhysicalCard(models.Model):
     NORMAL = 'normal'
     SPLIT = 'split'
     FLIP = 'flip'
+    AFTERMATH = 'aftermath'
     DOUBLE = 'double-faced'
     TOKEN = 'token'
     PLANE = 'plane'
@@ -116,6 +117,8 @@ class PhysicalCard(models.Model):
          'split'),
         (FLIP,
          'flip'),
+        (AFTERMATH,
+         'aftermath'),
         (DOUBLE,
          'double-faced'),
         (TOKEN,
@@ -590,6 +593,7 @@ class CardManager(models.Manager):
                 'double-faced',
                 'split',
                 'flip',
+                'aftermath',
                 'leveler'))
 
         return queryset

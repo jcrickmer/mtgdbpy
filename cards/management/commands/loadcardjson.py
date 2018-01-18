@@ -185,7 +185,7 @@ class Command(BaseCommand):
         try:
             pc.layout = jcard['layout']
 
-            if pc.layout in [pc.DOUBLE, pc.SPLIT, pc.FLIP]:
+            if pc.layout in [pc.DOUBLE, pc.SPLIT, pc.FLIP, pc.AFTERMATH]:
                 # We need to see if we already have a PhysicalCard of the other half of
                 # this card. We will leverage the 'names' array to figure this out.
                 for other_name in jcard['names']:
@@ -207,7 +207,7 @@ class Command(BaseCommand):
                             cardposition = BaseCard.LEFT
                         if 'b' in card_number or 'B' in card_number:
                             cardposition = BaseCard.RIGHT
-                    if pc.layout == pc.FLIP:
+                    if pc.layout in (pc.FLIP, pc.AFTERMATH):
                         if 'a' in card_number or 'A' in card_number:
                             cardposition = 'U'
                         if 'b' in card_number or 'B' in card_number:
