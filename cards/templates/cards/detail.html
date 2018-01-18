@@ -273,9 +273,9 @@ function drawCardStatsChart(formatname) {
                           <div class="row">
                             {% for fbc in formatbasecards %}
                               {% if fbc.format.formatname == format.formatname %}
-                                {% for wcard in fbc.won_battles|slice:"6" %}
-                                  <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
-                                    <div class="text-center"><a href="{% url 'cards:detail' wcard.loser_pcard.get_latest_card.multiverseid wcard.loser_pcard.get_latest_card.url_slug %}"><img class="list_cardimage" src="{{ wcard.loser_pcard.get_latest_card.img_url }}" alt="{{ wcard.loser_pcard.get_card_name }}"/></a></div>
+                                {% for wcard in fbc.won_battles|slice:"4" %}
+                                  <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+                                    <div class="text-center"><a href="{% url 'cards:detail' wcard.loser_pcard.get_latest_card.multiverseid wcard.loser_pcard.get_latest_card.url_slug %}"><img class="grid_cardimage" src="{{ wcard.loser_pcard.get_latest_card.img_url }}" alt="{{ wcard.loser_pcard.get_card_name }}"/></a></div>
                                     <div class="text-center"><a href="{% url 'cards:detail' wcard.loser_pcard.get_latest_card.multiverseid wcard.loser_pcard.get_latest_card.url_slug %}">{{wcard.loser_pcard.get_card_name}}</a></div>
                                   </div>
                                 {% endfor %}
@@ -290,9 +290,9 @@ function drawCardStatsChart(formatname) {
                           <div class="row">
                             {% for fbc in formatbasecards %}
                               {% if fbc.format.formatname == format.formatname %}
-                                {% for lcard in fbc.lost_battles|slice:"6" %}
-                                  <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
-                                    <div class="text-center"><a href="{% url 'cards:detail' lcard.winner_pcard.get_latest_card.multiverseid lcard.winner_pcard.get_latest_card.url_slug %}"><img class="list_cardimage" src="{{ lcard.winner_pcard.get_latest_card.img_url }}" alt="{{ lcard.winner_pcard.get_card_name }}"/></a></div>
+                                {% for lcard in fbc.lost_battles|slice:"4" %}
+                                  <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+                                    <div class="text-center"><a href="{% url 'cards:detail' lcard.winner_pcard.get_latest_card.multiverseid lcard.winner_pcard.get_latest_card.url_slug %}"><img class="grid_cardimage" src="{{ lcard.winner_pcard.get_latest_card.img_url }}" alt="{{ lcard.winner_pcard.get_card_name }}"/></a></div>
                                     <div class="text-center"><a href="{% url 'cards:detail' lcard.winner_pcard.get_latest_card.multiverseid lcard.winner_pcard.get_latest_card.url_slug %}">{{lcard.winner_pcard.get_card_name}}</a></div>
                                   </div>
                                 {% endfor %}
@@ -323,9 +323,9 @@ function drawCardStatsChart(formatname) {
                     <div class="row" id="playedwith-{{format.formatname|lower}}">
                       <div class="col-xs-12">
                         <div class="row">
-                          {% for cpwpc in fbc.cards_played_with|slice:"18" %}
-                            <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
-                              <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}"><img class="list_cardimage" src="{{ cpwpc.img_url }}" alt=" cpwpc.basecard.physicalcard.get_card_name }}"/></a></div>
+                          {% for cpwpc in fbc.cards_played_with|slice:"16" %}
+                            <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+                              <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}"><img class="grid_cardimage" src="{{ cpwpc.img_url }}" alt=" cpwpc.basecard.physicalcard.get_card_name }}"/></a></div>
                               <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}">{{cpwpc.basecard.physicalcard.get_card_name}}</a></div>
                             </div>
                           {% empty %}
@@ -361,9 +361,9 @@ $('.panel-group').on('shown.bs.collapse', toggleChevron);
     </div>
   </div>
   <div class="row">
-    {% for sim in physicalcard.find_similar_cards %}
-      <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
-        <div class="text-center"><a href="{% url 'cards:detail' sim.multiverseid sim.url_slug %}"><img class="list_cardimage" src="{{ sim.img_url }}" alt="{{ sim.basecard.physicalcard.get_card_name }}"/></a></div>
+    {% for sim in physicalcard.find_similar_cards|slice:"16" %}
+      <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+        <div class="text-center"><a href="{% url 'cards:detail' sim.multiverseid sim.url_slug %}"><img class="grid_cardimage" src="{{ sim.img_url }}" alt="{{ sim.basecard.physicalcard.get_card_name }}"/></a></div>
         <div class="text-center"><a href="{% url 'cards:detail' sim.multiverseid sim.url_slug %}">{{sim.basecard.physicalcard.get_card_name}}</a></div>
       </div>
     {% endfor %}
@@ -396,8 +396,8 @@ $('.panel-group').on('shown.bs.collapse', toggleChevron);
             <div class="row">
               {% for assocpc in assoc.associationcards.all %}
                 {% if assocpc != physicalcard %}
-                  <div class="col-xs-6 col-sm-4 col-md-2 card-tile">
-                    <div class="text-center"><a href="{% url 'cards:detail' assocpc.get_latest_card.multiverseid assocpc.get_latest_card.url_slug %}"><img class="list_cardimage" src="{{ assocpc.get_latest_card.img_url }}" alt="{{ assocpc.get_card_name }}"/></a></div>
+                  <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+                    <div class="text-center"><a href="{% url 'cards:detail' assocpc.get_latest_card.multiverseid assocpc.get_latest_card.url_slug %}"><img class="grid_cardimage" src="{{ assocpc.get_latest_card.img_url }}" alt="{{ assocpc.get_card_name }}"/></a></div>
                     <div class="text-center"><a href="{% url 'cards:detail' assocpc.get_latest_card.multiverseid assocpc.get_latest_card.url_slug %}">{{assocpc.get_card_name}}</a></div>
                   </div>
                 {% endif %}

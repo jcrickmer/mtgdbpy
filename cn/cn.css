@@ -301,8 +301,16 @@ td {
 td.rulingdate {
   white-space: nowrap;
 }
+img.cardimage {
+  width: 223px;
+  height: auto;
+}
 .list_cardimage {
-  width:150px;
+  width: 180px;
+  height: auto;
+}
+.grid_cardimage {
+  width: 223px;
   height: auto;
 }
 .list_cardname {
@@ -394,7 +402,7 @@ ul#search_terms li {
 }
 
 div.card-tile {
-  height: 250px;
+  height: 350px;
 }
 ol.rules {
   list-style-type: none;
@@ -533,4 +541,17 @@ td.pricing-table-add {
     border-top: 1px solid #ADC4CC;
     font-weight: bold;
     text-align: center;
+}
+@media only screen and (max-width: 576px) {
+  .list_cardimage {
+    width: 150px;
+    height: auto;
+  }
+  .grid_cardimage {
+    width: 150px;
+    height: auto;
+  }
+  div.card-tile {
+    height: 250px;
+  }
 }
