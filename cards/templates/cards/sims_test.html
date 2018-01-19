@@ -5,7 +5,13 @@
       <div class="row">
         <div class="col-xs-12">
           <h2>{{card.basecard.physicalcard.get_card_name}}</h2>
-          <pre>{{card.basecard.physicalcard.get_searchable_document_selfref_nosymbols|safe}}</pre>
+        </div>
+        <div class="col-xs-6 col-sm-4 col-md-3">
+          <img src="{{card.img_url}}">
+          <div>{{card.rules_text_html|escape}}</div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-9">
+          <pre>{{card.basecard.physicalcard.get_searchable_document_selfref|safe}}</pre>
         </div>
       </div>
       <div class="row">
