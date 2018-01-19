@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
+  <div class="row">
+    <div class="col-xs-12">
+      <h1>Similar Card Strategy 1</h1>
+      <p>
+Very similar to base strategy, but fixes a few term issues. Some punctuation has been removed from rules text, and boolean words "or" and "and" have been replaced with literals that are not special words to the query processor.
+      </p>
+    </div>
+  </div>
   {% for card in cards %}
     <div style="border-bottom: 2px solid #606060;" class="row">
       <div class="row">
@@ -13,7 +21,7 @@
           {{card.rules_text_html|escape}}
         </div>
         <div class="col-xs-12 col-md-9">
-          <pre>{{card.basecard.physicalcard.get_searchable_document_selfref|safe}}</pre>
+          <pre>{{card.basecard.physicalcard.get_searchable_document_selfref_nosymbols|safe}}</pre>
         </div>
       </div>
       <div class="row">

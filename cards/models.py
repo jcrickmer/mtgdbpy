@@ -11,6 +11,7 @@
 # into your database.
 from __future__ import unicode_literals
 import sys
+import re
 from django.conf import settings
 from django.db import models
 from datetime import datetime, date, timedelta
@@ -208,10 +209,18 @@ class PhysicalCard(models.Model):
         card = self.get_latest_card()
         return str(card.multiverseid) + '-' + card.url_slug()
 
+    def get_searchable_document_selfref_nosymbols(self):
+        return self.get_searchable_document(include_names=False, include_symbols=False)
+    
     def get_searchable_document_selfref(self):
         return self.get_searchable_document(include_names=False)
 
     def get_searchable_document(self, include_names=True, include_symbols=True):
+        cache_key = 'pc-{}-searchable-doc-{}-{}'.format(self.id, include_names, include_symbols)
+        # 18 hours
+        return cache.get_or_set(cache_key, self._get_searchable_document_nocache(include_names=include_names, include_symbols=include_symbols), 60 * 60 * 18)
+    
+    def _get_searchable_document_nocache(self, include_names=True, include_symbols=True):
         result = ''
         for basecard in self.basecard_set.all():
             rules = basecard.rules_text
@@ -265,10 +274,10 @@ class PhysicalCard(models.Model):
             # need to add something that does a regexp match on hybrid mana in mana cost and rules text and adds a term for 'manahybrid'
 
             if include_names:
-                #result = result + basecard.name + '\n'
-                result = result + basecard.filing_name + '\n'
-            result = result + rules + '\n'
-            #result = result + basecard.mana_cost + '\n'
+                #result = result + basecard.name + "\n"
+                result = result + basecard.filing_name + "\n"
+            result = result + rules + "\n"
+            #result = result + basecard.mana_cost + "\n"
             # add the pips that are in the mana cost
             if len(basecard.mana_cost) > 0:
                 costparts = basecard.mana_cost.lower().split('}')
@@ -291,7 +300,7 @@ class PhysicalCard(models.Model):
             strippedcost = strippedcost.replace('/p', '')
             strippedcost = strippedcost.replace('2/', '')
             strippedcost = strippedcost.replace('/', '')
-            result = result + strippedcost.lower() + '\n'
+            result = result + strippedcost.lower() + "\n"
             uses_pmana = False
             try:
                 basecard.rules_text.lower().index('/p}')
@@ -304,9 +313,9 @@ class PhysicalCard(models.Model):
             except ValueError:
                 pass
             if uses_pmana:
-                result = result + ' manaphyrexian\n'
+                result = result + " manaphyrexian\n"
 
-            result = result + 'cmc' + str(basecard.cmc) + '\n'
+            result = result + 'cmc' + str(basecard.cmc) + "\n"
             if basecard.power is not None:
                 try:
                     result = result + 'power' + str(basecard.power) + "\n"
@@ -324,9 +333,9 @@ class PhysicalCard(models.Model):
                     pass
             colors = basecard.colors.all()
             if len(colors) > 1:
-                result = result + 'multicolored\n'
+                result = result + " multicolored\n"
             else:
-                result = result + 'notmulticolored\n'
+                result = result + "notmulticolored\n"
             allcolors = ['white', 'blue', 'black', 'red', 'green', 'colorless']
             for color in colors:
                 result = result + 'cardcolor' + color.color.lower() + "\n"
@@ -340,11 +349,21 @@ class PhysicalCard(models.Model):
             #result = result + ' '.join(ctype.type for ctype in basecard.types.all()) + "\n"
             #result = result + ' '.join(cstype.subtype for cstype in basecard.subtypes.all()) + "\n"
 
-            result = result + '\n'
+            result = result + "\n"
 
+        result = result + 'layout' + self.layout + "\n"
         if self.basecard_set.all().count() > 1:
-            result = 'multicard\n' + result
+            result = "multicard\n" + result
 
+        result = result.replace("his or her", "thirdpersonsingular")
+        pattern = re.compile(r'\+([Xx\d]+)')
+        result = pattern.sub(lambda m: 'plus{}'.format(m.group(1)), result)
+        pattern = re.compile(ur'[\-−\u2010-\u2015]([Xx\d]+)', re.U)
+        result = pattern.sub(lambda m: u'minus{}'.format(m.group(1)), unicode(result))
+        
+        result = result.replace(" or ", " litor ")
+        result = result.replace(" and ", " litand ")
+        
         if not include_symbols:
             result = result.replace("/", " ")
             result = result.replace(",", " ")
@@ -354,15 +373,15 @@ class PhysicalCard(models.Model):
             result = result.replace("{", " ")
             result = result.replace("}", " ")
             result = result.replace("?", " ")
-            result = result.replace("~", "\\~")
-            result = result.replace("*", "\\*")
-            result = result.replace("-", "\\-")
-            result = result.replace("+", "\\+")
-            result = result.replace("|", "\\|")
+            result = result.replace("~", "\~")
+            result = result.replace("*", "\*")
+            result = result.replace("-", "\-")
+            result = result.replace("+", "\+")
+            result = result.replace("|", "\|")
             result = result.replace("(", "")
             result = result.replace(")", "")
-            result = result.replace("'", "\\'")
-            result = result.replace("\\", "\\\\")
+            result = result.replace("'", "\'")
+            #result = result.replace("\\", "\\\\")
 
         return result
 
