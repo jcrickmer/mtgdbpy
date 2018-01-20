@@ -91,6 +91,8 @@
     
     <field name="selfreftext" type="text_en" indexed="true" stored="true" multiValued="false" />
     
+    <field name="rulestext" type="text_en" indexed="true" stored="true" multiValued="false" />
+    
     <uniqueKey>id</uniqueKey>
 
     <!--
