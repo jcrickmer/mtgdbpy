@@ -459,6 +459,51 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
     return httpResp
 
 
+def cardlist_sims(request, cardname='Plains', query_pred_array=None, page_title='Search Results'):
+    """ Show a list of cards based on full text search, like a similars.
+    """
+    root_pc = PhysicalCard.objects.filter(basecard__name__iexact=cardname).first()
+    if root_pc is None:
+        raise Http404
+    cache_key_page = 'search_simcard-{}'.format(root_pc.id)
+    card_list = root_pc.find_similar_cards(max_results=100, include_query_card=True)
+    list_for_paging = list(card_list)
+    paginator = Paginator(list_for_paging, 25)
+    cards = list()
+    page = request.GET.get('page', request.session.get("curpage", 1))
+    try:
+        cards = paginator.page(page)
+        request.session["curpage"] = page
+    except PageNotAnInteger:
+        cards = paginator.page(1)
+        request.session["curpage"] = 1
+    except EmptyPage:
+        cards = paginator.page(paginator.num_pages)
+        request.session["curpage"] = paginator.num_pages
+
+    query_pred_array = list()
+    query_pred_array.append({'field': 'similar', 'op': '~', 'value': root_pc.get_card_name(), 'hint': 'cardsim'})
+
+    context = BASE_CONTEXT.copy()
+    context.update({
+        'ellided_prev_page': max(0, int(page) - 4),
+        'ellided_next_page': min(paginator.num_pages, int(page) + 4),
+        'cards': cards,
+        'thepagetitle': page_title,
+        'sort_order': request.session.get('sort_order', 'rel'),
+        'predicates': query_pred_array,
+        'predicates_js': json.dumps(query_pred_array),
+        'CARDS_SEARCH_CACHE_TIME': settings.CARDS_SEARCH_CACHE_TIME,
+        'cache_key_page': cache_key_page,
+    })
+
+    context['current_formats'] = Format.objects.filter(start_date__lte=datetime.today(),
+                                                       end_date__gte=datetime.today()).order_by('format')
+
+    httpResp = render(request, 'cards/list.html', context)
+    return httpResp
+
+
 def detail_by_slug(request, slug=None):
     if slug is not None:
         slugws = slug.lower().replace('-', ' ')
@@ -537,12 +582,14 @@ def detail(request, multiverseid=None, slug=None):
     response = render(request, 'cards/detail.html', context)
     return response
 
+
 def sims_test(request):
     #cards = Card.objects.filter(basecard__name__in=['Kessig Wolf Run', 'Jace, Memory Adept', 'Fatal Push', 'Slagstorm', 'Rogue Refiner', 'Arcbound Ravager', 'Delver of Secrets','Nether Traitor'])
     # 370510, 226749, 423724, 370728, 373323, 116742, 423802, 214054
     cards = Card.objects.filter(multiverseid__in=[370510, 226749, 423724, 370728, 373323, 116742, 423802, 214054])
     response = render(request, 'cards/sims_test.html', {'cards': cards})
     return response
+
 
 def detail_ajax(request, cards):
     response_dict = {}

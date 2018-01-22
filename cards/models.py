@@ -366,7 +366,7 @@ class PhysicalCard(models.Model):
 
         return result
 
-    def find_similar_card_ids(self, max_results=18):
+    def find_similar_card_ids(self, max_results=18, include_query_card=False):
         similars = []
         solrquerystring = self.get_searchable_document(include_names=False, include_symbols=False)
         solrqueryparts_list = solrquerystring.split()
@@ -377,15 +377,15 @@ class PhysicalCard(models.Model):
             if solrcount >= max_results:
                 break
             simcard_pk = int(sim_sqr.pk)
-            if int(self.id) != simcard_pk:
+            if include_query_card or int(self.id) != simcard_pk:
                 similars.append(simcard_pk)
                 solrcount = solrcount + 1
         return similars
 
-    def find_similar_cards(self, max_results=18):
+    def find_similar_cards(self, max_results=18, include_query_card=False):
         """ Returns Card objects, not PhysicalCard objects.
         """
-        similars = self.find_similar_card_ids(max_results)
+        similars = self.find_similar_card_ids(max_results, include_query_card)
         result = []
         for sim_id in similars:
             try:

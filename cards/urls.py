@@ -15,6 +15,8 @@ urlpatterns = [
     url(r'^list/$', views.cardlist, name='list'),
     url(r'^_formats/$', views.formats, name='formats'),
     url(r'^_list$', views.cardlist, name='list'),
+    url(r'^_similar_cards$', views.cardlist_sims, name='list_sims'),
+    url(r'^_similar_cards/(?P<cardname>[^/]+)$', views.cardlist_sims, name='list_sims'),
     url(r'^_cardstats/(?P<formatname>[^/]+)/(?P<physicalcard_id>\d+)/$', views.cardstats, name='cardstats'),
     url(r'^_cardstats/(?P<formatname>[^/]+)/mvid-(?P<multiverseid>\d+)/$', views.cardstats, name='cardstats'),
     # format stats

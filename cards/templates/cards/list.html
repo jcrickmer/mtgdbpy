@@ -13,7 +13,7 @@ div.page-header {
 }
 </style>
   <div class="termsbox">
-    <a href="{% url 'cards:index' %}">Query: </a>
+    <a href="{% url 'cards:index' %}" style="margin-right: 8px;">Query: </a>
     <ul id="search_terms" style="display: inline;" class="list-inline list-unstyled"></ul>
   </div>
   <script>
@@ -33,11 +33,15 @@ $(function() {
       <form class="form-inline" style="margin: 20px 0px;">
         Sort by:
         <select id="sort_order" name="sort_order" class="form-control input-sm">
-          <option value="name">Name</option>
-          <option value="cmc">CMC</option>
-{% for format in current_formats %}
-          <option value="rating-{{format.format}}">Rating in {{format.formatname}} (Current)</option>
-{% endfor %}
+          {% if sort_order == "rel" %}
+            <option value="rel" selected>Relevance</option>
+          {% else %}
+            <option value="name">Name</option>
+            <option value="cmc">CMC</option>
+            {% for format in current_formats %}
+              <option value="rating-{{format.format}}">Rating in {{format.formatname}} (Current)</option>
+            {% endfor %}
+          {% endif %}
         </select>
       </form>
       <script>

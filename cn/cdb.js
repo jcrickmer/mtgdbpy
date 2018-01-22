@@ -16,6 +16,7 @@ $(function() {
                       'cmc':'CMC',
                       'power':'Power',
                       'toughness':'Toughness',
+                      'similar':'Similar',
                       'supertype':'Supertype',
                       'type':'Type',
                       'subtype':'Subtype',
@@ -41,6 +42,8 @@ $(function() {
             var result = cdb.fieldNames[rule.field];
             if (rule.field == "format") {
                 result = result + " is \"" + rule.value + "\"";
+            } else if (rule.field == "similar") {
+                result = result + " to \"" + rule.value + "\"";
             } else if (rule.op == "and") {
                 result = result + " contains ";
                 if (rule.field == "color") {
