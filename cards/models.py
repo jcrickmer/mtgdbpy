@@ -493,6 +493,20 @@ class BaseCard(models.Model):
             # REVISIT!
             self.cmc = 1
 
+    def get_full_type_str(self):
+        """ Returns a string of full type line that you would see on a card.
+
+        Examples: "Legendary Creature - Human Wizard", "Enchantment", "Basic Land - Forest", "Tribal Instant - Goblin"
+        """
+        spt = u' '.join(unicode(v.supertype) for v in self.supertypes.all())
+        tt = u' '.join(unicode(v.type) for v in self.types.all().order_by('sort_order'))
+        t = u' '.join([spt.strip(), tt.strip()])
+        a = t
+        st = u' '.join(unicode(v.subtype) for v in self.subtypes.all())
+        if len(st) > 0:
+            a = u' - '.join([t, st])
+        return a.strip()
+
     def get_rulings(self):
         return Ruling.objects.filter(basecard=self.id).order_by('ruling_date')
 
