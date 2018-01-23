@@ -9,6 +9,13 @@
 {% endblock %}
 {% block description %}Magic: The Gathering card {{ physicalcard.get_card_name }} information and analysis{% endblock %}
 
+{% block additionalheaders %}
+  {% for ccc in cards %}
+    {% if forloop.counter0 == 0 %}
+      <link rel="canonical" href="{% url 'cards:detail' multiverseid=ccc.get_original_version.multiverseid slug=ccc.get_original_version.url_slug %}">
+    {% endif %}
+  {% endfor %}
+{% endblock %}
 {% block subsearchnav %}
 <div class="row" style="padding-bottom: 8px; border-bottom: 1px solid #eee;">
   <div class="col-xs-6 col-sm-3 col-md-2"><button id="return-terms" class="btn btn-default"><span class="glyphicon glyphicon-search"></span>&nbsp;Search Terms</button></div>
@@ -172,9 +179,9 @@ function drawCardStatsChart(formatname) {
                   <span class="hidden-xs-inline">{{lf.formatname}}</span><span class="visible-xs-inline">{{lf.abbr}}</span>:
                   {% for cr in physicalcard.get_cardratings %}
                     {% if cr.format.formatname == lf.formatname %}
-                      <span>{{ cr.cardninjaRating|floatformat:2 }}</span><br>
+                      <span>{{ cr.cardninjaRating|floatformat:2 }}</span>
                     {% endif %}
-                  {% endfor %}
+                  {% endfor %}<br>
                 {% endfor%}
               </td>
             </tr>
