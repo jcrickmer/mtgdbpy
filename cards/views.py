@@ -904,7 +904,12 @@ def battle(request, format="redirect"):
 
     # this is a set of parameters that are going to be common among queries that select for cards.
     query_params = {'formatid': str(format_id),
-                    'layouts': [PhysicalCard.NORMAL, PhysicalCard.SPLIT, PhysicalCard.FLIP, PhysicalCard.DOUBLE, PhysicalCard.LEVELER]}
+                    'layouts': [PhysicalCard.NORMAL,
+                                    PhysicalCard.SPLIT,
+                                    PhysicalCard.FLIP,
+                                    PhysicalCard.DOUBLE,
+                                    PhysicalCard.AFTERMATH,
+                                    PhysicalCard.LEVELER]}
 
     card_a = None
     first_card = {
@@ -953,27 +958,31 @@ def battle(request, format="redirect"):
             pass
     else:
         fcsqls_xtra = ''
-        bb_file = 'betterbattle_{}.csv'.format(str(format_id))
-        try:
-            bb_file = settings.BETTER_BATTLE_PATH + '/' + 'betterbattle_{}.csv'.format(str(format_id))
-        except AttributeError:
-            pass
-        #logger.error("cur dir " + os.path.abspath("."))
-        #logger.error("looking for  " + os.path.abspath(bb_file))
-        if os.path.isfile(bb_file):
-            #logger.error("loaded " + os.path.abspath(bb_file))
-            rand_source = "file: " + os.path.abspath(bb_file)
-            bb_ids_list = list()
-            with open(bb_file) as bb_f:
-                bbcontent = bb_f.readlines()
-                for bbline in bbcontent:
-                    try:
-                        bb_ids_list.append(int(bbline.strip()))
-                    except ValueError:
-                        pass
+        bb_cache_key = 'betterbattle-{}'.format(str(format_id))
+        bb_ids_list = cache.get(bb_cache_key, list())
+        if not bb_ids_list:
+            bb_file = 'betterbattle_{}.csv'.format(str(format_id))
+            try:
+                bb_file = settings.BETTER_BATTLE_PATH + '/' + 'betterbattle_{}.csv'.format(str(format_id))
+            except AttributeError:
+                pass
+            #logger.error("cur dir " + os.path.abspath("."))
+            #logger.error("looking for  " + os.path.abspath(bb_file))
+            if os.path.isfile(bb_file):
+                #logger.error("loaded " + os.path.abspath(bb_file))
+                rand_source = "file: " + os.path.abspath(bb_file)
+                bb_ids_list = list()
+                with open(bb_file) as bb_f:
+                    bbcontent = bb_f.readlines()
+                    for bbline in bbcontent:
+                        try:
+                            bb_ids_list.append(int(bbline.strip()))
+                        except ValueError:
+                            pass
+                    cache.set(bb_cache_key, bb_ids_list, 60*60*12)
+        if bb_ids_list:
             query_params['x_ids'] = bb_ids_list
-            if len(bb_ids_list) > 0:
-                fcsqls_xtra = ' AND pc.id IN %(x_ids)s '
+            fcsqls_xtra = ' AND pc.id IN %(x_ids)s '
         fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, bc.physicalcard_id, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id AND cr.format_id = fbc.format_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE pc.layout IN %(layouts)s AND fbc.format_id = %(formatid)s {} ORDER BY cr.sigma DESC, r ASC LIMIT 1'.format(
             fcsqls_xtra)
         #logger.error("First Card SQL: " + fcsqls)
