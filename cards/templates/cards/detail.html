@@ -110,6 +110,8 @@ function drawCardStatsChart(formatname) {
     lchart.draw(data, options);
 }
 </script>
+{% content key="PhysicalCard-"|concat:physicalcard.id position="top" %}
+{% content key=request.path position="top" %}
 {% for card in cards %}
   {% if card %}
     <div class="row">
@@ -223,7 +225,8 @@ function drawCardStatsChart(formatname) {
     </div>
   {% endif %}
 {% endfor %}
-{% content key="PhysicalCard-"|concat:physicalcard.id position="mid" title="Commentary" %}
+{% content key="PhysicalCard-"|concat:physicalcard.id position="mid" title="Commentary" layout="commentary" %}
+{% content key=request.path position="mid" %}
 <div class="battles-block">
   <div class="row">
     <div class="col-xs-12">
@@ -436,6 +439,8 @@ $('.panel-group').on('shown.bs.collapse', toggleChevron);
     </div>
   </div>
 </div>
+{% content key="PhysicalCard-"|concat:physicalcard.id position="bottom" %}
+{% content key=request.path position="bottom" %}
 
 <div style="margin-top: 20px;" class="row"><div class="col-xs-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_mvid}}" target="_blank">View on Gatherer</a></div></div>
 <script type="text/javascript">

@@ -19,9 +19,11 @@ def concat(arg1, arg2):
 
 
 @register.inclusion_tag('content.html', takes_context=True)
-def content(context, key, position, title=None):
+def content(context, key, position, layout='blank', title=None):
     """ Template tag render of content at key and position.
     """
+    sys.stderr.write("content looking for key {}__{}\n".format(key, position))
     cb = ContentBlock.objects.filter(key='{}__{}'.format(key, position), status=ContentBlock.LIVE).order_by('-version').first()
     return {'title': title,
+            'layout': layout,
             'contentblock': cb, }

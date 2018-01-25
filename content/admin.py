@@ -44,9 +44,14 @@ class ContentBlockForm(forms.ModelForm):
         key_card = self.cleaned_data.get('key_card', None)
         key_position = self.cleaned_data.get('key_position', None)
         if key_card and key_position:
-            sys.stderr.write("ContentBlockForm - setting key from key_card and key_position. {}\n".format(key_card))
+            #sys.stderr.write("ContentBlockForm - setting key from key_card and key_position. {}\n".format(key_card))
             result.key = u'PhysicalCard-{}__{}'.format(key_card.id, key_position)
             result.save()
+            # now, let's bust cache so that people can see the work that they did:
+            temp_frag_name = 'card_details_html'
+            icards = Card.objects.filter(basecard__physicalcard=key_card)
+            for icard in icards:
+                invalidate_template_fragment(temp_frag_name, icard.multiverseid)
         return result
 
     class Meta:
@@ -57,9 +62,10 @@ class ContentBlockForm(forms.ModelForm):
 
 class ContentBlockAdmin(admin.ModelAdmin):
     search_fields = ['key', ]
-    list_display = ('id', 'key')
+    list_display = ('id', 'key', 'status')
     readonly_fields = ('id',)
     fields = ('key', 'key_card', 'key_position', 'status', 'content', 'author', 'version', 'id')
+    list_display_links = ('id', 'key', )
     form = ContentBlockForm
 
     def get_form(self, request, obj=None, **kwargs):

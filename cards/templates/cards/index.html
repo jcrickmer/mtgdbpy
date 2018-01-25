@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load content %}
 
 {% block title %}Card Search{% endblock %}
 {% block pagetitle %}Card Search{% endblock %}
@@ -15,6 +16,7 @@ $(function() {
 </script>
       <div class="col-xs-1"></div>
     </div>
+    {% content key=request.path position="top" %}
 	<div class="row">
 	  <div class="col-xs-12 col-sm-6">
 	    <div class="row term_input form-group xs-gutters"> <!-- nesting columns -->
@@ -224,6 +226,7 @@ $(function() {
     </form>
   </div>
 </div>
+{% content key=request.path position="mid" %}
 <div class="row">
   <div class="col-xs-12">
     <h3>Top Cards per Format</h3>
@@ -246,4 +249,5 @@ $(function() {
     </ul>
   </div>
 </div>
+{% content key=request.path position="bottom" %}
 {% endblock %}

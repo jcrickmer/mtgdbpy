@@ -559,6 +559,10 @@ div.sim-cards-search {
     height: 250px;
   }
 }
+div.content-block {
+    margin-top: 11px;
+    margin-bottom: 11px;
+}
 img.content-author-avatar {
     width: 100px;
     height: auto;
