@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'ajax_select',
     'mathfilters',
     'haystack',
+    'content',
     'cards',
     'decks',
 ]
@@ -127,7 +128,8 @@ USE_TZ = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'cards', 'templates'),
+        'DIRS': [os.path.join(BASE_DIR, 'content', 'templates'),
+                 os.path.join(BASE_DIR, 'cards', 'templates'),
                  os.path.join(BASE_DIR, 'decks', 'templates'),
                  os.path.join(BASE_DIR, 'mtgdb', 'templates'),
                  os.path.join(SITE_PACKAGES_DIR, 'django', 'contrib', 'admin', 'templates'),

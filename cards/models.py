@@ -1176,7 +1176,7 @@ class Card(models.Model):
         """ Returns the Card of this card with the lowest Multiverseid.
         """
         return Card.objects.filter(basecard=self.basecard).order_by('multiverseid').first()
-    
+
     def get_all_versions(self):
         """ Returns a QuerySet of Cards that are first cards (Up, Front, Left) that share this card's PhysicalCard.
         """

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load content %}
 
 {% block title %}{{ physicalcard.get_card_name }}{% endblock %}
 {% block pagetitle %}
@@ -222,6 +223,7 @@ function drawCardStatsChart(formatname) {
     </div>
   {% endif %}
 {% endfor %}
+{% content key="PhysicalCard-"|concat:physicalcard.id position="mid" title="Commentary" %}
 <div class="battles-block">
   <div class="row">
     <div class="col-xs-12">

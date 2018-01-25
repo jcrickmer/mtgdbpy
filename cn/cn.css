@@ -559,3 +559,15 @@ div.sim-cards-search {
     height: 250px;
   }
 }
+img.content-author-avatar {
+    width: 100px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+div.content-author-name {
+    text-align: center;
+}
+div.content-publish-date {
+    text-align: center;
+}

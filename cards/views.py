@@ -905,11 +905,11 @@ def battle(request, format="redirect"):
     # this is a set of parameters that are going to be common among queries that select for cards.
     query_params = {'formatid': str(format_id),
                     'layouts': [PhysicalCard.NORMAL,
-                                    PhysicalCard.SPLIT,
-                                    PhysicalCard.FLIP,
-                                    PhysicalCard.DOUBLE,
-                                    PhysicalCard.AFTERMATH,
-                                    PhysicalCard.LEVELER]}
+                                PhysicalCard.SPLIT,
+                                PhysicalCard.FLIP,
+                                PhysicalCard.DOUBLE,
+                                PhysicalCard.AFTERMATH,
+                                PhysicalCard.LEVELER]}
 
     card_a = None
     first_card = {
@@ -979,7 +979,7 @@ def battle(request, format="redirect"):
                             bb_ids_list.append(int(bbline.strip()))
                         except ValueError:
                             pass
-                    cache.set(bb_cache_key, bb_ids_list, 60*60*12)
+                    cache.set(bb_cache_key, bb_ids_list, 60 * 60 * 12)
         if bb_ids_list:
             query_params['x_ids'] = bb_ids_list
             fcsqls_xtra = ' AND pc.id IN %(x_ids)s '
