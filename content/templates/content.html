@@ -1,0 +1,16 @@
+{% if contentblock %}
+  <div class="content-block {{contentblock.key}}" id="{{contentblock.key}}">
+    {% if title %}
+      <div class="row">
+        <div class="col-xs-12">
+          <h3>{{title}}</h3>
+        </div>
+      </div>
+    {% endif %}
+    <div class="row">
+      <div class="col-xs-12">
+        {{contentblock.content}}
+      </div>
+    </div>
+  </div>
+{% endif %}
