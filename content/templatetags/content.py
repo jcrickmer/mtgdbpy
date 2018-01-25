@@ -22,7 +22,6 @@ def concat(arg1, arg2):
 def content(context, key, position, title=None):
     """ Template tag render of content at key and position.
     """
-    sys.stderr.write("key '{}' on position '{}'\n".format(key, position))
-    cb = ContentBlock.objects.filter(key='{}_{}'.format(key, position)).order_by('-version').first()
+    cb = ContentBlock.objects.filter(key='{}__{}'.format(key, position), status=ContentBlock.LIVE).order_by('-version').first()
     return {'title': title,
             'contentblock': cb, }
