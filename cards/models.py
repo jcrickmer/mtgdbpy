@@ -211,15 +211,20 @@ class PhysicalCard(models.Model):
 
     def get_searchable_document_selfref_nosymbols(self):
         return self.get_searchable_document(include_names=False, include_symbols=False)
-    
+
     def get_searchable_document_selfref(self):
         return self.get_searchable_document(include_names=False)
 
     def get_searchable_document(self, include_names=True, include_symbols=True):
         cache_key = 'pc-{}-searchable-doc-{}-{}'.format(self.id, include_names, include_symbols)
         # 18 hours
-        return cache.get_or_set(cache_key, self._get_searchable_document_nocache(include_names=include_names, include_symbols=include_symbols), 60 * 60 * 18)
-    
+        return cache.get_or_set(
+            cache_key,
+            self._get_searchable_document_nocache(
+                include_names=include_names,
+                include_symbols=include_symbols),
+            60 * 60 * 18)
+
     def get_searchable_document_rules(self, include_names=True, include_symbols=True):
         result = ''
 
@@ -283,20 +288,20 @@ class PhysicalCard(models.Model):
             rules = rules.replace("his or her", "thirdpersonsingular")
 
             result = result + rules + "\n"
-            
+
         pattern = re.compile(r'\+([Xx\d]+)')
         result = pattern.sub(lambda m: 'plus{}'.format(m.group(1)), result)
         pattern = re.compile(ur'[\-−\u2010-\u2015]([Xx\d]+)', re.U)
         result = pattern.sub(lambda m: u'minus{}'.format(m.group(1)), unicode(result))
-        
+
         result = result.replace(" or ", " litor ")
         result = result.replace(" and ", " litand ")
-        
+
         remindpat = re.compile(ur'\([^\)]+\)', re.U)
         result = remindpat.sub('', result)
-        
+
         return result
-    
+
     def get_searchable_document_color(self):
         result = ''
         for basecard in self.basecard_set.all():
@@ -331,7 +336,7 @@ class PhysicalCard(models.Model):
                 pass
             if uses_pmana:
                 result = result + " manaphyrexian\n"
-                
+
             colors = basecard.colors.all()
             if len(colors) > 1:
                 result = result + " multicolored\n"
@@ -351,7 +356,7 @@ class PhysicalCard(models.Model):
             else:
                 result = result + "notcardcolorcolorless\n"
         return result
-        
+
     def get_searchable_document_manacost(self):
         result = ''
         strippedcost = ''
@@ -371,9 +376,9 @@ class PhysicalCard(models.Model):
         strippedcost = strippedcost.replace('2/', '')
         strippedcost = strippedcost.replace('/', '')
         result = result + 'manacost' + strippedcost.lower() + "\n"
-        
+
         return result
-    
+
     def get_searchable_document_types(self):
         result = ''
         for basecard in self.basecard_set.all():
@@ -386,7 +391,7 @@ class PhysicalCard(models.Model):
             result = result + ' '.join('subtype' + cstype.subtype for cstype in basecard.subtypes.all()) + "\n"
 
         return result
-    
+
     def _get_searchable_document_nocache(self, include_names=True, include_symbols=True):
         result = ''
         result = result + self.get_searchable_document_rules(include_names, include_symbols)
@@ -449,9 +454,51 @@ class PhysicalCard(models.Model):
         for qp in solrqueryparts_list:
             qp = qp.lower()
             # Keyword actions get a boost - https://mtg.gamepedia.com/Keyword_action, PLUS 'return', 'deal', 'deals', 'gain', and 'lose'
-            if qp in ['activate','attach','cast','counter','create','destroy','discard','exchange','exile','fight','play','regenerate','reveal','sacrifice','scry','search','shuffle','tap','untap','fateseal','clash','planeswalk','proliferate','transform','detain','populate','monstrosity','vote','bolster','manifest','support','investigate','meld','goad','exert','explore','assemble', 'return','deal', 'deals', 'gain', 'lose']:
+            if qp in [
+                    'activate',
+                    'attach',
+                    'cast',
+                    'counter',
+                    'create',
+                    'destroy',
+                    'discard',
+                    'exchange',
+                    'exile',
+                    'fight',
+                    'play',
+                    'regenerate',
+                    'reveal',
+                    'sacrifice',
+                    'scry',
+                    'search',
+                    'shuffle',
+                    'tap',
+                    'untap',
+                    'fateseal',
+                    'clash',
+                    'planeswalk',
+                    'proliferate',
+                    'transform',
+                    'detain',
+                    'populate',
+                    'monstrosity',
+                    'vote',
+                    'bolster',
+                    'manifest',
+                    'support',
+                    'investigate',
+                    'meld',
+                    'goad',
+                    'exert',
+                    'explore',
+                    'assemble',
+                    'return',
+                    'deal',
+                    'deals',
+                    'gain',
+                    'lose']:
                 qp = qp + "^4.0"
-            elif qp in ['creature','artifact','planeswalker','land','nonland','permanent','token','instant','spell','sorcery','enchantment','noncreature','graveyard','hand','library','legendary','emblem','zone','battlefield','player']:
+            elif qp in ['creature', 'artifact', 'planeswalker', 'land', 'nonland', 'permanent', 'token', 'instant', 'spell', 'sorcery', 'enchantment', 'noncreature', 'graveyard', 'hand', 'library', 'legendary', 'emblem', 'zone', 'battlefield', 'player']:
                 qp = qp + "^2.0"
             newlist.append(qp)
         orstring = " OR ".join(newlist)
