@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load content %}
 
-{% block title %}{{ physicalcard.get_card_name }}{% endblock %}
+{% block title %}{{ physicalcard.get_card_name }} ({{request_card.expansionset.name}}){% endblock %}
 {% block pagetitle %}
   {{ physicalcard.get_card_name }}
   {% for fcs in formatcardstats %}

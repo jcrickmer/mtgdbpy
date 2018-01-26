@@ -570,6 +570,7 @@ def detail(request, multiverseid=None, slug=None):
     context.update({'PAGE_CACHE_TIME': PAGE_CACHE_TIME,
                     'physicalcard': physicalcard,
                     'request_mvid': multiverseid,
+                    'request_card': tcard,
                     'cards': cards,
                     'formatcardstats': formatcardstats,
                     'cardbattlestats': cardbattlestats,
