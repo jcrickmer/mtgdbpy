@@ -1,0 +1,39 @@
+{% if contentblock %}
+  {% if layout == "blank" %}
+    <div class="content-block {{contentblock.key}}" id="{{contentblock.key}}">
+      <div class="row">
+        <div class="col-xs-12">
+          {{contentblock.content_final|safe}}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+  {% if layout == "commentary" %}
+    <div class="content-block {{contentblock.key}}" id="{{contentblock.key}}">
+      {% if title %}
+        <div class="row">
+          <div class="col-xs-12">
+            <h3>{{title}}</h3>
+          </div>
+        </div>
+      {% endif %}
+      <div class="row">
+        <div class="col-xs-4 col-sm-3 col-md-2 content-author">
+          <div class="content-author-avatar">
+            <img class="content-author-avatar" src="/cn/avatars/{{contentblock.author.user.username}}.jpg">
+          </div>
+          <div class="content-author-name">
+            {{contentblock.author.user.first_name}}
+            {{contentblock.author.user.last_name}}
+          </div>
+          <div class="content-publish-date">
+            {{contentblock.updated_at|date:"F j, o"}}
+          </div>
+        </div>
+        <div class="col-xs-8 col-md-8">
+          {{contentblock.content_final|safe}}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endif %}

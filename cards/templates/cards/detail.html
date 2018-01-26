@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% load content %}
 
-{% block title %}{{ physicalcard.get_card_name }}{% endblock %}
+{% block title %}{{ physicalcard.get_card_name }} ({{request_card.expansionset.name}}){% endblock %}
 {% block pagetitle %}
   {{ physicalcard.get_card_name }}
   {% for fcs in formatcardstats %}
@@ -9,6 +10,13 @@
 {% endblock %}
 {% block description %}Magic: The Gathering card {{ physicalcard.get_card_name }} information and analysis{% endblock %}
 
+{% block additionalheaders %}
+  {% for ccc in cards %}
+    {% if forloop.counter0 == 0 %}
+      <link rel="canonical" href="{% url 'cards:detail' multiverseid=ccc.get_original_version.multiverseid slug=ccc.get_original_version.url_slug %}">
+    {% endif %}
+  {% endfor %}
+{% endblock %}
 {% block subsearchnav %}
 <div class="row" style="padding-bottom: 8px; border-bottom: 1px solid #eee;">
   <div class="col-xs-6 col-sm-3 col-md-2"><button id="return-terms" class="btn btn-default"><span class="glyphicon glyphicon-search"></span>&nbsp;Search Terms</button></div>
@@ -102,6 +110,8 @@ function drawCardStatsChart(formatname) {
     lchart.draw(data, options);
 }
 </script>
+{% content key="PhysicalCard-"|concat:physicalcard.id position="top" %}
+{% content key=request.path position="top" %}
 {% for card in cards %}
   {% if card %}
     <div class="row">
@@ -172,9 +182,9 @@ function drawCardStatsChart(formatname) {
                   <span class="hidden-xs-inline">{{lf.formatname}}</span><span class="visible-xs-inline">{{lf.abbr}}</span>:
                   {% for cr in physicalcard.get_cardratings %}
                     {% if cr.format.formatname == lf.formatname %}
-                      <span>{{ cr.cardninjaRating|floatformat:2 }}</span><br>
+                      <span>{{ cr.cardninjaRating|floatformat:2 }}</span>
                     {% endif %}
-                  {% endfor %}
+                  {% endfor %}<br>
                 {% endfor%}
               </td>
             </tr>
@@ -215,6 +225,8 @@ function drawCardStatsChart(formatname) {
     </div>
   {% endif %}
 {% endfor %}
+{% content key="PhysicalCard-"|concat:physicalcard.id position="mid" title="Commentary" layout="commentary" %}
+{% content key=request.path position="mid" %}
 <div class="battles-block">
   <div class="row">
     <div class="col-xs-12">
@@ -427,6 +439,8 @@ $('.panel-group').on('shown.bs.collapse', toggleChevron);
     </div>
   </div>
 </div>
+{% content key="PhysicalCard-"|concat:physicalcard.id position="bottom" %}
+{% content key=request.path position="bottom" %}
 
 <div style="margin-top: 20px;" class="row"><div class="col-xs-3"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={{request_mvid}}" target="_blank">View on Gatherer</a></div></div>
 <script type="text/javascript">

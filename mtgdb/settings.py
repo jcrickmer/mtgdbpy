@@ -31,14 +31,27 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 ALLOWED_HOSTS = ['127.0.0.1', 'smoker']
 INTERNAL_IPS = (
     '127.0.0.1',
+    '0.0.0.0',
     'localhost',
+    '192.168.0.2',
+    '192.168.0.3',
+    '192.168.0.4',
+    '192.168.0.5',
     '192.168.0.6',
     '192.168.0.7',
     '192.168.0.8',
+    '192.168.0.9',
+    '192.168.0.10',
     '192.168.0.11',
+    '192.168.0.12',
+    '192.168.0.13',
+    '192.168.0.14',
+    '192.168.0.15',
+    '192.168.0.16',
+    '192.168.0.17',
     '192.168.0.18',
     '192.168.0.19',
-    '192.168.0.13',
+    '192.168.0.20',
     'smoker')
 
 # Application definition
@@ -54,6 +67,7 @@ INSTALLED_APPS = [
     'ajax_select',
     'mathfilters',
     'haystack',
+    'content',
     'cards',
     'decks',
 ]
@@ -127,7 +141,8 @@ USE_TZ = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'cards', 'templates'),
+        'DIRS': [os.path.join(BASE_DIR, 'content', 'templates'),
+                 os.path.join(BASE_DIR, 'cards', 'templates'),
                  os.path.join(BASE_DIR, 'decks', 'templates'),
                  os.path.join(BASE_DIR, 'mtgdb', 'templates'),
                  os.path.join(SITE_PACKAGES_DIR, 'django', 'contrib', 'admin', 'templates'),
@@ -135,15 +150,16 @@ TEMPLATES = [
                  os.path.join(SITE_PACKAGES_DIR, 'ajax_select', 'templates'),
                  ],
         'OPTIONS': {
+            'debug': True,
             'context_processors': [
-                'django.contrib.auth.context_processors.auth',
                 'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
                 'django.template.context_processors.i18n',
                 'django.template.context_processors.media',
                 'django.template.context_processors.static',
                 'django.template.context_processors.tz',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.request',
             ],
         }
     }

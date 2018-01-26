@@ -459,6 +459,51 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
     return httpResp
 
 
+def cardlist_sims(request, cardname='Plains', query_pred_array=None, page_title='Search Results'):
+    """ Show a list of cards based on full text search, like a similars.
+    """
+    root_pc = PhysicalCard.objects.filter(basecard__name__iexact=cardname).first()
+    if root_pc is None:
+        raise Http404
+    cache_key_page = 'search_simcard-{}'.format(root_pc.id)
+    card_list = root_pc.find_similar_cards(max_results=100, include_query_card=True)
+    list_for_paging = list(card_list)
+    paginator = Paginator(list_for_paging, 25)
+    cards = list()
+    page = request.GET.get('page', request.session.get("curpage", 1))
+    try:
+        cards = paginator.page(page)
+        request.session["curpage"] = page
+    except PageNotAnInteger:
+        cards = paginator.page(1)
+        request.session["curpage"] = 1
+    except EmptyPage:
+        cards = paginator.page(paginator.num_pages)
+        request.session["curpage"] = paginator.num_pages
+
+    query_pred_array = list()
+    query_pred_array.append({'field': 'similar', 'op': '~', 'value': root_pc.get_card_name(), 'hint': 'cardsim'})
+
+    context = BASE_CONTEXT.copy()
+    context.update({
+        'ellided_prev_page': max(0, int(page) - 4),
+        'ellided_next_page': min(paginator.num_pages, int(page) + 4),
+        'cards': cards,
+        'thepagetitle': page_title,
+        'sort_order': request.session.get('sort_order', 'rel'),
+        'predicates': query_pred_array,
+        'predicates_js': json.dumps(query_pred_array),
+        'CARDS_SEARCH_CACHE_TIME': settings.CARDS_SEARCH_CACHE_TIME,
+        'cache_key_page': cache_key_page,
+    })
+
+    context['current_formats'] = Format.objects.filter(start_date__lte=datetime.today(),
+                                                       end_date__gte=datetime.today()).order_by('format')
+
+    httpResp = render(request, 'cards/list.html', context)
+    return httpResp
+
+
 def detail_by_slug(request, slug=None):
     if slug is not None:
         slugws = slug.lower().replace('-', ' ')
@@ -525,6 +570,7 @@ def detail(request, multiverseid=None, slug=None):
     context.update({'PAGE_CACHE_TIME': PAGE_CACHE_TIME,
                     'physicalcard': physicalcard,
                     'request_mvid': multiverseid,
+                    'request_card': tcard,
                     'cards': cards,
                     'formatcardstats': formatcardstats,
                     'cardbattlestats': cardbattlestats,
@@ -535,6 +581,14 @@ def detail(request, multiverseid=None, slug=None):
                     'auth_keys_json': json.dumps(mvid_auth_key_pairs),
                     })
     response = render(request, 'cards/detail.html', context)
+    return response
+
+
+def sims_test(request):
+    #cards = Card.objects.filter(basecard__name__in=['Kessig Wolf Run', 'Jace, Memory Adept', 'Fatal Push', 'Slagstorm', 'Rogue Refiner', 'Arcbound Ravager', 'Delver of Secrets','Nether Traitor'])
+    # 370510, 226749, 423724, 370728, 373323, 116742, 423802, 214054
+    cards = Card.objects.filter(multiverseid__in=[370510, 226749, 423724, 370728, 373323, 116742, 423802, 214054])
+    response = render(request, 'cards/sims_test.html', {'cards': cards})
     return response
 
 
@@ -851,7 +905,12 @@ def battle(request, format="redirect"):
 
     # this is a set of parameters that are going to be common among queries that select for cards.
     query_params = {'formatid': str(format_id),
-                    'layouts': [PhysicalCard.NORMAL, PhysicalCard.SPLIT, PhysicalCard.FLIP, PhysicalCard.DOUBLE, PhysicalCard.LEVELER]}
+                    'layouts': [PhysicalCard.NORMAL,
+                                PhysicalCard.SPLIT,
+                                PhysicalCard.FLIP,
+                                PhysicalCard.DOUBLE,
+                                PhysicalCard.AFTERMATH,
+                                PhysicalCard.LEVELER]}
 
     card_a = None
     first_card = {
@@ -900,27 +959,31 @@ def battle(request, format="redirect"):
             pass
     else:
         fcsqls_xtra = ''
-        bb_file = 'betterbattle_{}.csv'.format(str(format_id))
-        try:
-            bb_file = settings.BETTER_BATTLE_PATH + '/' + 'betterbattle_{}.csv'.format(str(format_id))
-        except AttributeError:
-            pass
-        #logger.error("cur dir " + os.path.abspath("."))
-        #logger.error("looking for  " + os.path.abspath(bb_file))
-        if os.path.isfile(bb_file):
-            #logger.error("loaded " + os.path.abspath(bb_file))
-            rand_source = "file: " + os.path.abspath(bb_file)
-            bb_ids_list = list()
-            with open(bb_file) as bb_f:
-                bbcontent = bb_f.readlines()
-                for bbline in bbcontent:
-                    try:
-                        bb_ids_list.append(int(bbline.strip()))
-                    except ValueError:
-                        pass
+        bb_cache_key = 'betterbattle-{}'.format(str(format_id))
+        bb_ids_list = cache.get(bb_cache_key, list())
+        if not bb_ids_list:
+            bb_file = 'betterbattle_{}.csv'.format(str(format_id))
+            try:
+                bb_file = settings.BETTER_BATTLE_PATH + '/' + 'betterbattle_{}.csv'.format(str(format_id))
+            except AttributeError:
+                pass
+            #logger.error("cur dir " + os.path.abspath("."))
+            #logger.error("looking for  " + os.path.abspath(bb_file))
+            if os.path.isfile(bb_file):
+                #logger.error("loaded " + os.path.abspath(bb_file))
+                rand_source = "file: " + os.path.abspath(bb_file)
+                bb_ids_list = list()
+                with open(bb_file) as bb_f:
+                    bbcontent = bb_f.readlines()
+                    for bbline in bbcontent:
+                        try:
+                            bb_ids_list.append(int(bbline.strip()))
+                        except ValueError:
+                            pass
+                    cache.set(bb_cache_key, bb_ids_list, 60 * 60 * 12)
+        if bb_ids_list:
             query_params['x_ids'] = bb_ids_list
-            if len(bb_ids_list) > 0:
-                fcsqls_xtra = ' AND pc.id IN %(x_ids)s '
+            fcsqls_xtra = ' AND pc.id IN %(x_ids)s '
         fcsqls = 'SELECT fbc.basecard_id, cr.mu, cr.sigma, bc.physicalcard_id, RAND() r FROM formatbasecard fbc JOIN basecard bc ON bc.id = fbc.basecard_id JOIN cardrating cr ON cr.physicalcard_id = bc.physicalcard_id AND cr.format_id = fbc.format_id JOIN physicalcard AS pc ON bc.physicalcard_id = pc.id WHERE pc.layout IN %(layouts)s AND fbc.format_id = %(formatid)s {} ORDER BY cr.sigma DESC, r ASC LIMIT 1'.format(
             fcsqls_xtra)
         #logger.error("First Card SQL: " + fcsqls)

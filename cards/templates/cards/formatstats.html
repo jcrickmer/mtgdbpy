@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load content %}
 
 {% block pagetitle %}{{formatname}} Format Statistics{% endblock %}
 {% block title %}{{formatname}} Format Statistics{% endblock %}
@@ -16,77 +17,87 @@ background-color: #ADC4CC;
 width: 95px;
 }
 </style>
-<h3>Top 100 Cards</h3>
-<table>
-  <tr>
-    <th>Place</th>
-    <th>Card</th>
-	<th class="text-center">Pat's Card Rating</th>
-	<th class="deckdata text-center">Current % of Decks Playing</th>
-	<th class="deckdata text-center">% Change</th>
-	<th class="carddata text-center">Current % of All Cards</th>
-	<th class="carddata text-center">% Change</th>
-  </tr>
-{% for pcard in top %}
-<tr>
-<td class="text-center">{{forloop.counter}}</td>
-<td><a href="{% url 'cards:detail' pcard.get_latest_card.multiverseid pcard.get_latest_card.url_slug %}" data-mid="{{pcard.get_latest_card.multiverseid}}">{{pcard.get_card_name}}</a></td>
-<td class="text-center">{%for cr in top_cr%}{%if cr.physicalcard.id == pcard.id%}{{cr.cardninjaRating|floatformat:1}}{%endif%}{%endfor%}</td>
-<td class="deckdata text-center">{{pcard.decks_current_percentage|floatformat:3}}%</td>
-<td class="deckdata text-center">{% if pcard.decks_per_change %}{% if pcard.decks_per_change > 0 %}+{%endif%}{{pcard.decks_per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
-<td class="carddata text-center">{{pcard.current_percentage|floatformat:3}}%</td>
-<td class="carddata text-center">{% if pcard.per_change %}{% if pcard.per_change > 0 %}+{%endif%}{{pcard.per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
-</tr>
-{% endfor %}
-</table>
+{% content key=request.path position="top" %}
+<div class="row">
+  <div class="col-xs-12">
+    <h3>Top 100 Cards</h3>
+    <table>
+      <tr>
+        <th>Place</th>
+        <th>Card</th>
+    	<th class="text-center">Pat's Card Rating</th>
+    	<th class="deckdata text-center">Current % of Decks Playing</th>
+    	<th class="deckdata text-center">% Change</th>
+    	<th class="carddata text-center">Current % of All Cards</th>
+    	<th class="carddata text-center">% Change</th>
+      </tr>
+      {% for pcard in top %}
+        <tr>
+          <td class="text-center">{{forloop.counter}}</td>
+          <td><a href="{% url 'cards:detail' pcard.get_latest_card.multiverseid pcard.get_latest_card.url_slug %}" data-mid="{{pcard.get_latest_card.multiverseid}}">{{pcard.get_card_name}}</a></td>
+          <td class="text-center">{%for cr in top_cr%}{%if cr.physicalcard.id == pcard.id%}{{cr.cardninjaRating|floatformat:1}}{%endif%}{%endfor%}</td>
+          <td class="deckdata text-center">{{pcard.decks_current_percentage|floatformat:3}}%</td>
+          <td class="deckdata text-center">{% if pcard.decks_per_change %}{% if pcard.decks_per_change > 0 %}+{%endif%}{{pcard.decks_per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
+          <td class="carddata text-center">{{pcard.current_percentage|floatformat:3}}%</td>
+          <td class="carddata text-center">{% if pcard.per_change %}{% if pcard.per_change > 0 %}+{%endif%}{{pcard.per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
+        </tr>
+      {% endfor %}
+    </table>
+    
+    {% content key=request.path position="mid" %}
+    
+    <h3>Cards Trending Up</h3>
+    <table>
+      <tr>
+        <th>Place</th>
+        <th>Card</th>
+    	<th class="text-center">Pat's Card Rating</th>
+    	<th class="deckdata text-center">Current % of Decks Playing</th>
+    	<th class="deckdata text-center">% Change</th>
+    	<th class="carddata text-center">Current % of All Cards</th>
+    	<th class="carddata text-center">% Change</th>
+      </tr>
+      {% for pcard in trendingup %}
+        <tr>
+          <td class="text-center">{{forloop.counter}}</td>
+          <td><a href="{% url 'cards:detail' pcard.get_latest_card.multiverseid pcard.get_latest_card.url_slug %}" data-mid="{{pcard.get_latest_card.multiverseid}}">{{pcard.get_card_name}}</a></td>
+          <td class="text-center">{%for cr in trendingup_cr%}{%if cr.physicalcard.id == pcard.id%}{{cr.cardninjaRating|floatformat:1}}{%endif%}{%endfor%}</td>
+          <td class="deckdata text-center">{{pcard.decks_current_percentage|floatformat:3}}%</td>
+          <td class="deckdata text-center">{% if pcard.decks_per_change %}{% if pcard.decks_per_change > 0 %}+{%endif%}{{pcard.decks_per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
+          <td class="carddata text-center">{{pcard.current_percentage|floatformat:3}}%</td>
+          <td class="carddata text-center">{% if pcard.per_change %}{% if pcard.per_change > 0 %}+{%endif%}{{pcard.per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
+        </tr>
+      {% endfor %}
+    </table>
+    
+    <h3>Cards Trending Down</h3>
+    <table>
+      <tr>
+        <th>Place</th>
+        <th>Card</th>
+    	<th class="text-center">Pat's Card Rating</th>
+    	<th class="deckdata text-center">Current % of Decks Playing</th>
+    	<th class="deckdata text-center">% Change</th>
+    	<th class="carddata text-center">Current % of All Cards</th>
+    	<th class="carddata text-center">% Change</th>
+      </tr>
+      {% for pcard in trendingdown %}
+        <tr>
+          <td class="text-center">{{forloop.counter}}</td>
+          <td><a href="{% url 'cards:detail' pcard.get_latest_card.multiverseid pcard.get_latest_card.url_slug %}" data-mid="{{pcard.get_latest_card.multiverseid}}">{{pcard.get_card_name}}</a></td>
+          <td class="text-center">{%for cr in trendingdown_cr%}{%if cr.physicalcard.id == pcard.id%}{{cr.cardninjaRating|floatformat:1}}{%endif%}{%endfor%}</td>
+          <td class="deckdata text-center">{{pcard.decks_current_percentage|floatformat:3}}%</td>
+          <td class="deckdata text-center">{% if pcard.decks_per_change %}{% if pcard.decks_per_change > 0 %}+{%endif%}{{pcard.decks_per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
+          <td class="carddata text-center">{{pcard.current_percentage|floatformat:3}}%</td>
+          <td class="carddata text-center">{% if pcard.per_change %}{% if pcard.per_change > 0 %}+{%endif%}{{pcard.per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
+        </tr>
+      {% endfor %}
+    </table>
+    
+    {% content key=request.path position="bottom" %}
 
-<h3>Cards Trending Up</h3>
-<table>
-  <tr>
-    <th>Place</th>
-    <th>Card</th>
-	<th class="text-center">Pat's Card Rating</th>
-	<th class="deckdata text-center">Current % of Decks Playing</th>
-	<th class="deckdata text-center">% Change</th>
-	<th class="carddata text-center">Current % of All Cards</th>
-	<th class="carddata text-center">% Change</th>
-  </tr>
-{% for pcard in trendingup %}
-<tr>
-<td class="text-center">{{forloop.counter}}</td>
-<td><a href="{% url 'cards:detail' pcard.get_latest_card.multiverseid pcard.get_latest_card.url_slug %}" data-mid="{{pcard.get_latest_card.multiverseid}}">{{pcard.get_card_name}}</a></td>
-<td class="text-center">{%for cr in trendingup_cr%}{%if cr.physicalcard.id == pcard.id%}{{cr.cardninjaRating|floatformat:1}}{%endif%}{%endfor%}</td>
-<td class="deckdata text-center">{{pcard.decks_current_percentage|floatformat:3}}%</td>
-<td class="deckdata text-center">{% if pcard.decks_per_change %}{% if pcard.decks_per_change > 0 %}+{%endif%}{{pcard.decks_per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
-<td class="carddata text-center">{{pcard.current_percentage|floatformat:3}}%</td>
-<td class="carddata text-center">{% if pcard.per_change %}{% if pcard.per_change > 0 %}+{%endif%}{{pcard.per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
-</tr>
-{% endfor %}
-</table>
-
-
-<h3>Cards Trending Down</h3>
-<table>
-  <tr>
-    <th>Place</th>
-    <th>Card</th>
-	<th class="text-center">Pat's Card Rating</th>
-	<th class="deckdata text-center">Current % of Decks Playing</th>
-	<th class="deckdata text-center">% Change</th>
-	<th class="carddata text-center">Current % of All Cards</th>
-	<th class="carddata text-center">% Change</th>
-  </tr>
-{% for pcard in trendingdown %}
-<tr>
-<td class="text-center">{{forloop.counter}}</td>
-<td><a href="{% url 'cards:detail' pcard.get_latest_card.multiverseid pcard.get_latest_card.url_slug %}" data-mid="{{pcard.get_latest_card.multiverseid}}">{{pcard.get_card_name}}</a></td>
-<td class="text-center">{%for cr in trendingdown_cr%}{%if cr.physicalcard.id == pcard.id%}{{cr.cardninjaRating|floatformat:1}}{%endif%}{%endfor%}</td>
-<td class="deckdata text-center">{{pcard.decks_current_percentage|floatformat:3}}%</td>
-<td class="deckdata text-center">{% if pcard.decks_per_change %}{% if pcard.decks_per_change > 0 %}+{%endif%}{{pcard.decks_per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
-<td class="carddata text-center">{{pcard.current_percentage|floatformat:3}}%</td>
-<td class="carddata text-center">{% if pcard.per_change %}{% if pcard.per_change > 0 %}+{%endif%}{{pcard.per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
-</tr>
-{% endfor %}
-</table>
+  </div>
+</div>
 {% endcache %}
 {% endblock %}
+    

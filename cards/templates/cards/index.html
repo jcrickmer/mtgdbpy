@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load content %}
 
 {% block title %}Card Search{% endblock %}
 {% block pagetitle %}Card Search{% endblock %}
@@ -15,6 +16,7 @@ $(function() {
 </script>
       <div class="col-xs-1"></div>
     </div>
+    {% content key=request.path position="top" %}
 	<div class="row">
 	  <div class="col-xs-12 col-sm-6">
 	    <div class="row term_input form-group xs-gutters"> <!-- nesting columns -->
@@ -194,6 +196,38 @@ $(function() {
       </script>
 </form>
 <div class="row">
+  <div class="col-xs-12 sim-cards-search">
+    <form action="{% url 'cards:list_sims' %}" method="get" role="form">
+      <div class="row"><div class="col-xs-12 query-reminder-text">Or, look for cards by similiarity to another card...</div></div>
+	  <div class="row term_input" style="border-bottom: 1px solid #eee; margin-bottom: 12px;">
+        <div class="col-xs-1 searchlabel"><label for="simcardname" class="control-label">Cards Similar To</label></div>
+        <div class="col-xs-5"><input id="simcardtutor" type="text" name="simcardtutor" class="form-control input-sm"/></div>
+        <script>
+$(function() {
+    $('#simcardtutor').autocomplete({
+        source: cdb.getCardNames,
+        minLength: 3,
+        select: function( event, ui ) {
+            // Just go directly to that page
+            wholecardname = ui.item.value
+            cardname = wholecardname.split("/")[0]
+            window.location.href = "{% url 'cards:list_sims' %}" + "/" + encodeURI(cardname);
+        },
+        open: function() {
+            $( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
+        },
+        close: function() {
+            $( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
+        }
+    });
+});
+        </script>
+      </div>
+    </form>
+  </div>
+</div>
+{% content key=request.path position="mid" %}
+<div class="row">
   <div class="col-xs-12">
     <h3>Top Cards per Format</h3>
     <style>li.common-search { margin-right: 18px; margin-bottom: 9px; display: inline-block; }</style>
@@ -215,4 +249,5 @@ $(function() {
     </ul>
   </div>
 </div>
+{% content key=request.path position="bottom" %}
 {% endblock %}

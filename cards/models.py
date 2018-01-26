@@ -11,6 +11,7 @@
 # into your database.
 from __future__ import unicode_literals
 import sys
+import re
 from django.conf import settings
 from django.db import models
 from datetime import datetime, date, timedelta
@@ -208,12 +209,28 @@ class PhysicalCard(models.Model):
         card = self.get_latest_card()
         return str(card.multiverseid) + '-' + card.url_slug()
 
+    def get_searchable_document_selfref_nosymbols(self):
+        return self.get_searchable_document(include_names=False, include_symbols=False)
+
     def get_searchable_document_selfref(self):
         return self.get_searchable_document(include_names=False)
 
     def get_searchable_document(self, include_names=True, include_symbols=True):
+        cache_key = 'pc-{}-searchable-doc-{}-{}'.format(self.id, include_names, include_symbols)
+        # 18 hours
+        return cache.get_or_set(
+            cache_key,
+            self._get_searchable_document_nocache(
+                include_names=include_names,
+                include_symbols=include_symbols),
+            60 * 60 * 18)
+
+    def get_searchable_document_rules(self, include_names=True, include_symbols=True):
         result = ''
+
         for basecard in self.basecard_set.all():
+            if include_names:
+                result = result + basecard.filing_name + "\n"
             rules = basecard.rules_text
             if rules is None or len(rules) == 0:
                 if basecard.name == 'Plains':
@@ -227,6 +244,13 @@ class PhysicalCard(models.Model):
                 elif basecard.name == 'Forest':
                     rules = 'tap: add managreen to your mana pool.'
             rules = rules.replace(basecard.name, 'cardselfreference')
+            rules = rules.replace(':', ' activatedability ')
+            rules = rules.replace('When ', 'when triggeredability ')
+            rules = rules.replace('Whenever ', 'whenever triggeredability ')
+            rules = rules.replace('At ', 'at triggeredability ')
+            rules = rules.replace(' when ', ' when triggeredability ')
+            rules = rules.replace(' whenever ', ' whenever triggeredability ')
+            rules = rules.replace(' at ', ' at triggeredability ')
             rules = rules.lower()
             rules = rules.replace('{c}', ' manacolorless ')
             rules = rules.replace('{t}', ' tap ')
@@ -241,11 +265,11 @@ class PhysicalCard(models.Model):
             rules = rules.replace('{x}', ' manax ')
             for numm in range(0, 20):
                 rules = rules.replace('{' + str(numm) + '}', 'mana' + str(numm))
-            rules = rules.replace("{wp}", ' manawhite manaphyrexian ')
-            rules = rules.replace("{up}", ' manablue manaphyrexian ')
-            rules = rules.replace("{bp}", ' manablack manaphyrexian ')
-            rules = rules.replace("{rp}", ' manared manaphyrexian ')
-            rules = rules.replace("{gp}", ' managreen manaphyrexian ')
+            rules = rules.replace("{w/p}", ' manawhite manaphyrexian ')
+            rules = rules.replace("{u/p}", ' manablue manaphyrexian ')
+            rules = rules.replace("{b/p}", ' manablack manaphyrexian ')
+            rules = rules.replace("{r/p}", ' manared manaphyrexian ')
+            rules = rules.replace("{g/p}", ' managreen manaphyrexian ')
             rules = rules.replace("{2w}", ' manaalt2 manawhite ')
             rules = rules.replace("{2u}", ' manaalt2 manablue ')
             rules = rules.replace("{2b}", ' manaalt2 manablack ')
@@ -261,14 +285,26 @@ class PhysicalCard(models.Model):
             rules = rules.replace("{rw}", ' manared manawhite manahybrid ')
             rules = rules.replace("{gw}", ' managreen manawhite manahybrid ')
             rules = rules.replace("{gu}", ' managreen manablue manahybrid ')
+            rules = rules.replace("his or her", "thirdpersonsingular")
 
-            # need to add something that does a regexp match on hybrid mana in mana cost and rules text and adds a term for 'manahybrid'
+            result = result + rules + "\n"
 
-            if include_names:
-                #result = result + basecard.name + '\n'
-                result = result + basecard.filing_name + '\n'
-            result = result + rules + '\n'
-            #result = result + basecard.mana_cost + '\n'
+        pattern = re.compile(r'\+([Xx\d]+)')
+        result = pattern.sub(lambda m: 'plus{}'.format(m.group(1)), result)
+        pattern = re.compile(ur'[\-−\u2010-\u2015]([Xx\d]+)', re.U)
+        result = pattern.sub(lambda m: u'minus{}'.format(m.group(1)), unicode(result))
+
+        result = result.replace(" or ", " litor ")
+        result = result.replace(" and ", " litand ")
+
+        remindpat = re.compile(ur'\([^\)]+\)', re.U)
+        result = remindpat.sub('', result)
+
+        return result
+
+    def get_searchable_document_color(self):
+        result = ''
+        for basecard in self.basecard_set.all():
             # add the pips that are in the mana cost
             if len(basecard.mana_cost) > 0:
                 costparts = basecard.mana_cost.lower().split('}')
@@ -286,12 +322,7 @@ class PhysicalCard(models.Model):
                     if pippart.find('c') > -1:
                         result = result + 'pipcolorless '
                 result = result + "\n"
-            strippedcost = str(basecard.mana_cost).replace('{', '')
-            strippedcost = strippedcost.replace('}', '')
-            strippedcost = strippedcost.replace('/p', '')
-            strippedcost = strippedcost.replace('2/', '')
-            strippedcost = strippedcost.replace('/', '')
-            result = result + strippedcost.lower() + '\n'
+
             uses_pmana = False
             try:
                 basecard.rules_text.lower().index('/p}')
@@ -304,9 +335,74 @@ class PhysicalCard(models.Model):
             except ValueError:
                 pass
             if uses_pmana:
-                result = result + ' manaphyrexian\n'
+                result = result + " manaphyrexian\n"
 
-            result = result + 'cmc' + str(basecard.cmc) + '\n'
+            colors = basecard.colors.all()
+            if len(colors) > 1:
+                result = result + " multicolored\n"
+            else:
+                result = result + "notmulticolored\n"
+            allcolors = ['white', 'blue', 'black', 'red', 'green', 'colorless']
+            iscolorless = True
+            for color in colors:
+                iscolorless = False
+                result = result + 'cardcolor' + color.color.lower() + "\n"
+                allcolors.remove(color.color.lower())
+            for notcolor in allcolors:
+                if notcolor != 'colorless':
+                    result = result + 'notcardcolor' + notcolor + "\n"
+            if iscolorless:
+                result = result + "cardcolorcolorless\n"
+            else:
+                result = result + "notcardcolorcolorless\n"
+        return result
+
+    def get_searchable_document_manacost(self):
+        result = ''
+        strippedcost = ''
+        combocmc = 0
+        cmcct = 0
+        for basecard in self.basecard_set.all():
+            cmcct = cmcct + 1
+            combocmc = combocmc + basecard.cmc
+            result = result + 'cmc' + str(basecard.cmc) + "\n"
+            strippedcost = strippedcost + unicode(basecard.mana_cost)
+        if cmcct > 1:
+            result = result + 'cmc' + str(combocmc) + "\n"
+        strippedcost = strippedcost.replace('{', '')
+        strippedcost = str(basecard.mana_cost).replace('{', '')
+        strippedcost = strippedcost.replace('}', '')
+        strippedcost = strippedcost.replace('/p', '')
+        strippedcost = strippedcost.replace('2/', '')
+        strippedcost = strippedcost.replace('/', '')
+        result = result + 'manacost' + strippedcost.lower() + "\n"
+
+        return result
+
+    def get_searchable_document_types(self):
+        result = ''
+        for basecard in self.basecard_set.all():
+            if basecard.ispermanent:
+                result = result + "ispermanent\n"
+            else:
+                result = result + "isnotpermanent\n"
+            result = result + ' '.join('supertype' + csptype.supertype for csptype in basecard.supertypes.all()) + "\n"
+            result = result + ' '.join('type' + ctype.type for ctype in basecard.types.all()) + "\n"
+            result = result + ' '.join('subtype' + cstype.subtype for cstype in basecard.subtypes.all()) + "\n"
+
+        return result
+
+    def _get_searchable_document_nocache(self, include_names=True, include_symbols=True):
+        result = ''
+        result = result + self.get_searchable_document_rules(include_names, include_symbols)
+        result = result + self.get_searchable_document_color()
+        result = result + self.get_searchable_document_manacost()
+        result = result + self.get_searchable_document_types()
+        for basecard in self.basecard_set.all():
+            # need to add something that does a regexp match on hybrid mana in mana cost and rules text and adds a term for 'manahybrid'
+
+            #result = result + basecard.mana_cost + "\n"
+
             if basecard.power is not None:
                 try:
                     result = result + 'power' + str(basecard.power) + "\n"
@@ -322,28 +418,12 @@ class PhysicalCard(models.Model):
                     result = result + 'loyalty' + str(basecard.loyalty) + "\n"
                 except:
                     pass
-            colors = basecard.colors.all()
-            if len(colors) > 1:
-                result = result + 'multicolored\n'
-            else:
-                result = result + 'notmulticolored\n'
-            allcolors = ['white', 'blue', 'black', 'red', 'green', 'colorless']
-            for color in colors:
-                result = result + 'cardcolor' + color.color.lower() + "\n"
-                allcolors.remove(color.color.lower())
-            for notcolor in allcolors:
-                result = result + 'notcardcolor' + notcolor + "\n"
 
-            result = result + ' '.join('supertype' + csptype.supertype for csptype in basecard.supertypes.all()) + "\n"
-            result = result + ' '.join('type' + ctype.type for ctype in basecard.types.all()) + "\n"
-            result = result + ' '.join('subtype' + cstype.subtype for cstype in basecard.subtypes.all()) + "\n"
-            #result = result + ' '.join(ctype.type for ctype in basecard.types.all()) + "\n"
-            #result = result + ' '.join(cstype.subtype for cstype in basecard.subtypes.all()) + "\n"
+            result = result + "\n"
 
-            result = result + '\n'
-
+        result = result + 'layout' + self.layout + "\n"
         if self.basecard_set.all().count() > 1:
-            result = 'multicard\n' + result
+            result = "multicard\n" + result
 
         if not include_symbols:
             result = result.replace("/", " ")
@@ -354,38 +434,89 @@ class PhysicalCard(models.Model):
             result = result.replace("{", " ")
             result = result.replace("}", " ")
             result = result.replace("?", " ")
-            result = result.replace("~", "\\~")
-            result = result.replace("*", "\\*")
-            result = result.replace("-", "\\-")
-            result = result.replace("+", "\\+")
-            result = result.replace("|", "\\|")
+            result = result.replace("~", "\~")
+            result = result.replace("*", "\*")
+            result = result.replace("-", "\-")
+            result = result.replace("+", "\+")
+            result = result.replace("|", "\|")
             result = result.replace("(", "")
             result = result.replace(")", "")
-            result = result.replace("'", "\\'")
-            result = result.replace("\\", "\\\\")
+            result = result.replace("'", "\'")
+            #result = result.replace("\\", "\\\\")
 
         return result
 
-    def find_similar_card_ids(self, max_results=18):
+    def find_similar_card_ids(self, max_results=18, include_query_card=False):
         similars = []
         solrquerystring = self.get_searchable_document(include_names=False, include_symbols=False)
         solrqueryparts_list = solrquerystring.split()
-        orstring = " OR ".join(solrqueryparts_list)
+        newlist = []
+        for qp in solrqueryparts_list:
+            qp = qp.lower()
+            # Keyword actions get a boost - https://mtg.gamepedia.com/Keyword_action, PLUS 'return', 'deal', 'deals', 'gain', and 'lose'
+            if qp in [
+                    'activate',
+                    'attach',
+                    'cast',
+                    'counter',
+                    'create',
+                    'destroy',
+                    'discard',
+                    'exchange',
+                    'exile',
+                    'fight',
+                    'play',
+                    'regenerate',
+                    'reveal',
+                    'sacrifice',
+                    'scry',
+                    'search',
+                    'shuffle',
+                    'tap',
+                    'untap',
+                    'fateseal',
+                    'clash',
+                    'planeswalk',
+                    'proliferate',
+                    'transform',
+                    'detain',
+                    'populate',
+                    'monstrosity',
+                    'vote',
+                    'bolster',
+                    'manifest',
+                    'support',
+                    'investigate',
+                    'meld',
+                    'goad',
+                    'exert',
+                    'explore',
+                    'assemble',
+                    'return',
+                    'deal',
+                    'deals',
+                    'gain',
+                    'lose']:
+                qp = qp + "^4.0"
+            elif qp in ['creature', 'artifact', 'planeswalker', 'land', 'nonland', 'permanent', 'token', 'instant', 'spell', 'sorcery', 'enchantment', 'noncreature', 'graveyard', 'hand', 'library', 'legendary', 'emblem', 'zone', 'battlefield', 'player']:
+                qp = qp + "^2.0"
+            newlist.append(qp)
+        orstring = " OR ".join(newlist)
         sqs = SearchQuerySet().raw_search(query_string=orstring)
         solrcount = 0
         for sim_sqr in sqs.order_by('-score'):
             if solrcount >= max_results:
                 break
             simcard_pk = int(sim_sqr.pk)
-            if int(self.id) != simcard_pk:
+            if include_query_card or int(self.id) != simcard_pk:
                 similars.append(simcard_pk)
                 solrcount = solrcount + 1
         return similars
 
-    def find_similar_cards(self, max_results=18):
+    def find_similar_cards(self, max_results=18, include_query_card=False):
         """ Returns Card objects, not PhysicalCard objects.
         """
-        similars = self.find_similar_card_ids(max_results)
+        similars = self.find_similar_card_ids(max_results, include_query_card)
         result = []
         for sim_id in similars:
             try:
@@ -492,6 +623,20 @@ class BaseCard(models.Model):
             super(BaseCard, self).__setattr__(attrname, str(val).lower())
             # REVISIT!
             self.cmc = 1
+
+    def get_full_type_str(self):
+        """ Returns a string of full type line that you would see on a card.
+
+        Examples: "Legendary Creature - Human Wizard", "Enchantment", "Basic Land - Forest", "Tribal Instant - Goblin"
+        """
+        spt = u' '.join(unicode(v.supertype) for v in self.supertypes.all())
+        tt = u' '.join(unicode(v.type) for v in self.types.all().order_by('sort_order'))
+        t = u' '.join([spt.strip(), tt.strip()])
+        a = t
+        st = u' '.join(unicode(v.subtype) for v in self.subtypes.all())
+        if len(st) > 0:
+            a = u' - '.join([t, st])
+        return a.strip()
 
     def get_rulings(self):
         return Ruling.objects.filter(basecard=self.id).order_by('ruling_date')
@@ -1157,6 +1302,11 @@ class Card(models.Model):
         first = self.get_first_card()
         second = self.get_second_card()
         return (first, second)
+
+    def get_original_version(self):
+        """ Returns the Card of this card with the lowest Multiverseid.
+        """
+        return Card.objects.filter(basecard=self.basecard).order_by('multiverseid').first()
 
     def get_all_versions(self):
         """ Returns a QuerySet of Cards that are first cards (Up, Front, Left) that share this card's PhysicalCard.

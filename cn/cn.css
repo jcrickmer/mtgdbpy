@@ -548,6 +548,10 @@ td.pricing-table-add {
     font-weight: bold;
     text-align: center;
 }
+div.sim-cards-search {
+    border-top: 1px solid #e5e5e5;
+}
+
 @media only screen and (max-width: 576px) {
   .list_cardimage {
     width: 150px;
@@ -560,4 +564,20 @@ td.pricing-table-add {
   div.card-tile {
     height: 250px;
   }
+}
+div.content-block {
+    margin-top: 11px;
+    margin-bottom: 11px;
+}
+img.content-author-avatar {
+    width: 100px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+div.content-author-name {
+    text-align: center;
+}
+div.content-publish-date {
+    text-align: center;
 }
