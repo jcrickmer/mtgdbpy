@@ -476,6 +476,12 @@ span.staple-modern {
   vertical-align: middle;
   background-color: #bfbea1;
 }
+span.staple-legacy {
+  font-size: 11px;
+  padding: 8px;
+  vertical-align: middle;
+  background-color: #bfbfbf;
+}
 span.staple-commander {
   font-size: 11px;
   padding: 8px;
