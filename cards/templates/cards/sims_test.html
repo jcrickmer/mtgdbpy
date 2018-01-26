@@ -1,5 +1,21 @@
 {% extends "base.html" %}
 {% block content %}
+  <div class="row">
+    <div class="col-xs-12">
+      <h1>Similar Card Strategy 2</h1>
+      <p>
+      Starting with changes from Strategy 1.</p>
+      <p>
+      All Rules Reminder Text has been removed from Rules Text before it is stored in Solr, and before query.
+      </p>
+      <p>Made several changes to the way that the document is formated and put into Solr. A new "rulestext" field has been added, but not explicitly used. Basic stopwords (a, an, and, else, for, if, in, on, or, that, the, this) have been added. ":" is translated to the word "activatedability" and "when", "whenever", and "at" have been translated to "triggeredability". Small issue with how phyrexian mana and colorles cards have been tagged have been fixed.</p>
+      <p>These words have been "boosted" to be 4x more important in the query for similars: 'activate', 'attach', 'cast', 'counter', 'create', 'destroy', 'discard', 'exchange', 'exile', 'fight', 'play', 'regenerate', 'reveal', 'sacrifice', 'scry', 'search', 'shuffle', 'tap', 'untap', 'fateseal', 'clash', 'planeswalk', 'proliferate', 'transform', 'detain', 'populate', 'monstrosity', 'vote', 'bolster', 'manifest', 'support', 'investigate', 'meld', 'goad', 'exert', 'explore', 'assemble', 'return', 'deal', 'deals', 'gain', 'lose'. These words are pretty much from <a href="https://mtg.gamepedia.com/Keyword_action">https://mtg.gamepedia.com/Keyword_action</a>, PLUS 'return', 'deal', 'deals', 'gain', and 'lose'.
+      </p>
+      <p>
+      Additionally, these words were boosted 2x: 'creature', 'artifact', 'planeswalker', 'land', 'nonland', 'permanent', 'token', 'instant', 'spell', 'sorcery', 'enchantment', 'noncreature', 'graveyard', 'hand', 'library', 'legendary', 'emblem', 'zone', 'battlefield', 'player'.
+      </p>
+    </div>
+  </div>
   {% for card in cards %}
     <div style="border-bottom: 2px solid #606060;" class="row">
       <div class="row">
@@ -13,14 +29,15 @@
           {{card.rules_text_html|escape}}
         </div>
         <div class="col-xs-12 col-md-9">
-          <pre>{{card.basecard.physicalcard.get_searchable_document_selfref|safe}}</pre>
+          <pre>{{card.basecard.physicalcard.get_searchable_document_selfref_nosymbols|safe}}</pre>
         </div>
       </div>
       <div class="row">
         {% for scard in card.basecard.physicalcard.find_similar_cards|slice:"20" %}
           <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
-            <div class="text-center"><img src="{{scard.img_url}}" class="grid_cardimage"></div>
+            <div class="text-center"><img src="{{scard.img_url}}" class="grid_cardimage" id="cardimg{{scard.multiverseid}}"></div>
             <div class="text-center">{{scard.basecard.physicalcard.get_card_name}}</div>
+            <!-- {{scard.basecard.physicalcard.get_searchable_document_selfref_nosymbols|safe}}-->
           </div>
         {% endfor %}
       </div>
