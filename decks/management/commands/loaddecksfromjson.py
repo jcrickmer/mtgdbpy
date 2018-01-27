@@ -117,8 +117,14 @@ class Command(BaseCommand):
                         format_string = 'Standard'
                     elif format_string.find('Commander') > -1:
                         format_string = 'Commander'
+                    elif format_string.find('Pauper') > -1:
+                        format_string = 'Pauper'
+                    elif format_string.find('Legacy') > -1:
+                        format_string = 'Legacy'
                     elif format_string.find('Tiny') > -1:
                         format_string = 'TinyLeaders'
+                    elif format_string == '' and 'legacy' in jblob['name'].lower():
+                        format_string = 'Legacy'
                     db_format = Format.objects.filter(
                         formatname__iexact=format_string,
                         start_date__lte=self.isodate(jblob['start_date']),
@@ -170,6 +176,9 @@ class Command(BaseCommand):
 
                 # let's test if jblob is a set JSON
                 if 'name' in jblob and 'mainboard_cards' in jblob:
+                    # TEMP FIX - Legacy decks did not havea format_name for a lot of crawling...
+                    if jblob['deck_format'] == '' and jblob['tournament_name'] and 'legacy' in jblob['tournament_name'].lower():
+                        jblob['deck_format'] = 'Legacy'
                     tourna = None
                     # let's deal with decks that have valid tournament URLs
                     if 'tournament_url' in jblob and jblob['tournament_url'] is not None and len(jblob['tournament_url']) > 0:
@@ -232,6 +241,7 @@ class Command(BaseCommand):
                             deck.format = tourna.format
                         elif 'deck_format' in jblob:
                             try:
+                                sys.stderr.write("Format find: {} - {}\n".format(jblob['deck_format'], self.isodate(jblob['tournament_date'])))
                                 db_format_q = Format.objects.filter(
                                     formatname=jblob['deck_format'], start_date__lte=self.isodate(
                                         jblob['tournament_date']), end_date__gte=self.isodate(
