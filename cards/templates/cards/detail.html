@@ -2,18 +2,21 @@
 {% load content %}
 
 {% block title %}{{ physicalcard.get_card_name }} ({{request_card.expansionset.name}}){% endblock %}
-{% block pagetitle %}
-  {{ physicalcard.get_card_name }}
-  {% for fcs in formatcardstats %}
-    {%if fcs.is_staple %}<span class="staple-{{fcs.format.formatname|lower}}">{{fcs.format.formatname}} Staple</span>{% endif %}
-  {% endfor %}
-{% endblock %}
-{% block description %}Magic: The Gathering card {{ physicalcard.get_card_name }} information and analysis{% endblock %}
+{% block pagetitle %}{{ physicalcard.get_card_name }} {% for fcs in formatcardstats %}{%if fcs.is_staple %}<span class="staple-{{fcs.format.formatname|lower}}">{{fcs.format.formatname}} Staple</span>{% endif %} {% endfor %}{% endblock %}
+{% block description %}{{ physicalcard.get_card_name }} {% for fcs in formatcardstats %}{%if fcs.is_staple %}[{{fcs.format.formatname}} Staple] {% endif %}{% endfor %} : {{request_card.basecard.rules_text|remove_whitespace}} Information, analysis, statistics, decks, similar cards, and alternative cards for {{ physicalcard.get_card_name }} in Magic: The Gathering.{% endblock %}
 
 {% block additionalheaders %}
+  <!-- Facebook -->
+  <meta property="og:title" content="{{ physicalcard.get_card_name }} ({{request_card.expansionset.name}})">
+  <meta property="og:type" content="website">
+  <meta property="og:description" content="{{request_card.basecard.rules_text|remove_whitespace}}">
+  <meta property="og:image" content="{{request.scheme}}://{{request.get_host}}{{request_card.img_url}}">
+  <meta property="og:url" content="{{request.scheme}}://{{request.get_host}}{{request.path}}">
+  <meta property="og:site_name" content="Pat's Games: Spellbook">
+
   {% for ccc in cards %}
     {% if forloop.counter0 == 0 %}
-      <link rel="canonical" href="{% url 'cards:detail' multiverseid=ccc.get_original_version.multiverseid slug=ccc.get_original_version.url_slug %}">
+      <link rel="canonical" href="http://{{request.get_host}}{% url 'cards:detail' multiverseid=ccc.get_original_version.multiverseid slug=ccc.get_original_version.url_slug %}">
     {% endif %}
   {% endfor %}
 {% endblock %}
@@ -146,7 +149,7 @@ function drawCardStatsChart(formatname) {
               </tr>
             {% endif %}
             <tr>
-              <td class="cardattr">Text</td>
+              <td class="cardattr">Rules Text</td>
               <td>{{ card.rules_text_html|escape }}</td>
             </tr>
             {% if card.basecard.power %}
