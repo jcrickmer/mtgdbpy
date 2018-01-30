@@ -558,11 +558,8 @@ def detail(request, multiverseid=None, slug=None):
     logger = logging.getLogger(__name__)
     tcard = None
     try:
-        tcard = Card.objects.filter(
-            multiverseid=multiverseid,
-            basecard__filing_name__iexact=slug.lower().replace(
-                '-',
-                ' ')).order_by('card_number').first()
+        tcard = Card.objects.filter(multiverseid=int(multiverseid)).order_by('card_number').first()
+        # REVISIT - look at the filing names of what we get back, and what was requested (the slug). If they are too dissimilar then do a redirect to the right one. Don't want bad URL's floating around out there.
     except:
         raise Http404
 

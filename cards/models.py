@@ -1238,7 +1238,10 @@ class Card(models.Model):
         return mark_safe(self.flavor_text)
 
     def url_slug(self):
-        return self.basecard.filing_name.replace(' ', '-').lower()
+        """ Turn & into spaces and spaces into slashes.
+        """
+        result = self.basecard.filing_name.replace('&', ' ').lower()
+        return result.replace(' ', '-')
 
     def get_first_card(self):
         """ Returns the Front, Up, or Left Card for this card.
