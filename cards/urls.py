@@ -22,6 +22,7 @@ urlpatterns = [
     # format stats
     url(r'stats/(?P<formatname>[a-zA-Z-]+)/$', views.formatstats, name='formatstats'),
     # ex: /cards/5/
+    url(r'^(?P<multiverseid>\d+)$', views.detail_by_multiverseid_noslash, name='detail_by_multiverseid_noslash'),
     url(r'^(?P<multiverseid>\d+)/$', views.detail_by_multiverseid, name='detail_by_multiverseid'),
     # ex: /cards/376251-augur-of-bolas/
     url(r'^(?P<multiverseid>\d+)-(?P<slug>[a-zA-Z0-9-]+)/$', views.detail, name='detail'),

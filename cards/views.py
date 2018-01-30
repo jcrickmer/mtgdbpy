@@ -530,6 +530,28 @@ def detail_by_multiverseid(request, multiverseid=None):
                 return redirect('cards:detail', permanent=True, multiverseid=tcards[0].multiverseid, slug=tcards[0].url_slug())
     raise Http404
 
+def detail_by_multiverseid_noslash(request, multiverseid=None):
+    """ Jim has coded links to card detail from https://www.patsgames.com/cgi-bin/custFCsearchV22.pl to go to the multiverseid details page without a trailing slash (e.g., http://spellbook.patsgames.com/cards/879). Let's use that to GUESS that this is a referral from www.patsgames.com. In this way we can count referrals in Google Analytics. We are not getting the referral in most cases because www.patsgames.com is HTTPS, and the browsers don't want to pass HTTP_REFERER outside of that hostname.
+
+        REVISIT - would be good to see if any of this UTM stuff is already on the URL being requested, and pass that along instead. But this is a good first pass/stop-gap.
+    """
+    if request.META and 'HTTP_REFERER' not in request.META:
+        # Let's assume that this is how it is comingfrom Deckbox. It's a guess, but better than nothing.
+        if multiverseid is not None:
+            try:
+                int(multiverseid)
+            except:
+                raise Http404
+            tcards = Card.objects.filter(multiverseid=multiverseid).order_by('card_number')
+            if len(tcards) > 0:
+                if request.is_ajax():
+                    return detail_ajax(request, tcards)
+                else:
+                    return redirect(reverse('cards:detail', kwargs={'multiverseid': str(tcards[0].multiverseid), 'slug': tcards[0].url_slug()}) + '?utm_source=www.patsgames.com&utm_medium=referral&utm_campaign=card-detail', permanent=True)
+        raise Http404
+    else:
+        return detail_by_multiverseid(request, multiverseid)
+
 
 def detail(request, multiverseid=None, slug=None):
     PAGE_CACHE_TIME = 3600
