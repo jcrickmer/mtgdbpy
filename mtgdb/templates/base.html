@@ -14,17 +14,9 @@
     <!-- link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css"> -->
     <link href="/cn/lavish-bootstrap.css" rel="stylesheet">
 
-    {% if debug %}<!--{% endif %}
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-112384301-1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'UA-112384301-1');
-</script>
-    {% if debug %}-->{% endif %}
-    </script>
+    {% comment %} Google Tag Manager {% endcomment %}
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); })(window,document,'script','dataLayer','{{settings.GTM_ID|default:"GTM-WN9L8RJ"}}');</script>
+    {% comment %} End Google Tag Manager {% endcomment %}
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
     <script src="//code.jquery.com/jquery-1.10.2.js"></script>
     <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
@@ -47,6 +39,9 @@ $.widget.bridge('uibutton', $.ui.button);
   </head>
 
   <body role="document">
+    {% comment %} Google Tag Manager (noscript) {% endcomment %}
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{settings.GTM_ID|default:"GTM-WN9L8RJ"}}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    {% comment %} end  Google Tag Manager (noscript) {% endcomment %}
     <nav class="navbar navbar-fixed-top navbar-inverse" role="navigation">
       <div class="container">
         <div class="navbar-header">

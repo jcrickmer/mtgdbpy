@@ -82,3 +82,7 @@ DECKBOX_SESSION_COOKIE_KEY = 'PGCUST'
 DECKBOX_ORDER_COOKIE_KEY = 'JPHQQQQ'
 DECKBOX_PRICE_URL_BASE = 'https://www.patsgames.com/cgi-bin/getCardInfo.pl?mvid='
 DECKBOX_AUTH_SECRET = "patsgamesRocks"
+
+# Google Analytics
+GA_TRACKING_ID = 'UA-112384301-1'
+GTM_ID = 'GTM-TFQMBXJ'

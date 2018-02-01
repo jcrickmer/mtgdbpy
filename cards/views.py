@@ -102,6 +102,8 @@ BASE_CONTEXT = {'settings': {
     'DECKBOX_URL': settings.DECKBOX_URL,
     'DECKBOX_LOGIN_URL': settings.DECKBOX_LOGIN_URL,
     'DECKBOX_PRICE_URL_BASE': settings.DECKBOX_PRICE_URL_BASE,
+    'GA_TRACKING_ID': settings.GA_TRACKING_ID,
+    'GTM_ID': settings.GTM_ID,
 }
 }
 
