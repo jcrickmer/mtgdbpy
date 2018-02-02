@@ -109,9 +109,14 @@ $(function() {
                                     window.cn.cardprices.push(fcard);
                                 }
                             }
-                        } else {
+                        } else if (envelop.cards && envelop.cards instanceof Array) {
                             for (var t = 0; t < envelop.cards.length; t++) {
                                 window.cn.cardprices.push(envelop.cards[t]);
+                            }
+                        } else {
+			    if (window.console) {
+				console.log("CN: could not find valid response for card info. Envelop follows.");
+				console.dir(envelop);
                             }
                         }
                     }
