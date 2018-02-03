@@ -239,10 +239,9 @@ DECKBOX_LOGIN_URL = 'https://www.patsgames.com/cgi-bin/custLoginV2.pl'
 DECKBOX_URL = 'https://www.patsgames.com/cgi-bin/custCheckoutV2.pl'
 DECKBOX_SESSION_COOKIE_KEY = 'PGCUST'
 DECKBOX_ORDER_COOKIE_KEY = 'JPHQQQQ'
-DECKBOX_PRICE_URL_BASE = "/cards/_cardpricetest/"
+DECKBOX_PRICE_URL_BASE = "/cards/_cardpricedbtest/"
 DECKBOX_AUTH_SECRET = "patsgamesRocks"
 
 # Google Analytics
 GA_TRACKING_ID = 'UA-51777211-2'
 GTM_ID = 'GTM-WN9L8RJ'
-

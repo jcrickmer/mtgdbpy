@@ -2,6 +2,17 @@ $(function() {
     window.cn = {};
     cn.cardstatsCache = {};
     cn.cardCache = {};
+    cn.debug = false;
+    cn.log = function(msg) {
+        if (window.console && window.cn.debug) {
+            console.log(msg);
+        }
+    };
+    cn.dir = function(obj) {
+        if (window.console && window.cn.debug) {
+            console.dir(obj);
+        }
+    };
     cn.updateCard = function(targetId, multiverseId) {
 		if (multiverseId === null) {
 			return false;
@@ -64,6 +75,7 @@ $(function() {
                 for (var ggg = 0; ggg < window.cn.cardprices.length; ggg++) {
                     if (window.cn.cardprices[ggg]) {
                         result = result || window.cn.cardprices[ggg].price == "99999999.99" || window.cn.cardprices[ggg].price == 99999999.99;
+                        window.cn.log("hasCallCard setting to " + result);
                     }
                 }
             }
@@ -85,7 +97,7 @@ $(function() {
                             window.cn.cardprices = new Array();
                         }
                         // Could be one of two formats. First, check Deckbox format...
-                        if (envelop.prices && envelop.prices instanceof Array && ! window.hasCallCard()) {
+                        if (envelop.prices && envelop.prices instanceof Array && envelop.name && envelop.name.length > 0) { //! window.hasCallCard()) {
                             // each item in the array should be like this:
                             // {"mvid": 9999999, "setname": "xxxxx", "normalprice": 99.99, "normalsale": 0|1, "foil": 999.99, "foilsale": 0|1}
                             for (var qq = 0 ; qq < envelop.prices.length ; qq++) {
@@ -114,10 +126,8 @@ $(function() {
                                 window.cn.cardprices.push(envelop.cards[t]);
                             }
                         } else {
-			    if (window.console) {
-				console.log("CN: could not find valid response for card info. Envelop follows.");
-				console.dir(envelop);
-                            }
+                            window.cn.log("CN: could not find valid response for card info. Envelop follows.");
+                            window.cn.dir(envelop);
                         }
                     }
                     if (this.handler_func != null && typeof this.handler_func == "function") {

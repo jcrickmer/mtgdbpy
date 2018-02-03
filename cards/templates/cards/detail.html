@@ -449,7 +449,9 @@ $('.panel-group').on('shown.bs.collapse', toggleChevron);
 <script type="text/javascript">
 var pbmk = {{auth_keys_json|safe}};  
 drawPrices = function(val) {
+    window.cn.log("drawPrices with " + val); 
     if (window.cn.cardprices != null && window.cn.cardprices.length > 0) {
+        window.cn.log("calling _ucp"); 
         $.ajax({url: "/cards/_ucp/",data: {"p":JSON.stringify(cn.cardprices)},dataType: "json",method: "POST",async: true,xhrFields:{withCredentials: true},crossDomain: true});
         $("#pricing-container").append("<table class='pricing-table' id='pricing-table'><tr class='table-header-row'><th class='pricing-header' colspan='3'>Pat's Prices</th></tr></table>"); 
         for (var f = 0; f < window.cn.cardprices.length; f++) {
@@ -486,18 +488,34 @@ drawPrices = function(val) {
     }
 };
 checkPrices = function(val) {
+    window.cn.log("checkPrices with " + val);
+    window.cn.dir(val);
     if (window.cn.cardprices != null && window.cn.cardprices.length > 0) {
+        window.cn.log("checkPrices L494");
+        window.cn.dir(window.cn.cardprices);
         if (window.cn.cardprices.length == 1 && (window.cn.cardprices[0].price == "99999999.99" || window.cn.cardprices[0].price == 99999999.99 || window.cn.cardprices[0].name == "")) {
-            // let's try again
+            window.cn.log("checkPrices L496"); 
+            // let's try again 
             for (var pp = 0; pp < pbmk.length; pp++) {
                 if (pbmk[pp].length == 2) {
-                    // let's try this one.
-                    pbmk[pp][2] = true;
-                    cn.getCardPrices(pbmk[pp][0], "{{settings.DECKBOX_PRICE_URL_BASE}}", pbmk[pp][1], checkPrices);
+                    // let's try this one. 
+                    pbmk[pp][2] = true; 
+                    cn.getCardPrices(pbmk[pp][0], "{{settings.DECKBOX_PRICE_URL_BASE}}", pbmk[pp][1], checkPrices); 
                 }
             }
         } else {
             drawPrices(val);
+        }
+    } else {
+        window.cn.log("checkPrices L510"); 
+        // let's try again 
+        for (var pp = 0; pp < pbmk.length; pp++) {
+            if (pbmk[pp].length == 2) {
+                // let's try this one. 
+                pbmk[pp][2] = true; 
+                cn.getCardPrices(pbmk[pp][0], "{{settings.DECKBOX_PRICE_URL_BASE}}", pbmk[pp][1], checkPrices);
+                break;
+            }
         }
     }
 };

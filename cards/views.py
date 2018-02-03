@@ -532,6 +532,7 @@ def detail_by_multiverseid(request, multiverseid=None):
                 return redirect('cards:detail', permanent=True, multiverseid=tcards[0].multiverseid, slug=tcards[0].url_slug())
     raise Http404
 
+
 def detail_by_multiverseid_noslash(request, multiverseid=None):
     """ Jim has coded links to card detail from https://www.patsgames.com/cgi-bin/custFCsearchV22.pl to go to the multiverseid details page without a trailing slash (e.g., http://spellbook.patsgames.com/cards/879). Let's use that to GUESS that this is a referral from www.patsgames.com. In this way we can count referrals in Google Analytics. We are not getting the referral in most cases because www.patsgames.com is HTTPS, and the browsers don't want to pass HTTP_REFERER outside of that hostname.
 
@@ -549,7 +550,15 @@ def detail_by_multiverseid_noslash(request, multiverseid=None):
                 if request.is_ajax():
                     return detail_ajax(request, tcards)
                 else:
-                    return redirect(reverse('cards:detail', kwargs={'multiverseid': str(tcards[0].multiverseid), 'slug': tcards[0].url_slug()}) + '?utm_source=www.patsgames.com&utm_medium=referral&utm_campaign=card-detail', permanent=True)
+                    return redirect(
+                        reverse(
+                            'cards:detail',
+                            kwargs={
+                                'multiverseid': str(
+                                    tcards[0].multiverseid),
+                                'slug': tcards[0].url_slug()}) +
+                        '?utm_source=www.patsgames.com&utm_medium=referral&utm_campaign=card-detail',
+                        permanent=True)
         raise Http404
     else:
         return detail_by_multiverseid(request, multiverseid)
@@ -561,7 +570,9 @@ def detail(request, multiverseid=None, slug=None):
     tcard = None
     try:
         tcard = Card.objects.filter(multiverseid=int(multiverseid)).order_by('card_number').first()
-        # REVISIT - look at the filing names of what we get back, and what was requested (the slug). If they are too dissimilar then do a redirect to the right one. Don't want bad URL's floating around out there.
+        # REVISIT - look at the filing names of what we get back, and what was
+        # requested (the slug). If they are too dissimilar then do a redirect to
+        # the right one. Don't want bad URL's floating around out there.
     except:
         raise Http404
 
@@ -651,79 +662,6 @@ def detail_ajax(request, cards):
                           'physicalCardTitle': cards[0].basecard.physicalcard.get_card_name(),
                           'cards': jcards,
                           })
-    response = HttpResponse(
-        json.dumps(response_dict),
-        content_type='application/javascript')
-    return response
-
-
-def card_price_ajax_stub(request, multiverseid=None):
-    response_dict = {}
-    auth_key = request.GET.get('key', None) or request.POST.get('key', None)
-    sys.stderr.write("card_price_ajax_stub auth_key is '{}'\n".format(auth_key))
-    if not auth_key or not request.session.get('deckbox_session_id') or str(auth_key).lower() != generate_auth_key(
-            multiverseid,
-            request.session.get('deckbox_session_id')).lower():
-        multiverseid = None
-        response_dict.update({'status': 'error',
-                              'message': 'No authorization.', })
-
-    card = None
-    if multiverseid is not None:
-        try:
-            multiverseid = int(multiverseid)
-            card = Card.objects.filter(multiverseid=multiverseid).order_by('card_number').first()
-        except:
-            response_dict.update({'status': 'error',
-                                  'message': 'No such card for given multiverseid.', })
-    if False:
-        # The original format
-        jcards = list()
-        if card:
-            cards = card.get_all_versions()[:8]
-            for vcard in cards:
-                for printing in ('normal', 'foil'):
-                    jcard = {
-                        'mvid': vcard.multiverseid,
-                        'name': vcard.basecard.physicalcard.get_card_name(),
-                        'expansionset': {'name': vcard.expansionset.name, 'abbr': vcard.expansionset.abbr, },
-                        'price': 0.75,
-                        'on_sale': random.random() > 0.8,
-                        'printing': printing,
-                    }
-                    jcards.append(jcard)
-        if jcards:
-            response_dict.update({'status': 'ok',
-                                  'cards': jcards,
-                                  })
-    else:
-        # The Jim/Deckbox format
-        jcards = list()
-        if card:
-            cards = card.get_all_versions()[:8]
-            response_dict.update({'name': card.basecard.physicalcard.get_card_name()})
-            for vcard in cards:
-                fs = 0
-                if random.random() > 0.8:
-                    fs = 1
-                jcard = {
-                    'mvid': vcard.multiverseid,
-                    'setname': vcard.expansionset.name,
-                    'normalprice': 0.75,
-                    'normalsale': fs
-                }
-                if random.random() > 0.6:
-                    fs = 0
-                    if random.random() > 0.8:
-                        fs = 1
-                    jcard['foil'] = 1.25
-                    jcard['foilsale'] = fs
-                jcards.append(jcard)
-        if jcards:
-            response_dict.update({'status': 'OK',
-                                  'prices': jcards,
-                                  })
-
     response = HttpResponse(
         json.dumps(response_dict),
         content_type='application/javascript')

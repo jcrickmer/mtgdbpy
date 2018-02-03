@@ -3,6 +3,7 @@
 from django.conf.urls import url, include
 
 from cards import views
+from cards import stub_views
 from cards import utilviews
 
 urlpatterns = [
@@ -36,7 +37,8 @@ urlpatterns = [
     url(r'^_nameauto/', views.autocomplete, name='autocomplete'),
     url(r'^_clustertest/(?P<test_id>[0-9]+)', utilviews.cardclustertest, name='cardclustertest'),
     url(r'^_clustertest/', utilviews.cardclustertest, name='cardclustertest'),
-    url(r'^_cardpricetest/(?P<multiverseid>\S+)/?$', views.card_price_ajax_stub, name='card_price_ajax_stub'),
+    url(r'^_cardpricetest/(?P<multiverseid>\S+)/?$', stub_views.card_price_ajax_stub, name='card_price_ajax_stub'),
+    url(r'^_cardpricedbtest/(?P<multiverseid>\S+)/?$', stub_views.card_price_deckbox_ajax_stub, name='card_price_deckbox_ajax_stub'),
     url(r'^_ucp/$', views.update_card_price, name='update_card_price'),
     url(r'^_simstest/$', views.sims_test, name='sims_test'),
 
