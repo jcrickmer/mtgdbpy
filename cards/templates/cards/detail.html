@@ -2,8 +2,8 @@
 {% load content %}
 
 {% block title %}{{ physicalcard.get_card_name }} ({{request_card.expansionset.name}}){% endblock %}
-{% block pagetitle %}{{ physicalcard.get_card_name }} {% for fcs in formatcardstats %}{%if fcs.is_staple %}<span class="staple-{{fcs.format.formatname|lower}}">{{fcs.format.formatname}} Staple</span>{% endif %} {% endfor %}{% endblock %}
-{% block description %}{{ physicalcard.get_card_name }} {% for fcs in formatcardstats %}{%if fcs.is_staple %}[{{fcs.format.formatname}} Staple] {% endif %}{% endfor %} : {{request_card.basecard.rules_text|remove_whitespace}} Information, analysis, statistics, decks, similar cards, and alternative cards for {{ physicalcard.get_card_name }} in Magic: The Gathering.{% endblock %}
+{% block pagetitle %}{{ physicalcard.get_card_name }} {% for fcs in formatcardstats %}{%if fcs.is_staple %}<span class="staple-{{fcs.format.formatname|lower}}">{{fcs.format.formatname}}&nbsp;Staple</span>{% endif %} {% endfor %}{% endblock %}
+{% block description %}{{ physicalcard.get_card_name }} {% for fcs in formatcardstats %}{%if fcs.is_staple %}[{{fcs.format.formatname}}&nbsp;Staple] {% endif %}{% endfor %} : {{request_card.basecard.rules_text|remove_whitespace}} Information, analysis, statistics, decks, similar cards, and alternative cards for {{ physicalcard.get_card_name }} in Magic: The Gathering.{% endblock %}
 
 {% block additionalheaders %}
   <!-- Facebook -->
@@ -237,6 +237,7 @@ function drawCardStatsChart(formatname) {
     </div>
   </div>
   {% for format in physicalcard.legal_formats %}
+    <script>if (! window.format_array) { window.format_array = new Array(); } window.format_array.push('{{format.formatname|lower}}');</script>
     <div class="row">
       <div class="col-xs-12">
         <h4>{{format.formatname}}</h4>
@@ -249,10 +250,14 @@ function drawCardStatsChart(formatname) {
                   <h5 class="panel-title">
                     <a data-toggle="collapse" data-parent="#accordion-{{format.formatname|lower}}" href="#collapse-{{format.formatname|lower}}-meta" aria-expanded="false" aria-controls="collapse-{{format.formatname|lower}}-meta">
                       <i class="indicator glyphicon glyphicon-menu-right pull-left" style="font-size: 90%; padding-right: 5px;"></i> Metagame Statistics 
-                    </a> {% if fcs.is_staple %} <span class="staple-{{format.formatname|lower}}">{{format.formatname}} Staple</span> {% endif %}
+                    </a>
+                    {% if fcs.is_staple %}
+                      <span class="staple-{{format.formatname|lower}}">{{format.formatname}}&nbsp;Staple</span>
+                      <script>if (! window.staple_array) { window.staple_array = new Array(); } window.staple_array.push('{{format.formatname|lower}}');</script>
+                    {% endif %}
                   </h5>
                 </div>
-                <div id="collapse-{{format.formatname|lower}}-meta" class="panel-collapse {%if format.formatname != "Modern" %}collapse{%endif%}" role="tabpanel" aria-labelledby="heading-{{format.formatname|lower}}-meta">
+                <div id="collapse-{{format.formatname|lower}}-meta" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{format.formatname|lower}}-meta">
                   <div class="panel-body">
                     <div id="cardstats-{{format.formatname|lower}}"></div>
                     <div>Appears in {{format.formatname}} decks: {{fcs.in_decks_percentage|floatformat:1}}%</div>
@@ -260,7 +265,7 @@ function drawCardStatsChart(formatname) {
                   </div>
                 </div>
                 <script>$('#accordion-{{format.formatname|lower}}').on('shown.bs.collapse', function () { drawCardStatsChart('{{format.formatname|lower}}'); });</script>
-                {%if fcs.format.formatname == "Modern" %}<script>google.setOnLoadCallback(function(){ drawCardStatsChart('{{format.formatname|lower}}');});</script>{%endif%}
+                {% comment %}{% if fcs.format.formatname == "Modern" %}<script>google.setOnLoadCallback(function(){ drawCardStatsChart('{{format.formatname|lower}}');});</script>{%endif%}{% endcomment %}
               </div>
             {%endif%}
           {%endfor%}
@@ -290,8 +295,8 @@ function drawCardStatsChart(formatname) {
                               {% if fbc.format.formatname == format.formatname %}
                                 {% for wcard in fbc.won_battles|slice:"4" %}
                                   <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
-                                    <div class="text-center"><a href="{% url 'cards:detail' wcard.loser_pcard.get_latest_card.multiverseid wcard.loser_pcard.get_latest_card.url_slug %}"><img class="grid_cardimage" src="{{ wcard.loser_pcard.get_latest_card.img_url }}" alt="{{ wcard.loser_pcard.get_card_name }}"/></a></div>
-                                    <div class="text-center"><a href="{% url 'cards:detail' wcard.loser_pcard.get_latest_card.multiverseid wcard.loser_pcard.get_latest_card.url_slug %}">{{wcard.loser_pcard.get_card_name}}</a></div>
+                                    <div class="text-center"><a href="{% url 'cards:detail' wcard.loser_pcard.get_latest_card.multiverseid wcard.loser_pcard.get_latest_card.url_slug %}" class="detail-card-list-item battle-loser format-link-{{format.formatname|lower}}"><img class="grid_cardimage" src="{{ wcard.loser_pcard.get_latest_card.img_url }}" alt="{{ wcard.loser_pcard.get_card_name }}"/></a></div>
+                                    <div class="text-center"><a href="{% url 'cards:detail' wcard.loser_pcard.get_latest_card.multiverseid wcard.loser_pcard.get_latest_card.url_slug %}" class="detail-card-list-item battle-loser format-link-{{format.formatname|lower}}">{{wcard.loser_pcard.get_card_name}}</a></div>
                                   </div>
                                 {% endfor %}
                               {% endif %}
@@ -307,8 +312,8 @@ function drawCardStatsChart(formatname) {
                               {% if fbc.format.formatname == format.formatname %}
                                 {% for lcard in fbc.lost_battles|slice:"4" %}
                                   <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
-                                    <div class="text-center"><a href="{% url 'cards:detail' lcard.winner_pcard.get_latest_card.multiverseid lcard.winner_pcard.get_latest_card.url_slug %}"><img class="grid_cardimage" src="{{ lcard.winner_pcard.get_latest_card.img_url }}" alt="{{ lcard.winner_pcard.get_card_name }}"/></a></div>
-                                    <div class="text-center"><a href="{% url 'cards:detail' lcard.winner_pcard.get_latest_card.multiverseid lcard.winner_pcard.get_latest_card.url_slug %}">{{lcard.winner_pcard.get_card_name}}</a></div>
+                                    <div class="text-center"><a href="{% url 'cards:detail' lcard.winner_pcard.get_latest_card.multiverseid lcard.winner_pcard.get_latest_card.url_slug %}" class="detail-card-list-item battle-winner format-link-{{format.formatname|lower}}"><img class="grid_cardimage" src="{{ lcard.winner_pcard.get_latest_card.img_url }}" alt="{{ lcard.winner_pcard.get_card_name }}"/></a></div>
+                                    <div class="text-center"><a href="{% url 'cards:detail' lcard.winner_pcard.get_latest_card.multiverseid lcard.winner_pcard.get_latest_card.url_slug %}" class="detail-card-list-item battle-winner format-link-{{format.formatname|lower}}">{{lcard.winner_pcard.get_card_name}}</a></div>
                                   </div>
                                 {% endfor %}
                               {% endif %}
@@ -340,8 +345,8 @@ function drawCardStatsChart(formatname) {
                         <div class="row">
                           {% for cpwpc in fbc.cards_played_with|slice:"16" %}
                             <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
-                              <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}"><img class="grid_cardimage" src="{{ cpwpc.img_url }}" alt=" cpwpc.basecard.physicalcard.get_card_name }}"/></a></div>
-                              <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}">{{cpwpc.basecard.physicalcard.get_card_name}}</a></div>
+                              <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}"><img class="grid_cardimage" src="{{ cpwpc.img_url }}" alt=" cpwpc.basecard.physicalcard.get_card_name }}"/></a></div>
+                              <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}">{{cpwpc.basecard.physicalcard.get_card_name}}</a></div>
                             </div>
                           {% empty %}
                             <div class="col-xs-12">{{physicalcard.get_card_name}} does not show up in any decks in {{format.formatname}}.</div>
@@ -369,6 +374,15 @@ function toggleChevron(e) {
 $('.panel-group').on('hidden.bs.collapse', toggleChevron);
 $('.panel-group').on('shown.bs.collapse', toggleChevron);
 </script>
+<script>
+google.setOnLoadCallback(function(){
+    if (window.staple_array && window.staple_array.length > 0) {
+        $('#collapse-' + window.staple_array.sort().reverse()[0] + '-meta').collapse('show'); 
+    } else if (window.format_array && window.format_array.length > 0) {
+        $('#collapse-' + window.format_array.sort().reverse()[0] + '-meta').collapse('show'); 
+    }
+    });
+</script>
 <div class="similar-block">
   <div class="row">
     <div class="col-xs-12">
@@ -378,8 +392,8 @@ $('.panel-group').on('shown.bs.collapse', toggleChevron);
   <div class="row">
     {% for sim in physicalcard.find_similar_cards|slice:"16" %}
       <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
-        <div class="text-center"><a href="{% url 'cards:detail' sim.multiverseid sim.url_slug %}"><img class="grid_cardimage" src="{{ sim.img_url }}" alt="{{ sim.basecard.physicalcard.get_card_name }}"/></a></div>
-        <div class="text-center"><a href="{% url 'cards:detail' sim.multiverseid sim.url_slug %}">{{sim.basecard.physicalcard.get_card_name}}</a></div>
+        <div class="text-center"><a href="{% url 'cards:detail' sim.multiverseid sim.url_slug %}" class="detail-card-list-item similar-card"><img class="grid_cardimage" src="{{ sim.img_url }}" alt="{{ sim.basecard.physicalcard.get_card_name }}"/></a></div>
+        <div class="text-center"><a href="{% url 'cards:detail' sim.multiverseid sim.url_slug %}" class="detail-card-list-item similar-card">{{sim.basecard.physicalcard.get_card_name}}</a></div>
       </div>
     {% endfor %}
   </div>
