@@ -157,6 +157,10 @@ $(function() {
             minLength: 3,
             select: function( event, ui ) {
                 if (navigationOption) {
+                    dataLayer.push({'event':'tutor',
+                                    'eventCategory': 'navigation',
+			                        'eventAction': 'select',
+			                        'eventValue': cdb.name_to_url_map[ui.item.label],});
                     // Just go directly to that page
                     window.location.href = cdb.name_to_url_map[ui.item.label];
                 }
