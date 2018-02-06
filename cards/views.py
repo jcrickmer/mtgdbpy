@@ -227,22 +227,27 @@ def search(request):
 
 def autocomplete(request):
     logger = logging.getLogger(__name__)
-    sqs = SearchQuerySet().autocomplete(name_auto=request.GET.get('q', ''))[:15]
+    sqs = SearchQuerySet().autocomplete(name_auto=request.GET.get('q', ''))[:25]
     #suggestions = [result.name for result in sqs]
     suggestions = []
     for result in sqs:
         cardname = result.name
-        #sys.stderr.write("L211 cardname is " + str(cardname) + " and pk is " + str(result.pk) + "\n")
         if cardname is not None and len(cardname) > 0:
             # sys.stderr.write("L213\n")
             cn_bc = BaseCard.objects.filter(physicalcard__id=result.pk).first()
             #sys.stderr.write("L215 " + str(cn_bc) + "\n")
-            result = {'name': cardname}
-            if cn_bc is not None:
+            zresult = {'name': cardname}
+            if cn_bc is not None and cn_bc.physicalcard.get_latest_card() is not None:
                 the_card = cn_bc.physicalcard.get_latest_card()
                 #sys.stderr.write("L218 the_card " + str(the_card) + "\n")
-                result['url'] = reverse('cards:detail', kwargs={'multiverseid': str(the_card.multiverseid), 'slug': the_card.url_slug()})
-                suggestions.append(result)
+                zresult['url'] = reverse('cards:detail', kwargs={'multiverseid': str(the_card.multiverseid), 'slug': the_card.url_slug()})
+                suggestions.append(zresult)
+            else:
+                logger.warn("cards.autocomplete: could not find card for query '{}' with PhysicalCard pk {}. Maybe rebuild the Solr index?".format(request.GET.get('q', ''), result.pk))
+        if len(suggestions) >= 15:
+            # let's only return 15. Note that we are doing this here, instead of at the Solr query, because the solr query might return
+            # cards that are less than desirable, like tokens, which will get filtered out.
+            break
     # Make sure you return a JSON object, not a bare list.
     # Otherwise, you could be vulnerable to an XSS attack.
     the_data = json.dumps(suggestions)
