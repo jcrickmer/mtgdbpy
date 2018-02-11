@@ -1,0 +1,184 @@
+# -*- coding: utf-8 -*-
+
+from django.core.management.base import BaseCommand, CommandError
+from cards.models import PhysicalCard, Format
+from cards.models import BaseCard
+from cards.models import Card
+from cards.models import ExpansionSet
+from cards.models import CardPrice
+from django.db.models import Q
+from datetime import datetime, date, timedelta
+import logging
+import sys
+import time
+import traceback
+import os
+import json
+import urllib2
+from cards.deckbox import generate_auth_key
+
+
+class Command(BaseCommand):
+
+    help = '''Grab some card prices and update the database.'''
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--count',
+            dest='count',
+            type=int,
+            default=10,
+            help='The number of card prices to grab.'
+        )
+        parser.add_argument(
+            '--delayseed',
+            dest='delayseed',
+            type=int,
+            default=11,
+            help='The seed for a randomish amount of time in seconds to wait between requests to the pricing service.'
+        )
+
+    def grab_price(self, mvid):
+        auth_key = generate_auth_key(mvid, 'bogus_session_id')
+        url = 'https://www.patsgames.com/cgi-bin/getCardInfo.pl?mvid={}&key={}'.format(mvid, auth_key)
+        serialized_data = urllib2.urlopen(url).read()
+
+        data = json.loads(serialized_data)
+        sys.stdout.write("Data: {}\n".format(json.dumps(data)))
+        if 'status' in data and data['status'].lower() == 'ok':
+            if 'prices' in data:
+                for pobj in data['prices']:
+                    #sys.stdout.write("MultiverseId {} normal: {} {}\n".format(pobj['mvid'], pobj['normalprice'], pobj['normalsale']))
+                    card = Card.objects.filter(multiverseid=pobj['mvid']).first()
+                    if int(pobj['normalprice']) < 99999:
+                        ncp = CardPrice(card=card, printing='normal')
+                        ncp.price = pobj['normalprice']
+                        ncp.price_discounted = pobj['normalsale'] == 1
+                        ncp.save()
+                        sys.stdout.write(u"{}\n".format(ncp))
+
+                    if 'foilprice' in pobj and int(pobj['foilprice']) < 99999:
+                        fcp = CardPrice(card=card, printing='foil')
+                        fcp.price = pobj['foilprice']
+                        fcp.price_discounted = pobj['foilsale'] == 1
+                        fcp.save()
+                        sys.stdout.write(u"{}\n".format(fcp))
+
+    def handle(self, *args, **options):
+        #logger = logging.getLogger(__name__)
+        # the first (and only) arg should be a filename
+
+        mvids = self.mvids_of_interest("modern")
+        mvids = mvids + self.mvids_of_interest("standard")
+        mvids = mvids + self.mvids_of_interest("legacy")
+        mvids = mvids + self.mvids_of_interest("commander")
+        dedup = list()
+        for val in mvids:
+            if val not in dedup:
+                dedup.append(val)
+        mvids = dedup
+
+        yesterday = datetime.now() - timedelta(days=1)
+        cardprices = CardPrice.objects.filter(card__multiverseid__in=mvids, at_datetime__gte=yesterday)
+        cardprice_mvids = [cp.card.multiverseid for cp in cardprices]
+        grab_actions = 0
+        for mvid in mvids:
+            if mvid not in cardprice_mvids:
+                if grab_actions < options['count']:
+                    self.grab_price(mvid)
+                    sys.stdout.write("+need to grab price id {}\n".format(mvid))
+                    grab_actions = grab_actions + 1
+                    time.sleep(options['delayseed'])
+                else:
+                    sys.stdout.write("-missing id {} but not going for it\n".format(mvid))
+            else:
+                sys.stdout.write("=have id {}\n".format(mvid))
+
+    def mvids_of_interest(self, formatname="modern"):
+        top_formats = Format.objects.filter(formatname__iexact=formatname, start_date__lte=datetime.today()).order_by('-start_date')
+        top_format = None
+        next_format = None
+        result = {}
+        try:
+            top_format = top_formats[0]
+            next_format = top_formats[1]
+        except IndexError:
+            return result.keys()
+
+        up_raw_sql = '''
+SELECT s1.physicalcard_id AS id,
+       100 * s2.percentage_of_all_cards AS prev_percentage,
+       100 * s1.percentage_of_all_cards AS current_percentage,
+       100 * (s1.percentage_of_all_cards - s2.percentage_of_all_cards) AS delta,
+       case when s2.percentage_of_all_cards = 0 then NULL else 100 * (s1.percentage_of_all_cards - s2.percentage_of_all_cards) / s2.percentage_of_all_cards end AS per_change,
+       100 * (s1.deck_count / fs1.tournamentdeck_count) decks_current_percentage,
+       100 * (s2.deck_count / fs2.tournamentdeck_count) decks_prev_percentage,
+       case when fs2.tournamentdeck_count = 0 then NULL else 100 * ((s1.deck_count / fs1.tournamentdeck_count) - (s2.deck_count / fs2.tournamentdeck_count)) / (s2.deck_count / fs2.tournamentdeck_count) end AS decks_per_change
+  FROM formatcardstat s1
+       JOIN basecard bc ON s1.physicalcard_id = bc.physicalcard_id AND bc.cardposition IN ('F','L','U')
+       JOIN formatstat fs1 ON fs1.format_id = s1.format_id AND s1.format_id = %s
+       LEFT JOIN formatcardstat s2 ON s1.physicalcard_id = s2.physicalcard_id AND s2.format_id = %s
+       LEFT JOIN formatstat fs2 ON fs2.format_id = s2.format_id
+ WHERE s1.percentage_of_all_cards > s2.percentage_of_all_cards
+ ORDER BY delta DESC LIMIT 50'''
+
+        foo = PhysicalCard.objects.raw(up_raw_sql, [top_format.id, next_format.id])
+        for pc in foo:
+            result[self.likely_printing_mvid(pc)] = True
+
+        down_raw_sql = '''
+SELECT s1.physicalcard_id AS id,
+       100 * s2.percentage_of_all_cards AS prev_percentage,
+       100 * s1.percentage_of_all_cards AS current_percentage,
+       100 * (s2.percentage_of_all_cards - s1.percentage_of_all_cards) AS delta,
+       case when s2.percentage_of_all_cards = 0 then NULL else 100 * (((s2.percentage_of_all_cards - s1.percentage_of_all_cards) / s2.percentage_of_all_cards) - 1) end AS per_change,
+       100 * (s1.deck_count / fs1.tournamentdeck_count) decks_current_percentage,
+       100 * (s2.deck_count / fs2.tournamentdeck_count) decks_prev_percentage,
+       case when fs2.tournamentdeck_count = 0 then NULL else 100 * ((s1.deck_count / fs1.tournamentdeck_count) - (s2.deck_count / fs2.tournamentdeck_count)) / (s2.deck_count / fs2.tournamentdeck_count) end AS decks_per_change
+  FROM formatcardstat s1
+       JOIN basecard bc ON s1.physicalcard_id = bc.physicalcard_id AND bc.cardposition IN ('F','L','U')
+       JOIN formatstat fs1 ON fs1.format_id = s1.format_id AND s1.format_id = %s
+       LEFT JOIN formatcardstat s2 ON s1.physicalcard_id = s2.physicalcard_id AND s2.format_id = %s
+       LEFT JOIN formatstat fs2 ON fs2.format_id = s2.format_id
+ WHERE s1.percentage_of_all_cards < s2.percentage_of_all_cards
+ ORDER BY delta DESC LIMIT 50'''
+        tdown = PhysicalCard.objects.raw(down_raw_sql, [top_format.id, next_format.id])
+        for pc in tdown:
+            result[self.likely_printing_mvid(pc)] = True
+
+        top_raw_sql = '''
+SELECT s1.physicalcard_id AS id,
+       100 * s2.percentage_of_all_cards AS prev_percentage,
+       100 * s1.percentage_of_all_cards AS current_percentage,
+       100 * (s2.percentage_of_all_cards - s1.percentage_of_all_cards) AS delta,
+       case when s2.percentage_of_all_cards = 0 then NULL else 100 * (((s2.percentage_of_all_cards - s1.percentage_of_all_cards) / s2.percentage_of_all_cards) - 1) end AS per_change,
+       100 * (s1.deck_count / fs1.tournamentdeck_count) decks_current_percentage,
+       100 * (s2.deck_count / fs2.tournamentdeck_count) decks_prev_percentage,
+       case when fs2.tournamentdeck_count = 0 then NULL else 100 * ((s1.deck_count / fs1.tournamentdeck_count) - (s2.deck_count / fs2.tournamentdeck_count)) / (s2.deck_count / fs2.tournamentdeck_count) end AS decks_per_change
+  FROM formatcardstat s1
+       JOIN basecard bc ON s1.physicalcard_id = bc.physicalcard_id AND s1.format_id = %s AND bc.cardposition IN ('F','L','U')
+       JOIN formatstat fs1 ON fs1.format_id = s1.format_id
+       LEFT JOIN formatcardstat s2 ON s1.physicalcard_id = s2.physicalcard_id AND s2.format_id = %s
+       LEFT JOIN formatstat fs2 ON fs2.format_id = s2.format_id
+ ORDER BY s1.percentage_of_all_cards DESC LIMIT 100'''
+        top = PhysicalCard.objects.raw(top_raw_sql, [top_format.id, next_format.id])
+        for pc in top:
+            result[self.likely_printing_mvid(pc)] = True
+
+        return result.keys()
+
+    expsets = ExpansionSet.objects.exclude(
+        name__icontains='clash pack').exclude(
+        name__icontains='duel deck').exclude(
+            name__icontains='from the vault').exclude(
+                name__icontains='box set').exclude(
+                    name__icontains='promo').exclude(
+                        name__icontains='gift box').exclude(
+                            name__icontains='starter').exclude(
+                                name__icontains='premium').exclude(
+                                    abbr__regex=r'^p[A-Za-z]{3}$')
+
+    def likely_printing_mvid(self, pcard):
+        """ pcard is a PhysicalCard. """
+        card = Card.objects.filter(basecard__physicalcard=pcard, expansionset__in=self.expsets).order_by('multiverseid').first()
+        return card.multiverseid

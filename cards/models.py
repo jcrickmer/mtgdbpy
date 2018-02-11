@@ -1795,7 +1795,7 @@ class CardPrice(models.Model):
         return u'{}-{} ({}) [{}]: ${}'.format(
             unicode(
                 self.card.multiverseid), unicode(
-                self.card.basecad.physicalcard.get_card_name()), unicode(
+                self.card.basecard.physicalcard.get_card_name()), unicode(
                 self.printing), unicode(
                     self.at_datetime), unicode(
                         self.price))
