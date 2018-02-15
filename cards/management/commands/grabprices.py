@@ -50,8 +50,9 @@ class Command(BaseCommand):
                 for pobj in data['prices']:
                     #sys.stdout.write("MultiverseId {} normal: {} {}\n".format(pobj['mvid'], pobj['normalprice'], pobj['normalsale']))
                     card = Card.objects.filter(multiverseid=pobj['mvid']).first()
-                    if card.basecard.name in ('Plains','Island','Swamp','Mountain','Forest') and int(pobj['normalprice']) > 99999:
-                        # Pat doesn't keep basic land prices. So make it up. Note that this could be very wrong for things like Unhinged and LEA.
+                    if card.basecard.name in ('Plains', 'Island', 'Swamp', 'Mountain', 'Forest') and int(pobj['normalprice']) > 99999:
+                        # Pat doesn't keep basic land prices. So make it up. Note that this could
+                        # be very wrong for things like Unhinged and LEA.
                         ncp = CardPrice(card=card, printing='normal')
                         ncp.price = 0.10
                         ncp.price_discounted = False
@@ -131,7 +132,7 @@ SELECT s1.physicalcard_id AS id,
 
         foo = PhysicalCard.objects.raw(up_raw_sql, [top_format.id, next_format.id])
         for pc in foo:
-            if pc.get_card_name() in ('Plains','Island','Swamp','Mountain','Forest'):
+            if pc.get_card_name() in ('Plains', 'Island', 'Swamp', 'Mountain', 'Forest'):
                 pass
             else:
                 result[self.likely_printing_mvid(pc)] = True
@@ -154,7 +155,7 @@ SELECT s1.physicalcard_id AS id,
  ORDER BY delta DESC LIMIT 50'''
         tdown = PhysicalCard.objects.raw(down_raw_sql, [top_format.id, next_format.id])
         for pc in tdown:
-            if pc.get_card_name() in ('Plains','Island','Swamp','Mountain','Forest'):
+            if pc.get_card_name() in ('Plains', 'Island', 'Swamp', 'Mountain', 'Forest'):
                 pass
             else:
                 result[self.likely_printing_mvid(pc)] = True
@@ -176,7 +177,7 @@ SELECT s1.physicalcard_id AS id,
  ORDER BY s1.percentage_of_all_cards DESC LIMIT 100'''
         top = PhysicalCard.objects.raw(top_raw_sql, [top_format.id, next_format.id])
         for pc in top:
-            if pc.get_card_name() in ('Plains','Island','Swamp','Mountain','Forest'):
+            if pc.get_card_name() in ('Plains', 'Island', 'Swamp', 'Mountain', 'Forest'):
                 pass
             else:
                 result[self.likely_printing_mvid(pc)] = True
