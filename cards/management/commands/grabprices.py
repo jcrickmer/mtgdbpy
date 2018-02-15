@@ -50,7 +50,14 @@ class Command(BaseCommand):
                 for pobj in data['prices']:
                     #sys.stdout.write("MultiverseId {} normal: {} {}\n".format(pobj['mvid'], pobj['normalprice'], pobj['normalsale']))
                     card = Card.objects.filter(multiverseid=pobj['mvid']).first()
-                    if int(pobj['normalprice']) < 99999:
+                    if card.basecard.name in ('Plains','Island','Swamp','Mountain','Forest') and int(pobj['normalprice']) > 99999:
+                        # Pat doesn't keep basic land prices. So make it up. Note that this could be very wrong for things like Unhinged and LEA.
+                        ncp = CardPrice(card=card, printing='normal')
+                        ncp.price = 0.10
+                        ncp.price_discounted = False
+                        ncp.save()
+                        sys.stdout.write(u"{}\n".format(ncp))
+                    elif int(pobj['normalprice']) < 99999:
                         ncp = CardPrice(card=card, printing='normal')
                         ncp.price = pobj['normalprice']
                         ncp.price_discounted = pobj['normalsale'] == 1
@@ -85,8 +92,8 @@ class Command(BaseCommand):
         for mvid in mvids:
             if mvid not in cardprice_mvids:
                 if grab_actions < options['count']:
-                    self.grab_price(mvid)
                     sys.stdout.write("+need to grab price id {}\n".format(mvid))
+                    self.grab_price(mvid)
                     grab_actions = grab_actions + 1
                     time.sleep(options['delayseed'])
                 else:
@@ -124,7 +131,10 @@ SELECT s1.physicalcard_id AS id,
 
         foo = PhysicalCard.objects.raw(up_raw_sql, [top_format.id, next_format.id])
         for pc in foo:
-            result[self.likely_printing_mvid(pc)] = True
+            if pc.get_card_name() in ('Plains','Island','Swamp','Mountain','Forest'):
+                pass
+            else:
+                result[self.likely_printing_mvid(pc)] = True
 
         down_raw_sql = '''
 SELECT s1.physicalcard_id AS id,
@@ -144,7 +154,10 @@ SELECT s1.physicalcard_id AS id,
  ORDER BY delta DESC LIMIT 50'''
         tdown = PhysicalCard.objects.raw(down_raw_sql, [top_format.id, next_format.id])
         for pc in tdown:
-            result[self.likely_printing_mvid(pc)] = True
+            if pc.get_card_name() in ('Plains','Island','Swamp','Mountain','Forest'):
+                pass
+            else:
+                result[self.likely_printing_mvid(pc)] = True
 
         top_raw_sql = '''
 SELECT s1.physicalcard_id AS id,
@@ -163,7 +176,10 @@ SELECT s1.physicalcard_id AS id,
  ORDER BY s1.percentage_of_all_cards DESC LIMIT 100'''
         top = PhysicalCard.objects.raw(top_raw_sql, [top_format.id, next_format.id])
         for pc in top:
-            result[self.likely_printing_mvid(pc)] = True
+            if pc.get_card_name() in ('Plains','Island','Swamp','Mountain','Forest'):
+                pass
+            else:
+                result[self.likely_printing_mvid(pc)] = True
 
         return result.keys()
 
@@ -176,9 +192,28 @@ SELECT s1.physicalcard_id AS id,
                         name__icontains='gift box').exclude(
                             name__icontains='starter').exclude(
                                 name__icontains='premium').exclude(
-                                    abbr__regex=r'^p[A-Za-z]{3}$')
+                                    abbr__regex=r'^p[A-Za-z]{3}$').exclude(abbr='LEA')
 
     def likely_printing_mvid(self, pcard):
         """ pcard is a PhysicalCard. """
         card = Card.objects.filter(basecard__physicalcard=pcard, expansionset__in=self.expsets).order_by('multiverseid').first()
-        return card.multiverseid
+        if card.multiverseid == 1084:
+            # Urza's Power Plant
+            return 4193
+        elif card.multiverseid == 1080:
+            # Urza's Mine
+            return 4192
+        elif card.multiverseid == 1088:
+            return 4194
+        elif card.multiverseid == 1849:
+            return 413634
+        elif card.multiverseid == 270733:
+            return 413748
+        elif card.multiverseid == 5556:
+            return 21153
+        elif card.multiverseid == 265156:
+            return 376260
+        elif card.multiverseid == 2949:
+            return 11399
+        else:
+            return card.multiverseid
