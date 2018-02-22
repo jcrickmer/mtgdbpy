@@ -130,7 +130,7 @@ $(function() {
         <div class="text-right"><a id="clear_terms" href="#">Clear all terms</a></div>
         <ul id="search_terms" class="list-unstyled"></ul>
       </div>
-      <div style="padding-top: 7px;" class="text-right" role="group"><button class="btn btn-primary send-query-btn" name="sendQuery">Search</button></div>
+      <div style="padding-top: 7px;" class="text-left" role="group"><button class="btn btn-primary send-query-btn" name="sendQuery" style="width: 160px;">Search</button></div>
     </div>
 <!-- end query column -->
   </div>
@@ -198,10 +198,10 @@ $(function() {
 <div class="row">
   <div class="col-xs-12 sim-cards-search">
     <form action="{% url 'cards:list_sims' %}" method="get" role="form">
-      <div class="row"><div class="col-xs-12 query-reminder-text">Or, look for cards by similiarity to another card...</div></div>
+      <div class="row"><div class="col-xs-12 query-reminder-text" style="margin-top: 8px; margin-bottom: 8px;">Or, look for cards by similiarity to another card...</div></div>
 	  <div class="row term_input" style="border-bottom: 1px solid #eee; margin-bottom: 12px;">
-        <div class="col-xs-1 searchlabel"><label for="simcardname" class="control-label">Cards Similar To</label></div>
-        <div class="col-xs-5"><input id="simcardtutor" type="text" name="simcardtutor" class="form-control input-sm"/></div>
+        <div class="col-xs-2 col-lg-1 searchlabel"><label for="simcardname" class="control-label">Cards Similar To</label></div>
+        <div class="col-xs-10 col-sm-5 "><input id="simcardtutor" type="text" name="simcardtutor" class="form-control input-sm"/></div>
         <script>
 $(function() {
     $('#simcardtutor').autocomplete({

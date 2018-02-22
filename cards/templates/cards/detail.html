@@ -230,7 +230,7 @@ function drawCardStatsChart(formatname) {
 {% endfor %}
 {% content key="PhysicalCard-"|concat:physicalcard.id position="mid" title="Commentary" layout="commentary" %}
 {% content key=request.path position="mid" %}
-<div class="battles-block">
+<div class="battles-block" id="formats-block">
   <div class="row">
     <div class="col-xs-12">
       <h3>Current Legal Formats</h3>
@@ -239,7 +239,7 @@ function drawCardStatsChart(formatname) {
   {% for format in physicalcard.legal_formats %}
     <script>if (! window.format_array) { window.format_array = new Array(); } window.format_array.push('{{format.formatname|lower}}');</script>
     <div class="row">
-      <div class="col-xs-12">
+      <div class="col-xs-12" id="format-{{format.formatname|lower}}-block">
         <h4>{{format.formatname}}</h4>
         <div class="panel-group" id="accordion-{{format.formatname|lower}}" role="tablist" aria-multiselectable="true">
           <!-- FORMAT CARD STATS -->
@@ -383,7 +383,7 @@ google.setOnLoadCallback(function(){
     }
     });
 </script>
-<div class="similar-block">
+<div class="similar-block" id="similar-block">
   <div class="row">
     <div class="col-xs-12">
       <h3>Similar Cards to {{physicalcard.get_card_name}}</h3>
@@ -400,7 +400,7 @@ google.setOnLoadCallback(function(){
 </div>
 
 {% if associations %}
-  <div class="associations-block">
+  <div class="associations-block" id="associations-block">
     <div class="row">
       <div class="col-xs-12">
         <h3>Cards Associated with {{physicalcard.get_card_name}}</h3>
@@ -439,7 +439,7 @@ google.setOnLoadCallback(function(){
   </div>
 {% endif %}
 
-<div class="rulings-block">
+<div class="rulings-block" id="rulings-block">
   <div class="row">
     <div class="col-xs-12">
       <h3>Rulings</h3>
