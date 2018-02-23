@@ -402,7 +402,8 @@ ul#search_terms li {
 }
 
 div.card-tile {
-  height: 350px;
+  height: auto;
+  margin-bottom: 16px;
 }
 ol.rules {
   list-style-type: none;
@@ -580,4 +581,7 @@ div.content-author-name {
 }
 div.content-publish-date {
     text-align: center;
+}
+.card-attr-title {
+    font-weight: bold;
 }

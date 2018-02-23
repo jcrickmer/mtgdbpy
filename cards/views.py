@@ -247,7 +247,12 @@ def autocomplete(request):
                 zresult['url'] = reverse('cards:detail', kwargs={'multiverseid': str(the_card.multiverseid), 'slug': the_card.url_slug()})
                 suggestions.append(zresult)
             else:
-                logger.warn("cards.autocomplete: could not find card for query '{}' with PhysicalCard pk {}. Maybe rebuild the Solr index?".format(request.GET.get('q', ''), result.pk))
+                logger.warn(
+                    "cards.autocomplete: could not find card for query '{}' with PhysicalCard pk {}. Maybe rebuild the Solr index?".format(
+                        request.GET.get(
+                            'q',
+                            ''),
+                        result.pk))
         if len(suggestions) >= 15:
             # let's only return 15. Note that we are doing this here, instead of at the Solr query, because the solr query might return
             # cards that are less than desirable, like tokens, which will get filtered out.
@@ -1353,4 +1358,44 @@ def update_card_price(request):
     response = HttpResponse(
         json.dumps(response_dict),
         content_type='application/javascript')
+    return response
+
+
+def playedwith(request, multiverseid=None, slug=None, formatname="commander"):
+    PAGE_CACHE_TIME = 3600
+    logger = logging.getLogger(__name__)
+    tcard = None
+    try:
+        tcard = Card.objects.filter(multiverseid=int(multiverseid)).order_by('card_number').first()
+        # REVISIT - look at the filing names of what we get back, and what was
+        # requested (the slug). If they are too dissimilar then do a redirect to
+        # the right one. Don't want bad URL's floating around out there.
+    except:
+        raise Http404
+
+    cards = tcard.get_all_cards()
+    format = None
+    try:
+        format = Format.objects.filter(formatname__iexact=formatname.lower(),
+                                       start_date__lte=datetime.today(),
+                                       end_date__gte=datetime.today()).order_by('-start_date').first()
+    except Exception as e:
+        raise Http404
+    if format is None:
+        raise Http404
+
+    physicalcard = cards[0].basecard.physicalcard
+
+    formatbasecards = FormatBasecard.objects.filter(
+        basecard=cards[0].basecard,
+        format__in=physicalcard.legal_formats()).order_by('format__formatname')
+
+    context = BASE_CONTEXT.copy()
+    context.update({'PAGE_CACHE_TIME': PAGE_CACHE_TIME,
+                    'physicalcard': physicalcard,
+                    'request_card': tcard,
+                    'format': format,
+                    'formatbasecards': formatbasecards,
+                    })
+    response = render(request, 'cards/playedwith.html', context)
     return response

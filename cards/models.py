@@ -528,9 +528,11 @@ class PhysicalCard(models.Model):
                 pass
         return result
 
-    def find_played_with_cards(self, format_list, max_results=18):
+    def find_played_with_cards(self, format_list, max_results=18, type_filter=None):
         """ Returns a list of Card objects for cards that get played in the formats that are specified in the list. For instance, the
             format_list could be all of the formats that have the formatname 'Standard'.
+
+            type_filter: a Type object that will be used to restrict the results to just that type.
         """
         format_ids = list()
         for f in format_list:
@@ -539,20 +541,62 @@ class PhysicalCard(models.Model):
             else:
                 format_ids.append(f)
         format_ids_str = ','.join(str(i) for i in format_ids)
-        _cache_key = 'pc.fpwc_{}_{}'.format(self.id, format_ids_str)
+
+        tfck = ''
+        if type_filter:
+            tfck = type_filter.id
+        _cache_key = 'pc.fpwc_{}_{}_t{}'.format(self.id, format_ids_str, tfck)
         result = cache.get(_cache_key)
         if result is None:
-            query_str = u'''SELECT bc.physicalcard_id, SUM(dc.cardcount) AS tcc FROM deck JOIN deckcard AS dc ON deck.id = dc.deck_id JOIN basecard AS bc ON bc.physicalcard_id = dc.physicalcard_id AND bc.cardposition IN ('{}','{}','{}') JOIN deck AS jdeck ON deck.id = jdeck.id JOIN deckcard AS jdc ON jdc.deck_id = jdeck.id AND jdc.physicalcard_id = {} WHERE  dc.physicalcard_id != {} AND deck.format_id IN ({}) GROUP BY bc.physicalcard_id ORDER BY tcc DESC LIMIT {}'''.format(
-                BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP, str(
-                    self.id), str(
-                    self.id), format_ids_str, str(max_results))
-            #sys.stderr.write("Q: {}\n".format(query_str))
+            result = list()
+
+            # first, let's get the deck count for this card, so we can calculate inclusion percentages
+            tdc_query_str = u'''SELECT bc.physicalcard_id, SUM(dc.cardcount) AS tcc, COUNT(deck.id) AS tdc FROM deck JOIN deckcard AS dc ON deck.id = dc.deck_id JOIN basecard AS bc ON bc.physicalcard_id = dc.physicalcard_id AND bc.cardposition IN ('{}','{}','{}') JOIN deck AS jdeck ON deck.id = jdeck.id JOIN deckcard AS jdc ON jdc.deck_id = jdeck.id AND jdc.physicalcard_id = {} WHERE dc.physicalcard_id = {} AND deck.format_id IN ({}) GROUP BY bc.physicalcard_id ORDER BY tcc DESC'''.format(
+                BaseCard.FRONT,
+                BaseCard.LEFT,
+                BaseCard.UP,
+                str(self.id),
+                str(self.id),
+                format_ids_str)
             cursor = connection.cursor()
-            cursor.execute(query_str)
-            q_results = cursor.fetchall()
-            pcard_ids = [row[0] for row in q_results]
-            result = [PhysicalCard.objects.get(pk=pc_id).get_latest_card() for pc_id in pcard_ids]
-            cache.set(_cache_key, result, 60 * 60 * 18)  # 18 hours
+            cursor.execute(tdc_query_str)
+            tdc_q_results = cursor.fetchall()
+
+            if tdc_q_results:
+                total_deck_count = tdc_q_results[0][2]
+
+                type_join_clause = ''
+                type_where_clause = ''
+                if type_filter:
+                    type_join_clause = ' JOIN cardtype AS ct ON ct.basecard_id = bc.id '
+                    type_where_clause = ' AND ct.type_id = {} '.format(type_filter.id)
+
+                query_str = u'''SELECT bc.physicalcard_id, SUM(dc.cardcount) AS tcc, COUNT(deck.id) AS tdc FROM deck JOIN deckcard AS dc ON deck.id = dc.deck_id JOIN basecard AS bc ON bc.physicalcard_id = dc.physicalcard_id AND bc.cardposition IN ('{}','{}','{}') JOIN deck AS jdeck ON deck.id = jdeck.id JOIN deckcard AS jdc ON jdc.deck_id = jdeck.id AND jdc.physicalcard_id = {} {} WHERE dc.physicalcard_id != {} AND deck.format_id IN ({}) {} GROUP BY bc.physicalcard_id ORDER BY tcc DESC LIMIT {}'''.format(
+                    BaseCard.FRONT,
+                    BaseCard.LEFT,
+                    BaseCard.UP,
+                    str(self.id),
+                    type_join_clause,
+                    str(self.id),
+                    format_ids_str,
+                    type_where_clause,
+                    str(max_results))
+                #sys.stderr.write("Q: {}\n".format(query_str))
+                
+                cursor = connection.cursor()
+                cursor.execute(query_str)
+                q_results = cursor.fetchall()
+                for row in q_results:
+                    #sys.stderr.write("pc_id and count is {}. deck count is {} and tdc is {}\n".format(row, row[2], total_deck_count))
+                    ccc = PhysicalCard.objects.get(pk=row[0]).get_latest_card()
+                    ccc.annotations = dict()
+                    ccc.annotations['appearance_count'] = row[1]
+                    ccc.annotations['appearance_percentage'] = 100 * float(row[2]) / float(total_deck_count)
+                    result.append(ccc)
+            else:
+                # this card isn't played with anything else in this format
+                pass
+            cache.set(_cache_key, result, 60 * 60 * 72)  # 72 hours
             #sys.stderr.write("R: {}\n".format("\n".join(str(i) for i in result)))
 
         return result
@@ -1553,7 +1597,38 @@ class FormatBasecard(models.Model):
         """
         return self.basecard.physicalcard.lost_battles.filter(format=self.format)
 
-    def cards_played_with(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=18):
+    def cards_played_with_all(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365)):
+        return self.cards_played_with(lookback_timeframe, 1024)
+
+    def cards_played_with_lands(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=36):
+        type_filter = Type.objects.filter(type__iexact='Land').first()
+        return self.cards_played_with(lookback_timeframe, max_results=max_results, type_filter=type_filter)
+
+    def cards_played_with_creatures(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=36):
+        type_filter = Type.objects.filter(type__iexact='Creature').first()
+        return self.cards_played_with(lookback_timeframe, max_results=max_results, type_filter=type_filter)
+
+    def cards_played_with_planeswalkers(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=36):
+        type_filter = Type.objects.filter(type__iexact='Planeswalker').first()
+        return self.cards_played_with(lookback_timeframe, max_results=max_results, type_filter=type_filter)
+
+    def cards_played_with_enchantments(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=36):
+        type_filter = Type.objects.filter(type__iexact='Enchantment').first()
+        return self.cards_played_with(lookback_timeframe, max_results=max_results, type_filter=type_filter)
+
+    def cards_played_with_instants(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=36):
+        type_filter = Type.objects.filter(type__iexact='Instant').first()
+        return self.cards_played_with(lookback_timeframe, max_results=max_results, type_filter=type_filter)
+
+    def cards_played_with_sorceries(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=36):
+        type_filter = Type.objects.filter(type__iexact='Sorcery').first()
+        return self.cards_played_with(lookback_timeframe, max_results=max_results, type_filter=type_filter)
+
+    def cards_played_with_artifacts(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=36):
+        type_filter = Type.objects.filter(type__iexact='Artifact').first()
+        return self.cards_played_with(lookback_timeframe, max_results=max_results, type_filter=type_filter)
+
+    def cards_played_with(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=18, type_filter=None):
         """ Gets Cards that this BaseCard has played with in this Format over some period of time.
 
         Arguments:
@@ -1566,7 +1641,7 @@ class FormatBasecard(models.Model):
         """
         formats = Format.objects.filter(formatname=self.format.formatname,
                                         start_date__gte=lookback_timeframe)
-        return self.basecard.physicalcard.find_played_with_cards(formats, max_results=max_results)
+        return self.basecard.physicalcard.find_played_with_cards(formats, max_results=max_results, type_filter=type_filter)
 
     class Meta:
         verbose_name_plural = 'Format Base Cards'

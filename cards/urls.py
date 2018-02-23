@@ -27,6 +27,8 @@ urlpatterns = [
     url(r'^(?P<multiverseid>\d+)/$', views.detail_by_multiverseid, name='detail_by_multiverseid'),
     # ex: /cards/376251-augur-of-bolas/
     url(r'^(?P<multiverseid>\d+)-(?P<slug>[a-zA-Z0-9-]+)/$', views.detail, name='detail'),
+    # ex: /cards/376251-augur-of-bolas/played-with/
+    url(r'^(?P<multiverseid>\d+)-(?P<slug>[a-zA-Z0-9-]+)/(?P<formatname>[a-zA-Z0-9]+)-company/$', views.playedwith, name='playedwith'),
     # ex: /cards/battle/
     url(r'^battle/$', views.battle, name='battle'),
     url(r'^battle/(?P<format>[a-zA-Z-]+)/$', views.battle, name='battle'),

@@ -14,9 +14,12 @@ urlpatterns = [
     url(r'^cards/', include('cards.urls', namespace="cards")),
     url(r'^decks/', include('decks.urls', namespace="decks")),
     url(r'^cn/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT_CN}),
-    # this cn- URL is used to help refresh cache. If files in cn have changed, updated base.html to include some new string to force cache flush browser-side. Coresponds to an AliasMatch in the Apahce httpd.conf:  AliasMatch "^/cn-[0-9a-z]+/(.*)" "/opt/mtgdb-prod/cn/$1"
+    # this cn- URL is used to help refresh cache. If files in cn have changed,
+    # updated base.html to include some new string to force cache flush
+    # browser-side. Coresponds to an AliasMatch in the Apahce httpd.conf:
+    # AliasMatch "^/cn-[0-9a-z]+/(.*)" "/opt/mtgdb-prod/cn/$1"
     url(r'^cn-[0-9a-z]+/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT_CN}),
-    
+
     url(r'^fonts/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT_CN}),
     url(r'^img/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT_CARD_IMAGES}),
     url(r'^d/(?P<path>.*)$', serve, {'document_root': settings.DYNAMIC_IMAGE_FILE_ROOT}),

@@ -5,6 +5,7 @@ from django.template.defaulttags import register
 def get_item(dictionary, key):
     return dictionary.get(key)
 
+
 @register.filter
 def remove_whitespace(text):
     result = text.replace(u"\r", u" ")

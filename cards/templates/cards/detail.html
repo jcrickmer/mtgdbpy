@@ -125,64 +125,64 @@ function drawCardStatsChart(formatname) {
         <table>
           <tbody>
             <tr>
-              <td style="width: 130px;" class="cardattr">Name</td>
+              <td style="width: 130px;" class="card-attr-title">Name</td>
               <td>{{ card.basecard.name }}</td>
             </tr>
             <tr>
-              <td class="cardattr">Mana Cost</td>
+              <td class="card-attr-title">Mana Cost</td>
               <td>{{ card.mana_cost_html }}</td>
             </tr>
             {% if card.basecard.supertypes.all %}
               <tr>
-                <td class="cardattr">Supertype</td>
+                <td class="card-attr-title">Supertype</td>
                 <td>{% for tsupertype in card.basecard.supertypes.all %}{{ tsupertype.supertype }} {% endfor %}</td>
               </tr>
             {% endif %}
             <tr>
-              <td class="cardattr">Type</td>
+              <td class="card-attr-title">Type</td>
               <td>{% for ttype in card.basecard.types.all %}{{ ttype.type }} {% endfor %}</td>
             </tr>
             {% if card.basecard.subtypes.all %}
               <tr>
-                <td class="cardattr">Subtype</td>
+                <td class="card-attr-title">Subtype</td>
                 <td>{% for tsubtype in card.basecard.subtypes.all %}{{ tsubtype.subtype }} {% endfor %}</td>
               </tr>
             {% endif %}
             <tr>
-              <td class="cardattr">Rules Text</td>
+              <td class="card-attr-title">Rules Text</td>
               <td>{{ card.rules_text_html|escape }}</td>
             </tr>
             {% if card.basecard.power %}
               <tr>
-                <td class="cardattr">Power</td>
+                <td class="card-attr-title">Power</td>
                 <td>{{ card.basecard.power }}</td>
               </tr>
             {% endif %}
             {% if card.basecard.toughness %}
               <tr>
-                <td class="cardattr">Toughness</td>
+                <td class="card-attr-title">Toughness</td>
                 <td>{{ card.basecard.toughness }}</td>
               </tr>
             {% endif %}
             {% if card.basecard.loyalty %}
               <tr>
-                <td class="cardattr">Loyalty</td>
+                <td class="card-attr-title">Loyalty</td>
                 <td>{{ card.basecard.loyalty }}</td>
               </tr>
             {% endif %}
             <tr>
-              <td class="cardattr">CMC</td>
+              <td class="card-attr-title">CMC</td>
               <td>{{ card.basecard.cmc }}</td>
             </tr>
             <tr>
-              <td class="cardattr">Color</td>
+              <td class="card-attr-title">Color</td>
               <td>{% for tcolor in card.basecard.colors.all %}{{ tcolor.color }} {% empty %}Colorless{% endfor %}</td>
             </tr>
             <tr>
-              <td class="cardattr">Pat's Card&nbsp;Rating</td>
+              <td class="card-attr-title">Pat's Card&nbsp;Rating</td>
               <td>
                 {% for lf in physicalcard.legal_formats %}
-                  <span class="hidden-xs-inline">{{lf.formatname}}</span><span class="visible-xs-inline">{{lf.abbr}}</span>:
+                  <span>{{lf.formatname}}</span>:
                   {% for cr in physicalcard.get_cardratings %}
                     {% if cr.format.formatname == lf.formatname %}
                       <span>{{ cr.cardninjaRating|floatformat:2 }}</span>
@@ -192,33 +192,33 @@ function drawCardStatsChart(formatname) {
               </td>
             </tr>
             <tr>
-              <td class="cardattr">Expansion Set</td>
+              <td class="card-attr-title">Expansion Set</td>
               <td>{{ card.expansionset.name }}</td>
             </tr>
             <tr>
-              <td class="cardattr">Multiverse Id</td>
+              <td class="card-attr-title">Multiverse Id</td>
               <td>{{ card.multiverseid }}</td>
             </tr>
             <tr>
-              <td class="cardattr">Flavor Text</td>
+              <td class="card-attr-title">Flavor Text</td>
               <td>{{ card.flavor_text_html }}</td>
             </tr>
             {% if card.mark.mark %}
               <tr>
-                <td class="cardattr">Mark</td>
+                <td class="card-attr-title">Mark</td>
                 <td>{{ card.mark.mark }}</td>
               </tr>
             {% endif %}
             <tr>
-              <td class="cardattr">Rarity</td>
+              <td class="card-attr-title">Rarity</td>
               <td>{{ card.rarity.rarity }}</td>
             </tr>
             <tr>
-              <td class="cardattr">Card Number</td>
+              <td class="card-attr-title">Card Number</td>
               <td>{{ card.card_number }}</td>
             </tr>
             <tr>
-              <td class="cardattr">All Versions</td>
+              <td class="card-attr-title">All Versions</td>
               <td>{% for ocard in card.get_all_versions %}<a href="{% url 'cards:detail' multiverseid=ocard.multiverseid slug=ocard.url_slug %}">{{ ocard.expansionset.abbr }}</a> {% endfor %}</td>
             </tr>
           </tbody>
@@ -294,6 +294,9 @@ function drawCardStatsChart(formatname) {
                             {% for fbc in formatbasecards %}
                               {% if fbc.format.formatname == format.formatname %}
                                 {% for wcard in fbc.won_battles|slice:"4" %}
+                                  {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+                                  {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+                                  {% if forloop.counter0|divisibleby:2 %}<div class="clearfix visible-xs"></div>{% endif %}
                                   <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
                                     <div class="text-center"><a href="{% url 'cards:detail' wcard.loser_pcard.get_latest_card.multiverseid wcard.loser_pcard.get_latest_card.url_slug %}" class="detail-card-list-item battle-loser format-link-{{format.formatname|lower}}"><img class="grid_cardimage" src="{{ wcard.loser_pcard.get_latest_card.img_url }}" alt="{{ wcard.loser_pcard.get_card_name }}"/></a></div>
                                     <div class="text-center"><a href="{% url 'cards:detail' wcard.loser_pcard.get_latest_card.multiverseid wcard.loser_pcard.get_latest_card.url_slug %}" class="detail-card-list-item battle-loser format-link-{{format.formatname|lower}}">{{wcard.loser_pcard.get_card_name}}</a></div>
@@ -311,6 +314,9 @@ function drawCardStatsChart(formatname) {
                             {% for fbc in formatbasecards %}
                               {% if fbc.format.formatname == format.formatname %}
                                 {% for lcard in fbc.lost_battles|slice:"4" %}
+                                  {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+                                  {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+                                  {% if forloop.counter0|divisibleby:2 %}<div class="clearfix visible-xs"></div>{% endif %}
                                   <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
                                     <div class="text-center"><a href="{% url 'cards:detail' lcard.winner_pcard.get_latest_card.multiverseid lcard.winner_pcard.get_latest_card.url_slug %}" class="detail-card-list-item battle-winner format-link-{{format.formatname|lower}}"><img class="grid_cardimage" src="{{ lcard.winner_pcard.get_latest_card.img_url }}" alt="{{ lcard.winner_pcard.get_card_name }}"/></a></div>
                                     <div class="text-center"><a href="{% url 'cards:detail' lcard.winner_pcard.get_latest_card.multiverseid lcard.winner_pcard.get_latest_card.url_slug %}" class="detail-card-list-item battle-winner format-link-{{format.formatname|lower}}">{{lcard.winner_pcard.get_card_name}}</a></div>
@@ -340,12 +346,20 @@ function drawCardStatsChart(formatname) {
                 </div>
                 <div id="collapse-{{format.formatname|lower}}-playedwith" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{format.formatname|lower}}-playedwith">
                   <div class="panel-body">
-                    <div class="row" id="playedwith-{{format.formatname|lower}}">
+                    <div class="row-fluid" id="playedwith-{{format.formatname|lower}}">
                       <div class="col-xs-12">
-                        <div class="row">
+                        <div class="row-fluid">
+                          <div class="col-xs-12" style="margin: 12px;">
+                            <a href="{% url 'cards:playedwith' request_mvid physicalcard.get_latest_card.url_slug format.formatname %}">Additional cards appearing with {{physicalcard.get_card_name}} in {{format.formatname}}</a>
+                          </div>
+                        </div>
+                        <div class="row-fluid">
                           {% for cpwpc in fbc.cards_played_with|slice:"16" %}
+                            {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+                            {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+                            {% if forloop.counter0|divisibleby:2 %}<div class="clearfix visible-xs"></div>{% endif %}
                             <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
-                              <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}"><img class="grid_cardimage" src="{{ cpwpc.img_url }}" alt=" cpwpc.basecard.physicalcard.get_card_name }}"/></a></div>
+                              <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}"><img class="grid_cardimage" src="{{ cpwpc.img_url }}" alt="{{ cpwpc.basecard.physicalcard.get_card_name }}"/></a></div>
                               <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}">{{cpwpc.basecard.physicalcard.get_card_name}}</a></div>
                             </div>
                           {% empty %}
@@ -391,6 +405,9 @@ google.setOnLoadCallback(function(){
   </div>
   <div class="row">
     {% for sim in physicalcard.find_similar_cards|slice:"16" %}
+      {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+      {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+      {% if forloop.counter0|divisibleby:2 %}<div class="clearfix visible-xs"></div>{% endif %}
       <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
         <div class="text-center"><a href="{% url 'cards:detail' sim.multiverseid sim.url_slug %}" class="detail-card-list-item similar-card"><img class="grid_cardimage" src="{{ sim.img_url }}" alt="{{ sim.basecard.physicalcard.get_card_name }}"/></a></div>
         <div class="text-center"><a href="{% url 'cards:detail' sim.multiverseid sim.url_slug %}" class="detail-card-list-item similar-card">{{sim.basecard.physicalcard.get_card_name}}</a></div>
@@ -425,6 +442,9 @@ google.setOnLoadCallback(function(){
             <div class="row">
               {% for assocpc in assoc.associationcards.all %}
                 {% if assocpc != physicalcard %}
+d                 {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+                  {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+                  {% if forloop.counter0|divisibleby:2 %}<div class="clearfix visible-xs"></div>{% endif %}
                   <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
                     <div class="text-center"><a href="{% url 'cards:detail' assocpc.get_latest_card.multiverseid assocpc.get_latest_card.url_slug %}"><img class="grid_cardimage" src="{{ assocpc.get_latest_card.img_url }}" alt="{{ assocpc.get_card_name }}"/></a></div>
                     <div class="text-center"><a href="{% url 'cards:detail' assocpc.get_latest_card.multiverseid assocpc.get_latest_card.url_slug %}">{{assocpc.get_card_name}}</a></div>

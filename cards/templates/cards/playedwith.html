@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% load content %}
+
+{% block title %}Cards Played with {{ physicalcard.get_card_name }} in {{format.formatname}}{% endblock %}
+{% block pagetitle %}Cards Played with <a href="{% url 'cards:detail' request_card.multiverseid request_card.url_slug %}">{{ physicalcard.get_card_name }}</a> in {{format.formatname}}{% endblock %}
+{% block description %}Cards played with {{ physicalcard.get_card_name }} in {{format.formatname}}{% endblock %}
+
+{% block additionalheaders %}
+  <!-- Facebook -->
+  <meta property="og:title" content="Cards played with {{ physicalcard.get_card_name }} in {{format.formatname}}">
+  <meta property="og:type" content="website">
+  <meta property="og:description" content="">
+  <meta property="og:image" content="{{request.scheme}}://{{request.get_host}}{{request_card.img_url}}">
+  <meta property="og:url" content="{{request.scheme}}://{{request.get_host}}{{request.path}}">
+  <meta property="og:site_name" content="Pat's Games: Spellbook">
+
+{% endblock %}
+{% block subsearchnav %}
+{% endblock %}
+{% block content %}
+{% load cache %}
+{% cache PAGE_CACHE_TIME card_played_with_html request_card.multiverseid format.formatname|lower %}
+<div class="row" style="border-bottom: 1px solid #bec5b8; padding-bottom: 20px; margin-bottom: 20px;">
+  <div class="col-xs-12 col-sm-6 col-md-3 text-center">
+    <img class="cardimage" src="{{ request_card.img_url }}" alt="{{ physicalcard.get_card_name }}"/>
+  </div>
+  <div class="col-xs-12 col-sm-6">
+    <div class="container-fluid">
+      <div class="row" style="margin-bottom: 12px;">
+        <div class="col-xs-3 card-attr-title">Name</div>
+        <div class="col-xs-6 card-attr-value">{{ physicalcard.get_card_name }}</div>
+      </div>
+      <div class="row" style="margin-bottom: 12px;">
+        <div class="col-xs-3 card-attr-title">Mana Cost</div>
+        <div class="col-xs-6 card-attr-value">{{ request_card.mana_cost_html }} ({{request_card.basecard.cmc}})</div>
+      </div>
+      <div class="row" style="margin-bottom: 12px;">
+        <div class="col-xs-3 card-attr-title">Text</div>
+        <div class="col-xs-6 card-attr-value">{{ request_card.rules_text_html|escape }}</div>
+      </div>
+      <div class="row" style="margin-bottom: 12px;">
+        <div class="col-xs-9"><a href="{% url 'cards:detail' request_card.multiverseid request_card.url_slug %}">Card details</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row" style="border-bottom: 1px solid #bec5b8; padding-bottom: 20px; margin-bottom: 20px;">
+  <div class="col-xs-12 text-center">
+    <a href="#playedwith-{{format.formatname|lower}}-creatures" style="padding: 2em;">Creatures</a>
+    <a href="#playedwith-{{format.formatname|lower}}-artifacts" style="padding: 2em;">Artifacts</a>
+    <a href="#playedwith-{{format.formatname|lower}}-planeswalkers" style="padding: 2em;">Planeswalkers</a>
+    <a href="#playedwith-{{format.formatname|lower}}-enchantments" style="padding: 2em;">Enchantments</a>
+    <a href="#playedwith-{{format.formatname|lower}}-sorceries" style="padding: 2em;">Sorceries</a>
+    <a href="#playedwith-{{format.formatname|lower}}-instants" style="padding: 2em;">Instants</a>
+    <a href="#playedwith-{{format.formatname|lower}}-lands" style="padding: 2em;">Lands</a>
+  </div>
+</div>
+<!-- CARDS PLAYED WITH -->
+{% for fbc in formatbasecards %}
+  {% if fbc.format.formatname == format.formatname %}
+    <!-- CREATURES -->
+    <div class="row" id="playedwith-{{format.formatname|lower}}-creatures">
+      <div class="col-xs-12">
+        <h3>Creatures appearing in decks with {{ physicalcard.get_card_name }}</h3>
+      </div>
+      <div class="col-xs-12">
+        <div class="container-fluid">
+          <div class="row">
+            {% for cpwpc in fbc.cards_played_with_creatures|slice:"36" %}
+              {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+              {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+              {% if forloop.counter0|divisibleby:2 %}<div class="clearfix visible-xs"></div>{% endif %}
+              <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}"><img class="grid_cardimage" src="{{ cpwpc.img_url }}" alt=" cpwpc.basecard.physicalcard.get_card_name }}"/></a></div>
+                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}">{{cpwpc.basecard.physicalcard.get_card_name}}</a></div>
+                <div class="text-center">Appears in {{cpwpc.annotations|get_item:"appearance_percentage"|floatformat:"1"}}% of decks</a></div>
+              </div>
+            {% empty %}
+              <div class="col-xs-12">{{physicalcard.get_card_name}} does not show up in any decks in {{format.formatname}}.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARTIFACTS -->
+    <div class="row" id="playedwith-{{format.formatname|lower}}-artifacts">
+      <div class="col-xs-12">
+        <h3>Artifacts</h3>
+      </div>
+      <div class="col-xs-12">
+        <div class="container-fluid">
+          <div class="row">
+            {% for cpwpc in fbc.cards_played_with_artifacts|slice:"36" %}
+              {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+              {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+              <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}"><img class="grid_cardimage" src="{{ cpwpc.img_url }}" alt=" cpwpc.basecard.physicalcard.get_card_name }}"/></a></div>
+                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}">{{cpwpc.basecard.physicalcard.get_card_name}}</a></div>
+                <div class="text-center">Appears in {{cpwpc.annotations|get_item:"appearance_percentage"|floatformat:"1"}}% of decks</a></div>
+              </div>
+            {% empty %}
+              <div class="col-xs-12">{{physicalcard.get_card_name}} does not show up in any decks in {{format.formatname}}.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENCHANTMENTS -->
+    <div class="row" id="playedwith-{{format.formatname|lower}}-enchantments">
+      <div class="col-xs-12">
+        <h3>Enchantments</h3>
+      </div>
+      <div class="col-xs-12">
+        <div class="container-fluid">
+          <div class="row">
+            {% for cpwpc in fbc.cards_played_with_enchantments|slice:"36" %}
+              {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+              {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+              <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}"><img class="grid_cardimage" src="{{ cpwpc.img_url }}" alt=" cpwpc.basecard.physicalcard.get_card_name }}"/></a></div>
+                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}">{{cpwpc.basecard.physicalcard.get_card_name}}</a></div>
+                <div class="text-center">Appears in {{cpwpc.annotations|get_item:"appearance_percentage"|floatformat:"1"}}% of decks</a></div>
+              </div>
+            {% empty %}
+              <div class="col-xs-12">{{physicalcard.get_card_name}} does not show up in any decks in {{format.formatname}}.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- PLANESWALKERS -->
+    <div class="row" id="playedwith-{{format.formatname|lower}}-planeswalkers">
+      <div class="col-xs-12">
+        <h3>Planeswalkers</h3>
+      </div>
+      <div class="col-xs-12">
+        <div class="container-fluid">
+          <div class="row">
+            {% for cpwpc in fbc.cards_played_with_planeswalkers|slice:"36" %}
+              {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+              {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+              <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}"><img class="grid_cardimage" src="{{ cpwpc.img_url }}" alt=" cpwpc.basecard.physicalcard.get_card_name }}"/></a></div>
+                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}">{{cpwpc.basecard.physicalcard.get_card_name}}</a></div>
+                <div class="text-center">Appears in {{cpwpc.annotations|get_item:"appearance_percentage"|floatformat:"1"}}% of decks</a></div>
+              </div>
+            {% empty %}
+              <div class="col-xs-12">{{physicalcard.get_card_name}} does not show up in any decks in {{format.formatname}}.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SORCERIES -->
+    <div class="row" id="playedwith-{{format.formatname|lower}}-sorceries">
+      <div class="col-xs-12">
+        <h3>Sorceries</h3>
+      </div>
+      <div class="col-xs-12">
+        <div class="container-fluid">
+          <div class="row">
+            {% for cpwpc in fbc.cards_played_with_sorceries|slice:"36" %}
+              {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+              {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+              <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}"><img class="grid_cardimage" src="{{ cpwpc.img_url }}" alt=" cpwpc.basecard.physicalcard.get_card_name }}"/></a></div>
+                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}">{{cpwpc.basecard.physicalcard.get_card_name}}</a></div>
+                <div class="text-center">Appears in {{cpwpc.annotations|get_item:"appearance_percentage"|floatformat:"1"}}% of decks</a></div>
+              </div>
+            {% empty %}
+              <div class="col-xs-12">{{physicalcard.get_card_name}} does not show up in any decks in {{format.formatname}}.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSTANTS -->
+    <div class="row" id="playedwith-{{format.formatname|lower}}-instants">
+      <div class="col-xs-12">
+        <h3>Instants</h3>
+      </div>
+      <div class="col-xs-12">
+        <div class="container-fluid">
+          <div class="row">
+            {% for cpwpc in fbc.cards_played_with_instants|slice:"36" %}
+              {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+              {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+              <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}"><img class="grid_cardimage" src="{{ cpwpc.img_url }}" alt=" cpwpc.basecard.physicalcard.get_card_name }}"/></a></div>
+                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}">{{cpwpc.basecard.physicalcard.get_card_name}}</a></div>
+                <div class="text-center">Appears in {{cpwpc.annotations|get_item:"appearance_percentage"|floatformat:"1"}}% of decks</a></div>
+              </div>
+            {% empty %}
+              <div class="col-xs-12">{{physicalcard.get_card_name}} does not show up in any decks in {{format.formatname}}.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LANDS -->
+    <div class="row" id="playedwith-{{format.formatname|lower}}-lands">
+      <div class="col-xs-12">
+        <h3>Lands</h3>
+      </div>
+      <div class="col-xs-12">
+        <div class="container-fluid">
+          <div class="row">
+            {% for cpwpc in fbc.cards_played_with_lands|slice:"36" %}
+              {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+              {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+              <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}"><img class="grid_cardimage" src="{{ cpwpc.img_url }}" alt=" cpwpc.basecard.physicalcard.get_card_name }}"/></a></div>
+                <div class="text-center"><a href="{% url 'cards:detail' cpwpc.multiverseid cpwpc.url_slug %}" class="detail-card-list-item playedwith-{{format.formatname|lower}}">{{cpwpc.basecard.physicalcard.get_card_name}}</a></div>
+                <div class="text-center">Appears in {{cpwpc.annotations|get_item:"appearance_percentage"|floatformat:"1"}}% of decks</a></div>
+              </div>
+            {% empty %}
+              <div class="col-xs-12">{{physicalcard.get_card_name}} does not show up in any decks in {{format.formatname}}.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+  {%endif%}
+{%endfor%}
+{% endcache %}
+{% endblock %}
