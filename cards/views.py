@@ -237,6 +237,10 @@ def autocomplete(request):
             cn_bc = BaseCard.objects.filter(physicalcard__id=result.pk).first()
             #sys.stderr.write("L215 " + str(cn_bc) + "\n")
             zresult = {'name': cardname}
+            if '/' in cardname:
+                zresult['name_first_part'] = cardname[0:cardname.find('/')]
+            else:
+                zresult['name_first_part'] = cardname
             if cn_bc is not None and cn_bc.physicalcard.get_latest_card() is not None:
                 the_card = cn_bc.physicalcard.get_latest_card()
                 #sys.stderr.write("L218 the_card " + str(the_card) + "\n")

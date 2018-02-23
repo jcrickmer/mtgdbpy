@@ -131,6 +131,23 @@ $(function() {
         return false; //event.preventDefault();
     };
     cdb.name_to_url_map = {};
+    cdb.getCardNamesFirstPart = function(request, response) {
+        $.ajax({
+            url: "/cards/_nameauto/",
+            dataType: "jsonp",
+            data: {
+                q: request.term
+            },
+            success: function( data ) {
+                vals = new Array()
+                for(var cc = 0; cc < data.length; cc++) {
+                  vals.push(data[cc]['name_first_part'])
+                  cdb.name_to_url_map[data[cc]['name_first_part']] = data[cc]['url'];
+                }
+                response(vals);
+            }
+        });
+    };
     cdb.getCardNames = function(request, response) {
         $.ajax({
             url: "/cards/_nameauto/",
@@ -150,10 +167,15 @@ $(function() {
     };
     cdb.STAY_ON_PAGE = false;
     cdb.AUTO_NAVIGATE = true;
+    cdb.NAME_FULL = true;
+    cdb.NAME_FIRST_PART = false;
     cdb.makeFieldNameAuto = function(jqObj, navigationOption) {
+        return cdb.makeFieldNameAutoOpts(jqObj, navigationOption, cdb.NAME_FULL);
+    };
+    cdb.makeFieldNameAutoOpts = function(jqObj, navigationOption, useFullName) {
         /* Makes the given form field identified by the JQuery object into an autocomplete field for card names. */
         jqObj.autocomplete({
-            source: cdb.getCardNames,
+            source: useFullName ? cdb.getCardNames : cdb.getCardNamesFirstPart,
             minLength: 3,
             select: function( event, ui ) {
                 if (navigationOption) {

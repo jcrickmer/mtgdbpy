@@ -25,7 +25,7 @@ $(function() {
         <div class="col-xs-6"><input id="cardname" type="text" name="cardname" class="form-control input-sm"/></div>
 <script>
 $(function() {
-	cdb.makeFieldNameAuto($("#cardname"), cdb.STAY_ON_PAGE);
+	cdb.makeFieldNameAutoOpts($("#cardname"), cdb.STAY_ON_PAGE, cdb.NAME_FIRST_PART);
 });
 </script>
         <div class="col-xs-2"><button name="cardname_add" class="btn btn-default btn-sm add-btn">Add</button></div>
