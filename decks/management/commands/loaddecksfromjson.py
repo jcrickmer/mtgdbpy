@@ -241,7 +241,8 @@ class Command(BaseCommand):
                             deck.format = tourna.format
                         elif 'deck_format' in jblob:
                             try:
-                                sys.stderr.write("Format find: {} - {}\n".format(jblob['deck_format'], self.isodate(jblob['tournament_date'])))
+                                sys.stderr.write(
+                                    "Format find: {} - {}\n".format(jblob['deck_format'], self.isodate(jblob['tournament_date'])))
                                 db_format_q = Format.objects.filter(
                                     formatname=jblob['deck_format'], start_date__lte=self.isodate(
                                         jblob['tournament_date']), end_date__gte=self.isodate(
