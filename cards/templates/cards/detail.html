@@ -134,7 +134,7 @@ function drawCardStatsChart(formatname) {
             </div>
             <div class="row card-attr-row">
               <div class="col-xs-3 card-attr-title">Type</div>
-              <div class="col-xs-9 card-attr-value">{% for tsupertype in card.basecard.supertypes.all %}{{ tsupertype.supertype }} {% endfor %} {% for ttype in card.basecard.types.all %}{{ ttype.type }} {% endfor %} &mdash; {% for tsubtype in card.basecard.subtypes.all %}{{ tsubtype.subtype }} {% endfor %}</div>
+              <div class="col-xs-9 card-attr-value">{% for tsupertype in card.basecard.supertypes.all %}{{ tsupertype.supertype }} {% endfor %} {% for ttype in card.basecard.types.all %}{{ ttype.type }} {% endfor %} {% for tsubtype in card.basecard.subtypes.all %}{% if forloop.counter0 == 0 %} &mdash; {% endif %} {{ tsubtype.subtype }} {% endfor %}</div>
             </div>
             <div class="row card-attr-row">
               <div class="col-xs-3 card-attr-title">Rules Text</div>

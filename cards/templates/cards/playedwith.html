@@ -22,7 +22,7 @@
 {% cache PAGE_CACHE_TIME card_played_with_html request_card.multiverseid format.formatname|lower %}
 <div class="row" style="border-bottom: 1px solid #bec5b8; padding-bottom: 20px; margin-bottom: 20px;">
   <div class="col-xs-12 col-sm-6 col-md-3 text-center">
-    <img class="cardimage" src="{{ request_card.img_url }}" alt="{{ physicalcard.get_card_name }}"/>
+    <a href="{% url 'cards:detail' request_card.multiverseid request_card.url_slug %}"><img class="cardimage" src="{{ request_card.img_url }}" alt="{{ physicalcard.get_card_name }}"/></a>
   </div>
   <div class="col-xs-12 col-sm-6">
     <div class="container-fluid">
