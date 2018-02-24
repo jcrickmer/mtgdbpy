@@ -585,3 +585,14 @@ div.content-publish-date {
 .card-attr-title {
     font-weight: bold;
 }
+.card-attr-row {
+    margin-bottom: 12px;
+}
+.card-details-block {
+    margin-bottom: 12px;
+}
+.card-details-block:not(:first-child) {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: solid 1px #ADC4CC;
+}

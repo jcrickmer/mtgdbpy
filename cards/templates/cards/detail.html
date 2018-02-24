@@ -115,119 +115,107 @@ function drawCardStatsChart(formatname) {
 </script>
 {% content key="PhysicalCard-"|concat:physicalcard.id position="top" %}
 {% content key=request.path position="top" %}
-{% for card in cards %}
-  {% if card %}
-    <div class="row">
-      <div class="col-xs-12 col-sm-6 col-md-3 text-center">
-        <img class="cardimage" src="{{ card.img_url }}" alt="{{ card.basecard.name }}"/>
-      </div>
-      <div class="col-xs-12 col-sm-6 col-md-6">
-        <table>
-          <tbody>
-            <tr>
-              <td style="width: 130px;" class="card-attr-title">Name</td>
-              <td>{{ card.basecard.name }}</td>
-            </tr>
-            <tr>
-              <td class="card-attr-title">Mana Cost</td>
-              <td>{{ card.mana_cost_html }}</td>
-            </tr>
-            {% if card.basecard.supertypes.all %}
-              <tr>
-                <td class="card-attr-title">Supertype</td>
-                <td>{% for tsupertype in card.basecard.supertypes.all %}{{ tsupertype.supertype }} {% endfor %}</td>
-              </tr>
-            {% endif %}
-            <tr>
-              <td class="card-attr-title">Type</td>
-              <td>{% for ttype in card.basecard.types.all %}{{ ttype.type }} {% endfor %}</td>
-            </tr>
-            {% if card.basecard.subtypes.all %}
-              <tr>
-                <td class="card-attr-title">Subtype</td>
-                <td>{% for tsubtype in card.basecard.subtypes.all %}{{ tsubtype.subtype }} {% endfor %}</td>
-              </tr>
-            {% endif %}
-            <tr>
-              <td class="card-attr-title">Rules Text</td>
-              <td>{{ card.rules_text_html|escape }}</td>
-            </tr>
+<div class="row">
+  <div class="col-xs-12 col-md-8">
+    {% for card in cards %}
+      {% if card %}
+        <div class="row card-details-block">
+          <div class="col-xs-12 col-sm-4 col-md-5 col-lg-4 text-center">
+            <img class="cardimage" src="{{ card.img_url }}" alt="{{ card.basecard.name }}"/>
+          </div>
+          <div class="col-xs-12 col-sm-8 col-md-7 col-lg-8">
+            <div class="row card-attr-row">
+              <div class="col-xs-3 card-attr-title">Name</div>
+              <div class="col-xs-9 card-attr-value">{{ card.basecard.name }}</div>
+            </div>
+            <div class="row card-attr-row">
+              <div class="col-xs-3 card-attr-title">Mana Cost</div>
+              <div class="col-xs-9 card-attr-value">{{ card.mana_cost_html }} ({{card.basecard.cmc}})</div>
+            </div>
+            <div class="row card-attr-row">
+              <div class="col-xs-3 card-attr-title">Type</div>
+              <div class="col-xs-9 card-attr-value">{% for tsupertype in card.basecard.supertypes.all %}{{ tsupertype.supertype }} {% endfor %} {% for ttype in card.basecard.types.all %}{{ ttype.type }} {% endfor %} &mdash; {% for tsubtype in card.basecard.subtypes.all %}{{ tsubtype.subtype }} {% endfor %}</div>
+            </div>
+            <div class="row card-attr-row">
+              <div class="col-xs-3 card-attr-title">Rules Text</div>
+              <div class="col-xs-9 card-attr-value">{{ card.rules_text_html|escape }}</div>
+            </div>
             {% if card.basecard.power %}
-              <tr>
-                <td class="card-attr-title">Power</td>
-                <td>{{ card.basecard.power }}</td>
-              </tr>
+              <div class="row card-attr-row">
+                <div class="col-xs-3 card-attr-title">Power</div>
+                <div class="col-xs-9 card-attr-value">{{ card.basecard.power }}</div>
+              </div>
             {% endif %}
             {% if card.basecard.toughness %}
-              <tr>
-                <td class="card-attr-title">Toughness</td>
-                <td>{{ card.basecard.toughness }}</td>
-              </tr>
+              <div class="row card-attr-row">
+                <div class="col-xs-3 card-attr-title">Toughness</div>
+                <div class="col-xs-9 card-attr-value">{{ card.basecard.toughness }}</div>
+              </div>
             {% endif %}
             {% if card.basecard.loyalty %}
-              <tr>
-                <td class="card-attr-title">Loyalty</td>
-                <td>{{ card.basecard.loyalty }}</td>
-              </tr>
+              <div class="row card-attr-row">
+                <div class="col-xs-3 card-attr-title">Loyalty</div>
+                <div class="col-xs-9 card-attr-value">{{ card.basecard.loyalty }}</div>
+              </div>
             {% endif %}
-            <tr>
-              <td class="card-attr-title">CMC</td>
-              <td>{{ card.basecard.cmc }}</td>
-            </tr>
-            <tr>
-              <td class="card-attr-title">Color</td>
-              <td>{% for tcolor in card.basecard.colors.all %}{{ tcolor.color }} {% empty %}Colorless{% endfor %}</td>
-            </tr>
-            <tr>
-              <td class="card-attr-title">Pat's Card&nbsp;Rating</td>
-              <td>
-                {% for lf in physicalcard.legal_formats %}
-                  <span>{{lf.formatname}}</span>:
-                  {% for cr in physicalcard.get_cardratings %}
-                    {% if cr.format.formatname == lf.formatname %}
-                      <span>{{ cr.cardninjaRating|floatformat:2 }}</span>
-                    {% endif %}
-                  {% endfor %}<br>
-                {% endfor%}
-              </td>
-            </tr>
-            <tr>
-              <td class="card-attr-title">Expansion Set</td>
-              <td>{{ card.expansionset.name }}</td>
-            </tr>
-            <tr>
-              <td class="card-attr-title">Multiverse Id</td>
-              <td>{{ card.multiverseid }}</td>
-            </tr>
-            <tr>
-              <td class="card-attr-title">Flavor Text</td>
-              <td>{{ card.flavor_text_html }}</td>
-            </tr>
+            <div class="row card-attr-row">
+              <div class="col-xs-3 card-attr-title">Color</div>
+              <div class="col-xs-9 card-attr-value">{% for tcolor in card.basecard.colors.all %}{{ tcolor.color }} {% empty %}Colorless{% endfor %}</div>
+            </div>
+            {% if forloop.counter0 == 0 %}
+              <div class="row card-attr-row">
+                <div class="col-xs-3 card-attr-title">Pat's Card&nbsp;Rating</div>
+                <div class="col-xs-9 card-attr-value">
+                  {% for lf in physicalcard.legal_formats %}
+                    <span>{{lf.formatname}}</span>:
+                    {% for cr in physicalcard.get_cardratings %}
+                      {% if cr.format.formatname == lf.formatname %}
+                        <span>{{ cr.cardninjaRating|floatformat:2 }}</span>
+                      {% endif %}
+                    {% endfor %}<br>
+                  {% endfor%}
+                </div>
+              </div>
+              <div class="row card-attr-row">
+                <div class="col-xs-3 card-attr-title">Rarity</div>
+                <div class="col-xs-9 card-attr-value">{{ card.rarity.rarity }}</div>
+              </div>
+              <div class="row card-attr-row">
+                <div class="col-xs-3 card-attr-title">Expansion Set</div>
+                <div class="col-xs-9 card-attr-value">{{ card.expansionset.name }}</div>
+              </div>
+            {% endif %}
+            <div class="row card-attr-row">
+              <div class="col-xs-3 card-attr-title">Multiverse Id</div>
+              <div class="col-xs-9 card-attr-value">{{ card.multiverseid }}</div>
+            </div>
+            <div class="row card-attr-row">
+              <div class="col-xs-3 card-attr-title">Flavor Text</div>
+              <div class="col-xs-9 card-attr-value">{%if card.flavor_text %}{{ card.flavor_text_html }}{% endif %}</div>
+            </div>
             {% if card.mark.mark %}
-              <tr>
-                <td class="card-attr-title">Mark</td>
-                <td>{{ card.mark.mark }}</td>
-              </tr>
+              <div class="row card-attr-row">
+                <div class="col-xs-3 card-attr-title">Mark</div>
+                <div class="col-xs-9 card-attr-value">{{ card.mark.mark }}</div>
+              </div>
             {% endif %}
-            <tr>
-              <td class="card-attr-title">Rarity</td>
-              <td>{{ card.rarity.rarity }}</td>
-            </tr>
-            <tr>
-              <td class="card-attr-title">Card Number</td>
-              <td>{{ card.card_number }}</td>
-            </tr>
-            <tr>
-              <td class="card-attr-title">All Versions</td>
-              <td>{% for ocard in card.get_all_versions %}<a href="{% url 'cards:detail' multiverseid=ocard.multiverseid slug=ocard.url_slug %}">{{ ocard.expansionset.abbr }}</a> {% endfor %}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="col-sm-1 col-md-3 col-lg-3" id="pricing-container"></div>
-    </div>
-  {% endif %}
-{% endfor %}
+            <div class="row card-attr-row">
+              <div class="col-xs-3 card-attr-title">Card Number</div>
+              <div class="col-xs-9 card-attr-value">{{ card.card_number }}</div>
+            </div>
+            {% if forloop.counter0 == 0 %}
+              <div class="row card-attr-row">
+                <div class="col-xs-3 card-attr-title">All Versions</div>
+                <div class="col-xs-9 card-attr-value">{% for ocard in card.get_all_versions %}<a href="{% url 'cards:detail' multiverseid=ocard.multiverseid slug=ocard.url_slug %}">{{ ocard.expansionset.abbr }}</a> {% endfor %}</div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div class="col-xs-12 col-md-4" id="pricing-container"></div>
+</div>
 {% content key="PhysicalCard-"|concat:physicalcard.id position="mid" title="Commentary" layout="commentary" %}
 {% content key=request.path position="mid" %}
 <div class="battles-block" id="formats-block">
