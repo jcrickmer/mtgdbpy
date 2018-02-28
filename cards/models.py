@@ -504,14 +504,16 @@ class PhysicalCard(models.Model):
         orstring = " OR ".join(newlist)
         sqs = SearchQuerySet().raw_search(query_string=orstring)
         solrcount = 0
+        similars_sqr = list()
         for sim_sqr in sqs.order_by('-score'):
             if solrcount >= max_results:
                 break
             simcard_pk = int(sim_sqr.pk)
             if include_query_card or int(self.id) != simcard_pk:
                 similars.append(simcard_pk)
+                similars_sqr.append(sim_sqr)
                 solrcount = solrcount + 1
-        return similars
+        return similars_sqr
 
     def find_similar_cards(self, max_results=18, include_query_card=False):
         """ Returns Card objects, not PhysicalCard objects.
@@ -520,12 +522,19 @@ class PhysicalCard(models.Model):
         result = []
         for sim_id in similars:
             try:
-                card = PhysicalCard.objects.get(pk=sim_id).get_latest_card()
+                #card = PhysicalCard.objects.get(pk=sim_id).get_latest_card()
+                card = sim_id.object.get_latest_card()
                 if card is not None:
                     # found issue with '1996 World Champion'. Has a PhysicalCard and BaseCard, but no Card.
+                    try:
+                        card.annotations
+                    except AttributeError:
+                        card.annotations = dict()
+                    finally:
+                        card.annotations['similarity_score'] = sim_id.score
                     result.append(card)
-            except:
-                pass
+            except Exception as e:
+                sys.stderr.write("ERROR {}\n".format(e))
         return result
 
     def find_played_with_cards(self, format_list, max_results=18, type_filter=None):
@@ -582,7 +591,7 @@ class PhysicalCard(models.Model):
                     type_where_clause,
                     str(max_results))
                 #sys.stderr.write("Q: {}\n".format(query_str))
-                
+
                 cursor = connection.cursor()
                 cursor.execute(query_str)
                 q_results = cursor.fetchall()

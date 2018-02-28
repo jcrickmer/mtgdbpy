@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render
-from decks.models import Deck, DeckCluster, DeckClusterDeck, Tournament, TournamentDeck
-from cards.models import PhysicalCard
+from decks.models import Deck, DeckCluster, DeckClusterDeck, Tournament, TournamentDeck, Recommender
+from cards.models import PhysicalCard, Format, Supertype, FormatBasecard
 from django.http import Http404
 from django.views.generic import ListView
 import logging
 from django.core.cache import cache
 from django.db.models import Max, Min, Count, Sum, Avg
 from django.conf import settings
+from datetime import datetime, timedelta
+import sys
 
 BASE_CONTEXT = {'settings': {
     'HOME_URL': settings.HOME_URL,
@@ -130,3 +132,67 @@ class TournamentListView(ListView):
     context_object_name = 'tournament_list'
     queryset = Tournament.objects.filter(format__formatname='Modern').annotate(deck_count=Count('tournamentdeck')).order_by('-start_date')
     paginate_by = 25
+
+
+def recommendations(request):
+    context = BASE_CONTEXT.copy()
+    context['current_formats'] = Format.objects.filter(start_date__lte=datetime.today(),
+                                                       end_date__gte=datetime.today()).order_by('format')
+    # REVISIT - unsafe index
+    context['format'] = context['current_formats'][0]
+
+    pcs = list()
+    if 'format' in request.POST:
+        for ff in context['current_formats']:
+            if request.POST['format'] == ff.format:
+                context['format'] = ff
+                break
+    if 'cardlist' in request.POST:
+        try:
+            pcs = Deck.read_cards_from_text(request.POST['cardlist'], throw_exception=False)
+        except Deck.CardsNotFoundException as cnfe:
+            pass
+        #sys.stderr.write("cardlist is '{}'".format(pcs))
+    context['card_list'] = (a.get_card_name() for a in pcs)
+    context['seeds'] = (a.get_latest_card() for a in pcs)
+    context['recommendations'] = ()
+    context['spicy'] = list()
+    if len(pcs):
+        dcr = Recommender()
+        context['recommendations'] = dcr.get_recommended_cards(pcs, context['format'])
+
+        # get spicy...
+        basic_supertype = Supertype.objects.filter(supertype='Basic').first()
+        #sys.stderr.write("Basic type is {}\n".format(basic_supertype))
+        for tcard in context['recommendations']:
+            if basic_supertype in tcard.basecard.types.all():
+                # Let's not look up similar cards to Basic lands
+                continue
+
+            sims = tcard.basecard.physicalcard.find_similar_cards(max_results=4)
+            for sim in sims:
+                #sys.stderr.write("%%%% SIM IS {} for {}\n".format(sim, tcard))
+                if sim.basecard.physicalcard in pcs:
+                    #sys.stderr.write("-- skipping {} for spicy because the user already wants it!\n".format(sim))
+                    continue
+                # Let's not consider Basic lands as spicy
+                if basic_supertype in sim.basecard.supertypes.all():
+                    #sys.stderr.write("-- skipping basic land for spicy.\n")
+                    continue
+                # Let's only recommend cards in the current format
+                if FormatBasecard.objects.filter(basecard=sim.basecard, format=context['format']).count() == 0:
+                    #sys.stderr.write("-- skipping {} for spicy because it isn't in format.\n".format(sim))
+                    continue
+                if sim in context['recommendations']:
+                    #sys.stderr.write("-- skipping {} for spicy because it is already recommended.\n".format(sim))
+                    continue
+                if sim in context['spicy']:
+                    #sys.stderr.write("-- skipping {} for spicy because it is already spicy!\n".format(sim))
+                    continue
+                #sys.stderr.write("starting with score of {}\n".format(tcard.annotations['match_confidence']))
+                sim.annotations['spicy_score'] = tcard.annotations['match_confidence'] + (sim.annotations['similarity_score'] * 50.0)
+                context['spicy'].append(sim)
+                break
+            if len(context['spicy']) >= 8:
+                break
+    return render(request, 'decks/recommendations.html', context)

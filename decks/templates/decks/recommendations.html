@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Deck Recommendations{% endblock %}
+{% block pagetitle %}Deck Recommendations{% endblock %}
+{% block content %}
+<div class="container">
+  <form action="{% url 'decks:recommendations' %}" method="post">
+    <div class="row">
+      <div class="col-xs-2 col-sm-1"><label for="format" class="control-label">Format</label>:</div>
+      <div class="col-xs-5 col-sm-5">
+        <select id="format" name="format" class="form-control input-sm">
+          <option></option>
+          {% for cformat in current_formats %}
+            <option value="{{cformat.format}}" {% if cformat.id == format.id %}selected{%endif%}>{{cformat.formatname}}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+        Card List 
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-6">
+        <textarea name="cardlist" id="cardlist" class="form-control" rows="4">{% for card in card_list %}{{card}}
+{% endfor %}</textarea>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+        <button type="submit" class="btn btn-success">Go</button>
+        {% csrf_token %}
+      </div>
+    </div>
+  </form>
+  <div class="row">
+    <div class="col-xs-12">
+      <h2>Seed Cards</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="container-fluid">
+        <div class="row">
+          {% for scard in seeds %}
+            {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+            {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+            {% if forloop.counter0|divisibleby:2 %}<div class="clearfix visible-xs"></div>{% endif %}
+            <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+              <div class="text-center"><a href="{% url 'cards:detail' scard.multiverseid scard.url_slug %}" class="detail-card-list-item"><img class="grid_cardimage" src="{{ scard.img_url }}" alt=" scard.basecard.physicalcard.get_card_name }}"/></a></div>
+              <div class="text-center"><a href="{% url 'cards:detail' scard.multiverseid scard.url_slug %}" class="detail-card-list-item">{{scard.basecard.physicalcard.get_card_name}}</a></div>
+            </div>
+          {% empty %}
+            <div class="col-xs-12">Nothing for ya, yet...</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <h2>Recommendations</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="container-fluid">
+        <div class="row">
+          {% for rcard in recommendations %}
+            {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+            {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+            {% if forloop.counter0|divisibleby:2 %}<div class="clearfix visible-xs"></div>{% endif %}
+            <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+              <div class="text-center"><a href="{% url 'cards:detail' rcard.multiverseid rcard.url_slug %}" class="detail-card-list-item"><img class="grid_cardimage" src="{{ rcard.img_url }}" alt=" rcard.basecard.physicalcard.get_card_name }}"/></a></div>
+              <div class="text-center"><a href="{% url 'cards:detail' rcard.multiverseid rcard.url_slug %}" class="detail-card-list-item">{{rcard.basecard.physicalcard.get_card_name}}</a></div>
+              <div class="text-center">Confidence: {{rcard.annotations.match_confidence|floatformat:"2"}}</a></div>
+            </div>
+          {% empty %}
+            <div class="col-xs-12">Nothing for ya, yet...</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <h2>Get Spicy!</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="container-fluid">
+        <div class="row">
+          {% for rcard in spicy %}
+            {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+            {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+            {% if forloop.counter0|divisibleby:2 %}<div class="clearfix visible-xs"></div>{% endif %}
+            <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+              <div class="text-center"><a href="{% url 'cards:detail' rcard.multiverseid rcard.url_slug %}" class="detail-card-list-item"><img class="grid_cardimage" src="{{ rcard.img_url }}" alt=" rcard.basecard.physicalcard.get_card_name }}"/></a></div>
+              <div class="text-center"><a href="{% url 'cards:detail' rcard.multiverseid rcard.url_slug %}" class="detail-card-list-item">{{rcard.basecard.physicalcard.get_card_name}}</a></div>
+              <div class="text-center">Spiciness: {{rcard.annotations.spicy_score|floatformat:"2"}}</a></div>
+            </div>
+          {% empty %}
+            <div class="col-xs-12">Nothing for ya, yet...</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

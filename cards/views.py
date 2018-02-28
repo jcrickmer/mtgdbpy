@@ -987,7 +987,9 @@ def battle(request, format="redirect"):
         else:
             # 1/3 of the time, let's pick a card that is similar and in this format
             logger.debug("L806 Picking an opponent to {} based on simliar cards.".format(str(first_card['basecard_id'])))
-            query_params['similar_pcard_ids'] = card_a.basecard.physicalcard.find_similar_card_ids(max_results=simcard_max_results)
+            query_params['similar_pcard_ids'] = [
+                sqr.pk for sqr in card_a.basecard.physicalcard.find_similar_card_ids(
+                    max_results=simcard_max_results)]
             #sqls = 'SELECT sbc.id, cr.mu, cr.sigma, bc.physicalcard_id, RAND() r FROM similarphysicalcard AS spc JOIN basecard bc ON spc.physicalcard_id = bc.physicalcard_id JOIN basecard sbc ON sbc.physicalcard_id = spc.sim_physicalcard_id AND sbc.cardposition IN (\'F\',\'L\',\'T\') JOIN formatbasecard simfbc ON sbc.id = simfbc.basecard_id AND simfbc.format_id = %(formatid)s JOIN cardrating cr ON cr.physicalcard_id = sbc.physicalcard_id AND cr.format_id = simfbc.format_id  WHERE bc.cardposition IN (\'F\',\'L\',\'T\') AND bc.id = %(cardabcid)s ORDER BY r ASC LIMIT 1'
             sqls = '''SELECT bc.id, cr.mu, cr.sigma, pc.id, RAND() r FROM physicalcard AS pc JOIN cardrating AS cr ON cr.physicalcard_id = pc.id JOIN basecard bc ON bc.physicalcard_id = pc.id JOIN formatbasecard AS fbc ON fbc.basecard_id = bc.id WHERE fbc.format_id = %(formatid)s AND pc.id IN %(similar_pcard_ids)s ORDER BY r ASC LIMIT 1'''
         logger.debug("Second Card SQL: " + sqls)

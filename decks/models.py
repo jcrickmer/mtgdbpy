@@ -176,7 +176,7 @@ class Deck(models.Model):
                 # getting close! Now let's see if it's a real card
                 # Let's do some quick clean-up of the card name...
                 card_name = line_match.group(4).strip()
-                card_name = self._fix_bad_spelling(card_name)
+                card_name = Deck._fix_bad_spelling(card_name)
                 pc_cache_key = u'cardname_' + card_name.replace(' ', '_')
                 pc = cache.get_or_set(pc_cache_key, PhysicalCard.objects.filter(basecard__name__iexact=card_name).first(), 60 * 60 * 24)
                 if pc is not None:
@@ -202,14 +202,49 @@ class Deck(models.Model):
                 #sys.stderr.write("dc save: " + str(dc) + "\n")
                 dc.save()
 
-    def _fix_bad_spelling(self, cardname):
+    @staticmethod
+    def read_cards_from_text(cardlist, throw_exception=True):
+        # REVISIT! This is code-copy of set_cards_from_text as a static method. Need to get some better re-use here.
+        new_cards = list()
+        exceptions = list()
+        for line in cardlist.splitlines():
+            is_sb = False
+            is_cz = False
+            card_count = 1
+            line = line.strip().lower()
+            line_match = Deck.req.match(line)
+            if line_match:
+                is_sb = (line_match.group(1) and 'sb:' in line.lower()) or False
+                is_cz = (line_match.group(1) and 'cz:' in line.lower()) or False
+                card_count = line_match.group(3) or 1
+                # getting close! Now let's see if it's a real card
+                # Let's do some quick clean-up of the card name...
+                card_name = line_match.group(4).strip()
+                card_name = Deck._fix_bad_spelling(card_name)
+                pc_cache_key = u'cardname_' + card_name.replace(' ', '_')
+                pc = cache.get_or_set(pc_cache_key, PhysicalCard.objects.filter(basecard__name__iexact=card_name).first(), 60 * 60 * 24)
+                if pc is not None:
+                    # winner!
+                    new_cards.append(pc)
+                else:
+                    # throw an exception if we don't know it
+                    ex = Deck.CardNotFoundException(line_match.group(4))
+                    exceptions.append(ex)
+
+        # if no exceptions, then clear current DeckCards and set the ones that we just parsed
+        if len(exceptions) > 0 and throw_exception:
+            raise Deck.CardsNotFoundException(exceptions)
+        return new_cards
+
+    @staticmethod
+    def _fix_bad_spelling(cardname):
         for sillyapos in [u'\u2019', r'\u2019', '\\' + 'u2019', u'’']:
             cardname = cardname.replace(sillyapos, u"'")
         for sillydash in [u'–', u'—', u'‒', u'-']:
             cardname = cardname.replace(sillydash, '-')
 
-        if cardname.lower() in self._spelling_fixes:
-            cardname = self._spelling_fixes[cardname]
+        if cardname.lower() in Deck._spelling_fixes:
+            cardname = Deck._spelling_fixes[cardname]
         cardname = cardname.replace(u'\u00C6', 'Ae')
         cardname = cardname.replace(u'\u00E6', 'ae')
         return cardname
@@ -761,3 +796,21 @@ class DeckCluster(models.Model):
     class Meta:
         managed = True
         db_table = 'deckcluster'
+
+from .deckcardrecommender import DeckCardRecommender
+
+
+class Recommender(DeckCardRecommender):
+
+    def __init__(self):
+        super(Recommender, self).__init__(connection.cursor())
+
+    def get_recommended_cards(self, pcard_collection, format):
+        def ann(card, score):
+            card.annotations = dict()
+            card.annotations['score'] = score
+            card.annotations['match_confidence'] = 500.0 + (2.0 * score)
+            return card
+        vals = self.get_recommendations([pc.id for pc in pcard_collection], format.formatname, k=24)
+        result = [ann(PhysicalCard.objects.get(pk=val[0]).get_latest_card(), val[1]) for val in vals]
+        return result
