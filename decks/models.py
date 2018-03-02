@@ -805,12 +805,22 @@ class Recommender(DeckCardRecommender):
     def __init__(self):
         super(Recommender, self).__init__(connection.cursor())
 
-    def get_recommended_cards(self, pcard_collection, format):
-        def ann(card, score):
+    def get_recommended_cards(self, pcard_collection, format, include_lands=True):
+        # Ideally, I would like to move this include_lands feature down to the raw sql for recommendations to help with performance/speed. REVISIT
+        k = 24
+        if not include_lands:
+            k = 48
+        vals = self.get_recommendations([pc.id for pc in pcard_collection], format.formatname, k=k)
+        result = list()
+        stop_it = 0
+        for val in vals:
+            card = PhysicalCard.objects.get(pk=val[0]).get_latest_card()
             card.annotations = dict()
-            card.annotations['score'] = score
-            card.annotations['match_confidence'] = 500.0 + (2.0 * score)
-            return card
-        vals = self.get_recommendations([pc.id for pc in pcard_collection], format.formatname, k=24)
-        result = [ann(PhysicalCard.objects.get(pk=val[0]).get_latest_card(), val[1]) for val in vals]
+            card.annotations['score'] = val[1]
+            card.annotations['match_confidence'] = 500.0 + (2.0 * val[1])
+            if include_lands or not card.basecard.is_land():
+                result.append(card)
+                stop_it = stop_it + 1
+                if stop_it == 24:
+                    break
         return result

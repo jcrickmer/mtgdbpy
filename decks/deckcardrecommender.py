@@ -42,7 +42,7 @@ class DeckCardRecommender(object):
             deck_ids = self.get_decks_for_physicalcard(ccc, formatname, result=deck_ids)
 
         deck_ids = self._sort_recommendations(deck_ids)
-
+        
         pcard_scores = dict()
         it_count = 0
         for deck_id in deck_ids:

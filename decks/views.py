@@ -141,6 +141,9 @@ def recommendations(request):
     # REVISIT - unsafe index
     context['format'] = context['current_formats'][0]
 
+    include_lands = 'exclude_lands' not in request.POST
+    context['exclude_lands'] = not include_lands
+
     pcs = list()
     if 'format' in request.POST:
         for ff in context['current_formats']:
@@ -159,7 +162,7 @@ def recommendations(request):
     context['spicy'] = list()
     if len(pcs):
         dcr = Recommender()
-        context['recommendations'] = dcr.get_recommended_cards(pcs, context['format'])
+        context['recommendations'] = dcr.get_recommended_cards(pcs, context['format'], include_lands=include_lands)
 
         # get spicy...
         basic_supertype = Supertype.objects.filter(supertype='Basic').first()
