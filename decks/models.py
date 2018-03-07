@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.db import models
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.db.models import Max, Min, Count, Sum, Avg
@@ -18,6 +18,8 @@ import sys
 from django.core.cache import cache
 from django.utils.functional import cached_property
 
+from .deckcardrecommender import DeckCardRecommender
+from .deckanalyzer import DeckManaDrawAnalyzer
 
 import time
 
@@ -155,7 +157,7 @@ class Deck(models.Model):
     # Wear // Tear
     req = re.compile(r'^([SsCc][BbZz]:\s*)?((\d+)x?\s+)?([^\+/]+)', re.UNICODE)
 
-    def set_cards_from_text(self, cardlist):
+    def set_cards_from_text(self, cardlist, commit=True):
         '''Go through each line and try to determine what the card is
         and how many should be present. If there are no errors, then
         delete/replace all of the existing DeckCards with these new
@@ -200,12 +202,13 @@ class Deck(models.Model):
             DeckCard.objects.filter(deck=self).delete()
             for dc in new_deckcards:
                 #sys.stderr.write("dc save: " + str(dc) + "\n")
-                dc.save()
+                if commit:
+                    dc.save()
 
     @staticmethod
     def read_cards_from_text(cardlist, throw_exception=True):
         # REVISIT! This is code-copy of set_cards_from_text as a static method. Need to get some better re-use here.
-        new_cards = list()
+        new_cards = dict()
         exceptions = list()
         for line in cardlist.splitlines():
             is_sb = False
@@ -225,15 +228,18 @@ class Deck(models.Model):
                 pc = cache.get_or_set(pc_cache_key, PhysicalCard.objects.filter(basecard__name__iexact=card_name).first(), 60 * 60 * 24)
                 if pc is not None:
                     # winner!
-                    new_cards.append(pc)
+                    new_cards[pc.id] = {"physicalcard": pc, "card_count": card_count}
                 else:
                     # throw an exception if we don't know it
                     ex = Deck.CardNotFoundException(line_match.group(4))
                     exceptions.append(ex)
 
         # if no exceptions, then clear current DeckCards and set the ones that we just parsed
-        if len(exceptions) > 0 and throw_exception:
-            raise Deck.CardsNotFoundException(exceptions)
+        if len(exceptions) > 0:
+            if throw_exception:
+                raise Deck.CardsNotFoundException(exceptions)
+            else:
+                new_cards["errors"] = Deck.CardsNotFoundException(exceptions)
         return new_cards
 
     @staticmethod
@@ -797,8 +803,6 @@ class DeckCluster(models.Model):
         managed = True
         db_table = 'deckcluster'
 
-from .deckcardrecommender import DeckCardRecommender
-
 
 class Recommender(DeckCardRecommender):
 
@@ -806,7 +810,8 @@ class Recommender(DeckCardRecommender):
         super(Recommender, self).__init__(connection.cursor())
 
     def get_recommended_cards(self, pcard_collection, format, include_lands=True):
-        # Ideally, I would like to move this include_lands feature down to the raw sql for recommendations to help with performance/speed. REVISIT
+        # Ideally, I would like to move this include_lands feature down to the raw
+        # sql for recommendations to help with performance/speed. REVISIT
         k = 24
         if not include_lands:
             k = 48
@@ -824,3 +829,84 @@ class Recommender(DeckCardRecommender):
                 if stop_it == 24:
                     break
         return result
+
+
+class Analyzer(DeckManaDrawAnalyzer):
+
+    def __init__(self, format=None):
+        super(Analyzer, self).__init__(connection.cursor())
+        self.corpus = dict()
+        self.format = format
+        self.loadFormat()
+
+    def loadFormat(self):
+        cache_key = 'deckmanaanalysis_{}'.format(self.format.formatname)
+        lookback_timeframe = datetime.now() - timedelta(days=365)
+        if len(self.corpus) == 0 and cache.get(cache_key) is None:
+            deck_ids = list()
+            deck_qs = Deck.objects.filter(format__formatname=self.format.formatname, format__start_date__gte=lookback_timeframe)
+            #self.cursor.execute('SELECT id FROM deck WHERE format_id IN (65,66, 77)')
+            for ddd in deck_qs:
+                deck_ids.append(ddd.id)
+            for deck_id in deck_ids:
+                results = self.analyze_deck_by_id(deck_id=deck_id)
+                self.corpus[deck_id] = results
+            sys.stderr.write(
+                "Deck Analyzer for {} has {} decks and is {} bytes\n".format(
+                    self.format.formatname,
+                    len(deck_ids),
+                    sys.getsizeof(
+                        self.corpus)))
+            cache.set(cache_key, self.corpus, 60*60*12)
+        else:
+            self.corpus = cache.get(cache_key)
+
+    def analyze(self, deck):
+        # deck could be a dictionary of physicalcard_id keys, and a {physicalcard,
+        # card_count} dictionary, or it could be a Deck from the database. Let's
+        # check...
+        query = {
+            'b_f': 8,
+            "b2_f": 4,
+            "b3_f": 4,
+            "cmc": 1.5466666666666666,
+            "cmc1_f": 16,
+            "cmc2_f": 20,
+            "cmc3_f": 20,
+            "g1_f": 4,
+            "g3_f": 2,
+            "r3_f": 9,
+            "u2_f": 8,
+            "u3_f": 9,
+            "w1_f": 4,
+            "w2_f": 12,
+            "w3_f": 17}
+        if isinstance(deck, Deck):
+            # REVISIT
+            pass
+        elif isinstance(deck, dict):
+            table = list()
+            for key in deck:
+                if isinstance(deck[key], dict) and 'physicalcard' in deck[key]:
+                    physicalcard = deck[key]['physicalcard']
+                    basecard = physicalcard.get_face_basecard()
+                    # follows format of rows from DeckManaDrawAnalyzer. Archiac, I know.
+                    table.append(
+                        (basecard.id,
+                         key,
+                         physicalcard.get_card_name(),
+                         deck[key]['card_count'],
+                            basecard.mana_cost,
+                            basecard.cmc))
+                else:
+                    sys.stderr.write("Analyzer.analyze is dealing with a {} -> {}\n".format(key, deck[key]))
+            query = self.analyze_deck_by_iterable(table, dict())
+        rawresults = self.score(query, self.corpus)
+        result = list()
+        limcnt = 0
+        for raw in rawresults:
+            result.append((Deck.objects.get(pk=raw[0]), raw[1]))
+            limcnt = limcnt + 1
+            if limcnt == 9:
+                break
+        return result, query

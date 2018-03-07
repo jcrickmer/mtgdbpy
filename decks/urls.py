@@ -14,4 +14,5 @@ urlpatterns = [
     url(r'^tournament/$', TournamentListView.as_view(), name='tournaments'),
     url(r'^tournament/(?P<tournament_id>[0-9]+)/$', views.tournament, name='tournament'),
     url(r'^crafter/$', views.recommendations, name='recommendations'),
+    url(r'^manabase/$', views.manabaseanalysis, name='manabaseanalysis'),
 ]

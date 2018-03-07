@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Mana Base Recommendations{% endblock %}
+{% block pagetitle %}Mana Base Recommendations{% endblock %}
+{% block content %}
+<div class="container">
+  <form action="{% url 'decks:manabaseanalysis' %}" method="post">
+    <div class="row">
+      <div class="col-xs-2 col-sm-1"><label for="format" class="control-label">Format</label>:</div>
+      <div class="col-xs-5 col-sm-5">
+        <select id="format" name="format" class="form-control input-sm">
+          <option></option>
+          {% for cformat in current_formats %}
+            <option value="{{cformat.format}}" {% if cformat.id == format.id %}selected{%endif%}>{{cformat.formatname}}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    {% for error in errors.cnfes %}
+      <div class="row">
+        <div class="col-xs-12">
+          {{error}}
+        </div>
+      </div>
+    {% endfor %}
+    <div class="row">
+      <div class="col-xs-12">
+        <label for="cardlist">Card List</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12 col-sm-6">
+        <textarea name="cardlist" id="cardlist" class="form-control" rows="4">{% for card in card_list %}{{card}}
+{% endfor %}</textarea>
+      </div>
+      <div class="col-xs-12 col-sm-6">
+        <p class"helper-text">The recommender will take cards on each line in the format of "3 Lightning Bolt". Highly recommend putting most if not all of your cards in here, including sideboard. So, if you think that you are going to play 22 lands, put in 53 other cards. Do not include lands in this list.</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+        <button type="submit" class="btn btn-success">Go</button>
+        {% csrf_token %}
+      </div>
+    </div>
+  </form>
+  {% if analysis %}
+    <div class="row">
+      <div class="col-xs-12">
+        <script>analysis = {{analysis_json|safe}};</script>
+        White pips: {{analysis|get_item:"w_f"}}<br>
+        Blue pips: {{analysis|get_item:"u_f"}}<br>
+        Black pips: {{analysis|get_item:"b_f"}}<br>
+        Red pips: {{analysis|get_item:"r_f"}}<br>
+        Green pips: {{analysis|get_item:"g_f"}}<br>
+        Colorless pips: {{analysis|get_item:"c_f"}}<br>
+      </div>
+    </div>
+  {% endif %}
+  <div class="row">
+    <div class="col-xs-12">
+      <h2>Recommendations</h2>
+    </div>
+  </div>
+  {% if deckcards|length > 0 %}
+    <div class="row">
+      <div class="col-xs-12">
+        Recommendation Match Score: {{recommendation_score}}
+        {% if recommendation_score < 10.0 %}
+          Near perfect match!
+        {% elif recommendation_score < 50.0 %}
+          This should be good.
+        {% elif recommendation_score < 100.0 %}
+          Maybe a little tweaking to this list...
+        {% elif recommendation_score < 175.0 %}
+          I had a hard time getting a good solution.
+        {% else %}
+          These results a suspect.
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="container-fluid">
+        <div class="row">
+          {% for dcard in deckcards %}
+            {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+            {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
+            {% if forloop.counter0|divisibleby:2 %}<div class="clearfix visible-xs"></div>{% endif %}
+            <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
+              <div class="text-center"><a href="{% url 'cards:detail' dcard.physicalcard.get_latest_card.multiverseid dcard.physicalcard.get_latest_card.url_slug %}" class="detail-card-list-item"><img class="grid_cardimage" src="{{ dcard.physicalcard.get_latest_card.img_url }}" alt="{{ dcard.physicalcard.get_card_name }}"/></a></div>
+              <div class="text-center"><a href="{% url 'cards:detail' dcard.physicalcard.get_latest_card.multiverseid dcard.physicalcard.get_latest_card.url_slug %}" class="detail-card-list-item">{{dcard.cardcount}} {{dcard.physicalcard.get_card_name}}</a></div>
+            </div>
+          {% empty %}
+            <div class="col-xs-12">Nothing for ya, yet...</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

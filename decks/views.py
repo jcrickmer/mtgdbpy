@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from django.shortcuts import render
-from decks.models import Deck, DeckCluster, DeckClusterDeck, Tournament, TournamentDeck, Recommender
+from decks.models import Deck, DeckCluster, DeckClusterDeck, Tournament, TournamentDeck, Recommender, Analyzer, DeckCard
 from cards.models import PhysicalCard, Format, Supertype, FormatBasecard
 from django.http import Http404
 from django.views.generic import ListView
@@ -10,6 +11,9 @@ from django.db.models import Max, Min, Count, Sum, Avg
 from django.conf import settings
 from datetime import datetime, timedelta
 import sys
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+from django.utils.encoding import smart_text
 
 BASE_CONTEXT = {'settings': {
     'HOME_URL': settings.HOME_URL,
@@ -152,7 +156,10 @@ def recommendations(request):
                 break
     if 'cardlist' in request.POST:
         try:
-            pcs = Deck.read_cards_from_text(request.POST['cardlist'], throw_exception=False)
+            pcs_dict = Deck.read_cards_from_text(request.POST['cardlist'], throw_exception=False)
+            for key in pcs_dict:
+                if key != 'errors' and 'physicalcard' in pcs_dict[key]:
+                    pcs.append(pcs_dict['physicalcard'])
         except Deck.CardsNotFoundException as cnfe:
             pass
         #sys.stderr.write("cardlist is '{}'".format(pcs))
@@ -199,3 +206,63 @@ def recommendations(request):
             if len(context['spicy']) >= 8:
                 break
     return render(request, 'decks/recommendations.html', context)
+
+
+def manabaseanalysis(request):
+    context = BASE_CONTEXT.copy()
+
+    context['current_formats'] = Format.objects.filter(start_date__lte=datetime.today(),
+                                                       end_date__gte=datetime.today()).order_by('format')
+    # REVISIT - unsafe index
+    context['format'] = context['current_formats'][0]
+
+    card_list = '''1 Pithing Needle
+4 Chromatic Star
+1 Ancient Grudge
+1 Boil
+3 Nature's Claim
+3 Pyroclasm
+4 Expedition Map
+3 Oblivion Stone
+4 Sylvan Scrying
+4 Ancient Stirrings
+1 Relic of Progenitus
+4 Wurmcoil Engine
+3 Thragtusk
+4 Chromatic Sphere
+4 Karn Liberated
+1 Grafdigger's Cage
+2 Ugin, the Spirit Dragon
+2 Ulamog, the Ceaseless Hunger
+2 Warping Wail
+1 Kozilek's Return
+1 World Breaker'''
+
+    if 'format' in request.POST:
+        for ff in context['current_formats']:
+            if request.POST['format'] == ff.format:
+                context['format'] = ff
+                break
+    if 'cardlist' in request.POST:
+        card_list = request.POST['cardlist']
+    deck_cards = Deck.read_cards_from_text(card_list, throw_exception=False)
+
+    if 'errors' in deck_cards:
+        context['errors'] = deck_cards['errors']
+    context['card_list'] = list()
+    for key in deck_cards:
+        if key != 'errors' and isinstance(deck_cards[key], dict) and 'physicalcard' in deck_cards[key]:
+            context['card_list'].append('{} {}'.format(deck_cards[key]['card_count'], deck_cards[key]['physicalcard'].get_card_name()))
+
+    analyzer = Analyzer(format=context['format'])
+    deck_score_tuples, query = analyzer.analyze(deck_cards)
+    context['analysis'] = query
+    context['analysis_json'] = json.dumps(query, sort_keys=True, indent=2, cls=DjangoJSONEncoder)
+    context['deckcards'] = list()
+    if len(deck_score_tuples):
+        all_deckcards = DeckCard.objects.filter(deck=deck_score_tuples[0][0])
+        context['recommendation_score'] = deck_score_tuples[0][1]
+        for dc in all_deckcards:
+            if dc.physicalcard.get_face_basecard().is_land():
+                context['deckcards'].append(dc)
+    return render(request, 'decks/manabase.html', context)
