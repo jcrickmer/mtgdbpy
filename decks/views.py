@@ -263,7 +263,7 @@ def manabaseanalysis(request):
     context['deckcards'] = list()
     if len(deck_score_tuples):
         all_deckcards = DeckCard.objects.filter(deck=deck_score_tuples[0][0])
-        context['recommendation_score'] = deck_score_tuples[0][1]
+        context['recommendation_score'] = 1000.0 - deck_score_tuples[0][1]
         for dc in all_deckcards:
             if dc.physicalcard.get_face_basecard().is_land():
                 context['deckcards'].append(dc)

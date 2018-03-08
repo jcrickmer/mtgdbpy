@@ -73,10 +73,10 @@ class DeckManaDrawAnalyzer(object):
         return doc
 
     def distance_strat(self, val):
-        return float(val) * 1.75
+        return float(val) * val * 0.45
 
     def pip_distance_strat(self, val):
-        return float(val) * val * 0.8
+        return float(val) * val * 0.85
 
     def score(self, query, corpus):
         # loop through the corpus, finding things that are close and scoring them.

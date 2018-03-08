@@ -4,75 +4,194 @@
 {% block pagetitle %}Mana Base Recommendations{% endblock %}
 {% block content %}
 <div class="container">
-  <form action="{% url 'decks:manabaseanalysis' %}" method="post">
-    <div class="row">
-      <div class="col-xs-2 col-sm-1"><label for="format" class="control-label">Format</label>:</div>
-      <div class="col-xs-5 col-sm-5">
-        <select id="format" name="format" class="form-control input-sm">
-          <option></option>
-          {% for cformat in current_formats %}
-            <option value="{{cformat.format}}" {% if cformat.id == format.id %}selected{%endif%}>{{cformat.formatname}}</option>
-          {% endfor %}
-        </select>
-      </div>
+  <div class="row">
+    <div class="col-xs-12 col-sm-6">
+      <form action="{% url 'decks:manabaseanalysis' %}" method="post">
+        <div class="row">
+          <div class="col-xs-4 col-sm-2"><label for="format" class="control-label">Format</label>:</div>
+          <div class="col-xs-10 col-sm-10">
+            <select id="format" name="format" class="form-control input-sm">
+              <option></option>
+              {% for cformat in current_formats %}
+                <option value="{{cformat.format}}" {% if cformat.id == format.id %}selected{%endif%}>{{cformat.formatname}}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        {% for error in errors.cnfes %}
+          <div class="row">
+            <div class="col-xs-12">
+              {{error}}
+            </div>
+          </div>
+        {% endfor %}
+        <div class="row">
+          <div class="col-xs-12">
+            <label for="cardlist">Card List</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-12">
+            <textarea name="cardlist" id="cardlist" class="form-control" rows="16">{% for card in card_list %}{{card}}
+{% endfor %}
+</textarea>
+          </div>
+        </div>
+        <div class="row" style="margin-top: 12px;">
+          <div class="col-xs-12">
+            <button type="submit" class="btn btn-success">Go</button>
+            {% csrf_token %}
+          </div>
+        </div>
+      </form>
     </div>
-    {% for error in errors.cnfes %}
+    <div class="col-xs-12 col-sm-6">
       <div class="row">
         <div class="col-xs-12">
-          {{error}}
+          <p class"helper-text">The recommender will take cards on each line in the format of "3 Lightning Bolt". Highly recommend putting most if not all of your cards in here, including sideboard. So, if you think that you are going to play 22 lands, put in 53 other cards. Do not include lands in this list.</p>
         </div>
       </div>
-    {% endfor %}
-    <div class="row">
-      <div class="col-xs-12">
-        <label for="cardlist">Card List</label>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-xs-12 col-sm-6">
-        <textarea name="cardlist" id="cardlist" class="form-control" rows="4">{% for card in card_list %}{{card}}
-{% endfor %}</textarea>
-      </div>
-      <div class="col-xs-12 col-sm-6">
-        <p class"helper-text">The recommender will take cards on each line in the format of "3 Lightning Bolt". Highly recommend putting most if not all of your cards in here, including sideboard. So, if you think that you are going to play 22 lands, put in 53 other cards. Do not include lands in this list.</p>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-xs-12">
-        <button type="submit" class="btn btn-success">Go</button>
-        {% csrf_token %}
-      </div>
-    </div>
-  </form>
-  {% if analysis %}
-    <div class="row">
-      <div class="col-xs-12">
+      {% if analysis %}
         <script>analysis = {{analysis_json|safe}};</script>
-        White pips: {{analysis|get_item:"w_f"}}<br>
-        Blue pips: {{analysis|get_item:"u_f"}}<br>
-        Black pips: {{analysis|get_item:"b_f"}}<br>
-        Red pips: {{analysis|get_item:"r_f"}}<br>
-        Green pips: {{analysis|get_item:"g_f"}}<br>
-        Colorless pips: {{analysis|get_item:"c_f"}}<br>
-      </div>
+        <div class="row">
+          <div class="col-xs-12">
+            <div id="chart"></div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-12">
+            <div id="colordemandchart"></div>
+          </div>
+        </div>
+        <script type="text/javascript">
+// Load the Visualization API and the piechart package.
+google.load('visualization', '1.1', {'packages':['corechart', 'bar']}); 
+        </script>
+        <script type="text/javascript">
+google.setOnLoadCallback(drawDeckColorStatsChart);   
+function drawDeckColorStatsChart() {
+    // Create the data table. 
+    var data = new google.visualization.DataTable(); 
+    data.addColumn('string', 'Color'); 
+    performatter = new google.visualization.NumberFormat({pattern:'#.##%'}); 
+    data.addColumn({type:'number', label:'% of Pips', pattern:performatter}); 
+
+    var total_pips = analysis['w_f'] + analysis['u_f'] + analysis['b_f'] + analysis['r_f'] + analysis['g_f'] + analysis['c_f']; 
+    data.addRow(['White', analysis['w_f'] / total_pips]); 
+    data.addRow(['Blue', analysis['u_f'] / total_pips]); 
+    data.addRow(['Black', analysis['b_f'] / total_pips]); 
+    data.addRow(['Red', analysis['r_f'] / total_pips]); 
+    data.addRow(['Green', analysis['g_f'] / total_pips]); 
+    data.addRow(['Colorless', analysis['c_f'] / total_pips]); 
+
+    performatter.format(data, 1) 
+    var options = {
+        title: 'Deck Casting Color Composition',
+        chart: {
+          /*title: '% of Pips in Deck',*/
+        }, 
+        legend: { position: 'right', }, 
+        curveType: 'function', 
+        fontName: 'Arial', 
+        colors: ['#fee0ae','#2098c9','#070409','#bf1521','#438621','#808080'], 
+        width: 450,
+        height: 360, 
+        series: {
+          // Gives each series an axis name that matches the Y-axis below. 
+          0: {axis: '% of Pips', targetAxisIndex: 0, curveType: 'function', fontName: 'Arial', }, 
+        }, 
+        axes: {
+          // Adds labels to each axis; they don't have to match the axis names. 
+          y: {
+            Decks: {label: '% of Decks', }, 
+          }
+        }, 
+        hAxis: { title: 'Format Start Date', 
+                 textStyle: { fontName: 'Arial', }, 
+                 titleTextStyle: { fontName: 'Arial', }, 
+        }, 
+        vAxes: [{title: '% of Decks', 
+                 gridlines: {count: 4}, 
+                 minValue: 0.0, 
+                 titleTextStyle: { color: '#4d5f8b', fontName: 'Arial', }, 
+                 textStyle: { color: '#4d5f8b', fontName: 'Arial', }, 
+                 viewWindow: { min: 0.0 }, 
+                 baseline: 0.0, 
+                 format:'#.###%' 
+                }, 
+        ], 
+        theme: 'material' 
+    }; 
+    if (options.width < 800) {
+        options.legend.position = 'bottom'; 
+        options.height = options.height + 30; 
+    }
+    //var lchart = new google.charts.Line(document.getElementById('chart')); 
+    //lchart.draw(data, google.charts.Line.convertOptions(options)); 
+    var pchart = new google.visualization.PieChart(document.getElementById('chart')); 
+    pchart.draw(data, options); 
+}
+        </script>
+        <script>
+/* bug in called the second graph directly. Guess Google needs to wait a little bit for it to show... */
+google.setOnLoadCallback(function(){setTimeout(drawDeckColorDemandChart,500);});   
+function drawDeckColorDemandChart() {
+    // Create the data table. 
+    var data = new google.visualization.DataTable(); 
+    data.addColumn('string', 'CMC'); 
+    data.addColumn('number', 'White'); 
+    data.addColumn('number', 'Blue'); 
+    data.addColumn('number', 'Black'); 
+    data.addColumn('number', 'Red'); 
+    data.addColumn('number', 'Green'); 
+    data.addColumn('number', 'Colorless'); 
+    var colors = {'w':'white','u':'blue','b':'black','r':'red','g':'green','c':'colorless'}; 
+    for (var cmc = 1; cmc < 17; cmc++) {
+        var rrow = ['' + cmc, 
+                    analysis['w' + cmc + '_f'] / analysis['cmc' + cmc + '_f'],
+                    analysis['u' + cmc + '_f'] / analysis['cmc' + cmc + '_f'],
+                    analysis['b' + cmc + '_f'] / analysis['cmc' + cmc + '_f'],
+                    analysis['r' + cmc + '_f'] / analysis['cmc' + cmc + '_f'],
+                    analysis['g' + cmc + '_f'] / analysis['cmc' + cmc + '_f'],
+                    analysis['c' + cmc + '_f'] / analysis['cmc' + cmc + '_f'],
+                   ];
+        if (cmc < 3 || rrow[1] + rrow[2] + rrow[3] + rrow[4] + rrow[5] + rrow[6] > 0) {
+            data.addRow(rrow);
+        }
+    }
+    var options = {
+        theme: 'material',
+        height: 380,
+        width: 450,
+        title: 'Color Casting Demand by CMC',
+        isStacked: false,
+        colors: ['#fee0ae','#2098c9','#070409','#bf1521','#438621','#808080'], 
+        vAxis: {minValue: 0, title: 'Average Pips Required'}, 
+        hAxis: {title: 'Card CMC'}
+    };
+    var bchart = new google.visualization.ColumnChart(document.getElementById('colordemandchart')); 
+    bchart.draw(data, options); 
+}
+        </script>
+      {% endif %}
     </div>
-  {% endif %}
+  </div>
   <div class="row">
     <div class="col-xs-12">
       <h2>Recommendations</h2>
     </div>
   </div>
   {% if deckcards|length > 0 %}
-    <div class="row">
+    <div class="row" style="margin-top: 8px; margin-bottom: 16px;">
       <div class="col-xs-12">
-        Recommendation Match Score: {{recommendation_score}}
-        {% if recommendation_score < 10.0 %}
+        <span>Recommendation Match Score: {{recommendation_score|floatformat:2}}</span> - 
+        {% if recommendation_score > 990.0 %}
           Near perfect match!
-        {% elif recommendation_score < 50.0 %}
+        {% elif recommendation_score > 950.0 %}
           This should be good.
-        {% elif recommendation_score < 100.0 %}
+        {% elif recommendation_score > 900.0 %}
           Maybe a little tweaking to this list...
-        {% elif recommendation_score < 175.0 %}
+        {% elif recommendation_score > 825.0 %}
           I had a hard time getting a good solution.
         {% else %}
           These results a suspect.

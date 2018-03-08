@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="robots" content="index, follow">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Graph Test</title>
+    <script>window.origTitle = document.title;</script>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <!-- link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css"> -->
+    <link href="/cn/lavish-bootstrap.css" rel="stylesheet">
+
+    
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); })(window,document,'script','dataLayer','GTM-WN9L8RJ');</script>
+    
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+    <script>
+/* fix bug with Bootstrap and JQuery-UI colliding: http://www.ryadel.com/2015/01/03/using-jquery-ui-bootstrap-togheter-web-page/ */
+$.widget.bridge('uitooltip', $.ui.tooltip);
+$.widget.bridge('uibutton', $.ui.button);
+    </script>
+    <script src="/cn-7a5e79b3/cn.js"></script>
+    <script src="/cn-c675a332/cdb.js"></script>
+    <link rel="stylesheet" href="/cn-ba1ce7d9/cn.css">
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="theme-color" content="#ffffff">
+  </head>
+
+  <body role="document">
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12">
+    
+          <h1>Graph test</h1>
+          <script>
+analysis = {
+  "b0_f": 0.0, 
+  "b10_f": 0.0, 
+  "b11_f": 0.0, 
+  "b12_f": 0.0, 
+  "b13_f": 0.0, 
+  "b14_f": 0.0, 
+  "b15_f": 0.0, 
+  "b16_f": 0.0, 
+  "b17_f": 0.0, 
+  "b1_f": 0.0, 
+  "b2_f": 0.0, 
+  "b3_f": 0.0, 
+  "b4_f": 0.0, 
+  "b5_f": 0.0, 
+  "b6_f": 0.0, 
+  "b7_f": 0.0, 
+  "b8_f": 0.0, 
+  "b9_f": 0.0, 
+  "b_f": 0.0, 
+  "c0_f": 0.0, 
+  "c10_f": 0.0, 
+  "c11_f": 0.0, 
+  "c12_f": 0.0, 
+  "c13_f": 0.0, 
+  "c14_f": 0.0, 
+  "c15_f": 0.0, 
+  "c16_f": 0.0, 
+  "c17_f": 0.0, 
+  "c1_f": 0.0, 
+  "c2_f": 0.0, 
+  "c3_f": 0.0, 
+  "c4_f": 0.0, 
+  "c5_f": 0.0, 
+  "c6_f": 0.0, 
+  "c7_f": 0.0, 
+  "c8_f": 0.0, 
+  "c9_f": 0.0, 
+  "c_f": 0.0, 
+  "cmc": 1.679245283018868, 
+  "cmc0_f": 1.0, 
+  "cmc10_f": 0.0, 
+  "cmc11_f": 0.0, 
+  "cmc12_f": 0.0, 
+  "cmc13_f": 0.0, 
+  "cmc14_f": 0.0, 
+  "cmc15_f": 0.0, 
+  "cmc16_f": 0.0, 
+  "cmc17_f": 0.0, 
+  "cmc1_f": 24.0, 
+  "cmc2_f": 19.0, 
+  "cmc3_f": 9.0, 
+  "cmc4_f": 0.0, 
+  "cmc5_f": 0.0, 
+  "cmc6_f": 0.0, 
+  "cmc7_f": 0.0, 
+  "cmc8_f": 0.0, 
+  "cmc9_f": 0.0, 
+  "cmc_f": 0.0, 
+  "g0_f": 0.0, 
+  "g10_f": 0.0, 
+  "g11_f": 0.0, 
+  "g12_f": 0.0, 
+  "g13_f": 0.0, 
+  "g14_f": 0.0, 
+  "g15_f": 0.0, 
+  "g16_f": 0.0, 
+  "g17_f": 0.0, 
+  "g1_f": 0.0, 
+  "g2_f": 3.0, 
+  "g3_f": 0.0, 
+  "g4_f": 0.0, 
+  "g5_f": 0.0, 
+  "g6_f": 0.0, 
+  "g7_f": 0.0, 
+  "g8_f": 0.0, 
+  "g9_f": 0.0, 
+  "g_f": 3.0, 
+  "r0_f": 0.0, 
+  "r10_f": 0.0, 
+  "r11_f": 0.0, 
+  "r12_f": 0.0, 
+  "r13_f": 0.0, 
+  "r14_f": 0.0, 
+  "r15_f": 0.0, 
+  "r16_f": 0.0, 
+  "r17_f": 0.0, 
+  "r1_f": 22.0, 
+  "r2_f": 26.0, 
+  "r3_f": 8.0, 
+  "r4_f": 0.0, 
+  "r5_f": 0.0, 
+  "r6_f": 0.0, 
+  "r7_f": 0.0, 
+  "r8_f": 0.0, 
+  "r9_f": 0.0, 
+  "r_f": 56.0, 
+  "u0_f": 0.0, 
+  "u10_f": 0.0, 
+  "u11_f": 0.0, 
+  "u12_f": 0.0, 
+  "u13_f": 0.0, 
+  "u14_f": 0.0, 
+  "u15_f": 0.0, 
+  "u16_f": 0.0, 
+  "u17_f": 0.0, 
+  "u1_f": 0.0, 
+  "u2_f": 0.0, 
+  "u3_f": 0.0, 
+  "u4_f": 0.0, 
+  "u5_f": 0.0, 
+  "u6_f": 0.0, 
+  "u7_f": 0.0, 
+  "u8_f": 0.0, 
+  "u9_f": 0.0, 
+  "u_f": 0.0, 
+  "w0_f": 0.0, 
+  "w10_f": 0.0, 
+  "w11_f": 0.0, 
+  "w12_f": 0.0, 
+  "w13_f": 0.0, 
+  "w14_f": 0.0, 
+  "w15_f": 0.0, 
+  "w16_f": 0.0, 
+  "w17_f": 0.0, 
+  "w1_f": 2.0, 
+  "w2_f": 9.0, 
+  "w3_f": 0.0, 
+  "w4_f": 0.0, 
+  "w5_f": 0.0, 
+  "w6_f": 0.0, 
+  "w7_f": 0.0, 
+  "w8_f": 0.0, 
+  "w9_f": 0.0, 
+  "w_f": 11.0, 
+  "x_f": 1.0
+};
+          </script>
+          <script type="text/javascript">
+// Load the Visualization API and the piechart package.
+google.load('visualization', '1.1', {'packages':['corechart', 'bar']}); 
+          </script>
+          <script type="text/javascript">
+google.setOnLoadCallback(drawDeckColorStatsChart);   
+function drawDeckColorStatsChart() {
+    // Create the data table. 
+    var data = new google.visualization.DataTable(); 
+    data.addColumn('string', 'Color'); 
+    performatter = new google.visualization.NumberFormat({pattern:'#.##%'}); 
+    data.addColumn({type:'number', label:'% of Pips', pattern:performatter}); 
+
+    var total_pips = analysis['w_f'] + analysis['u_f'] + analysis['b_f'] + analysis['r_f'] + analysis['g_f'] + analysis['c_f']; 
+    data.addRow(['White', analysis['w_f'] / total_pips]); 
+    data.addRow(['Blue', analysis['u_f'] / total_pips]); 
+    data.addRow(['Black', analysis['b_f'] / total_pips]); 
+    data.addRow(['Red', analysis['r_f'] / total_pips]); 
+    data.addRow(['Green', analysis['g_f'] / total_pips]); 
+    data.addRow(['Colorless', analysis['c_f'] / total_pips]); 
+
+    performatter.format(data, 1) 
+    var options = {
+        title: 'Deck Casting Color Composition',
+        chart: {
+          /*title: '% of Pips in Deck',*/
+        }, 
+        legend: { position: 'right', }, 
+        curveType: 'function', 
+        fontName: 'Arial', 
+        colors: ['#fee0ae','#2098c9','#070409','#bf1521','#438621','#808080'], 
+        width: 450,
+        height: 360, 
+        series: {
+          // Gives each series an axis name that matches the Y-axis below. 
+          0: {axis: '% of Pips', targetAxisIndex: 0, curveType: 'function', fontName: 'Arial', }, 
+        }, 
+        axes: {
+          // Adds labels to each axis; they don't have to match the axis names. 
+          y: {
+            Decks: {label: '% of Decks', }, 
+          }
+        }, 
+        hAxis: { title: 'Format Start Date', 
+                 textStyle: { fontName: 'Arial', }, 
+                 titleTextStyle: { fontName: 'Arial', }, 
+        }, 
+        vAxes: [{title: '% of Decks', 
+                 gridlines: {count: 4}, 
+                 minValue: 0.0, 
+                 titleTextStyle: { color: '#4d5f8b', fontName: 'Arial', }, 
+                 textStyle: { color: '#4d5f8b', fontName: 'Arial', }, 
+                 viewWindow: { min: 0.0 }, 
+                 baseline: 0.0, 
+                 format:'#.###%' 
+                }, 
+        ], 
+        theme: 'material' 
+    }; 
+    if (options.width < 800) {
+        options.legend.position = 'bottom'; 
+        options.height = options.height + 30; 
+    }
+    //var lchart = new google.charts.Line(document.getElementById('chart')); 
+    //lchart.draw(data, google.charts.Line.convertOptions(options)); 
+    var pchart = new google.visualization.PieChart(document.getElementById('chart')); 
+    pchart.draw(data, options); 
+}
+</script>
+<script>
+/* bug in called the second graph directly. Guess Google needs to wait a little bit for it to show... */
+google.setOnLoadCallback(function(){setTimeout(drawDeckColorDemandChart,500);});   
+function drawDeckColorDemandChart() {
+    // Create the data table. 
+    var data = new google.visualization.DataTable(); 
+    data.addColumn('string', 'CMC'); 
+    data.addColumn('number', 'White'); 
+    data.addColumn('number', 'Blue'); 
+    data.addColumn('number', 'Black'); 
+    data.addColumn('number', 'Red'); 
+    data.addColumn('number', 'Green'); 
+    data.addColumn('number', 'Colorless'); 
+    var colors = {'w':'white','u':'blue','b':'black','r':'red','g':'green','c':'colorless'}; 
+    for (var cmc = 1; cmc < 17; cmc++) {
+        var rrow = ['' + cmc, 
+                    analysis['w' + cmc + '_f'] / analysis['cmc' + cmc + '_f'],
+                    analysis['u' + cmc + '_f'] / analysis['cmc' + cmc + '_f'],
+                    analysis['b' + cmc + '_f'] / analysis['cmc' + cmc + '_f'],
+                    analysis['r' + cmc + '_f'] / analysis['cmc' + cmc + '_f'],
+                    analysis['g' + cmc + '_f'] / analysis['cmc' + cmc + '_f'],
+                    analysis['c' + cmc + '_f'] / analysis['cmc' + cmc + '_f'],
+                   ];
+        if (cmc < 3 || rrow[1] + rrow[2] + rrow[3] + rrow[4] + rrow[5] + rrow[6] > 0) {
+            data.addRow(rrow);
+        }
+    }
+    var options = {
+        theme: 'material',
+        height: 380,
+        width: 450,
+        title: 'Color Casting Demand by CMC',
+        isStacked: false,
+        colors: ['#fee0ae','#2098c9','#070409','#bf1521','#438621','#808080'], 
+        vAxis: {minValue: 0, title: 'Average Pips Required'}, 
+        hAxis: {title: 'Card CMC'}
+    };
+    var bchart = new google.visualization.ColumnChart(document.getElementById('colordemandchart')); 
+    bchart.draw(data, options); 
+}
+</script>
+          <div>content here...</div>
+          <div id="chart"></div>
+          <div>content there...</div>
+          <div id="colordemandchart"></div>
+          <div>content everywhere!</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
