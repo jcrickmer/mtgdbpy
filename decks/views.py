@@ -161,7 +161,7 @@ def recommendations(request):
             pcs_dict = Deck.read_cards_from_text(request.POST['cardlist'], throw_exception=False)
             for key in pcs_dict:
                 if key != 'errors' and 'physicalcard' in pcs_dict[key]:
-                    pcs.append(pcs_dict['physicalcard'])
+                    pcs.append(pcs_dict[key]['physicalcard'])
         except Deck.CardsNotFoundException as cnfe:
             pass
         #sys.stderr.write("cardlist is '{}'".format(pcs))
