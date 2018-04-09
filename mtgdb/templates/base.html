@@ -62,6 +62,7 @@ $.widget.bridge('uibutton', $.ui.button);
             {% else %}
               <li id="top-menu-deckbox"><a href="{{settings.DECKBOX_LOGIN_URL}}" target="deckbox">Login</a></li>
             {% endif %}
+            <li id="top-menu-crafter"><a href="{% url 'decks:recommendations' %}">Deck Crafter</a></li>
           </ul>
         </div>
       </div>

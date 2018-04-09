@@ -3,7 +3,10 @@
 {% block title %}Deck Recommendations{% endblock %}
 {% block pagetitle %}Deck Recommendations{% endblock %}
 {% block content %}
-<div class="container">
+<script>
+$('#top-menu-search').removeClass('active');
+$('#top-menu-crafter').addClass('active');
+</script><div class="container">
   <form action="{% url 'decks:recommendations' %}" method="post">
     <div class="row">
       <div class="col-xs-2 col-sm-1"><label for="format" class="control-label">Format</label>:</div>
