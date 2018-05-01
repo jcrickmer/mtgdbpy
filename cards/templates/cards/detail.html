@@ -430,7 +430,7 @@ google.setOnLoadCallback(function(){
             <div class="row">
               {% for assocpc in assoc.associationcards.all %}
                 {% if assocpc != physicalcard %}
-d                 {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
+                  {% if forloop.counter0|divisibleby:4 %}<div class="clearfix visible-md visible-lg"></div>{% endif %}
                   {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
                   {% if forloop.counter0|divisibleby:2 %}<div class="clearfix visible-xs"></div>{% endif %}
                   <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
