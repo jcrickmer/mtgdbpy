@@ -9,6 +9,7 @@
 $('#top-menu-search').removeClass('active');
 $('#top-menu-battle').addClass('active');
 </script>
+{% content key=request.path position="top" %}
 <div class="row hidden-xs">
   <div class="col-xs-12 text-center">
     <h3 class="text-center">Subjectively, which card is "<em>better</em>" in the current {{format.formatname}} format?</h3>
@@ -26,6 +27,7 @@ $('#top-menu-battle').addClass('active');
     <!-- mu={{second_card.mu}}, sigma={{second_card.sigma}} -->
   </div>
 </div>
+{% content key=request.path position="middle" %}
 <div class="row">
   <div class="col-xs-12 col-sm-offset-3 col-sm-6 text-info">
     <p>
@@ -46,5 +48,6 @@ $('#top-menu-battle').addClass('active');
     {% endfor %}
   </div>
 </div>
+{% content key=request.path position="bottom" %}
 <!-- card loaded from {{rand_source}} -->
 {% endblock %}
