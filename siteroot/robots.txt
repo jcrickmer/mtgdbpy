@@ -1,0 +1,9 @@
+User-agent: *
+Crawl-delay: 3
+Disallow: /wp-admin/
+Disallow: /cards/_winbattle
+Disallow: /cards/_nameauto
+Disallow: /cards/admin
+Disallow: /cards/battle
+Disallow: /cards/Battle
+Disallow: /cards/_formats
