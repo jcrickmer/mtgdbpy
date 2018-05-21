@@ -1254,7 +1254,7 @@ def ratings(request, format_id=0):
         100) * float(context['battle_count']) / float(context['battle_possibilities'])
     context['ratings'] = []
 
-    current = timezone.now()
+    current = datetime.now()
     ago = current - timedelta(days=7)
     ago = ago.replace(minute=0, second=0, microsecond=0)
     hour = timedelta(hours=1)
