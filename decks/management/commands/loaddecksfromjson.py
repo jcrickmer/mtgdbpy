@@ -11,6 +11,7 @@ from cards.models import PhysicalCard
 #from optparse import make_option
 from pytz import reference
 from datetime import datetime, timedelta
+from django.utils import timezone
 
 from cards.view_utils import convertSymbolsToHTML, make_links_to_cards
 
@@ -66,7 +67,7 @@ class Command(BaseCommand):
         deck_meta_only = options['deck_meta_only']
         self.only_newer = options['only_newer']
 
-        self.start_time = datetime.now()
+        self.start_time = timezone.now()
 
         if not os.access(directory, os.R_OK):
             sys.stderr.write("Cannot read directory '{}'.\n".format(directory))

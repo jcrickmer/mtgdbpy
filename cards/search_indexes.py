@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import datetime
 from haystack import indexes
 from cards.models import PhysicalCard
+from django.utils import timezone
 
 
 class CardIndex(indexes.SearchIndex, indexes.Indexable):
@@ -18,4 +18,4 @@ class CardIndex(indexes.SearchIndex, indexes.Indexable):
 
     def index_queryset(self, using=None):
         """Used when the entire index for model is updated."""
-        return self.get_model().objects.filter(basecard__updated_at__lte=datetime.datetime.now())
+        return self.get_model().objects.filter(basecard__updated_at__lte=timezone.now())

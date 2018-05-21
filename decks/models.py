@@ -841,7 +841,7 @@ class Analyzer(DeckManaDrawAnalyzer):
 
     def loadFormat(self):
         cache_key = 'deckmanaanalysis_{}'.format(self.format.formatname)
-        lookback_timeframe = datetime.now() - timedelta(days=365)
+        lookback_timeframe = timezone.now() - timedelta(days=365)
         if len(self.corpus) == 0 and cache.get(cache_key) is None:
             deck_ids = list()
             deck_qs = Deck.objects.filter(format__formatname=self.format.formatname, format__start_date__gte=lookback_timeframe)
@@ -857,7 +857,7 @@ class Analyzer(DeckManaDrawAnalyzer):
                     len(deck_ids),
                     sys.getsizeof(
                         self.corpus)))
-            cache.set(cache_key, self.corpus, 60*60*12)
+            cache.set(cache_key, self.corpus, 60 * 60 * 12)
         else:
             self.corpus = cache.get(cache_key)
 

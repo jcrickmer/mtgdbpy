@@ -8,6 +8,7 @@ from cards.models import ExpansionSet
 from cards.models import CardPrice
 from django.db.models import Q
 from datetime import datetime, date, timedelta
+from django.utils import timezone
 import logging
 import sys
 import time
@@ -86,7 +87,7 @@ class Command(BaseCommand):
                 dedup.append(val)
         mvids = dedup
 
-        yesterday = datetime.now() - timedelta(days=1)
+        yesterday = timezone.now() - timedelta(days=1)
         cardprices = CardPrice.objects.filter(card__multiverseid__in=mvids, at_datetime__gte=yesterday)
         cardprice_mvids = [cp.card.multiverseid for cp in cardprices]
         grab_actions = 0
@@ -103,7 +104,7 @@ class Command(BaseCommand):
                 sys.stdout.write("=have id {}\n".format(mvid))
 
     def mvids_of_interest(self, formatname="modern"):
-        top_formats = Format.objects.filter(formatname__iexact=formatname, start_date__lte=datetime.today()).order_by('-start_date')
+        top_formats = Format.objects.filter(formatname__iexact=formatname, start_date__lte=timezone.now()).order_by('-start_date')
         top_format = None
         next_format = None
         result = {}

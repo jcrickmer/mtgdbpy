@@ -540,7 +540,9 @@ class PhysicalCard(models.Model):
                         card.annotations['similarity_score'] = sim_id.score
                     result.append(card)
             except BaseException as e:
-                logger.error("PhysicalCard.find_similiar_cards received exception when getting cards back from Solr/Haystack and trying to find them in the database.", exc_info=True)
+                logger.error(
+                    "PhysicalCard.find_similiar_cards received exception when getting cards back from Solr/Haystack and trying to find them in the database.",
+                    exc_info=True)
         return result
 
     def find_played_with_cards(self, format_list, max_results=18, type_filter=None):
@@ -1609,38 +1611,38 @@ class FormatBasecard(models.Model):
         """
         return self.basecard.physicalcard.lost_battles.filter(format=self.format)
 
-    def cards_played_with_all(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365)):
+    def cards_played_with_all(self, lookback_timeframe=timezone.now() - timedelta(days=2 * 365)):
         return self.cards_played_with(lookback_timeframe, 1024)
 
-    def cards_played_with_lands(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=36):
+    def cards_played_with_lands(self, lookback_timeframe=timezone.now() - timedelta(days=2 * 365), max_results=36):
         type_filter = Type.objects.filter(type__iexact='Land').first()
         return self.cards_played_with(lookback_timeframe, max_results=max_results, type_filter=type_filter)
 
-    def cards_played_with_creatures(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=36):
+    def cards_played_with_creatures(self, lookback_timeframe=timezone.now() - timedelta(days=2 * 365), max_results=36):
         type_filter = Type.objects.filter(type__iexact='Creature').first()
         return self.cards_played_with(lookback_timeframe, max_results=max_results, type_filter=type_filter)
 
-    def cards_played_with_planeswalkers(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=36):
+    def cards_played_with_planeswalkers(self, lookback_timeframe=timezone.now() - timedelta(days=2 * 365), max_results=36):
         type_filter = Type.objects.filter(type__iexact='Planeswalker').first()
         return self.cards_played_with(lookback_timeframe, max_results=max_results, type_filter=type_filter)
 
-    def cards_played_with_enchantments(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=36):
+    def cards_played_with_enchantments(self, lookback_timeframe=timezone.now() - timedelta(days=2 * 365), max_results=36):
         type_filter = Type.objects.filter(type__iexact='Enchantment').first()
         return self.cards_played_with(lookback_timeframe, max_results=max_results, type_filter=type_filter)
 
-    def cards_played_with_instants(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=36):
+    def cards_played_with_instants(self, lookback_timeframe=timezone.now() - timedelta(days=2 * 365), max_results=36):
         type_filter = Type.objects.filter(type__iexact='Instant').first()
         return self.cards_played_with(lookback_timeframe, max_results=max_results, type_filter=type_filter)
 
-    def cards_played_with_sorceries(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=36):
+    def cards_played_with_sorceries(self, lookback_timeframe=timezone.now() - timedelta(days=2 * 365), max_results=36):
         type_filter = Type.objects.filter(type__iexact='Sorcery').first()
         return self.cards_played_with(lookback_timeframe, max_results=max_results, type_filter=type_filter)
 
-    def cards_played_with_artifacts(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=36):
+    def cards_played_with_artifacts(self, lookback_timeframe=timezone.now() - timedelta(days=2 * 365), max_results=36):
         type_filter = Type.objects.filter(type__iexact='Artifact').first()
         return self.cards_played_with(lookback_timeframe, max_results=max_results, type_filter=type_filter)
 
-    def cards_played_with(self, lookback_timeframe=datetime.now() - timedelta(days=2 * 365), max_results=18, type_filter=None):
+    def cards_played_with(self, lookback_timeframe=timezone.now() - timedelta(days=2 * 365), max_results=18, type_filter=None):
         """ Gets Cards that this BaseCard has played with in this Format over some period of time.
 
         Arguments:
