@@ -32,6 +32,8 @@ from django.core.cache import cache
 
 from haystack.query import SearchQuerySet
 
+logger = logging.getLogger(__name__)
+
 import time
 
 
@@ -194,8 +196,6 @@ class PhysicalCard(models.Model):
     def get_latest_card(self):
         """ Returns a Card object for this Physical card.
         """
-        logger = logging.getLogger(__name__)
-        #logger.error("PhysicalCard.get_latest_card: self is {}".format(str(self)))
         card = cache.get('c_pc' + str(self.id))
         if card is None:
             bc = self.basecard_set.filter(cardposition__in=[BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP]).first()
@@ -370,7 +370,9 @@ class PhysicalCard(models.Model):
         if cmcct > 1:
             result = result + 'cmc' + str(combocmc) + "\n"
         strippedcost = strippedcost.replace('{', '')
-        strippedcost = str(basecard.mana_cost).replace('{', '')
+        # REVISIT - Came across this 'issue', but not sure where it has shown itself, or if it is a bug at all. Sure
+        # looks like a bug. Commented out for now.
+        #strippedcost = str(basecard.mana_cost).replace('{', '')
         strippedcost = strippedcost.replace('}', '')
         strippedcost = strippedcost.replace('/p', '')
         strippedcost = strippedcost.replace('2/', '')
@@ -522,8 +524,12 @@ class PhysicalCard(models.Model):
         result = []
         for sim_id in similars:
             try:
-                #card = PhysicalCard.objects.get(pk=sim_id).get_latest_card()
-                card = sim_id.object.get_latest_card()
+                card = PhysicalCard.objects.get(pk=sim_id.pk).get_latest_card()
+                # DEFECT. The Haystack implementation appears to do an Inner Join on PhysicalCard and BaseCard, which
+                # returns two resuls for double-faced cards. I can't figure out why it is doing it, but I will just go
+                # to the ORM myself instead. This defect showed itself in the "Similiar Cards" section on Details,
+                # where few or no results would turn up.
+                #card = sim_id.object.get_latest_card()
                 if card is not None:
                     # found issue with '1996 World Champion'. Has a PhysicalCard and BaseCard, but no Card.
                     try:
@@ -533,8 +539,8 @@ class PhysicalCard(models.Model):
                     finally:
                         card.annotations['similarity_score'] = sim_id.score
                     result.append(card)
-            except Exception as e:
-                sys.stderr.write("ERROR {}\n".format(e))
+            except BaseException as e:
+                logger.error("PhysicalCard.find_similiar_cards received exception when getting cards back from Solr/Haystack and trying to find them in the database.", exc_info=True)
         return result
 
     def find_played_with_cards(self, format_list, max_results=18, type_filter=None):
@@ -838,7 +844,6 @@ class CardManager(models.Manager):
 
     def search(self, *args, **kwargs):
         ''' Yea know, if there are NO terms, and just some sorting, let's make this easy on ourselves. '''
-        logger = logging.getLogger(__name__)
         has_search_predicates = False
         sortds = []
         all_args = []
@@ -902,7 +907,6 @@ class CardManager(models.Manager):
             cards with toughness != 1 WILL NOT return Swamp (since
             Swamp is not a creature).
         '''
-        logger = logging.getLogger(__name__)
 
         # use this to create unique table aliases as we add joins
         jcounter = 0
@@ -1120,7 +1124,6 @@ class CardManager(models.Manager):
         sql_s = sql_s + ' ORDER BY '
         sql_s = sql_s + ', '.join(str(str(arg.sqlname()) + ' ' + arg.direction) for arg in sortds)
 
-        logger = logging.getLogger(__name__)
         #logger.debug("Card Search SQL: " + sql_s)
         #timer_start = time.time()
         cards = self.raw(sql_s, params=safelocker)

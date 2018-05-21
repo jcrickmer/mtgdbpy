@@ -28,7 +28,7 @@ DEBUG = True
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'smoker']
+ALLOWED_HOSTS = ['127.0.0.1', 'smoker', '192.168.0.7','venser','localhost']
 INTERNAL_IPS = (
     '127.0.0.1',
     '0.0.0.0',
@@ -183,17 +183,27 @@ LOGGING = {
     'loggers': {
         'cards.views': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True,
         },
         'cards.models': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': True,
+        },
+        'cards': {
+            'handlers': ['console'],
+            'level': 'INFO',
             'propagate': True,
         },
         'decks.models': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True,
         },
     },
@@ -211,9 +221,9 @@ CARDS_SEARCH_CACHE_TIME = 60 * 15
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = "/home/jason/projects/mtgdb/cstatic/"
+STATIC_ROOT = "/home/jason/projects/mtgdbpy/cstatic/"
 
-STATIC_ROOT_CN = '/home/jason/projects/mtgdb/cn'
+STATIC_ROOT_CN = '/home/jason/projects/mtgdbpy/cn'
 STATIC_ROOT_CARD_IMAGES = '/home/jason/projects/mtgstats/card_images'
 
 DYNAMIC_IMAGE_FILE_ROOT = '/tmp/cn_dyn_root'
