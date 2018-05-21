@@ -27,63 +27,63 @@ def card_price_ajax_stub(request, multiverseid=None, deckbox_format=False):
         except:
             response_dict.update({'status': 'error',
                                   'message': 'No such card for given multiverseid.', })
-    if not deckbox_format:
-        # The original format
-        sys.stderr.write("  original format!\n")
-        jcards = list()
-        if card:
-            cards = card.get_all_versions()[:8]
-            for vcard in cards:
-                for printing in ('normal', 'foil'):
-                    jcard = {
-                        'mvid': vcard.multiverseid,
-                        'name': vcard.basecard.physicalcard.get_card_name(),
-                        'expansionset': {'name': vcard.expansionset.name, 'abbr': vcard.expansionset.abbr, },
-                        'price': 0.75,
-                        'on_sale': random.random() > 0.8,
-                        'printing': printing,
-                    }
-                    jcards.append(jcard)
-        if jcards:
-            response_dict.update({'status': 'ok',
-                                  'cards': jcards,
-                                  })
-    else:
-        # The Jim/Deckbox format
-        sys.stderr.write("  Deckbox format!\n")
-        jcards = list()
-        if int(multiverseid) in [194968, 1076]:
-            # this is a test of returning the 99999999.99 answer in Unstable.
-            jcard = {
-                'mvid': int(multiverseid),
-                'setname': 'Unstable',
-                'normalprice': 99999999.99,
-            }
-            jcards.append(jcard)
-        elif card:
-            cards = card.get_all_versions()[:8]
-            response_dict.update({'name': card.basecard.physicalcard.get_card_name()})
-            for vcard in cards:
-                fs = 0
-                if random.random() > 0.8:
-                    fs = 1
+        if not deckbox_format:
+            # The original format
+            sys.stderr.write("  original format!\n")
+            jcards = list()
+            if card:
+                cards = card.get_all_versions()[:8]
+                for vcard in cards:
+                    for printing in ('normal', 'foil'):
+                        jcard = {
+                            'mvid': vcard.multiverseid,
+                            'name': vcard.basecard.physicalcard.get_card_name(),
+                            'expansionset': {'name': vcard.expansionset.name, 'abbr': vcard.expansionset.abbr, },
+                            'price': 0.75,
+                            'on_sale': random.random() > 0.8,
+                            'printing': printing,
+                        }
+                        jcards.append(jcard)
+            if jcards:
+                response_dict.update({'status': 'ok',
+                                      'cards': jcards,
+                                      })
+        else:
+            # The Jim/Deckbox format
+            sys.stderr.write("  Deckbox format!\n")
+            jcards = list()
+            if int(multiverseid) in [194968, 1076]:
+                # this is a test of returning the 99999999.99 answer in Unstable.
                 jcard = {
-                    'mvid': vcard.multiverseid,
-                    'setname': vcard.expansionset.name,
-                    'normalprice': 0.75,
-                    'normalsale': fs
+                    'mvid': int(multiverseid),
+                    'setname': 'Unstable',
+                    'normalprice': 99999999.99,
                 }
-                if random.random() > 0.6:
+                jcards.append(jcard)
+            elif card:
+                cards = card.get_all_versions()[:8]
+                response_dict.update({'name': card.basecard.physicalcard.get_card_name()})
+                for vcard in cards:
                     fs = 0
                     if random.random() > 0.8:
                         fs = 1
-                    jcard['foil'] = 1.25
-                    jcard['foilsale'] = fs
-                jcards.append(jcard)
-        if jcards:
-            response_dict.update({'status': 'OK',
-                                  'prices': jcards,
-                                  })
+                    jcard = {
+                        'mvid': vcard.multiverseid,
+                        'setname': vcard.expansionset.name,
+                        'normalprice': 0.75,
+                        'normalsale': fs
+                    }
+                    if random.random() > 0.6:
+                        fs = 0
+                        if random.random() > 0.8:
+                            fs = 1
+                        jcard['foil'] = 1.25
+                        jcard['foilsale'] = fs
+                    jcards.append(jcard)
+            if jcards:
+                response_dict.update({'status': 'OK',
+                                      'prices': jcards,
+                                      })
 
     response = HttpResponse(
         json.dumps(response_dict),
