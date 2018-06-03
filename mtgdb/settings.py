@@ -245,10 +245,10 @@ OAUTH_TOKEN_SECRET = 'XXXXXXXX'
 BETTER_BATTLE_PATH = '/home/jason/projects/mtgdb'
 
 HOME_URL = 'http://www.patsgames.com/'
-DECKBOX_LOGIN_URL = 'https://www.patsgames.com/cgi-bin/custLoginV2.pl'
-DECKBOX_URL = 'https://www.patsgames.com/cgi-bin/custCheckoutV2.pl'
-DECKBOX_SESSION_COOKIE_KEY = 'PGCUST'
-DECKBOX_ORDER_COOKIE_KEY = 'JPHQQQQ'
+DECKBOX_LOGIN_URL = 'https://www.patsgames.com/store/custLogin.pl'
+DECKBOX_URL = 'https://www.patsgames.com/store/custCheckout.pl'
+DECKBOX_SESSION_COOKIE_KEY = 'PGCUSTISA'
+DECKBOX_ORDER_COOKIE_KEY = 'ORDERIDISA'
 DECKBOX_PRICE_URL_BASE = "/cards/_cardpricedbtest/"
 DECKBOX_AUTH_SECRET = "patsgamesRocks"
 

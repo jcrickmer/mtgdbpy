@@ -41,7 +41,7 @@ class Command(BaseCommand):
 
     def grab_price(self, mvid):
         auth_key = generate_auth_key(mvid, 'bogus_session_id')
-        url = 'https://www.patsgames.com/cgi-bin/getCardInfo.pl?mvid={}&key={}'.format(mvid, auth_key)
+        url = 'https://www.patsgames.com/store/getCardInfo.pl?mvid={}&key={}'.format(mvid, auth_key)
         serialized_data = urllib2.urlopen(url).read()
 
         data = json.loads(serialized_data)
