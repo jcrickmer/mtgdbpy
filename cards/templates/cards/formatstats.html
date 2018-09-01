@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load content %}
-
+{% load utils %}
 {% block pagetitle %}{{formatname}} Format Statistics{% endblock %}
 {% block title %}{{formatname}} Format Statistics{% endblock %}
 
@@ -25,11 +25,12 @@ width: 95px;
       <tr>
         <th>Place</th>
         <th>Card</th>
-    	<th class="text-center">Pat's Card Rating</th>
-    	<th class="deckdata text-center">Current % of Decks Playing</th>
-    	<th class="deckdata text-center">% Change</th>
-    	<th class="carddata text-center">Current % of All Cards</th>
-    	<th class="carddata text-center">% Change</th>
+      	<th class="text-center">Pat's Card Rating</th>
+      	<th class="deckdata text-center">Current % of Decks Playing</th>
+      	<th class="deckdata text-center">% Change</th>
+    	  <th class="carddata text-center">Current % of All Cards</th>
+    	  <th class="carddata text-center">% Change</th>
+    	  <th class="text-center">Recent Lowest Price</th>
       </tr>
       {% for pcard in top %}
         <tr>
@@ -40,6 +41,14 @@ width: 95px;
           <td class="deckdata text-center">{% if pcard.decks_per_change %}{% if pcard.decks_per_change > 0 %}+{%endif%}{{pcard.decks_per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
           <td class="carddata text-center">{{pcard.current_percentage|floatformat:3}}%</td>
           <td class="carddata text-center">{% if pcard.per_change %}{% if pcard.per_change > 0 %}+{%endif%}{{pcard.per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
+          <td class="text-right">
+            {% if pcard.daily_cardprice_history.first %}
+              ${{ pcard.daily_cardprice_history.first|get_item:'min'|floatformat:2 }}
+              <!-- {{ pcard.daily_cardprice_history.first|get_item:'day' }} -->
+            {% else %}
+              $-.--
+            {% endif %}
+          </td>
         </tr>
       {% endfor %}
     </table>
@@ -56,6 +65,7 @@ width: 95px;
     	<th class="deckdata text-center">% Change</th>
     	<th class="carddata text-center">Current % of All Cards</th>
     	<th class="carddata text-center">% Change</th>
+    	  <th class="text-center">Recent Lowest Price</th>
       </tr>
       {% for pcard in trendingup %}
         <tr>
@@ -66,6 +76,14 @@ width: 95px;
           <td class="deckdata text-center">{% if pcard.decks_per_change %}{% if pcard.decks_per_change > 0 %}+{%endif%}{{pcard.decks_per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
           <td class="carddata text-center">{{pcard.current_percentage|floatformat:3}}%</td>
           <td class="carddata text-center">{% if pcard.per_change %}{% if pcard.per_change > 0 %}+{%endif%}{{pcard.per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
+          <td class="text-right">
+            {% if pcard.daily_cardprice_history.first %}
+              ${{ pcard.daily_cardprice_history.first|get_item:'min'|floatformat:2 }}
+              <!-- {{ pcard.daily_cardprice_history.first|get_item:'day' }} -->
+            {% else %}
+              $-.--
+            {% endif %}
+          </td>
         </tr>
       {% endfor %}
     </table>
@@ -80,6 +98,7 @@ width: 95px;
     	<th class="deckdata text-center">% Change</th>
     	<th class="carddata text-center">Current % of All Cards</th>
     	<th class="carddata text-center">% Change</th>
+    	  <th class="text-center">Recent Lowest Price</th>
       </tr>
       {% for pcard in trendingdown %}
         <tr>
@@ -90,6 +109,14 @@ width: 95px;
           <td class="deckdata text-center">{% if pcard.decks_per_change %}{% if pcard.decks_per_change > 0 %}+{%endif%}{{pcard.decks_per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
           <td class="carddata text-center">{{pcard.current_percentage|floatformat:3}}%</td>
           <td class="carddata text-center">{% if pcard.per_change %}{% if pcard.per_change > 0 %}+{%endif%}{{pcard.per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
+          <td class="text-right">
+            {% if pcard.daily_cardprice_history.first %}
+              ${{ pcard.daily_cardprice_history.first|get_item:'min'|floatformat:2 }}
+              <!-- {{ pcard.daily_cardprice_history.first|get_item:'day' }} -->
+            {% else %}
+              $-.--
+            {% endif %}
+          </td>
         </tr>
       {% endfor %}
     </table>

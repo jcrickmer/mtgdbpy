@@ -22,8 +22,10 @@ from cards.view_utils import convertSymbolsToHTML
 from cards.text_utils import filing_string
 from django.utils.safestring import mark_safe
 
-from django.db.models import Max, Min, Count
+from django.db.models import Max, Min, Count, Avg
 from django.db import connection, ProgrammingError
+
+from django.db.models.functions import TruncDay
 
 import logging
 from operator import itemgetter
@@ -632,6 +634,13 @@ class PhysicalCard(models.Model):
         return Format.objects.filter(formatbasecard__basecard=self.get_face_basecard(),
                                      start_date__lte=start_date,
                                      end_date__gte=end_date)
+
+    def daily_cardprice_history(self):
+        cps = CardPrice.objects.filter(card__basecard__physicalcard=self)\
+            .annotate(day=TruncDay('at_datetime')).values('day')\
+            .annotate(min=Min('price'), avg=Avg('price'), max=Max('price'))\
+            .order_by('-day')
+        return cps
 
     class Meta:
         managed = True
