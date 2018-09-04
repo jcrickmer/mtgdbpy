@@ -636,7 +636,7 @@ class PhysicalCard(models.Model):
                                      end_date__gte=end_date)
 
     def daily_cardprice_history(self):
-        cps = CardPrice.objects.filter(card__basecard__physicalcard=self)\
+        cps = CardPrice.objects.filter(card__basecard__physicalcard=self, printing='normal')\
             .annotate(day=TruncDay('at_datetime')).values('day')\
             .annotate(min=Min('price'), avg=Avg('price'), max=Max('price'))\
             .order_by('-day')
