@@ -522,6 +522,10 @@ th.pricing-header {
 tr.price-row {
     border-top: 1px solid #ADC4CC;
 }
+td.pricing-recent-qualifier {
+  font-style: italic;
+  text-align: center;
+}
 tr.price-current-card {
     background-color: #eef0f4;
 }

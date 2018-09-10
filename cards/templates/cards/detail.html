@@ -249,7 +249,19 @@ function drawCardStatsChart(formatname) {
       {% endif %}
     {% endfor %}
   </div>
-  <div class="col-xs-12 col-md-4" id="pricing-container"></div>
+  <div class="col-xs-12 col-md-4" id="pricing-container">
+    {% if request_card.get_recent_lowest_cardprice %}
+      <table class='pricing-table' id='pricing-table'>
+        <tr class='table-header-row'><th class='pricing-header' colspan='3'>Pat's Prices</th></tr>
+        <tr><td colspan="3" class="pricing-recent-qualifier">recent pricing</td></tr>
+        <tr class="price-current-card">
+          <td class='price-expansion'>{{ request_card.expansionset.name }}</td>
+          <td class='price-printing'>&nbsp;</td>
+          <td class='price-price'>${{ request_card.get_recent_lowest_cardprice.price|floatformat:"2" }}</td>
+        </tr>
+      </table>
+    {% endif %}
+  </div>
 </div>
 {% content key="PhysicalCard-"|concat:physicalcard.id position="mid" title="Commentary" layout="commentary" %}
 {% content key=request.path position="mid" %}
@@ -510,6 +522,7 @@ drawPrices = function(val) {
     if (window.cn.cardprices != null && window.cn.cardprices.length > 0) {
         window.cn.log("calling _ucp"); 
         $.ajax({url: "/cards/_ucp/",data: {"p":JSON.stringify(cn.cardprices)},dataType: "json",method: "POST",async: true,xhrFields:{withCredentials: true},crossDomain: true});
+        $("#pricing-table").remove();
         $("#pricing-container").append("<table class='pricing-table' id='pricing-table'><tr class='table-header-row'><th class='pricing-header' colspan='3'>Pat's Prices</th></tr></table>"); 
         for (var f = 0; f < window.cn.cardprices.length; f++) {
             var cp = window.cn.cardprices[f]; 
