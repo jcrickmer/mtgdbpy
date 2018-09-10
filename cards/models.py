@@ -1397,6 +1397,11 @@ class Card(models.Model):
                 BaseCard.LEFT,
                 BaseCard.UP]).order_by('multiverseid')
 
+    def get_recent_lowest_cardprice(self):
+        history = timezone.now() - timedelta(days=14)
+        cp = CardPrice.objects.filter(card=self, at_datetime__gt=history).order_by('price','-at_datetime').first()
+        return cp
+
     class Meta:
         managed = True
         db_table = 'card'

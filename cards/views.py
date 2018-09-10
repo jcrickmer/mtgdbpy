@@ -604,9 +604,20 @@ def detail(request, multiverseid=None, slug=None):
         basecard=cards[0].basecard,
         format__in=physicalcard.legal_formats()).order_by('format__formatname')
     cardbattlestats = list()
+
+    highest_rating = 0.0
+    total_battle_count = 0
+    for cr in physicalcard.get_cardratings():
+        if cr.cardninjaRating() != 500.0:
+            highest_rating = max(highest_rating, cr.cardninjaRating())
+    if highest_rating == 0.0:
+        highest_rating == 500.0
+
     for fcs in formatcardstats:
         cbs = CardBattleStats(physicalcard, fcs.format)
         cardbattlestats.append(cbs)
+        total_battle_count += cbs.battle_count()
+
     associations = Association.objects.filter(associationcards=physicalcard)
 
     # get all multiverseids so that we can more robustly get a price for this card.
@@ -626,6 +637,9 @@ def detail(request, multiverseid=None, slug=None):
                     'auth_key': generate_auth_key(multiverseid, request.session.get('deckbox_session_id')),
                     'auth_keys': mvid_auth_key_pairs,
                     'auth_keys_json': json.dumps(mvid_auth_key_pairs),
+                    'tomorrow': (timezone.now() + timedelta(days=1)).isoformat(),
+                    'highest_rating': highest_rating,
+                    'total_battle_count': total_battle_count,
                     })
     response = render(request, 'cards/detail.html', context)
     return response

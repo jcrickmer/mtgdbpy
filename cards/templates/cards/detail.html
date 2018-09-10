@@ -6,6 +6,41 @@
 {% block description %}{{ physicalcard.get_card_name }} {% for fcs in formatcardstats %}{%if fcs.is_staple %}[{{fcs.format.formatname}}&nbsp;Staple] {% endif %}{% endfor %} : {{request_card.basecard.rules_text|remove_whitespace}} Information, analysis, statistics, decks, similar cards, and alternative cards for {{ physicalcard.get_card_name }} in Magic: The Gathering.{% endblock %}
 
 {% block additionalheaders %}
+  <!-- Product -->
+  <script type="application/ld+json">
+{
+  "@context": "http://schema.org/",
+  "@type": "Product",
+  "name": "{{ physicalcard.get_card_name|escapejs }} ({{ request_card.expansionset.name|escapejs }})",
+  "image": "{{request.scheme}}://{{request.get_host}}{{request_card.img_url}}",
+  "description": "{{request_card.basecard.rules_text|remove_whitespace|escapejs}}",
+  "mpn": "{{ request_card.multiverseid }}",
+  "brand": {
+    "@type": "Thing",
+    "name": "Wizards of the Coast"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "bestRating": "1000.00",
+    "ratingValue": "{{ highest_rating|floatformat:"2" }}",
+    "ratingCount": "{{ total_battle_count }}"
+  }
+  {% if request_card.get_recent_lowest_cardprice %}
+  ,"offers": {
+    "@type": "Offer",
+    "priceCurrency": "USD",
+    "price": "{{ request_card.get_recent_lowest_cardprice.price }}",
+    "priceValidUntil": "{{ tomorrow }}",
+    "url": "{{request.scheme}}://{{request.get_host}}{{request.path}}",
+    "availability": "http://schema.org/InStock",
+    "seller": {
+      "@type": "Organization",
+      "name": "Pat's Games"
+    }
+  }
+  {% endif %}
+}
+  </script>
   <!-- Facebook -->
   <meta property="og:title" content="{{ physicalcard.get_card_name }} ({{request_card.expansionset.name}})">
   <meta property="og:type" content="website">
