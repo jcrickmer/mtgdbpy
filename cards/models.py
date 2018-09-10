@@ -635,12 +635,21 @@ class PhysicalCard(models.Model):
                                      start_date__lte=start_date,
                                      end_date__gte=end_date)
 
-    def daily_cardprice_history(self):
-        cps = CardPrice.objects.filter(card__basecard__physicalcard=self, printing='normal')\
-            .annotate(day=TruncDay('at_datetime')).values('day')\
-            .annotate(min=Min('price'), avg=Avg('price'), max=Max('price'))\
-            .order_by('-day')
-        return cps
+    def latest_aggregate_cardprices(self):
+        ckey = 'c_pc_laggcp-{}'.format(self.id)
+        result = cache.get(ckey)
+        if not result:
+            oldest = timezone.now() - timedelta(days=14)
+            latest_cp = CardPrice.objects.filter(card__basecard__physicalcard=self,
+                                                 at_datetime__gt=oldest,
+                                                 printing='normal')\
+                .annotate(day=TruncDay('at_datetime')).values('day').order_by('-at_datetime').first()
+            if latest_cp:
+                result = CardPrice.objects.filter(card__basecard__physicalcard=self,
+                                                  at_datetime__gte=latest_cp['day'])\
+                    .aggregate(min=Min('price'), avg=Avg('price'), max=Max('price'), at_datetime=Min('at_datetime'))
+                cache.set(ckey, result, settings.CARDS_SEARCH_CACHE_TIME)
+        return result
 
     class Meta:
         managed = True

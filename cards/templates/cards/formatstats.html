@@ -42,9 +42,9 @@ width: 95px;
           <td class="carddata text-center">{{pcard.current_percentage|floatformat:3}}%</td>
           <td class="carddata text-center">{% if pcard.per_change %}{% if pcard.per_change > 0 %}+{%endif%}{{pcard.per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
           <td class="text-right">
-            {% if pcard.daily_cardprice_history.first %}
-              ${{ pcard.daily_cardprice_history.first|get_item:'min'|floatformat:2 }}
-              <!-- {{ pcard.daily_cardprice_history.first|get_item:'day' }} -->
+            {% if pcard.latest_aggregate_cardprices %}
+              ${{ pcard.latest_aggregate_cardprices|get_item:'min'|floatformat:2 }}
+              <!-- {{ pcard.latest_aggregate_cardprices|get_item:'at_datetime' }} -->
             {% else %}
               $-.--
             {% endif %}
@@ -77,9 +77,9 @@ width: 95px;
           <td class="carddata text-center">{{pcard.current_percentage|floatformat:3}}%</td>
           <td class="carddata text-center">{% if pcard.per_change %}{% if pcard.per_change > 0 %}+{%endif%}{{pcard.per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
           <td class="text-right">
-            {% if pcard.daily_cardprice_history.first %}
-              ${{ pcard.daily_cardprice_history.first|get_item:'min'|floatformat:2 }}
-              <!-- {{ pcard.daily_cardprice_history.first|get_item:'day' }} -->
+            {% if pcard.latest_aggregate_cardprices %}
+              ${{ pcard.latest_aggregate_cardprices|get_item:'min'|floatformat:2 }}
+              <!-- {{ pcard.latest_aggregate_cardprices|get_item:'at_datetime' }} -->
             {% else %}
               $-.--
             {% endif %}
@@ -110,9 +110,9 @@ width: 95px;
           <td class="carddata text-center">{{pcard.current_percentage|floatformat:3}}%</td>
           <td class="carddata text-center">{% if pcard.per_change %}{% if pcard.per_change > 0 %}+{%endif%}{{pcard.per_change|floatformat:2}}%{% else %}n/a{%endif%}</td>
           <td class="text-right">
-            {% if pcard.daily_cardprice_history.first %}
-              ${{ pcard.daily_cardprice_history.first|get_item:'min'|floatformat:2 }}
-              <!-- {{ pcard.daily_cardprice_history.first|get_item:'day' }} -->
+            {% if pcard.latest_aggregate_cardprices %}
+              ${{ pcard.latest_aggregate_cardprices|get_item:'min'|floatformat:2 }}
+              <!-- {{ pcard.latest_aggregate_cardprices|get_item:'at_datetime' }} -->
             {% else %}
               $-.--
             {% endif %}
