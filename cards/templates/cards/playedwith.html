@@ -14,6 +14,11 @@
   <meta property="og:url" content="{{request.scheme}}://{{request.get_host}}{{request.path}}">
   <meta property="og:site_name" content="Pat's Games: Spellbook">
 
+  {% for ccc in cards %}
+    {% if forloop.counter0 == 0 %}
+      <link rel="canonical" href="http://{{request.get_host}}{% url 'cards:playedwith' multiverseid=ccc.get_original_version.multiverseid slug=ccc.get_original_version.url_slug formatname=format.formatname %}">
+    {% endif %}
+  {% endfor %}
 {% endblock %}
 {% block subsearchnav %}
 {% endblock %}

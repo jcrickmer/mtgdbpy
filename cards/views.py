@@ -1413,6 +1413,7 @@ def playedwith(request, multiverseid=None, slug=None, formatname="commander"):
                     'request_card': tcard,
                     'format': format,
                     'formatbasecards': formatbasecards,
+                    'cards': cards,
                     })
     response = render(request, 'cards/playedwith.html', context)
     return response
