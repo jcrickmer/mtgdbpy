@@ -18,13 +18,16 @@
   "brand": {
     "@type": "Thing",
     "name": "Wizards of the Coast"
-  },
+  }
+  {% if total_battle_count %}
+  ,
   "aggregateRating": {
     "@type": "AggregateRating",
     "bestRating": "1000.00",
     "ratingValue": "{{ highest_rating|floatformat:"2" }}",
     "ratingCount": "{{ total_battle_count }}"
   }
+  {% endif %}
   {% if request_card.get_recent_lowest_cardprice %}
   ,"offers": {
     "@type": "Offer",
