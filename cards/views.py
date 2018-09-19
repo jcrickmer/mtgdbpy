@@ -59,6 +59,8 @@ import logging
 from trueskill import TrueSkill, Rating, quality_1vs1, rate_1vs1
 from functools import reduce
 
+from .search import searchservice
+
 color_slang = [['azorius', ['white', 'blue']],
                ['orzhov', ['white', 'black']],
                ['boros', ['white', 'red']],
@@ -226,7 +228,7 @@ def search(request):
     return redirect('cards:list')
 
 
-def autocomplete(request):
+def autocomplete_solr(request):
     logger = logging.getLogger(__name__)
     sqs = SearchQuerySet().autocomplete(name_auto=request.GET.get('q', ''))[:25]
     #suggestions = [result.name for result in sqs]
@@ -234,7 +236,7 @@ def autocomplete(request):
     for result in sqs:
         cardname = result.name
         if cardname is not None and len(cardname) > 0:
-            # sys.stderr.write("L213\n")
+            #sys.stderr.write("L213\n")
             cn_bc = BaseCard.objects.filter(physicalcard__id=result.pk).first()
             #sys.stderr.write("L215 " + str(cn_bc) + "\n")
             zresult = {'name': cardname}
@@ -258,6 +260,66 @@ def autocomplete(request):
             # let's only return 15. Note that we are doing this here, instead of at the Solr query, because the solr query might return
             # cards that are less than desirable, like tokens, which will get filtered out.
             break
+    # Make sure you return a JSON object, not a bare list.
+    # Otherwise, you could be vulnerable to an XSS attack.
+    the_data = json.dumps(suggestions)
+
+    if 'callback' in request.GET or 'callback' in request.POST:
+        # a jsonp response!
+        callback_request = None
+        if 'callback' in request.GET:
+            callback_request = request.GET['callback']
+        elif 'callback' in request.POST:
+            callback_request = request.POST['callback']
+        the_data = '%s(%s);' % (callback_request, the_data)
+        return HttpResponse(the_data, "text/javascript")
+    else:
+        return HttpResponse(the_data, content_type='application/json')
+
+
+def autocomplete(request):
+    logger = logging.getLogger(__name__)
+    suggestions = []
+    qname = request.GET.get('q', '')
+    logger.info("L283 autocomplete looking for \"{}\"".format(qname))
+
+    # let's only operate queries that are more than 2 characters
+    if len(qname) > 2:
+        suggest_q = {
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "multi_match": {
+                                "query": qname,
+                                "fields": [
+                                    "name^5",
+                                    "name.ngram"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+        es_results = searchservice.search(index="cardname", body=suggest_q)
+        #logger.info("  == {}".format(json.dumps(es_results['hits']['hits'], indent=2)))
+        if 'hits' in es_results and 'hits' in es_results['hits']:
+            res_list = es_results['hits']['hits']
+            for result in res_list:
+                cardname = result['_source']['name']
+                zresult = {'name': cardname}
+                if '/' in cardname:
+                    zresult['name_first_part'] = cardname[0:cardname.find('/')]
+                else:
+                    zresult['name_first_part'] = cardname
+                multiverseid = str(result['_source']['latest_multiverseid'])
+                slug = result['_source']['slug']
+                zresult['url'] = reverse('cards:detail', kwargs={'multiverseid': multiverseid, 'slug': slug})
+                suggestions.append(zresult)
+                if len(suggestions) >= 15:
+                    break
+
     # Make sure you return a JSON object, not a bare list.
     # Otherwise, you could be vulnerable to an XSS attack.
     the_data = json.dumps(suggestions)

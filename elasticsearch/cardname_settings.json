@@ -1,0 +1,38 @@
+{
+  "settings" : {
+    "analysis" : {
+      "analyzer" : {
+        "trigram_analyzer" : {
+          "tokenizer" : "trigram_tokenizer",
+          "filter": "lowercase"
+        }
+      },
+      "tokenizer" : {
+        "trigram_tokenizer": {
+          "type": "ngram",
+          "min_gram": 3,
+          "max_gram": 5,
+          "token_chars": [
+            "letter",
+            "digit"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "cardname": {
+      "properties": {
+        "name": {
+          "type": "text",
+          "fields": {
+            "ngram": {
+              "type": "text",
+              "analyzer": "trigram_analyzer"
+            }
+          }
+        }
+      }
+    }
+  }
+}

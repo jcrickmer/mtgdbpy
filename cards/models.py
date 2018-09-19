@@ -195,6 +195,9 @@ class PhysicalCard(models.Model):
         basecard = BaseCard.objects.filter(physicalcard_id=self.id, cardposition__in=[BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP]).first()
         return basecard
 
+    def isOrphan(self):
+        return self.basecard_set.all().count() == 0
+
     def get_latest_card(self):
         """ Returns a Card object for this Physical card.
         """
@@ -226,6 +229,20 @@ class PhysicalCard(models.Model):
                 include_names=include_names,
                 include_symbols=include_symbols),
             60 * 60 * 18)
+
+    def get_es_searchable_document(self, include_names=True, include_symbols=True):
+        cache_key = 'pc-{}-es-searchable-doc-{}-{}'.format(self.id, include_names, include_symbols)
+        # 18 hours
+        result = cache.get(cache_key)
+        if not result:
+            bdoc = self._get_searchable_document_nocache(include_names=include_names, include_symbols=include_symbols)
+            result = dict()
+            result['card'] = bdoc
+            result['_update_datetime'] = timezone.now().isoformat()
+            result['name'] = self.get_card_name()
+            result['filing_name'] = self.get_card_filing_name()
+            cache.set(cache_key, result, 60 * 60 * 18)
+        return result
 
     def get_searchable_document_rules(self, include_names=True, include_symbols=True):
         result = ''
@@ -1399,7 +1416,7 @@ class Card(models.Model):
 
     def get_recent_lowest_cardprice(self):
         history = timezone.now() - timedelta(days=14)
-        cp = CardPrice.objects.filter(card=self, at_datetime__gt=history).order_by('price','-at_datetime').first()
+        cp = CardPrice.objects.filter(card=self, at_datetime__gt=history).order_by('price', '-at_datetime').first()
         return cp
 
     class Meta:
