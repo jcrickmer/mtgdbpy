@@ -52,12 +52,12 @@ LOGGING = {
         },
         'cards.views': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True,
         },
         'APPNAME': {
             'handlers': ['console', ],
-            'level': 'DEBUG',
+            'level': 'INFO',
         },
     },
 }
@@ -86,3 +86,6 @@ DECKBOX_AUTH_SECRET = "patsgamesRocks"
 # Google Analytics
 GA_TRACKING_ID = 'UA-112384301-1'
 GTM_ID = 'GTM-TFQMBXJ'
+
+ELASTICSEARCH_HOST = 'vpc-spellbook-u24glnd5zfp4imkyavrokeygku.us-west-2.es.amazonaws.com'
+ELASTICSEARCH_PORT = 80

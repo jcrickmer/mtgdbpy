@@ -12,7 +12,6 @@ from django.db import connection
 from django.db import IntegrityError
 import collections
 from django.core.urlresolvers import reverse
-from haystack.query import SearchQuerySet
 from django.conf import settings
 
 import random
@@ -57,6 +56,6 @@ def cardclustertest(request, test_id=0):
     context['metrics'] = {}
     try:
         context['metrics'] = json.load(open(os.path.join(test_dir, 'metrics')))
-    except Error:
+    except:
         pass
     return render(request, 'cards/clustertest.html', context)

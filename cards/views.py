@@ -13,7 +13,6 @@ from django.db import connection
 from django.db import IntegrityError
 import collections
 from django.core.urlresolvers import reverse
-from haystack.query import SearchQuerySet
 from django.conf import settings
 
 import random
@@ -228,60 +227,11 @@ def search(request):
     return redirect('cards:list')
 
 
-def autocomplete_solr(request):
-    logger = logging.getLogger(__name__)
-    sqs = SearchQuerySet().autocomplete(name_auto=request.GET.get('q', ''))[:25]
-    #suggestions = [result.name for result in sqs]
-    suggestions = []
-    for result in sqs:
-        cardname = result.name
-        if cardname is not None and len(cardname) > 0:
-            #sys.stderr.write("L213\n")
-            cn_bc = BaseCard.objects.filter(physicalcard__id=result.pk).first()
-            #sys.stderr.write("L215 " + str(cn_bc) + "\n")
-            zresult = {'name': cardname}
-            if '/' in cardname:
-                zresult['name_first_part'] = cardname[0:cardname.find('/')]
-            else:
-                zresult['name_first_part'] = cardname
-            if cn_bc is not None and cn_bc.physicalcard.get_latest_card() is not None:
-                the_card = cn_bc.physicalcard.get_latest_card()
-                #sys.stderr.write("L218 the_card " + str(the_card) + "\n")
-                zresult['url'] = reverse('cards:detail', kwargs={'multiverseid': str(the_card.multiverseid), 'slug': the_card.url_slug()})
-                suggestions.append(zresult)
-            else:
-                logger.warn(
-                    "cards.autocomplete: could not find card for query '{}' with PhysicalCard pk {}. Maybe rebuild the Solr index?".format(
-                        request.GET.get(
-                            'q',
-                            ''),
-                        result.pk))
-        if len(suggestions) >= 15:
-            # let's only return 15. Note that we are doing this here, instead of at the Solr query, because the solr query might return
-            # cards that are less than desirable, like tokens, which will get filtered out.
-            break
-    # Make sure you return a JSON object, not a bare list.
-    # Otherwise, you could be vulnerable to an XSS attack.
-    the_data = json.dumps(suggestions)
-
-    if 'callback' in request.GET or 'callback' in request.POST:
-        # a jsonp response!
-        callback_request = None
-        if 'callback' in request.GET:
-            callback_request = request.GET['callback']
-        elif 'callback' in request.POST:
-            callback_request = request.POST['callback']
-        the_data = '%s(%s);' % (callback_request, the_data)
-        return HttpResponse(the_data, "text/javascript")
-    else:
-        return HttpResponse(the_data, content_type='application/json')
-
-
 def autocomplete(request):
     logger = logging.getLogger(__name__)
     suggestions = []
     qname = request.GET.get('q', '')
-    logger.info("L283 autocomplete looking for \"{}\"".format(qname))
+    logger.debug("L283 autocomplete looking for \"{}\"".format(qname))
 
     # let's only operate queries that are more than 2 characters
     if len(qname) > 2:
@@ -1065,7 +1015,7 @@ def battle(request, format="redirect"):
             # 1/3 of the time, let's pick a card that is similar and in this format
             logger.debug("L806 Picking an opponent to {} based on simliar cards.".format(str(first_card['basecard_id'])))
             query_params['similar_pcard_ids'] = [
-                sqr.pk for sqr in card_a.basecard.physicalcard.find_similar_card_ids(
+                sqr['_id'] for sqr in card_a.basecard.physicalcard.find_similar_card_ids(
                     max_results=simcard_max_results)]
             #sqls = 'SELECT sbc.id, cr.mu, cr.sigma, bc.physicalcard_id, RAND() r FROM similarphysicalcard AS spc JOIN basecard bc ON spc.physicalcard_id = bc.physicalcard_id JOIN basecard sbc ON sbc.physicalcard_id = spc.sim_physicalcard_id AND sbc.cardposition IN (\'F\',\'L\',\'T\') JOIN formatbasecard simfbc ON sbc.id = simfbc.basecard_id AND simfbc.format_id = %(formatid)s JOIN cardrating cr ON cr.physicalcard_id = sbc.physicalcard_id AND cr.format_id = simfbc.format_id  WHERE bc.cardposition IN (\'F\',\'L\',\'T\') AND bc.id = %(cardabcid)s ORDER BY r ASC LIMIT 1'
             sqls = '''SELECT bc.id, cr.mu, cr.sigma, pc.id, RAND() r FROM physicalcard AS pc JOIN cardrating AS cr ON cr.physicalcard_id = pc.id JOIN basecard bc ON bc.physicalcard_id = pc.id JOIN formatbasecard AS fbc ON fbc.basecard_id = bc.id WHERE fbc.format_id = %(formatid)s AND pc.id IN %(similar_pcard_ids)s ORDER BY r ASC LIMIT 1'''
@@ -1406,6 +1356,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def update_card_price(request):
+    logger = logging.getLogger(__name__)
     response_dict = {'status': 'ok'}
     #sys.stderr.write("REFERER: {}\n".format(request.META['HTTP_REFERER']))
     # sys.stderr.write("{}\n".format(request.body))
@@ -1419,7 +1370,7 @@ def update_card_price(request):
             else:
                 _update_price_from_payload(jval)
         except Exception as e:
-            sys.stderr.write("{}\n".format(e))
+            logger.info("Exception while updating card price.", exc_info=True)
             pass
     for value in request.POST.values():
         try:
@@ -1431,7 +1382,7 @@ def update_card_price(request):
             else:
                 _update_price_from_payload(jval)
         except Exception as e:
-            sys.stderr.write("{}\n".format(e))
+            logger.info("Exception while updating card price.", exc_info=True)
             pass
 
     response = HttpResponse(

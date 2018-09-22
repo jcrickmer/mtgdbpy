@@ -32,8 +32,6 @@ from operator import itemgetter
 
 from django.core.cache import cache
 
-from haystack.query import SearchQuerySet
-
 logger = logging.getLogger(__name__)
 
 import time
@@ -171,7 +169,7 @@ class PhysicalCard(models.Model):
                 first_card = bc
         if not first_card:
             result = "!FIRST_CARD MISSING!"
-            sys.stderr.write("NO first_card for " + str(self.id) + "\n")
+            logger.warn("NO first_card for " + str(self.id))
         else:
             result = first_card.name
         if sec_card:
@@ -240,8 +238,51 @@ class PhysicalCard(models.Model):
             result['card'] = bdoc
             result['_update_datetime'] = timezone.now().isoformat()
             result['name'] = self.get_card_name()
+            result['cmc'] = self.get_face_basecard().cmc
+            # put the power and toughness in there, if we have some.
+            for bc in self.basecard_set.all():
+                try:
+                    power = bc.power
+                    power = power.replace('*', '4')
+                    if 'power' in result:
+                        result['power'] = max(eval(power), result['power'])
+                    else:
+                        result['power'] = eval(power)
+                except:
+                    pass
+                try:
+                    toughness = bc.toughness
+                    toughness = toughness.replace('*', '4')
+                    if 'toughness' in result:
+                        result['toughness'] = max(eval(toughness), result['toughness'])
+                    else:
+                        result['toughness'] = eval(toughness)
+                except:
+                    pass
             result['filing_name'] = self.get_card_filing_name()
             cache.set(cache_key, result, 60 * 60 * 18)
+        return result
+
+    def get_highest_power_as_int(self):
+        result = None
+        for bc in self.basecard_set.all():
+            try:
+                power = bc.power
+                power = power.replace('*', '4')
+                result = max(eval(power), result)
+            except:
+                pass
+        return result
+
+    def get_highest_toughness_as_int(self):
+        result = None
+        for bc in self.basecard_set.all():
+            try:
+                toughness = bc.toughness
+                toughness = toughness.replace('*', '4')
+                result = max(eval(toughness), result)
+            except:
+                pass
         return result
 
     def get_searchable_document_rules(self, include_names=True, include_symbols=True):
@@ -465,90 +506,107 @@ class PhysicalCard(models.Model):
             result = result.replace("'", "\'")
             #result = result.replace("\\", "\\\\")
 
-        return result
+        return result.lower()
 
     def find_similar_card_ids(self, max_results=18, include_query_card=False):
-        similars = []
-        solrquerystring = self.get_searchable_document(include_names=False, include_symbols=False)
-        solrqueryparts_list = solrquerystring.split()
-        newlist = []
-        for qp in solrqueryparts_list:
-            qp = qp.lower()
-            # Keyword actions get a boost - https://mtg.gamepedia.com/Keyword_action, PLUS 'return', 'deal', 'deals', 'gain', and 'lose'
-            if qp in [
-                    'activate',
-                    'attach',
-                    'cast',
-                    'counter',
-                    'create',
-                    'destroy',
-                    'discard',
-                    'exchange',
-                    'exile',
-                    'fight',
-                    'play',
-                    'regenerate',
-                    'reveal',
-                    'sacrifice',
-                    'scry',
-                    'search',
-                    'shuffle',
-                    'tap',
-                    'untap',
-                    'fateseal',
-                    'clash',
-                    'planeswalk',
-                    'proliferate',
-                    'transform',
-                    'detain',
-                    'populate',
-                    'monstrosity',
-                    'vote',
-                    'bolster',
-                    'manifest',
-                    'support',
-                    'investigate',
-                    'meld',
-                    'goad',
-                    'exert',
-                    'explore',
-                    'assemble',
-                    'return',
-                    'deal',
-                    'deals',
-                    'gain',
-                    'lose']:
-                qp = qp + "^4.0"
-            elif qp in ['creature', 'artifact', 'planeswalker', 'land', 'nonland', 'permanent', 'token', 'instant', 'spell', 'sorcery', 'enchantment', 'noncreature', 'graveyard', 'hand', 'library', 'legendary', 'emblem', 'zone', 'battlefield', 'player']:
-                qp = qp + "^2.0"
-            newlist.append(qp)
-        orstring = " OR ".join(newlist)
-        sqs = SearchQuerySet().raw_search(query_string=orstring)
-        solrcount = 0
-        similars_sqr = list()
-        for sim_sqr in sqs.order_by('-score'):
-            if solrcount >= max_results:
-                break
-            simcard_pk = int(sim_sqr.pk)
-            if include_query_card or int(self.id) != simcard_pk:
-                similars.append(simcard_pk)
-                similars_sqr.append(sim_sqr)
-                solrcount = solrcount + 1
-        return similars_sqr
+        from .search import searchservice, midboost, stopwords, keywords, exclude_words
+
+        phrase = self.get_searchable_document_selfref_nosymbols()
+
+        qq = {"query": {}}
+        queryd = {
+            "query": {
+                "bool": {
+                    "should": [],
+                    "must_not": []
+                }
+            }
+        }
+        qq['query']["function_score"] = {
+            "functions": [
+                {
+                    "exp": {
+                        "cmc": {
+                            "origin": self.get_face_basecard().cmc,
+                            "scale": 1,
+                            "decay": 0.9
+                        }
+                    }
+                }
+            ]
+        }
+        hpower = self.get_highest_power_as_int()
+        if hpower is not None:
+            powerdist = {
+                "gauss": {
+                    "power": {
+                        "origin": hpower,
+                        "scale": 1,
+                        "decay": 0.5
+                    }
+                }
+            }
+            qq['query']["function_score"]['functions'].append(powerdist)
+        htough = self.get_highest_toughness_as_int()
+        if htough is not None:
+            toughdist = {
+                "gauss": {
+                    "toughness": {
+                        "origin": htough,
+                        "scale": 1,
+                        "decay": 0.5
+                    }
+                }
+            }
+            qq['query']["function_score"]['functions'].append(toughdist)
+
+        if not include_query_card:
+            queryd['query']['bool']['must_not'].append({"term": {"_id": str(self.pk)}})
+
+        for term in phrase.split():
+            if term not in exclude_words and term not in stopwords and not term.startswith('cmc'):
+                # BOOKMARK - exclude the "cmc3" terms at this time... trying to solve this with cmc field
+                match = {"match": {"card": term}}
+
+                if term in midboost:
+                    match['match']['card'] = {
+                        "query": term,
+                        "boost": 2
+                    }
+                elif term in keywords:
+                    match['match']['card'] = {
+                        "query": term,
+                        "boost": 4
+                    }
+
+                queryd['query']['bool']['should'].append(match)
+
+        for term in exclude_words:
+            queryd['query']['bool']['must_not'].append({"match": {"card": term}})
+
+        qq['query']["function_score"]['query'] = queryd['query']
+        qq["size"] = max_results
+
+        #import json
+        #sys.stderr.write("query: {}\n".format(json.dumps(qq, indent=2)))
+
+        similars = searchservice.search(index='card', body=qq)
+
+        result = similars['hits']['hits']
+        #sys.stdout.write("result: {}\n".format(json.dumps(result, indent=2)))
+
+        return result
 
     def find_similar_cards(self, max_results=18, include_query_card=False):
         """ Returns Card objects, not PhysicalCard objects.
+
+            BOOKMARK - need to make this work with pagination. Right now it hits the database for every card. :(
         """
         similars = self.find_similar_card_ids(max_results, include_query_card)
         result = []
-        for sim_id in similars:
+        for sim in similars:
             try:
-                card = PhysicalCard.objects.get(pk=sim_id.pk).get_latest_card()
-                # DEFECT. The Haystack implementation appears to do an Inner Join on PhysicalCard and BaseCard, which
-                # returns two resuls for double-faced cards. I can't figure out why it is doing it, but I will just go
-                # to the ORM myself instead. This defect showed itself in the "Similiar Cards" section on Details,
-                # where few or no results would turn up.
-                #card = sim_id.object.get_latest_card()
+                card = PhysicalCard.objects.get(pk=int(sim['_id'])).get_latest_card()
                 if card is not None:
                     # found issue with '1996 World Champion'. Has a PhysicalCard and BaseCard, but no Card.
                     try:
@@ -556,11 +614,11 @@ class PhysicalCard(models.Model):
                     except AttributeError:
                         card.annotations = dict()
                     finally:
-                        card.annotations['similarity_score'] = sim_id.score
+                        card.annotations['similarity_score'] = sim['_score']
                     result.append(card)
             except BaseException as e:
                 logger.error(
-                    "PhysicalCard.find_similiar_cards received exception when getting cards back from Solr/Haystack and trying to find them in the database.",
+                    "PhysicalCard.find_similiar_cards received exception when getting cards back from ElasticSearch and trying to find them in the database.",
                     exc_info=True)
         return result
 

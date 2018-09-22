@@ -10,6 +10,110 @@ from elasticsearch import Elasticsearch, exceptions
 import sys
 from .models import PhysicalCard
 
+midboost = [
+    'creature',
+    'artifact',
+    'planeswalker',
+    'land',
+    'nonland',
+    'permanent',
+    'token',
+    'instant',
+    'spell',
+    'sorcery',
+    'enchantment',
+    'noncreature',
+    'graveyard',
+    'hand',
+    'library',
+    'legendary',
+    'emblem',
+    'zone',
+    'battlefield',
+    'player']
+midboosts = [
+    'creatures',
+    'artifacts',
+    'planeswalkers',
+    'lands',
+    'nonlands',
+    'permanents',
+    'tokens',
+    'instants',
+    'spells',
+    'sorceries',
+    'enchantments',
+    'noncreatures',
+    'graveyards',
+    'hands',
+    'libraries',
+    'legendaries',
+    'emblems',
+    'zones',
+    'players']
+midboost += midboosts
+midboost += ['typecreature', 'typeartifact', 'typeenchantment', 'typeinstant', 'typesorcery', 'typeland',
+             'typeplaneswalker']
+
+stopwords = ['of', 'a', 'an', 'the', 'this', 'that']
+# Keyword actions get a boost - https://mtg.gamepedia.com/Keyword_action,
+# PLUS 'partner','return', 'deal', 'deals', 'gain', and 'lose'
+keywords = [
+    'activate',
+    'attach',
+    'cast',
+    'counter',
+    'create',
+    'destroy',
+    'discard',
+    'double',
+    'exchange',
+    'exile',
+    'fight',
+    'play',
+    'regenerate',
+    'reveal',
+    'sacrifice',
+    'scry',
+    'search',
+    'shuffle',
+    'tap',
+    'untap',
+    'fateseal',
+    'clash',
+    'planeswalk',
+    'abandon',
+    'proliferate',
+    'transform',
+    'detain',
+    'populate',
+    'monstrosity',
+    'vote',
+    'bolster',
+    'manifest',
+    'support',
+    'investigate',
+    'meld',
+    'goad',
+    'exert',
+    'explore',
+    'assemble',
+    'return',
+    'deal',
+    'deals',
+    'gain',
+    'gains',
+    'lose',
+    'loses',
+    'partner']
+exclude_words = [
+    'layout{}'.format(l) for l in (
+        PhysicalCard.TOKEN,
+        PhysicalCard.PLANE,
+        PhysicalCard.SCHEME,
+        PhysicalCard.PHENOMENON,
+        PhysicalCard.VANGUARD)]
+
 
 class SearchService(object):
 

@@ -66,7 +66,6 @@ INSTALLED_APPS = [
     'django_nose',
     'ajax_select',
     'mathfilters',
-    'haystack',
     'content',
     'cards',
     'decks',
@@ -101,21 +100,6 @@ DATABASES = {
     },
 }
 
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
-        'URL': 'http://127.0.0.1:8983/solr/mtgdb',
-        # ...or for multicore...
-        # 'URL': 'http://127.0.0.1:8983/solr/mysite',
-        # NOTE: when turning this on for the first time, a "rebuild_index" is
-        # required. Then, poked the solr instance directly to get it started with
-        # curl
-        # 'http://localhost:8983/solr/select?q=brimaz&spellcheck=true&spellcheck.collate=true&spellcheck.build=true'
-        # Unfortuantely, it didn't work. :(
-        'INCLUDE_SPELLING': True,
-    },
-}
-
 # define the lookup channels in use on the Admin for type-ahead autocomplete
 AJAX_LOOKUP_CHANNELS = {
     #  simple: search Person.objects.filter(name__icontains=q)
@@ -146,7 +130,6 @@ TEMPLATES = [
                  os.path.join(BASE_DIR, 'decks', 'templates'),
                  os.path.join(BASE_DIR, 'mtgdb', 'templates'),
                  os.path.join(SITE_PACKAGES_DIR, 'django', 'contrib', 'admin', 'templates'),
-                 os.path.join(SITE_PACKAGES_DIR, 'haystack', 'templates'),
                  os.path.join(SITE_PACKAGES_DIR, 'ajax_select', 'templates'),
                  ],
         'OPTIONS': {
@@ -255,3 +238,6 @@ DECKBOX_AUTH_SECRET = "patsgamesRocks"
 # Google Analytics
 GA_TRACKING_ID = 'UA-51777211-2'
 GTM_ID = 'GTM-WN9L8RJ'
+
+ELASTICSEARCH_HOST = 'localhost'
+ELASTICSEARCH_PORT = 9200
