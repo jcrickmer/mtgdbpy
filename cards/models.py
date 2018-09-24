@@ -509,7 +509,7 @@ class PhysicalCard(models.Model):
         return result.lower()
 
     def find_similar_card_ids(self, max_results=18, include_query_card=False):
-        from .search import searchservice, midboost, stopwords, keywords, exclude_words
+        from .search import searchservice, midboost, stopwords, keywords, exclude_words, key_phrases
 
         phrase = self.get_searchable_document_selfref_nosymbols()
 
@@ -580,6 +580,10 @@ class PhysicalCard(models.Model):
                     }
 
                 queryd['query']['bool']['should'].append(match)
+        for kphrase in key_phrases:
+            if phrase.find(kphrase) > -1:
+                kpmatch = {"match_phrase": {"card": {'query': kphrase, 'boost': 4}}}
+                queryd['query']['bool']['should'].append(kpmatch)
 
         for term in exclude_words:
             queryd['query']['bool']['must_not'].append({"match": {"card": term}})

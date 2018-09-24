@@ -54,10 +54,17 @@ midboosts = [
 midboost += midboosts
 midboost += ['typecreature', 'typeartifact', 'typeenchantment', 'typeinstant', 'typesorcery', 'typeland',
              'typeplaneswalker']
+# PLUS 'partner','return', 'deal', 'deals', 'gain', and 'lose'
+midboost += ['deal',
+             'deals',
+             'gain',
+             'gains',
+             'lose',
+             'loses']
 
 stopwords = ['of', 'a', 'an', 'the', 'this', 'that']
 # Keyword actions get a boost - https://mtg.gamepedia.com/Keyword_action,
-# PLUS 'partner','return', 'deal', 'deals', 'gain', and 'lose'
+# PLUS 'partner','return'
 keywords = [
     'activate',
     'attach',
@@ -74,9 +81,11 @@ keywords = [
     'regenerate',
     'reveal',
     'sacrifice',
+    'sacrifices',
     'scry',
-    'search',
+    #    'search',
     'shuffle',
+    'shuffles',
     'tap',
     'untap',
     'fateseal',
@@ -99,12 +108,6 @@ keywords = [
     'explore',
     'assemble',
     'return',
-    'deal',
-    'deals',
-    'gain',
-    'gains',
-    'lose',
-    'loses',
     'partner']
 exclude_words = [
     'layout{}'.format(l) for l in (
@@ -113,6 +116,9 @@ exclude_words = [
         PhysicalCard.SCHEME,
         PhysicalCard.PHENOMENON,
         PhysicalCard.VANGUARD)]
+key_phrases = [
+    'exile target creature'
+]
 
 
 class SearchService(object):
