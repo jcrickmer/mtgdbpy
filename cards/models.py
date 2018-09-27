@@ -19,7 +19,7 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 
 from cards.view_utils import convertSymbolsToHTML
-from cards.text_utils import filing_string
+from cards.text_utils import filing_string, remove_punctuation
 from django.utils.safestring import mark_safe
 
 from django.db.models import Max, Min, Count, Avg
@@ -303,6 +303,8 @@ class PhysicalCard(models.Model):
                     rules = 'tap: add manared to your mana pool.'
                 elif basecard.name == 'Forest':
                     rules = 'tap: add managreen to your mana pool.'
+                elif basecard.name == 'Waste':
+                    rules = 'tap: add manacolorless to your mana pool.'
             rules = rules.replace(basecard.name, 'cardselfreference')
             rules = rules.replace(':', ' activatedability ')
             rules = rules.replace('When ', 'when triggeredability ')
@@ -349,6 +351,7 @@ class PhysicalCard(models.Model):
 
             result = result + rules + "\n"
 
+        # repacle numbers that have plus and minus signs in front of them.
         pattern = re.compile(r'\+([Xx\d]+)')
         result = pattern.sub(lambda m: 'plus{}'.format(m.group(1)), result)
         pattern = re.compile(ur'[\-−\u2010-\u2015]([Xx\d]+)', re.U)
@@ -360,6 +363,9 @@ class PhysicalCard(models.Model):
         remindpat = re.compile(ur'\([^\)]+\)', re.U)
         result = remindpat.sub('', result)
 
+        if not include_symbols:
+            result = remove_punctuation(result)
+        result = result.replace("\n", ' ')
         return result
 
     def get_searchable_document_color(self):
@@ -456,10 +462,11 @@ class PhysicalCard(models.Model):
 
     def _get_searchable_document_nocache(self, include_names=True, include_symbols=True):
         result = ''
-        result = result + self.get_searchable_document_rules(include_names, include_symbols)
-        result = result + self.get_searchable_document_color()
-        result = result + self.get_searchable_document_manacost()
-        result = result + self.get_searchable_document_types()
+        result = result + self.get_searchable_document_rules(include_names, include_symbols) + ' '
+        result = result + self.get_searchable_document_color() + ' '
+        result = result + self.get_searchable_document_manacost() + ' '
+        result = result + self.get_searchable_document_types() + ' '
+        result = ' '.join(result.split())
         for basecard in self.basecard_set.all():
             # need to add something that does a regexp match on hybrid mana in mana cost and rules text and adds a term for 'manahybrid'
 
@@ -467,52 +474,36 @@ class PhysicalCard(models.Model):
 
             if basecard.power is not None:
                 try:
-                    result = result + 'power' + str(basecard.power) + "\n"
+                    result = result + ' power' + str(basecard.power) + "\n"
                 except:
                     pass
             if basecard.toughness is not None:
                 try:
-                    result = result + 'toughness' + str(basecard.toughness) + "\n"
+                    result = result + ' toughness' + str(basecard.toughness) + "\n"
                 except:
                     pass
             if basecard.loyalty is not None:
                 try:
-                    result = result + 'loyalty' + str(basecard.loyalty) + "\n"
+                    result = result + ' loyalty' + str(basecard.loyalty) + "\n"
                 except:
                     pass
 
             result = result + "\n"
 
-        result = result + 'layout' + self.layout + "\n"
+        result = result + ' layout' + self.layout + "\n"
         if self.basecard_set.all().count() > 1:
-            result = "multicard\n" + result
+            result = " multicard\n" + result
 
         if not include_symbols:
-            result = result.replace("/", " ")
-            result = result.replace(",", " ")
-            result = result.replace(".", " ")
-            result = result.replace(":", " ")
-            result = result.replace(";", " ")
-            result = result.replace("{", " ")
-            result = result.replace("}", " ")
-            result = result.replace("?", " ")
-            result = result.replace("~", "\~")
-            result = result.replace("*", "\*")
-            result = result.replace("-", "\-")
-            result = result.replace("+", "\+")
-            result = result.replace("|", "\|")
-            result = result.replace("(", "")
-            result = result.replace(")", "")
-            result = result.replace("'", "\'")
-            #result = result.replace("\\", "\\\\")
+            result = remove_punctuation(result)
 
         return result.lower()
 
     def find_similar_card_ids(self, max_results=18, include_query_card=False):
-        from .search import searchservice, midboost, stopwords, keywords, exclude_words, key_phrases
+        from .search import searchservice, midboost, stopwords, keywords, exclude_words, key_phrases, cardtypes
 
-        phrase = self.get_searchable_document_selfref_nosymbols()
-
+        phrase = self.get_searchable_document_selfref()
+        #sys.stderr.write("find_similar_cards_ids with phrase\"{}\"\n".format(phrase))
         qq = {"query": {}}
         queryd = {
             "query": {
@@ -529,7 +520,7 @@ class PhysicalCard(models.Model):
                         "cmc": {
                             "origin": self.get_face_basecard().cmc,
                             "scale": 1,
-                            "decay": 0.9
+                            "decay": 0.85
                         }
                     }
                 }
@@ -542,7 +533,7 @@ class PhysicalCard(models.Model):
                     "power": {
                         "origin": hpower,
                         "scale": 1,
-                        "decay": 0.5
+                        "decay": 0.95
                     }
                 }
             }
@@ -554,7 +545,7 @@ class PhysicalCard(models.Model):
                     "toughness": {
                         "origin": htough,
                         "scale": 1,
-                        "decay": 0.5
+                        "decay": 0.95
                     }
                 }
             }
@@ -563,7 +554,11 @@ class PhysicalCard(models.Model):
         if not include_query_card:
             queryd['query']['bool']['must_not'].append({"term": {"_id": str(self.pk)}})
 
+        iamtypeslist = []
         for term in phrase.split():
+            term = term.replace('.', '')
+            if term in cardtypes:
+                iamtypeslist.append(term)
             if term not in exclude_words and term not in stopwords and not term.startswith('cmc'):
                 # BOOKMARK - exclude the "cmc3" terms at this time... trying to solve this with cmc field
                 match = {"match": {"card": term}}
@@ -573,16 +568,51 @@ class PhysicalCard(models.Model):
                         "query": term,
                         "boost": 2
                     }
-                elif term in keywords:
+                elif term in keywords or term in cardtypes:
                     match['match']['card'] = {
                         "query": term,
                         "boost": 4
                     }
 
                 queryd['query']['bool']['should'].append(match)
+        for ct in cardtypes:
+            if ct not in iamtypeslist:
+                kpmatch = {"match": {"card": {'query': ct, 'boost': -1.1}}}
+                queryd['query']['bool']['should'].append(kpmatch)
+
+        # let's try word bigrams...
+        rules_text = self.get_searchable_document_rules(include_names=False, include_symbols=False)
+        bigrams = []
+        rwords = rules_text.split()
+        for rwit, rword in enumerate(rwords):
+            # do not make bigrams across sentences.
+            if '.' not in rword:
+                try:
+                    next_word = rwords[rwit + 1]
+                    next_word = next_word.replace('.', '')
+                    pboost = 1.0
+                    if rword not in stopwords and next_word not in stopwords:
+                        if rword in midboost:
+                            pboost = pboost * 2.5
+                        if next_word in midboost:
+                            pboost = pboost * 2.5
+                        if rword in keywords:
+                            pboost = pboost * 4.0
+                        if next_word in keywords:
+                            pboost = pboost * 4.0
+                        bigrams.append((rword, next_word, pboost))
+                except:
+                    pass
+
+        for bigram in bigrams:
+            word0 = bigram[0]
+            word1 = bigram[1].replace('.', '')
+            kpmatch = {"match_phrase": {"card": {'query': word0 + ' ' + word1, 'boost': bigram[2]}}}
+            queryd['query']['bool']['should'].append(kpmatch)
+
         for kphrase in key_phrases:
             if phrase.find(kphrase) > -1:
-                kpmatch = {"match_phrase": {"card": {'query': kphrase, 'boost': 4}}}
+                kpmatch = {"match_phrase": {"card": {'query': kphrase, 'boost': 12}}}
                 queryd['query']['bool']['should'].append(kpmatch)
 
         for term in exclude_words:

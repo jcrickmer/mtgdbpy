@@ -460,6 +460,7 @@ def filing_string_rule_16(input):
         u'+',
         u',',
         u'-',
+        "\u2014",
         u'/',
         u':',
         u';',
@@ -475,7 +476,8 @@ def filing_string_rule_16(input):
         u'{',
         u'|',
         u'}',
-        u'~']
+        u'~',
+        "\u2022"]
     for u in range(161, 191):
         #ignored_punctuation.append(unicode(str(chr(u)), "ascii"))
         ignored_punctuation.append(unichr(u))
@@ -484,4 +486,17 @@ def filing_string_rule_16(input):
         #result = re.sub(re.escape(symb), '', result)
         result = result.replace(symb, '')
 
+    return result
+
+# This DOES NOT remove the period (".") on purpose!
+
+
+def remove_punctuation(input):
+    # Note that the Library of Congress system recognize the ampersand as a "word", not punctuation. So, let's rely on
+    # filing rule 16, AND still remove the Ampersand.
+    result = filing_string_rule_16(input)
+    result = result.replace('&', ' ')
+    # remove extra whitespace
+    parts = result.split()
+    result = " ".join(parts)
     return result

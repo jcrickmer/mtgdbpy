@@ -31,10 +31,26 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        hope = {"Geth's Verdict": ["Diabolic Edict", "Smallpox", "Gnawing Zombie", "Crackling Doom", "To the Slaughter", "Urborg Justice"],
-                "Path to Exile": ["Swords to Plowshares", "Cloudshift", "Settle the Wreckage", "Reality Shift", "Blazing Hope",
-                                   "Gaze of Justice"]
-                }
+        hope = {
+            "Geth's Verdict": [
+                "Diabolic Edict", "Smallpox", "Gnawing Zombie", "Crackling Doom", "To the Slaughter", "Urborg Justice"],
+            "Path to Exile": [
+                "Swords to Plowshares", "Cloudshift", "Settle the Wreckage", "Reality Shift", "Blazing Hope", "Gaze of Justice"],
+            "Sigarda, Host of Herons": [
+                "Tajuru Preserver", "Sphinx of the Final Word", "Linvala, Keeper of Silence", "Dragonlord Dromoka"],
+            "Lightning Bolt": [
+                "Shock", "Shard Volley"],
+            "Island": [
+                "Seat of the Synod", "Snow-covered Island"],
+            "Baneslayer Angel": [
+                "Lyra Dawnbringer", "Sphinx of the Steel Wind", "Akroma, Angel of Wrath", "Gisela, the Broken Blade"],
+            "Bloodstained Mire": [
+                "Scalding Tarn", "Verdant Catacombs", "Marsh Flats"],
+            "Noble Hierarch": [
+                "Cathedral of War", "Fyndhorn Elves", "Avacyn's Pilgrim"],
+            "Brainstorm": [
+                "Ponder", "Preordain", "Anticipate", "Sensei's Divining Top"],
+        }
 
         for test_name in hope:
             bc = BaseCard.objects.filter(name=test_name).first()
@@ -45,6 +61,6 @@ class Command(BaseCommand):
             for res_name in hope[test_name]:
                 if res_name in sim_names:
                     match_count += 1
-            sys.stdout.write("{}: {:02%}\n".format(pc.get_card_name(),float(match_count) / float(len(hope[test_name]))))
+            sys.stdout.write("{}: {:02%}\n".format(pc.get_card_name(), float(match_count) / float(len(hope[test_name]))))
             for res_name in hope[test_name]:
                 sys.stdout.write("    {}: {}\n".format(res_name, res_name in sim_names))

@@ -20,6 +20,7 @@ midboost = [
     'token',
     'instant',
     'spell',
+    'ability',
     'sorcery',
     'enchantment',
     'noncreature',
@@ -41,6 +42,7 @@ midboosts = [
     'tokens',
     'instants',
     'spells',
+    'abilities',
     'sorceries',
     'enchantments',
     'noncreatures',
@@ -52,7 +54,7 @@ midboosts = [
     'zones',
     'players']
 midboost += midboosts
-midboost += ['typecreature', 'typeartifact', 'typeenchantment', 'typeinstant', 'typesorcery', 'typeland',
+cardtypes = ['typecreature', 'typeartifact', 'typeenchantment', 'typeinstant', 'typesorcery', 'typeland',
              'typeplaneswalker']
 # PLUS 'partner','return', 'deal', 'deals', 'gain', and 'lose'
 midboost += ['deal',
@@ -62,9 +64,9 @@ midboost += ['deal',
              'lose',
              'loses']
 
-stopwords = ['of', 'a', 'an', 'the', 'this', 'that']
+stopwords = ['of', 'for', 'to', 'a', 'an', 'the', 'this', 'that']
 # Keyword actions get a boost - https://mtg.gamepedia.com/Keyword_action,
-# PLUS 'partner','return'
+# PLUS 'partner','return', "can't"
 keywords = [
     'activate',
     'attach',
@@ -108,7 +110,9 @@ keywords = [
     'explore',
     'assemble',
     'return',
-    'partner']
+    'partner',
+    "can't",
+    'cant']
 exclude_words = [
     'layout{}'.format(l) for l in (
         PhysicalCard.TOKEN,
@@ -117,7 +121,8 @@ exclude_words = [
         PhysicalCard.PHENOMENON,
         PhysicalCard.VANGUARD)]
 key_phrases = [
-    'exile target creature'
+    'exile target creature',
+    "can't cause"
 ]
 
 
