@@ -803,13 +803,19 @@ def formatstats(request, formatname="modern"):
     top_formats = Format.objects.filter(formatname__iexact=formatname, start_date__lte=timezone.now()).order_by('-start_date')
     top_format = None
     next_format = None
+    prev_formats = []
     try:
         top_format = top_formats[0]
         next_format = top_formats[1]
+        for tf in top_formats[1:]:
+            if len(prev_formats) < 3:
+                prev_formats.append(tf)
     except IndexError:
         raise Http404
+    context['current_format'] = top_format
     context['formatname'] = top_format.formatname
-
+    context['current_formats'] = Format.objects.filter(start_date__lte=timezone.now(),
+                                                       end_date__gte=timezone.now()).order_by('format')
     # leverage full page cache if it is available
     full_page_cache_key = make_template_fragment_key('card_formatstats_html', [context['formatname'], ])
     from_cache = False
@@ -879,6 +885,8 @@ SELECT s1.physicalcard_id AS id,
     top_cr = CardRating.objects.filter(format=top_format, physicalcard_id__in=[g.id for g in top])
     context['top'] = top
     context['top_cr'] = top_cr
+
+    context['formatstat'] = FormatStat.objects.filter(format=top_format).first()
 
     response = render(request, 'cards/formatstats.html', context)
     return response

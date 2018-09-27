@@ -68,7 +68,7 @@ h5.panel-title a:hover {
   font-size: 1.1em;
   font-weight: 500;
   vertical-align: middle;
-  textdecoration: none:
+  textdecoration: none;
 }
 .magic-symbol-small {
   background: url("/cn/glyphs/symbols_small.png");
@@ -291,7 +291,22 @@ th {
   font-weight: bold;
   vertical-align: bottom;
 }
-
+table.formatstats {
+  border-collapse: collapse;
+}
+table.formatstats th {
+  vertical-align: bottom !important;
+}
+table.formatstats tr {
+  border-top: 1px solid rgba(0,0,0,0.12);
+  border-bottom: 1px solid rgba(0,0,0,0.12);
+}
+.positive-change {
+  color: #2E7D32;
+}
+.negative-change {
+  color: #C62828;
+}
 th, td {
   padding: 0.5em;
 }
