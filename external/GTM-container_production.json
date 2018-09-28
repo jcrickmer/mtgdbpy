@@ -1,12 +1,13 @@
 {
     "exportFormatVersion": 2,
-    "exportTime": "2018-02-06 19:10:26",
+    "exportTime": "2018-09-28 19:37:57",
     "containerVersion": {
-        "path": "accounts/2441324769/containers/8336345/versions/4",
+        "path": "accounts/2441324769/containers/8336345/versions/5",
         "accountId": "2441324769",
         "containerId": "8336345",
-        "containerVersionId": "4",
-        "name": "Tutor Selects",
+        "containerVersionId": "5",
+        "name": "Cart tracking",
+        "description": "Add to Cart button is now being tracked in GA.",
         "container": {
             "path": "accounts/2441324769/containers/8336345",
             "accountId": "2441324769",
@@ -16,10 +17,59 @@
             "usageContext": [
                 "WEB"
             ],
-            "fingerprint": "1517936084876",
+            "fingerprint": "1538162802700",
             "tagManagerUrl": "https://tagmanager.google.com/#/container/accounts/2441324769/containers/8336345/workspaces?apiLink=container"
         },
         "tag": [
+            {
+                "accountId": "2441324769",
+                "containerId": "8336345",
+                "tagId": "8",
+                "name": "GA Event - Add to Cart",
+                "type": "ua",
+                "parameter": [
+                    {
+                        "type": "BOOLEAN",
+                        "key": "nonInteraction",
+                        "value": "false"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "overrideGaSettings",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "eventCategory",
+                        "value": "Add to Cart"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "trackType",
+                        "value": "TRACK_EVENT"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "gaSettings",
+                        "value": "{{UA Tracking Id}}"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "eventAction",
+                        "value": "click"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "eventLabel",
+                        "value": "{{Page URL}}"
+                    }
+                ],
+                "fingerprint": "1538162802700",
+                "firingTriggerId": [
+                    "16"
+                ],
+                "tagFiringOption": "ONCE_PER_EVENT"
+            },
             {
                 "accountId": "2441324769",
                 "containerId": "8336345",
@@ -365,6 +415,31 @@
             }
         ],
         "trigger": [
+            {
+                "accountId": "2441324769",
+                "containerId": "8336345",
+                "triggerId": "16",
+                "name": "Add to Cart",
+                "type": "CLICK",
+                "filter": [
+                    {
+                        "type": "CONTAINS",
+                        "parameter": [
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg0",
+                                "value": "{{Click Classes}}"
+                            },
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg1",
+                                "value": "btn-cart"
+                            }
+                        ]
+                    }
+                ],
+                "fingerprint": "1538162528799"
+            },
             {
                 "accountId": "2441324769",
                 "containerId": "8336345",
@@ -826,7 +901,7 @@
                 "name": "Click Text"
             }
         ],
-        "fingerprint": "1517936113783",
-        "tagManagerUrl": "https://tagmanager.google.com/#/versions/accounts/2441324769/containers/8336345/versions/4?apiLink=version"
+        "fingerprint": "1538162979432",
+        "tagManagerUrl": "https://tagmanager.google.com/#/versions/accounts/2441324769/containers/8336345/versions/5?apiLink=version"
     }
 }
