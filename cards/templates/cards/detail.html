@@ -553,7 +553,7 @@ drawPrices = function(val) {
             if (isNaN(p_f) || p_f <= 0.0 || p_f > 25000.0) {
                 disp_price = "Call";
             }
-            $("#pricing-table").append("<tr class='" + tr_css_classes + "'><td class='price-expansion'><a href='/cards/" + cp.mvid + "/'>" + xp_ident + "</a></td><td class='price-printing'>" + cp.printing + "</td><td class='price-price'>$" + disp_price + "</td></tr>");
+            $("#pricing-table").append("<tr class='" + tr_css_classes + "' data-price='" + disp_price + "'><td class='price-expansion'><a href='/cards/" + cp.mvid + "/'>" + xp_ident + "</a></td><td class='price-printing'>" + cp.printing + "</td><td class='price-price'>$" + disp_price + "</td></tr>");
         }
         $("#pricing-table").append("<tr><td colspan='3' class='pricing-table-add'><form action='https://www.patsgames.com/store/custFCdeck.pl' method='post' enctype='multipart/form-data' target='deckbox'><input type='hidden' name='BULKIN' value='1 {{physicalcard.get_card_name}}'><input type='hidden' name='QTY:{{ request_card.multiverseid }}' value='1'><input type='hidden' name='NOTES:{{ request_card.multiverseid }}' value=''><input class='button btn-cart' type='submit' name='VALUE' value='ADD TO DECKBOX'></form></td></tr>");
     } else {
