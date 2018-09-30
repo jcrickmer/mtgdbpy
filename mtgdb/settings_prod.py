@@ -20,7 +20,6 @@ DATABASES = {
         'PASSWORD': 'godzilla'
     },
 }
-HAYSTACK_CONNECTIONS['default']['URL'] = 'http://127.0.0.1:8983/solr/mtgdb'
 
 LOGGING = {
     'version': 1,

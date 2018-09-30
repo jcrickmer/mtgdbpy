@@ -1,38 +1,59 @@
 {
-  "settings" : {
-    "analysis" : {
-      "analyzer" : {
-        "trigram_analyzer" : {
-          "tokenizer" : "trigram_tokenizer",
-          "filter": "lowercase"
-        }
-      },
-      "tokenizer" : {
-        "trigram_tokenizer": {
-          "type": "ngram",
-          "min_gram": 3,
-          "max_gram": 5,
-          "token_chars": [
-            "letter",
-            "digit"
-          ]
-        }
-      }
-    }
-  },
-  "mappings": {
-    "cardname": {
-      "properties": {
-        "name": {
-          "type": "text",
-          "fields": {
-            "ngram": {
-              "type": "text",
-              "analyzer": "trigram_analyzer"
+    "mappings": {
+        "cardname": {
+            "properties": {
+                "latest_multiverseid": {
+                    "type": "long"
+                },
+                "name": {
+                    "fields": {
+                        "ngram": {
+                            "analyzer": "trigram_analyzer",
+                            "type": "text"
+                        }
+                    },
+                    "type": "text"
+                },
+                "name_parts": {
+                    "fields": {
+                        "keyword": {
+                            "ignore_above": 256,
+                            "type": "keyword"
+                        }
+                    },
+                    "type": "text"
+                },
+                "slug": {
+                    "fields": {
+                        "keyword": {
+                            "ignore_above": 256,
+                            "type": "keyword"
+                        }
+                    },
+                    "type": "text"
+                }
             }
-          }
         }
-      }
+    },
+    "settings": {
+        "analysis": {
+            "analyzer": {
+                "trigram_analyzer": {
+                    "filter": "lowercase",
+                    "tokenizer": "trigram_tokenizer"
+                }
+            },
+            "tokenizer": {
+                "trigram_tokenizer": {
+                    "max_gram": 5,
+                    "min_gram": 3,
+                    "token_chars": [
+                        "letter",
+                        "digit"
+                    ],
+                    "type": "ngram"
+                }
+            }
+        }
     }
-  }
 }
