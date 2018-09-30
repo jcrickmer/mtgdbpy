@@ -555,7 +555,7 @@ drawPrices = function(val) {
             }
             $("#pricing-table").append("<tr class='" + tr_css_classes + "' data-price='" + disp_price + "'><td class='price-expansion'><a href='/cards/" + cp.mvid + "/'>" + xp_ident + "</a></td><td class='price-printing'>" + cp.printing + "</td><td class='price-price'>$" + disp_price + "</td></tr>");
         }
-        $("#pricing-table").append("<tr><td colspan='3' class='pricing-table-add'><form action='https://www.patsgames.com/store/custFCdeck.pl' method='post' enctype='multipart/form-data' target='deckbox'><input type='hidden' name='BULKIN' value='1 {{physicalcard.get_card_name}}'><input type='hidden' name='QTY:{{ request_card.multiverseid }}' value='1'><input type='hidden' name='NOTES:{{ request_card.multiverseid }}' value=''><input class='button btn-cart' type='submit' name='VALUE' value='ADD TO DECKBOX'></form></td></tr>");
+        $("#pricing-table").append("<tr><td colspan='3' class='pricing-table-add'><form action='https://www.patsgames.com/store/custFCdeck.pl' method='post' enctype='multipart/form-data' target='deckbox'><input type='hidden' name='BULKIN' value='1 {{physicalcard.get_card_name|escape}}'><input type='hidden' name='QTY:{{ request_card.multiverseid }}' value='1'><input type='hidden' name='NOTES:{{ request_card.multiverseid }}' value=''><input class='button btn-cart' type='submit' name='VALUE' value='ADD TO DECKBOX'></form></td></tr>");
     } else {
         $("#pricing-container").append("<div class='pricing-login-prompt'><a href='{{settings.DECKBOX_LOGIN_URL}}' target='deckbox'>Log in to Pat\'s Games<br>to see prices!</div>");
     }
