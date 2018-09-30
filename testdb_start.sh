@@ -27,7 +27,7 @@ mysqld_safe --defaults-file=/tmp/testramdisk/my.cnf &
 sleep 3
 mysqladmin -S /tmp/testramdisk/mysql.sock -u root password tester
 
-source /home/jason/mtgdb/bin/activate
+source /home/jason/venvs/mtgdb/bin/activate
 alias fasttest='./manage.py test --settings=mtgdb.settings_test'
 echo "alias 'fasttest' created."
 echo "Completed!"

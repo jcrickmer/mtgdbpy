@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from cards.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, Format, FormatBasecard, SearchPredicate, CardType, CardSubtype, CardColor
+from cards.models import Supertype, CardSupertype
 from datetime import datetime, date
 from cards.management.commands import initcardsdatabase
 
@@ -22,6 +23,7 @@ class TestLoadHelper():
         self.color_loader()
         self.rarity_loader()
 
+        self.supertype_loader()
         self.type_loader()
         self.subtype_loader()
         self.expansionset_example_loader()
@@ -31,28 +33,35 @@ class TestLoadHelper():
     def type_loader(self):
         types = (
             'Artifact',
-            'Basic',
             'Conspiracy',
             'Creature',
             'Enchantment',
             'Instant',
             'Land',
-            'Legendary',
-            'Ongoing',
             'Phenomenon',
             'Plane',
             'Planeswalker',
             'Scheme',
-            'Snow',
             'Sorcery',
             'Tribal',
-            'Vanguard',
-            'World')
+            'Vanguard')
 
         for tt in types:
             tto = Type()
             tto.type = tt
             tto.save()
+
+    def supertype_loader(self):
+        supertypes = (
+            'Basic',
+            'Legendary',
+            'Snow',
+            'World')
+
+        for st in supertypes:
+            sto = Supertype()
+            sto.supertype = st
+            sto.save()
 
     def subtype_loader(self):
         subtypes = (
@@ -99,7 +108,12 @@ class TestLoadHelper():
                    ['Standard', 'Standard_2014-09-26', datetime(2014, 9, 26), datetime(2015, 1, 22)],
                    ['Standard', 'Standard_2015-01-23', datetime(2015, 1, 23), datetime(2015, 3, 26)],
                    ['Commander', 'Commander_2015-01-17', datetime(2015, 1, 17), datetime(2015, 3, 26)],
-                   ['Modern', 'Modern_2015-01-23', datetime(2015, 1, 23), datetime(2015, 3, 26)]]
+                   ['Modern', 'Modern_2015-01-23', datetime(2015, 1, 23), datetime(2015, 2, 1)],
+                   ['Modern', 'Modern_2015-02-01', datetime(2015, 2, 1), datetime(2015, 3, 1)],
+                   ['Modern', 'Modern_2015-03-01', datetime(2015, 3, 1), datetime(2015, 4, 1)],
+                   ['Modern', 'Modern_2015-04-01', datetime(2015, 4, 1), datetime(2015, 5, 1)],
+                   ['Modern', 'Modern_2015-05-01', datetime(2015, 5, 1), datetime(2015, 6, 1)],
+                   ]
 
         for fmat in formats:
             fff = Format()
@@ -113,7 +127,7 @@ class TestLoadHelper():
         lands = [['Plains', 'w'], ['Island', 'u'], ['Swamp', 'b'], ['Mountain', 'r'], ['Forest', 'g']]
 
         bl_rarity = Rarity.objects.get(pk='b')
-        basic_type = Type.objects.filter(type='Basic').first()
+        basic_supertype = Supertype.objects.filter(supertype='Basic').first()
         land_type = Type.objects.filter(type='Land').first()
         color = Color.objects.get(pk='c')
         formats = Format.objects.all()
@@ -128,18 +142,18 @@ class TestLoadHelper():
             bc.name = landd[0]
             bc.mana_cost = ''
             bc.cmc = 0
-            bc.rules_text = '{t}: Add {' + landd[1] + '} to your mana pool.'
+            bc.rules_text = '{t}: Add {' + landd[1] + '}.'
             bc.save()
 
-            ct = CardType()
-            ct.basecard = bc
-            ct.position = 0
-            ct.type = basic_type
-            ct.save()
+            cst = CardSupertype()
+            cst.basecard = bc
+            cst.position = 0
+            cst.supertype = basic_supertype
+            cst.save()
 
             ct2 = CardType()
             ct2.basecard = bc
-            ct2.position = 1
+            ct2.position = 0
             ct2.type = land_type
             ct2.save()
 

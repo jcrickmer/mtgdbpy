@@ -2,6 +2,7 @@
 
 from django.test import TestCase, TransactionTestCase
 from cards.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, FormatBasecard, SearchPredicate, Format
+from cards.models import Supertype, CardSupertype
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -55,27 +56,36 @@ class HelperTestCase(TestCase):
 
         types = (
             'Artifact',
-            'Basic',
             'Conspiracy',
             'Creature',
             'Enchantment',
             'Instant',
             'Land',
-            'Legendary',
-            'Ongoing',
             'Phenomenon',
             'Plane',
             'Planeswalker',
             'Scheme',
-            'Snow',
             'Sorcery',
             'Tribal',
-            'Vanguard',
-            'World')
+            'Vanguard')
         dbtypes = Type.objects.all().order_by('type')
         self.assertEqual(dbtypes.count(), len(types))
         for ttt in dbtypes:
             self.assertTrue(ttt.type in types)
+
+    def test_supertypes(self):
+        tlh = TestLoadHelper()
+        tlh.basics_loader()
+
+        supertypes = (
+            'Basic',
+            'Legendary',
+            'Snow',
+            'World')
+        dbtypes = Supertype.objects.all().order_by('supertype')
+        self.assertEqual(dbtypes.count(), len(supertypes))
+        for ttt in dbtypes:
+            self.assertTrue(ttt.supertype in supertypes)
 
     def test_subtypes(self):
         tlh = TestLoadHelper()
@@ -114,7 +124,7 @@ class HelperTestCase(TestCase):
         tlh.basics_loader()
 
         aformats = Format.objects.all()
-        self.assertEquals(aformats.count(), 5)
+        self.assertEquals(aformats.count(), 9)
 
     def test_expansionsets(self):
         tlh = TestLoadHelper()
