@@ -1,5 +1,5 @@
 from django.template.defaulttags import register
-
+import sys
 
 @register.filter
 def get_item(dictionary, key):
@@ -18,3 +18,17 @@ def remove_whitespace(text):
         breaker = breaker + 1
     result = result.strip()
     return result
+
+@register.filter
+def as_percentage_string(floatval, precision=2):
+    ff = floatval * 100
+    frmt = '{' + '0:.' + str(precision) + 'f}%'
+    return frmt.format(ff)
+
+@register.filter
+def card_rating(physicalcard, format):
+    cr = physicalcard.get_cardratings().filter(format=format).first()
+    if cr is not None:
+        return cr.cardninjaRating()
+    else:
+        return None

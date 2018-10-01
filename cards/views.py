@@ -866,27 +866,13 @@ SELECT s1.physicalcard_id AS id,
     context['trendingdown'] = tdown
     context['trendingdown_cr'] = down_cr
 
-    top_raw_sql = '''
-SELECT s1.physicalcard_id AS id,
-       100 * s2.percentage_of_all_cards AS prev_percentage,
-       100 * s1.percentage_of_all_cards AS current_percentage,
-       100 * (s2.percentage_of_all_cards - s1.percentage_of_all_cards) AS delta,
-       case when s2.percentage_of_all_cards = 0 then NULL else 100 * (((s2.percentage_of_all_cards - s1.percentage_of_all_cards) / s2.percentage_of_all_cards) - 1) end AS per_change,
-       100 * (s1.deck_count / fs1.tournamentdeck_count) decks_current_percentage,
-       100 * (s2.deck_count / fs2.tournamentdeck_count) decks_prev_percentage,
-       case when fs2.tournamentdeck_count = 0 then NULL else 100 * ((s1.deck_count / fs1.tournamentdeck_count) - (s2.deck_count / fs2.tournamentdeck_count)) / (s2.deck_count / fs2.tournamentdeck_count) end AS decks_per_change
-  FROM formatcardstat s1
-       JOIN basecard bc ON s1.physicalcard_id = bc.physicalcard_id AND s1.format_id = %s AND bc.cardposition IN ('F','L','U')
-       JOIN formatstat fs1 ON fs1.format_id = s1.format_id
-       LEFT JOIN formatcardstat s2 ON s1.physicalcard_id = s2.physicalcard_id AND s2.format_id = %s
-       LEFT JOIN formatstat fs2 ON fs2.format_id = s2.format_id
- ORDER BY s1.percentage_of_all_cards DESC LIMIT 100'''
-    top = PhysicalCard.objects.raw(top_raw_sql, [top_format.id, next_format.id])
-    top_cr = CardRating.objects.filter(format=top_format, physicalcard_id__in=[g.id for g in top])
-    context['top'] = top
-    context['top_cr'] = top_cr
+    context['top'] = FormatCardStat.objects.top_cards_by_format(format=top_format, format_lookback_days=183)[:100]
 
     context['formatstat'] = FormatStat.objects.filter(format=top_format).first()
+
+    lbd = top_format.start_date - timedelta(days=183)
+    context['past_formats'] = Format.objects.filter(formatname=top_format.formatname, end_date__gte=lbd)\
+        .exclude(pk=top_format.pk)
 
     response = render(request, 'cards/formatstats.html', context)
     return response

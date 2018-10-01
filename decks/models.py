@@ -4,7 +4,7 @@ from django.db import models
 from datetime import datetime, date, timedelta
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-from django.db.models import Max, Min, Count, Sum, Avg
+from django.db.models import Max, Min, Count, Sum, Avg, F, Func
 
 from django.db import connection
 
@@ -426,7 +426,7 @@ def safelog(msg):
 
 class FormatStat(models.Model):
     # Number of decks that have to be in a tournament for it to qualify
-    MIN_DECKS_IN_TOURNAMENT = 1
+    MIN_DECKS_IN_TOURNAMENT = 2
 
     id = models.AutoField(primary_key=True)
     format = models.ForeignKey('cards.Format')
@@ -506,6 +506,32 @@ class FormatStat(models.Model):
         db_table = 'formatstat'
 
 
+class FormatCardStatManager(models.Manager):
+
+    def top_cards_by_format(self, format, format_lookback_days=1):
+        ''' Get the most played cards in this format, annotated with same goodies.
+
+         * prev_percentage: the 'percentage_of_all_cards' from the  previous format(s)
+         * delta: the difference between 'percentage_of_all_cards' from the  previous format(s) and this 'format'
+         * per_change: the percentage change between 'prev_percentage' and 'delta'
+
+        :param format: cards.models.Format
+        :param format_lookback_days: int of the nubmer of days to look back. For example, a value of 180 days means
+               that this method will look at all Formats prior to 'format' that were active in the last 180 days (which
+               may include a Format that started 210 days ago, but ended 179 days ago).
+        :return: An iterable set of FormatCardStat objects, in descending order of percentage_of_call_cards. And,
+                 each FormatCardStat is annotated with the percentage change from the preceding formats of the last
+                 format_lookback_days
+        '''
+
+        lbd = format.start_date - timedelta(days=format_lookback_days)
+        prev_formats = Format.objects.filter(formatname=format.formatname, end_date__gte=lbd).exclude(pk=format.pk)
+        format_ids = ','.join([str(x.pk) for x in prev_formats])
+        result = self.filter(format=format)\
+            .extra(select={'previous_format_ids': '"{}"'.format(format_ids)}).order_by('-percentage_of_all_cards')
+        return result
+
+
 class FormatCardStat(models.Model):
     # For looking at Staples, look back and see how it performed in the previous 3 formats.
     STAPLE_LOOKBACK = 3
@@ -527,8 +553,11 @@ class FormatCardStat(models.Model):
     # the average card count when this card is included in a deck
     average_card_count_in_deck = models.FloatField(null=False, default=0.0)
 
-    # the percentage of all cards in the format that are this card
+    # the percentage of all cards in the format that are this card.
+    # NOTE: 1.0 == 100%
     percentage_of_all_cards = models.FloatField(null=False, default=0.0)
+
+    objects = FormatCardStatManager()
 
     def __init__(self, *args, **kwargs):
         super(FormatCardStat, self).__init__(*args, **kwargs)
@@ -543,9 +572,17 @@ class FormatCardStat(models.Model):
     def in_decks_percentage(self):
         ''' Returns either None or the float percentage of the number of decks that have this physicalcard in this format.
         '''
+        result = self.percentage_of_all_decks()
+        if result is not None:
+            result = 100.0 * result
+        return result
+
+    def percentage_of_all_decks(self):
+        ''' Returns either None or the float percentage of the number of decks that have this physicalcard in this format.
+        '''
         result = None
         if self.formatstat is not None and self.formatstat.tournamentdeck_count > 0:
-            result = 100.0 * float(self.deck_count) / float(self.formatstat.tournamentdeck_count)
+            result = 1.0 * float(self.deck_count) / float(self.formatstat.tournamentdeck_count)
         return result
 
     def is_staple(self):
@@ -674,6 +711,148 @@ class FormatCardStat(models.Model):
                 # with Timer() as t:
                 safelog("      {}".format(fcs))
                 #safelog('        str took %.03f sec.' % t.interval)
+
+    def percentage_of_all_cards_previous(self, format_lookback_days=None):
+        ''' Only works if there is a previous_format_ids annotation. For FormatCardStats returned via
+            FormatCardStat.objects.top_cards_by_format().
+
+        :param: format_lookback_days can be an int. And if this method was called on a FormatCardStat that did not
+                come from one of the aggregate functions (like top_cards_by_format()), then this number will be used
+                to determine how far to look back.
+
+        :return: If this card was in any of the previous formats, then returns a float between 0 and 1.0 that is the
+                 number of times that this card appears among all cards in all of those previous formats. Else, return
+                 None (not a number - division by zero).
+        '''
+        # some performance optimization
+        try:
+            self.__getattribute__('_cache')
+            if 'percentage_of_all_cards_previous' in self._cache:
+                return self._cache['percentage_of_all_cards_previous']
+        except AttributeError:
+            self._cache = dict()
+
+        try:
+            self.__getattribute__('previous_format_ids')
+        except AttributeError:
+            self.previous_format_ids = None
+            if format_lookback_days is None:
+                format_lookback_days = 1
+        # if the invoker gave us some lookback_days, let's figure out which formats to look at.
+        if format_lookback_days is not None and self.previous_format_ids is None:
+            lbd = self.format.start_date - timedelta(days=format_lookback_days)
+            prev_formats = Format.objects.filter(formatname=self.format.formatname, end_date__gt=lbd)\
+                .exclude(pk=self.format.pk)
+            self.previous_format_ids = ','.join([str(x.id) for x in prev_formats])
+        result = None
+
+        if self.previous_format_ids:
+            old_ids = [long(v) for v in self.previous_format_ids.split(',')]
+            # need to get the average inclusion of this card across all of these older formats. So, use the summed
+            # occurence count with the summed total cards count.
+            occc = FormatCardStat.objects.filter(format_id__in=old_ids, physicalcard=self.physicalcard)\
+                .aggregate(Sum('occurence_count'))
+            tcc = FormatStat.objects.filter(format_id__in=old_ids).aggregate(Sum('tournamentdeckcard_count'))
+            # if tcc is not None and 'tournamentdeckcard_count__sum' in tcc:
+            oc_check = 0.0
+            try:
+                oc_check = float(occc['occurence_count__sum'])
+            except TypeError:
+                pass
+            if tcc['tournamentdeckcard_count__sum'] > 0:
+                result = oc_check / float(tcc['tournamentdeckcard_count__sum'])
+                self._cache['percentage_of_all_cards_previous'] = result
+        return result
+
+    def percentage_of_all_cards_delta(self, format_lookback_days=None):
+        ''' Only works if there is a previous_format_ids annotation. For FormatCardStats returned via
+            FormatCardStat.objects.top_cards_by_format().
+
+        :return: A float between -1.0 and 1.0 this is that is the change in tournamentdeck inclusion from the previous
+                 formats to self.format. If this card was not in previous formats, this will still return a float.
+        '''
+        part = self.percentage_of_all_cards_previous(format_lookback_days=format_lookback_days)
+        if part is None:
+            part = 0.0
+        return self.percentage_of_all_cards - part
+
+    def percentage_of_all_cards_perchange(self, format_lookback_days=None):
+        part = self.percentage_of_all_cards_previous(format_lookback_days=format_lookback_days)
+        if part is None:
+            return None
+        if part == 0.0:
+            return 0.0
+        return self.percentage_of_all_cards_delta(format_lookback_days=format_lookback_days) / part
+
+    def percentage_of_all_decks_previous(self, format_lookback_days=None):
+        ''' Only works if there is a previous_format_ids annotation. For FormatCardStats returned via
+            FormatCardStat.objects.top_cards_by_format().
+
+        :param: format_lookback_days can be an int. And if this method was called on a FormatCardStat that did not
+                come from one of the aggregate functions (like top_cards_by_format()), then this number will be used
+                to determine how far to look back.
+
+        :return: If this card was in any of the previous formats, then returns a float between 0 and 1.0 that is the
+                 number of decks that this card appears in among all decks in all of those previous formats. Else,
+                 return None (not a number - division by zero).
+        '''
+        # some performance optimization
+        try:
+            self.__getattribute__('_cache')
+            if 'percentage_of_all_decks_previous' in self._cache:
+                return self._cache['percentage_of_all_decks_previous']
+        except AttributeError:
+            self._cache = dict()
+
+        try:
+            self.__getattribute__('previous_format_ids')
+        except AttributeError:
+            self.previous_format_ids = None
+            if format_lookback_days is None:
+                format_lookback_days = 1
+        # if the invoker gave us some lookback_days, let's figure out which formats to look at.
+        if format_lookback_days is not None and self.previous_format_ids is None:
+            lbd = self.format.start_date - timedelta(days=format_lookback_days)
+            prev_formats = Format.objects.filter(formatname=self.format.formatname, end_date__gt=lbd).exclude(pk=self.format.pk)
+            self.previous_format_ids = ','.join([str(x.id) for x in prev_formats])
+        result = None
+
+        if self.previous_format_ids:
+            old_ids = [long(v) for v in self.previous_format_ids.split(',')]
+            # need to get the average inclusion of this card across all of these older formats. So, use the summed
+            # occurence count with the summed total cards count.
+            afs = FormatStat.objects.filter(format_id__in=old_ids).aggregate(Sum('tournamentdeck_count'))
+            fcs = FormatCardStat.objects.filter(format_id__in=old_ids, physicalcard=self.physicalcard)\
+                .aggregate(Sum('deck_count'))
+            dcs_check = 0.0
+            try:
+                dcs_check = float(fcs['deck_count__sum'])
+            except TypeError:
+                pass
+            if afs['tournamentdeck_count__sum'] > 0:
+                result = dcs_check / float(afs['tournamentdeck_count__sum'])
+                self._cache['percentage_of_all_decks_previous'] = result
+        return result
+
+    def percentage_of_all_decks_delta(self, format_lookback_days=None):
+        ''' Only works if there is a previous_format_ids annotation. For FormatCardStats returned via
+            FormatCardStat.objects.top_decks_by_format().
+
+        :return: A float between -1.0 and 1.0 this is that is the change in tournamentdeck inclusion from the previous
+                 formats to self.format. If this card was not in previous formats, this will still return a float.
+        '''
+        part = self.percentage_of_all_decks_previous(format_lookback_days=format_lookback_days)
+        if part is None:
+            part = 0.0
+        return self.percentage_of_all_decks() - part
+
+    def percentage_of_all_decks_perchange(self, format_lookback_days=None):
+        part = self.percentage_of_all_decks_previous(format_lookback_days=format_lookback_days)
+        if part is None:
+            return None
+        if part == 0.0:
+            return 0.0
+        return self.percentage_of_all_decks_delta(format_lookback_days=format_lookback_days) / part
 
     def __unicode__(self):
         return 'FormatCardStat f="{}" c="{}": dc={}, oc={}'.format(
