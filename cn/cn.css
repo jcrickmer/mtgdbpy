@@ -615,3 +615,52 @@ div.content-publish-date {
     padding-top: 12px;
     border-top: solid 1px #ADC4CC;
 }
+span.format-name::after {
+  content: ":";
+}
+div.card-format-legality {
+  margin-right: 4px;
+  margin-bottom: 4px;
+  display: inline-block;
+  font-size: 10px;
+  color: #FFF;
+  padding: 4px;
+  -webkit-border-radius: 2px;
+  border-radius: 3px;
+  width: 80px;
+  text-align: center;
+  -webkit-box-ordinal-group: 2;
+  -ms-flex-order: 1;
+  order: 1;
+}
+div.format-legal {
+  background-color: #43A047;
+}
+div.format-legal a:visited {
+  color: inherit;
+  text-decoration: none;
+}
+div.format-legal a:link {
+  color: inherit;
+  text-decoration: none;
+}
+div.format-legal a:hover {
+  color: inherit;
+  font-weight: bold;
+  text-decoration: none;
+}
+div.format-legal {
+  background-color: #43A047;
+}
+div.format-not-legal {
+  background-color: #757575;
+}
+span.format-legal {
+  text-transform: uppercase;
+}
+span.format-not-legal {
+  text-transform: uppercase;
+}
+div.card-flavor-text {
+  font-style: italic;
+}

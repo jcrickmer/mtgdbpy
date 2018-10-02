@@ -632,6 +632,8 @@ def detail(request, multiverseid=None, slug=None):
 
     associations = Association.objects.filter(associationcards=physicalcard)
 
+    current_formats = Format.objects.filter(start_date__lte=timezone.now(), end_date__gte=timezone.now())
+
     # get all multiverseids so that we can more robustly get a price for this card.
     mvid_auth_key_pairs = list()
     for cmv in cards[0].get_all_versions():
@@ -652,6 +654,7 @@ def detail(request, multiverseid=None, slug=None):
                     'tomorrow': (timezone.now() + timedelta(days=1)).isoformat(),
                     'highest_rating': highest_rating,
                     'total_battle_count': total_battle_count,
+                    'current_formats': current_formats,
                     })
     response = render(request, 'cards/detail.html', context)
     return response
@@ -841,9 +844,7 @@ SELECT s1.physicalcard_id AS id,
  ORDER BY delta DESC LIMIT 50'''
 
     foo = PhysicalCard.objects.raw(up_raw_sql, [top_format.id, next_format.id])
-    up_cr = CardRating.objects.filter(format=top_format, physicalcard_id__in=[g.id for g in foo])
     context['trendingup'] = foo
-    context['trendingup_cr'] = up_cr
 
     down_raw_sql = '''
 SELECT s1.physicalcard_id AS id,
@@ -862,9 +863,7 @@ SELECT s1.physicalcard_id AS id,
  WHERE s1.percentage_of_all_cards < s2.percentage_of_all_cards
  ORDER BY delta DESC LIMIT 50'''
     tdown = PhysicalCard.objects.raw(down_raw_sql, [top_format.id, next_format.id])
-    down_cr = CardRating.objects.filter(format=top_format, physicalcard_id__in=[g.id for g in tdown])
     context['trendingdown'] = tdown
-    context['trendingdown_cr'] = down_cr
 
     context['top'] = FormatCardStat.objects.top_cards_by_format(format=top_format, format_lookback_days=183)[:100]
 

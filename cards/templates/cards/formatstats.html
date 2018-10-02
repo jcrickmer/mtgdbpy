@@ -39,7 +39,7 @@
       <span id="format-start-date">{{ current_format.start_date }}</span>, and will be updated on
       <span id="format-end-date">{{ current_format.end_date }}</span>. The formats that are being used for comparison
       are
-      {% for pf in past_formats %}{{ pf.format }}{% if not forloop.last %}, {% else %}, and {% endif %}{% endfor %}.
+      {% for pf in past_formats %}{% if forloop.last %}and {% endif %}{{ pf.format }}{% if not forloop.last %}, {% endif %}{% endfor %}.
     </p>
     <p>
       <b>{{ formatstat.tournamentdeck_count }} decks</b> have been evaluated in the current format.
@@ -136,7 +136,9 @@
           <tr>
             <td class="text-center">{{forloop.counter}}</td>
             <td><a href="{% url 'cards:detail' pcard.get_latest_card.multiverseid pcard.get_latest_card.url_slug %}" data-mid="{{pcard.get_latest_card.multiverseid}}">{{pcard.get_card_name}}</a></td>
-            <td class="text-center">{%for cr in trendingup_cr%}{%if cr.physicalcard.id == pcard.id%}{{cr.cardninjaRating|floatformat:1}}{%endif%}{%endfor%}</td>
+            <td class="text-center">
+              {{ pcard|card_rating:current_format|floatformat:1 }}
+            </td>
             <td class="deckdata text-center">{{pcard.decks_current_percentage|floatformat:3}}%</td>
             <td class="deckdata text-center {% if pcard.decks_per_change > 0 %}positive-change{% elif pcard.decks_per_change < 0 %}negative-change{% endif %}">
               {% if pcard.decks_per_change %}
@@ -194,7 +196,9 @@
           <tr>
             <td class="text-center">{{forloop.counter}}</td>
             <td><a href="{% url 'cards:detail' pcard.get_latest_card.multiverseid pcard.get_latest_card.url_slug %}" data-mid="{{pcard.get_latest_card.multiverseid}}">{{pcard.get_card_name}}</a></td>
-            <td class="text-center">{%for cr in trendingdown_cr%}{%if cr.physicalcard.id == pcard.id%}{{cr.cardninjaRating|floatformat:1}}{%endif%}{%endfor%}</td>
+            <td class="text-center">
+              {{ pcard|card_rating:current_format|floatformat:1 }}
+            </td>
             <td class="deckdata text-center">{{pcard.decks_current_percentage|floatformat:3}}%</td>
             <td class="deckdata text-center {% if pcard.decks_per_change > 0 %}positive-change{% elif pcard.decks_per_change < 0 %}negative-change{% endif %}">
               {% if pcard.decks_per_change %}

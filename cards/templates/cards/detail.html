@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load content %}
+{% load utils %}
 
 {% block title %}{{ physicalcard.get_card_name }} ({{request_card.expansionset.name}}){% endblock %}
 {% block pagetitle %}{{ physicalcard.get_card_name }} {% for fcs in formatcardstats %}{%if fcs.is_staple %}<span class="staple-{{fcs.format.formatname|lower}}">{{fcs.format.formatname}}&nbsp;Staple</span>{% endif %} {% endfor %}{% endblock %}
@@ -202,15 +203,32 @@ function drawCardStatsChart(formatname) {
             </div>
             {% if forloop.counter0 == 0 %}
               <div class="row card-attr-row">
-                <div class="col-xs-3 card-attr-title">Pat's Card&nbsp;Rating</div>
+                <div class="col-xs-3 card-attr-title">Formats</div>
+                <div class="col-xs-9 card-attr-value">
+                  {% for cur_format in current_formats %}
+                    {% if cur_format in physicalcard.legal_formats %}
+                      <div class="card-format-legality format-legal">
+                        <a href="#format-{{cur_format.formatname|lower}}-block">
+                          <span class="format-name">{{ cur_format.formatname }}</span>
+                          <span class="format-legal">Legal</span>
+                        </a>
+                      </div>
+                    {% else %}
+                      <div class="card-format-legality format-not-legal">
+                        <span class="format-name">{{ cur_format.formatname }}</span>
+                        <span class="format-not-legal">Not&nbsp;Legal</span>
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="row card-attr-row">
+                <div class="col-xs-3 card-attr-title">Pat's Card&nbsp;Ratings</div>
                 <div class="col-xs-9 card-attr-value">
                   {% for lf in physicalcard.legal_formats %}
-                    <span>{{lf.formatname}}</span>:
-                    {% for cr in physicalcard.get_cardratings %}
-                      {% if cr.format.formatname == lf.formatname %}
-                        <span>{{ cr.cardninjaRating|floatformat:2 }}</span>
-                      {% endif %}
-                    {% endfor %}<br>
+                    <span class="format-name">{{lf.formatname}}</span>
+                    <span>{{ physicalcard|card_rating:lf|floatformat:1 }}</span>
+                    <br>
                   {% endfor%}
                 </div>
               </div>
@@ -227,10 +245,12 @@ function drawCardStatsChart(formatname) {
               <div class="col-xs-3 card-attr-title">Multiverse Id</div>
               <div class="col-xs-9 card-attr-value">{{ card.multiverseid }}</div>
             </div>
-            <div class="row card-attr-row">
-              <div class="col-xs-3 card-attr-title">Flavor Text</div>
-              <div class="col-xs-9 card-attr-value">{%if card.flavor_text %}{{ card.flavor_text_html }}{% endif %}</div>
-            </div>
+            {%if card.flavor_text %}
+              <div class="row card-attr-row">
+                <div class="col-xs-3 card-attr-title">Flavor Text</div>
+                <div class="col-xs-9 card-attr-value card-flavor-text">{{ card.flavor_text_html }}</div>
+              </div>
+            {% endif %}
             {% if card.mark.mark %}
               <div class="row card-attr-row">
                 <div class="col-xs-3 card-attr-title">Mark</div>
