@@ -19,6 +19,7 @@ import random
 import operator
 import os.path
 import sys
+import hashlib
 
 from cards.models import Card, CardManager, SearchPredicate, SortDirective, BaseCard
 from cards.models import Mark
@@ -292,7 +293,7 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
     logger = logging.getLogger(__name__)
     # logger.error(request)
     start_time = time.time()
-    logger.debug("L247 start")
+    logger.debug("cardlist start time {}".format(start_time))
     # Let's get the array of predicates from the session
     if query_pred_array is None:
         query_pred_array = []
@@ -301,7 +302,7 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
 
     spreds = []
     latest_time = time.time()
-    logger.debug("L258 {}".format(str(latest_time - start_time)))
+    logger.debug("cardlist time thus far: {}".format(str(latest_time - start_time)))
     for pred in query_pred_array:
         # check to see if it is a sort order or a search predicate
         if 'field' not in pred:
@@ -415,12 +416,13 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
     latest_time = time.time()
     logger.debug("L372 {}".format(str(latest_time - start_time)))
 
-    cache_key_base = u'{},{}'.format(str([xx['hint'] for xx in query_pred_array]), request.session.get('sort_order'))
-    cache_key_base = cache_key_base.replace(u' ', u'_')
+    #cache_key_base = u'{},{}'.format(str([xx['hint'] for xx in query_pred_array]), request.session.get('sort_order'))
+    cache_key_base = hashlib.md5(
+        '{}-{}'.format(json.dumps(query_pred_array, sort_keys=True), request.session.get('sort_order'))).hexdigest()
     cache_key_list = 'cl:{}'.format(cache_key_base)
     cache_key_page = 'cp:{}'.format(cache_key_base)
     card_list = cache.get(cache_key_list)
-    logger.debug("L379 cache returned {} for {}".format(str(card_list is not None), cache_key_list))
+    logger.info("L379 cache returned {} for {}".format(str(card_list is not None), cache_key_list))
     if card_list is None:
         latest_time = time.time()
         logger.debug("L382 {}".format(str(latest_time - start_time)))
@@ -807,15 +809,26 @@ def formatstats(request, formatname="modern"):
     top_format = None
     next_format = None
     prev_formats = []
+    went_back_a_format = False
     try:
         top_format = top_formats[0]
-        next_format = top_formats[1]
-        for tf in top_formats[1:]:
+        context['current_format'] = top_format
+        next_it = 1
+        # let's check and make sure that there are enough decks here...
+        tf_fs = FormatStat.objects.filter(format=top_format).first()
+        if tf_fs.tournamentdeck_count < 17:
+            # just too few...
+            went_back_a_format = True
+            top_format = top_formats[next_it]
+            next_it += 1
+        next_format = top_formats[next_it]
+        for tf in top_formats[next_it:]:
             if len(prev_formats) < 3:
                 prev_formats.append(tf)
     except IndexError:
         raise Http404
-    context['current_format'] = top_format
+    context['went_back_one'] = went_back_a_format
+    context['first_format'] = top_format
     context['formatname'] = top_format.formatname
     context['current_formats'] = Format.objects.filter(start_date__lte=timezone.now(),
                                                        end_date__gt=timezone.now()).order_by('format')
@@ -870,8 +883,11 @@ SELECT s1.physicalcard_id AS id,
     context['formatstat'] = FormatStat.objects.filter(format=top_format).first()
 
     lbd = top_format.start_date - timedelta(days=183)
-    context['past_formats'] = Format.objects.filter(formatname=top_format.formatname, end_date__gt=lbd)\
-        .exclude(pk=top_format.pk)
+    context['past_formats'] = Format.objects.filter(
+        formatname=top_format.formatname,
+        end_date__gt=lbd,
+        end_date__lte=top_format.start_date) .exclude(
+        pk=top_format.pk)
 
     response = render(request, 'cards/formatstats.html', context)
     return response

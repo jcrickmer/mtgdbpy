@@ -28,22 +28,52 @@
 {% content key=request.path position="top" %}
 <div class="row">
   <div class="col-xs-12">
-    <p>
-      Format statistics for {{ formatname }} are compiled by evaluating the occurrence of each card in the current legal
-      format, and comparing it to the inclusion of that card in the previous iterations of the format over the 6
-      months prior to the start of this iteration of the format. The decks used to make these calculations have all been
-      played competitively, and were top-ranked (<i>e.g.</i>, "Top 8") in their tournaments.
-    </p>
-    <p>
-      The current {{ formatname }} Format started on
-      <span id="format-start-date">{{ current_format.start_date }}</span>, and will be updated on
-      <span id="format-end-date">{{ current_format.end_date }}</span>. The formats that are being used for comparison
-      are
-      {% for pf in past_formats %}{% if forloop.last %}and {% endif %}{{ pf.format }}{% if not forloop.last %}, {% endif %}{% endfor %}.
-    </p>
-    <p>
-      <b>{{ formatstat.tournamentdeck_count }} decks</b> have been evaluated in the current format.
-    </p>
+    {% if went_back_one %}
+      <p>
+        Format statistics for
+        <b><a href="{% url 'cards:search' %}?query={{ '[{"field":"format","op":"and","value":"'|iriencode }}{{ current_format.format|iriencode }}{{ '","hint":"format"}]'|iriencode }}">{{ formatname }}</a></b>
+        are compiled by evaluating the occurrence of each card in the format,
+        and comparing it to the inclusion of that card in the previous iterations of the format over the 6
+        months prior to the start of this iteration of the format. The decks used to make these calculations have all been
+        played competitively, and were top-ranked (<i>e.g.</i>, "Top 8") in their tournaments.
+      </p>
+      <p>
+        <span style="font-style:italic;">
+          However, there have not been a sufficient number of tournaments in the current iteration of {{ formatname }}
+          to establish a reasonable trend. So, the results below are for the <b>previous</b> iteration of
+          <b><a href="{% url 'cards:search' %}?query={{ '[{"field":"format","op":"and","value":"'|iriencode }}{{ first_format.format|iriencode }}{{ '","hint":"format"}]'|iriencode }}">{{ formatname }}</a></b>.
+        </span>
+      </p>
+      <p>
+        This iteration of {{ formatname }} Format started on
+        <span id="format-start-date">{{ first_format.start_date }}</span>, and was updated on
+        <span id="format-end-date">{{ first_format.end_date }}</span>. The formats that are being used for comparison
+        are
+        {% for pf in past_formats %}{% if forloop.last %}and {% endif %}{{ pf.format }}{% if not forloop.last %}, {% endif %}{% endfor %}.
+      </p>
+      <p>
+        <b>{{ formatstat.tournamentdeck_count }} decks</b> have been evaluated to determine these trends.
+      </p>
+    {% else %}
+      <p>
+        Format statistics for
+        <b><a href="{% url 'cards:search' %}?query={{ '[{"field":"format","op":"and","value":"'|iriencode }}{{ current_format.format|iriencode }}{{ '","hint":"format"}]'|iriencode }}">{{ formatname }}</a></b>
+        are compiled by evaluating the occurrence of each card in the current legal
+        format, and comparing it to the inclusion of that card in the previous iterations of the format over the 6
+        months prior to the start of this iteration of the format. The decks used to make these calculations have all been
+        played competitively, and were top-ranked (<i>e.g.</i>, "Top 8") in their tournaments.
+      </p>
+      <p>
+        The current {{ formatname }} Format started on
+        <span id="format-start-date">{{ first_format.start_date }}</span>, and will be updated on
+        <span id="format-end-date">{{ first_format.end_date }}</span>. The formats that are being used for comparison
+        are
+        {% for pf in past_formats %}{% if forloop.last %}and {% endif %}{{ pf.format }}{% if not forloop.last %}, {% endif %}{% endfor %}.
+      </p>
+      <p>
+        <b>{{ formatstat.tournamentdeck_count }} decks</b> have been evaluated in the current format.
+      </p>
+    {% endif %}
   </div>
 </div>
 <div class="row">

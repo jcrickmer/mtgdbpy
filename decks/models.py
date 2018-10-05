@@ -844,7 +844,10 @@ class FormatCardStat(models.Model):
         part = self.percentage_of_all_decks_previous(format_lookback_days=format_lookback_days)
         if part is None:
             part = 0.0
-        return self.percentage_of_all_decks() - part
+        poad = self.percentage_of_all_decks()
+        if not poad:
+            poad = 0.0
+        return poad - part
 
     def percentage_of_all_decks_perchange(self, format_lookback_days=None):
         part = self.percentage_of_all_decks_previous(format_lookback_days=format_lookback_days)
