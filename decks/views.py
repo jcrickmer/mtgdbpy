@@ -14,6 +14,7 @@ import sys
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.encoding import smart_text
+from django.utils import timezone
 
 BASE_CONTEXT = {'settings': {
     'HOME_URL': settings.HOME_URL,
@@ -142,8 +143,8 @@ class TournamentListView(ListView):
 
 def recommendations(request):
     context = BASE_CONTEXT.copy()
-    context['current_formats'] = Format.objects.filter(start_date__lte=datetime.today(),
-                                                       end_date__gte=datetime.today()).order_by('format')
+    context['current_formats'] = Format.objects.filter(start_date__lte=timezone.now(),
+                                                       end_date__gt=timezone.now()).order_by('format')
     # REVISIT - unsafe index
     context['format'] = context['current_formats'][0]
 
@@ -213,8 +214,8 @@ def recommendations(request):
 def manabaseanalysis(request):
     context = BASE_CONTEXT.copy()
 
-    context['current_formats'] = Format.objects.filter(start_date__lte=datetime.today(),
-                                                       end_date__gte=datetime.today()).order_by('format')
+    context['current_formats'] = Format.objects.filter(start_date__lte=timezone.now(),
+                                                       end_date__gt=timezone.now()).order_by('format')
     # REVISIT - unsafe index
     context['format'] = context['current_formats'][0]
 

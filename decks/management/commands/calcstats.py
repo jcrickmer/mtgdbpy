@@ -13,6 +13,7 @@ from cards.models import PhysicalCard
 from optparse import make_option
 
 from datetime import datetime, timedelta
+from django.utils import timezone
 from dateutil.parser import parse as dtparse
 
 

@@ -5,6 +5,7 @@ from cards.models import Card
 from cards.models import Battle
 from cards.models import Format
 from cards.models import FormatBasecard
+from django.utils import timezone
 
 import re
 
@@ -33,8 +34,8 @@ class Command(BaseCommand):
         if options['format']:
             format_obj = Format.objects.filter(
                 formatname__iexact=options['format'],
-                start_date__lte=datetime.today(),
-                end_date__gte=datetime.today()).order_by('-end_date').first()
+                start_date__lte=timezone.now(),
+                end_date__gt=timezone.now()).order_by('-end_date').first()
 
         out.write('<div>Format: ' + format_obj.format + "</div>\n")
 

@@ -131,7 +131,7 @@ def index(request):
             'formatname': f.formatname,
             'start_date': f.start_date} for f in Format.objects.all().order_by('format')]
     context['current_formats'] = Format.objects.filter(start_date__lte=timezone.now(),
-                                                       end_date__gte=timezone.now()).order_by('format')
+                                                       end_date__gt=timezone.now()).order_by('format')
     com_searches = {'All cards': '_search'}
     for color in ['white', 'blue', 'black', 'red', 'green', 'colorless', 'five-color']:
         com_searches['{} Commanders'.format(color.capitalize())] = '/cards/search/{}-commanders/'.format(color)
@@ -163,13 +163,13 @@ def predefsearch(request, terms=None):
         if 'tiny' in terms:
             cformat = Format.objects.filter(formatname='TinyLeaders',
                                             start_date__lte=timezone.now(),
-                                            end_date__gte=timezone.now()).first()
+                                            end_date__gt=timezone.now()).first()
             query_pred_array.append({"field": "format", "op": "and", "value": cformat.format, "hint": "format"})
             request.session['sort_order'] = 'rating-{}'.format(cformat.format)
         else:
             cformat = Format.objects.filter(formatname='Commander',
                                             start_date__lte=timezone.now(),
-                                            end_date__gte=timezone.now()).first()
+                                            end_date__gt=timezone.now()).first()
             query_pred_array.append({"field": "format", "op": "and", "value": cformat.format, "hint": "format"})
             request.session['sort_order'] = 'rating-{}'.format(cformat.format)
     colors = [['white', 'w'],
@@ -475,7 +475,7 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
     logger.debug("L430 {}".format(str(latest_time - start_time)))
 
     context['current_formats'] = Format.objects.filter(start_date__lte=timezone.now(),
-                                                       end_date__gte=timezone.now()).order_by('format')
+                                                       end_date__gt=timezone.now()).order_by('format')
 
     latest_time = time.time()
     logger.debug("L436 {}".format(str(latest_time - start_time)))
@@ -527,7 +527,7 @@ def cardlist_sims(request, cardname='Plains', query_pred_array=None, page_title=
     })
 
     context['current_formats'] = Format.objects.filter(start_date__lte=timezone.now(),
-                                                       end_date__gte=timezone.now()).order_by('format')
+                                                       end_date__gt=timezone.now()).order_by('format')
 
     httpResp = render(request, 'cards/list.html', context)
     return httpResp
@@ -632,7 +632,7 @@ def detail(request, multiverseid=None, slug=None):
 
     associations = Association.objects.filter(associationcards=physicalcard)
 
-    current_formats = Format.objects.filter(start_date__lte=timezone.now(), end_date__gte=timezone.now())
+    current_formats = Format.objects.filter(start_date__lte=timezone.now(), end_date__gt=timezone.now())
 
     # get all multiverseids so that we can more robustly get a price for this card.
     mvid_auth_key_pairs = list()
@@ -795,7 +795,7 @@ def cardstats(request, formatname=None, physicalcard_id=None, multiverseid=None)
 def formats(request, formatname="modern"):
     context = BASE_CONTEXT.copy()
     context['formats'] = Format.objects.filter(start_date__lte=timezone.now(),
-                                               end_date__gte=timezone.now())
+                                               end_date__gt=timezone.now())
 
     response = render(request, 'cards/formats.html', context)
     return response
@@ -818,7 +818,7 @@ def formatstats(request, formatname="modern"):
     context['current_format'] = top_format
     context['formatname'] = top_format.formatname
     context['current_formats'] = Format.objects.filter(start_date__lte=timezone.now(),
-                                                       end_date__gte=timezone.now()).order_by('format')
+                                                       end_date__gt=timezone.now()).order_by('format')
     # leverage full page cache if it is available
     full_page_cache_key = make_template_fragment_key('card_formatstats_html', [context['formatname'], ])
     from_cache = False
@@ -870,7 +870,7 @@ SELECT s1.physicalcard_id AS id,
     context['formatstat'] = FormatStat.objects.filter(format=top_format).first()
 
     lbd = top_format.start_date - timedelta(days=183)
-    context['past_formats'] = Format.objects.filter(formatname=top_format.formatname, end_date__gte=lbd)\
+    context['past_formats'] = Format.objects.filter(formatname=top_format.formatname, end_date__gt=lbd)\
         .exclude(pk=top_format.pk)
 
     response = render(request, 'cards/formatstats.html', context)
@@ -890,7 +890,7 @@ def battle(request, format="redirect"):
     format_obj = Format.objects.filter(
         formatname__iexact=format,
         start_date__lte=timezone.now(),
-        end_date__gte=timezone.now()).order_by('-end_date').first()
+        end_date__gt=timezone.now()).order_by('-end_date').first()
     format_id = format_obj.id
 
     # Going straight to the DB on this...
@@ -1068,7 +1068,7 @@ def battle(request, format="redirect"):
         card_b = PhysicalCard.objects.get(pk=card_b.basecard.physicalcard.id).get_latest_card()
 
     # let's get a list of current formats...
-    cur_formats = Format.objects.filter(start_date__lte=timezone.now(), end_date__gte=timezone.now())
+    cur_formats = Format.objects.filter(start_date__lte=timezone.now(), end_date__gt=timezone.now())
     context = BASE_CONTEXT.copy()
     context.update({'card_a': card_a,
                     'card_b': card_b,
@@ -1401,7 +1401,7 @@ def playedwith(request, multiverseid=None, slug=None, formatname="commander"):
     try:
         format = Format.objects.filter(formatname__iexact=formatname.lower(),
                                        start_date__lte=timezone.now(),
-                                       end_date__gte=timezone.now()).order_by('-start_date').first()
+                                       end_date__gt=timezone.now()).order_by('-start_date').first()
     except Exception as e:
         raise Http404
     if format is None:

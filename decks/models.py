@@ -525,7 +525,7 @@ class FormatCardStatManager(models.Manager):
         '''
 
         lbd = format.start_date - timedelta(days=format_lookback_days)
-        prev_formats = Format.objects.filter(formatname=format.formatname, end_date__gte=lbd).exclude(pk=format.pk)
+        prev_formats = Format.objects.filter(formatname=format.formatname, end_date__gt=lbd).exclude(pk=format.pk)
         format_ids = ','.join([str(x.pk) for x in prev_formats])
         result = self.filter(format=format)\
             .extra(select={'previous_format_ids': '"{}"'.format(format_ids)}).order_by('-percentage_of_all_cards')

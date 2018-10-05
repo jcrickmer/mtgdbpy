@@ -141,7 +141,7 @@ class PhysicalCard(models.Model):
         choices=LAYOUT_CHOICES,
         default=NORMAL)
 
-    def get_cardratings(self, start_date=datetime.today(), end_date=datetime.today()):
+    def get_cardratings(self, start_date=timezone.now(), end_date=timezone.now()):
         """ Shortcut to get the CardRating for a given Format for this PhysicalCard.
 
         This is meant to be accessible in templates for display.
@@ -154,7 +154,7 @@ class PhysicalCard(models.Model):
         """
         return self.cardrating_set.filter(
             format__start_date__lte=start_date,
-            format__end_date__gte=end_date).order_by('format__formatname')
+            format__end_date__gt=end_date).order_by('format__formatname')
 
     def get_last_updated(self):
         return max(bc.updated_at for bc in self.basecard_set.all())
@@ -729,7 +729,7 @@ class PhysicalCard(models.Model):
 
         return result
 
-    def legal_formats(self, start_date=datetime.today(), end_date=datetime.today()):
+    def legal_formats(self, start_date=timezone.now(), end_date=timezone.now()):
         """ Get the legal Formats for this card as of the given dates.
 
         Given a start_date (datetime) and end_date (datetime), returns a QuerySet of Format objects in which this card is/was legal.
@@ -742,7 +742,7 @@ class PhysicalCard(models.Model):
         """
         return Format.objects.filter(formatbasecard__basecard=self.get_face_basecard(),
                                      start_date__lte=start_date,
-                                     end_date__gte=end_date)
+                                     end_date__gt=end_date)
 
     def latest_aggregate_cardprices(self):
         ckey = 'c_pc_laggcp-{}'.format(self.id)
@@ -1584,8 +1584,8 @@ class FormatManager(models.Manager):
         #                                        format__start_date__lte=datetime.today(),
         #                                        format__end_date__gte=datetime.today())
         formats = Format.objects.filter(formatbasecard__basecard_id=card.basecard.id,
-                                        start_date__lte=datetime.today(),
-                                        end_date__gte=datetime.today())
+                                        start_date__lte=timezone.now(),
+                                        end_date__gt=timezone.now())
         return formats
 
     def copy_format(self, format, new_name_of_format=None):

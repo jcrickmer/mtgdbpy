@@ -129,7 +129,7 @@ class Command(BaseCommand):
                     db_format = Format.objects.filter(
                         formatname__iexact=format_string,
                         start_date__lte=self.isodate(jblob['start_date']),
-                        end_date__gte=self.isodate(jblob['end_date'])).first()
+                        end_date__gt=self.isodate(jblob['end_date'])).first()
                     if db_format is not None:
                         db_tournament = Tournament.objects.filter(
                             format=db_format,
@@ -246,7 +246,7 @@ class Command(BaseCommand):
                                     "Format find: {} - {}\n".format(jblob['deck_format'], self.isodate(jblob['tournament_date'])))
                                 db_format_q = Format.objects.filter(
                                     formatname=jblob['deck_format'], start_date__lte=self.isodate(
-                                        jblob['tournament_date']), end_date__gte=self.isodate(
+                                        jblob['tournament_date']), end_date__gt=self.isodate(
                                         jblob['tournament_date'])).first()
                                 deck.format = db_format_q
                             except ValueError:
@@ -281,7 +281,7 @@ class Command(BaseCommand):
                             try:
                                 db_format_q = Format.objects.filter(
                                     formatname=jblob['deck_format'], start_date__lte=self.isodate(
-                                        jblob['tournament_date']), end_date__gte=self.isodate(
+                                        jblob['tournament_date']), end_date__gt=self.isodate(
                                         jblob['tournament_date'])).first()
                                 deck.format = db_format_q
                             except ValueError as ve:
