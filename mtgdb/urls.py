@@ -27,7 +27,7 @@ urlpatterns = [
     # url(r'^$', 'mtgdb.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
 
-    #re_path(r'^admin/lookups/', include(ajax_select_urls)),
-    #re_path(r'^admin/', include(admin.site.urls)),
+    path('admin/lookups/', include(ajax_select_urls)),
+    path('admin/', admin.site.urls),
     re_path(r'^robots.txt$', serve, {'path': 'robots.txt', 'document_root': settings.STATIC_ROOT_CN}),
 ]
