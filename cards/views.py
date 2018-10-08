@@ -12,7 +12,7 @@ from django.http import Http404
 from django.db import connection
 from django.db import IntegrityError
 import collections
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.conf import settings
 
 import random
@@ -418,7 +418,7 @@ def cardlist(request, query_pred_array=None, page_title='Search Results'):
 
     #cache_key_base = u'{},{}'.format(str([xx['hint'] for xx in query_pred_array]), request.session.get('sort_order'))
     cache_key_base = hashlib.md5(
-        '{}-{}'.format(json.dumps(query_pred_array, sort_keys=True), request.session.get('sort_order'))).hexdigest()
+        '{}-{}'.format(json.dumps(query_pred_array, sort_keys=True), request.session.get('sort_order')).encode('UTF-8')).hexdigest()
     cache_key_list = 'cl:{}'.format(cache_key_base)
     cache_key_page = 'cp:{}'.format(cache_key_base)
     card_list = cache.get(cache_key_list)
@@ -551,7 +551,7 @@ def detail_by_multiverseid(request, multiverseid=None):
     if multiverseid is not None:
         try:
             int(multiverseid)
-        except:
+        except BaseException:
             raise Http404
         tcards = Card.objects.filter(multiverseid=multiverseid).order_by('card_number')
         if len(tcards) > 0:
@@ -572,7 +572,7 @@ def detail_by_multiverseid_noslash(request, multiverseid=None):
         if multiverseid is not None:
             try:
                 int(multiverseid)
-            except:
+            except BaseException:
                 raise Http404
             tcards = Card.objects.filter(multiverseid=multiverseid).order_by('card_number')
             if len(tcards) > 0:
@@ -602,7 +602,7 @@ def detail(request, multiverseid=None, slug=None):
         # REVISIT - look at the filing names of what we get back, and what was
         # requested (the slug). If they are too dissimilar then do a redirect to
         # the right one. Don't want bad URL's floating around out there.
-    except:
+    except BaseException:
         raise Http404
 
     cards = tcard.get_all_cards()
@@ -699,7 +699,7 @@ def detail_ajax(request, cards):
         }
         try:
             jcard['mark'] = card.mark.mark
-        except:
+        except BaseException:
             pass
 
         jcards.append(jcard)
@@ -1360,6 +1360,7 @@ def _update_price_from_payload(jval):
             pass
     return
 
+
 from django.views.decorators.csrf import csrf_exempt
 
 
@@ -1409,7 +1410,7 @@ def playedwith(request, multiverseid=None, slug=None, formatname="commander"):
         # REVISIT - look at the filing names of what we get back, and what was
         # requested (the slug). If they are too dissimilar then do a redirect to
         # the right one. Don't want bad URL's floating around out there.
-    except:
+    except BaseException:
         raise Http404
 
     cards = tcard.get_all_cards()

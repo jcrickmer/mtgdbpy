@@ -18,10 +18,7 @@ import re
 
 
 def filing_string(input):
-    if isinstance(input, str):
-        result = unicode(input, "ascii")
-    else:
-        result = input
+    result = input
     result = filing_string_rule_1(input)
     result = filing_string_rule_2(result)
     result = filing_string_rule_3(result)
@@ -325,11 +322,11 @@ def filing_string_rule_8(input):
 # Don't include them at the start of a title, unless it is a
 # person or place. We will assume that all Cards are of a
 # Person or Place (although this isn't quite true).
-#$filingName =~ s/^a //gi;
-#$filingName =~ s/^an //gi; # dash
-#$filingName =~ s/^ye //gi; # dash
-#$filingName =~ s/^de //gi; # dash
-#$filingName =~ s/^d'//gi; # dash
+# $filingName =~ s/^a //gi;
+# $filingName =~ s/^an //gi; # dash
+# $filingName =~ s/^ye //gi; # dash
+# $filingName =~ s/^de //gi; # dash
+# $filingName =~ s/^d'//gi; # dash
 
 
 def filing_string_rule_9(input):
@@ -344,6 +341,7 @@ def filing_string_rule_10(input):
 # Rule 11 - Initials and acronyms
 #
 # Essentially, make periods and ellipses into spaces
+
 
 _rule_11_m_0 = r'^\.(\d+)'
 _rule_11_r_0 = r'0.\1'
@@ -448,44 +446,52 @@ def filing_string_rule_15(input):
 def filing_string_rule_16(input):
     result = input
     ignored_punctuation = [
-        u'!',
-        u'"',
-        u'#',
-        u'$',
-        u'%',
-        u"'",
-        u'(',
-        u')',
-        u'*',
-        u'+',
-        u',',
-        u'-',
+        '!',
+        '"',
+        '#',
+        '$',
+        '%',
+        "'",
+        '(',
+        ')',
+        '*',
+        '+',
+        ',',
+        '-',
         "\u2014",
-        u'/',
-        u':',
-        u';',
-        u'<',
-        u'=',
-        u'>',
-        u'?',
-        u'[',
-        u']',
-        u'\\',
-        u'^',
-        u'_',
-        u'{',
-        u'|',
-        u'}',
-        u'~',
+        '/',
+        ':',
+        ';',
+        '<',
+        '=',
+        '>',
+        '?',
+        '[',
+        ']',
+        '\\',
+        '^',
+        '_',
+        '{',
+        '|',
+        '}',
+        '~',
         "\u2022"]
-    for u in range(161, 191):
-        #ignored_punctuation.append(unicode(str(chr(u)), "ascii"))
-        ignored_punctuation.append(unichr(u))
 
+    for u in '¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿':
+        #ignored_punctuation.append(unicode(str(chr(u)), "ascii"))
+        ignored_punctuation.append(u)
+
+    lastone = ''
     for symb in ignored_punctuation:
         #result = re.sub(re.escape(symb), '', result)
-        result = result.replace(symb, '')
-
+        try:
+            result = result.replace(symb, '')
+        except UnicodeDecodeError as ude:
+            sys.stderr.write("last one before error was {} {}\n".format(lastone, ord(lastone)))
+            sys.stderr.write("this one ord is {}\n".format(ord(symb)))
+            sys.stderr.write("values result:{} -- type is result:{}\n".format(result, type(result)))
+            sys.stderr.write("symb:{} -- type is symb:{}\n".format(symb, type(symb)))
+        lastone = symb
     return result
 
 # This DOES NOT remove the period (".") on purpose!

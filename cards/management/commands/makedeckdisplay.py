@@ -14,17 +14,11 @@ import operator
 
 import sys
 from kitchen.text.converters import getwriter
-UTF8Writer = getwriter('utf8')
-sys.stdout = UTF8Writer(sys.stdout)
-UTF8Reader = codecs.getreader('utf8')
-sys.stdin = UTF8Reader(sys.stdin)
 
 
 class Command(BaseCommand):
     #args = '<poll_id poll_id ...>'
     help = 'Generate HTML links to the cards that are entered on stdin.'
-
-# DO THIS: export PYTHONIOENCODING=utf-8
 
     def handle(self, *args, **options):
         # assume each line is a card

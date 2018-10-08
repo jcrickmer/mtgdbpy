@@ -24,7 +24,7 @@ def card_price_ajax_stub(request, multiverseid=None, deckbox_format=False):
         try:
             multiverseid = int(multiverseid)
             card = Card.objects.filter(multiverseid=multiverseid).order_by('card_number').first()
-        except:
+        except BaseException:
             response_dict.update({'status': 'error',
                                   'message': 'No such card for given multiverseid.', })
         if not deckbox_format:
@@ -95,35 +95,35 @@ def card_price_deckbox_ajax_stub(request, multiverseid=None):
     # tests with Strip Mine
     if int(multiverseid) == 1077:
         return HttpResponse(
-            ur'{ "status": "OK", "name": "", "prices": [{"mvid":439454, "setname":"Unstable", "normalprice":99999999.99, "normalsale":0} ]}',
+            '{ "status": "OK", "name": "", "prices": [{"mvid":439454, "setname":"Unstable", "normalprice":99999999.99, "normalsale":0} ]}',
             content_type='application/javascript')
     elif int(multiverseid) == 1078:
         return HttpResponse(
-            ur'{ "status": "OK", "name": "Strip Mine", "prices": [{"mvid":1078, "setname":"Antiquities", "normalprice":99999999.99, "normalsale":0},{"mvid":2380, "setname":"Fourth Edition", "normalprice":8.50, "normalsale":0},{"mvid":409574, "setname":"Zendikar Expedition", "normalprice":54.00, "normalsale":1, "foilprice":9999999.99, "foilsale":0} ]}',
+            '{ "status": "OK", "name": "Strip Mine", "prices": [{"mvid":1078, "setname":"Antiquities", "normalprice":99999999.99, "normalsale":0},{"mvid":2380, "setname":"Fourth Edition", "normalprice":8.50, "normalsale":0},{"mvid":409574, "setname":"Zendikar Expedition", "normalprice":54.00, "normalsale":1, "foilprice":9999999.99, "foilsale":0} ]}',
             content_type='application/javascript')
     elif int(multiverseid) == 1079:
         return HttpResponse(
-            ur'{ "status": "OK", "name": "", "prices": [{"mvid":439454, "setname":"Unstable", "normalprice":99999999.99, "normalsale":0} ]}',
+            '{ "status": "OK", "name": "", "prices": [{"mvid":439454, "setname":"Unstable", "normalprice":99999999.99, "normalsale":0} ]}',
             content_type='application/javascript')
     elif int(multiverseid) == 2380:
         return HttpResponse(
-            ur'{ "status": "OK", "name": "Strip Mine", "prices": [{"mvid":1078, "setname":"Antiquities", "normalprice":99999999.99, "normalsale":0},{"mvid":2380, "setname":"Fourth Edition", "normalprice":8.50, "normalsale":0},{"mvid":409574, "setname":"Zendikar Expedition", "normalprice":54.00, "normalsale":1, "foilprice":9999999.99, "foilsale":0} ]}',
+            '{ "status": "OK", "name": "Strip Mine", "prices": [{"mvid":1078, "setname":"Antiquities", "normalprice":99999999.99, "normalsale":0},{"mvid":2380, "setname":"Fourth Edition", "normalprice":8.50, "normalsale":0},{"mvid":409574, "setname":"Zendikar Expedition", "normalprice":54.00, "normalsale":1, "foilprice":9999999.99, "foilsale":0} ]}',
             content_type='application/javascript')
     elif int(multiverseid) == 194968:
         return HttpResponse(
-            ur'{ "status": "OK", "name": "", "prices": [{"mvid":439454, "setname":"Unstable", "normalprice":99999999.99, "normalsale":0} ]}',
+            '{ "status": "OK", "name": "", "prices": [{"mvid":439454, "setname":"Unstable", "normalprice":99999999.99, "normalsale":0} ]}',
             content_type='application/javascript')
     elif int(multiverseid) == 202433:
         return HttpResponse(
-            ur'{ "status": "OK", "name": "", "prices": [{"mvid":439454, "setname":"Unstable", "normalprice":99999999.99, "normalsale":0} ]}',
+            '{ "status": "OK", "name": "", "prices": [{"mvid":439454, "setname":"Unstable", "normalprice":99999999.99, "normalsale":0} ]}',
             content_type='application/javascript')
     elif int(multiverseid) == 383113:
         return HttpResponse(
-            ur'{ "status": "OK", "name": "", "prices": [{"mvid":439454, "setname":"Unstable", "normalprice":99999999.99, "normalsale":0} ]}',
+            '{ "status": "OK", "name": "", "prices": [{"mvid":439454, "setname":"Unstable", "normalprice":99999999.99, "normalsale":0} ]}',
             content_type='application/javascript')
     elif int(multiverseid) == 409574:
         return HttpResponse(
-            ur'{ "status": "OK", "name": "Strip Mine", "prices": [{"mvid":1078, "setname":"Antiquities", "normalprice":99999999.99, "normalsale":0},{"mvid":2380, "setname":"Fourth Edition", "normalprice":8.50, "normalsale":0},{"mvid":409574, "setname":"Zendikar Expedition", "normalprice":54.00, "normalsale":1, "foilprice":9999999.99, "foilsale":0} ]}',
+            '{ "status": "OK", "name": "Strip Mine", "prices": [{"mvid":1078, "setname":"Antiquities", "normalprice":99999999.99, "normalsale":0},{"mvid":2380, "setname":"Fourth Edition", "normalprice":8.50, "normalsale":0},{"mvid":409574, "setname":"Zendikar Expedition", "normalprice":54.00, "normalsale":1, "foilprice":9999999.99, "foilsale":0} ]}',
             content_type='application/javascript')
     else:
         return card_price_ajax_stub(request, multiverseid, deckbox_format=True)

@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand, CommandError
 from cards.models import Card
 from cards.models import PhysicalCard

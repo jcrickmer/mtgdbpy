@@ -52,7 +52,7 @@ $('#top-menu-crafter').addClass('active');
             {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
             {% if forloop.counter0|divisibleby:2 %}<div class="clearfix visible-xs"></div>{% endif %}
             <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
-              <div class="text-center"><a href="{% url 'cards:detail' scard.multiverseid scard.url_slug %}" class="detail-card-list-item"><img class="grid_cardimage" src="{{ scard.img_url }}" alt=" scard.basecard.physicalcard.get_card_name }}"/></a></div>
+              <div class="text-center"><a href="{% url 'cards:detail' scard.multiverseid scard.url_slug %}" class="detail-card-list-item"><img class="grid_cardimage" src="{{ scard.img_url }}" alt="{{ scard.basecard.physicalcard.get_card_name|escape }}"/></a></div>
               <div class="text-center"><a href="{% url 'cards:detail' scard.multiverseid scard.url_slug %}" class="detail-card-list-item">{{scard.basecard.physicalcard.get_card_name}}</a></div>
             </div>
           {% empty %}
@@ -76,7 +76,7 @@ $('#top-menu-crafter').addClass('active');
             {% if forloop.counter0|divisibleby:3 %}<div class="clearfix visible-sm"></div>{% endif %}
             {% if forloop.counter0|divisibleby:2 %}<div class="clearfix visible-xs"></div>{% endif %}
             <div class="col-xs-6 col-sm-4 col-md-3 card-tile">
-              <div class="text-center"><a href="{% url 'cards:detail' rcard.multiverseid rcard.url_slug %}" class="detail-card-list-item"><img class="grid_cardimage" src="{{ rcard.img_url }}" alt=" rcard.basecard.physicalcard.get_card_name }}"/></a></div>
+              <div class="text-center"><a href="{% url 'cards:detail' rcard.multiverseid rcard.url_slug %}" class="detail-card-list-item"><img class="grid_cardimage" src="{{ rcard.img_url }}" alt="{{ rcard.basecard.physicalcard.get_card_name|escape }}"/></a></div>
               <div class="text-center"><a href="{% url 'cards:detail' rcard.multiverseid rcard.url_slug %}" class="detail-card-list-item">{{rcard.basecard.physicalcard.get_card_name}}</a></div>
               <div class="text-center">Confidence: {{rcard.annotations.match_confidence|floatformat:"2"}}</a></div>
             </div>

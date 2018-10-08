@@ -22,8 +22,6 @@ from cards.models import PhysicalCard, BaseCard
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        UTF8Writer = codecs.getwriter('utf8')
-        outer = UTF8Writer(sys.stdout)
         logger = logging.getLogger(__name__)
 
         # Downloaded docx version of rules - http://archive.wizards.com/Magic/tcg/article.aspx?x=magic/rules
@@ -47,9 +45,9 @@ class Command(BaseCommand):
         #sys.stdout.write("cards are " + str(card_vals) + "\n\n")
 
         markers_passed = list()
-        header_re = re.compile('^(\d{1,2})\\.\s+(\S.+)$', re.UNICODE)
-        rule_re = re.compile('^(\d\d\d)\\.?((\d{1,3})([a-z])?)?\\.?\s+(\S.+)$', re.UNICODE)
-        example_re = re.compile('^\s*\\<[Bb]\\>[Ee]xample[^\\<]*\\</[Bb]\\>:?\\.?\s*(\S.+)$', re.UNICODE)
+        header_re = re.compile(r'^(\d{1,2})\\.\s+(\S.+)$', re.UNICODE)
+        rule_re = re.compile(r'^(\d\d\d)\\.?((\d{1,3})([a-z])?)?\\.?\s+(\S.+)$', re.UNICODE)
+        example_re = re.compile(r'^\s*\\<[Bb]\\>[Ee]xample[^\\<]*\\</[Bb]\\>:?\\.?\s*(\S.+)$', re.UNICODE)
         has_letter_re = re.compile('[a-z]', re.I)
         effectivedate_re = re.compile('These rules are effective as of ([^\\.]+).', re.U)
         current_header = None
@@ -158,8 +156,8 @@ class Command(BaseCommand):
                         rulesmeta.save()
 
     def cleanTextFromNode(self, nodeList):
-        empty_re = re.compile('\\<[Pp]\\>\s+\\</[Pp]\\>', re.U)
-        space_re = re.compile('\\<[BUIAbuia]\\>\s+\\</[BUIAbuia]\\>', re.U)
+        empty_re = re.compile(r'\\<[Pp]\\>\s+\\</[Pp]\\>', re.U)
+        space_re = re.compile(r'\\<[BUIAbuia]\\>\s+\\</[BUIAbuia]\\>', re.U)
         result = u''
         for pnode in nodeList:
             if pnode.nodeType == pnode.TEXT_NODE:

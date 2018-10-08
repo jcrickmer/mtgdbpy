@@ -2,8 +2,6 @@
 from __future__ import unicode_literals
 
 from django import template
-from django.template.defaulttags import register
-import sys
 
 #from content.models import ContentBlock
 
@@ -15,7 +13,7 @@ from ..models import ContentBlock
 def concat(arg1, arg2):
     """ Concatenate arg1 and arg2 as Unicode strings
     """
-    return unicode(arg1) + unicode(arg2)
+    return '{}{}'.format(arg1, arg2)
 
 
 @register.inclusion_tag('content.html', takes_context=True)

@@ -71,17 +71,14 @@ class Command(BaseCommand):
                                                        Q(basecard__rules_text__icontains='creature')).order_by('-basecard__card__multiverseid')[:25]
             land_pcard_list = PhysicalCard.objects.filter(
                 Q(id__lte=15876), Q(basecard__cardtype__type__type='Land')).order_by('-basecard__card__multiverseid')[:50]
-            gl_pcard_list = PhysicalCard.objects.filter(Q(id__lte=15876),
-                                                        Q(basecard__rules_text__icontains='gain'),
-                                                        Q(basecard__rules_text__icontains='life')).order_by('-basecard__card__multiverseid')[:25]
+            gl_pcard_list = PhysicalCard.objects.filter(Q(id__lte=15876), Q(basecard__rules_text__icontains='gain'), Q(
+                basecard__rules_text__icontains='life')).order_by('-basecard__card__multiverseid')[:25]
             flying_pcard_list = PhysicalCard.objects.filter(Q(id__lte=15876), Q(basecard__rules_text__contains='Flying'), Q(
                 basecard__cardtype__type__type='Creature')).order_by('-basecard__card__multiverseid')[:50]
             search_pcard_list = PhysicalCard.objects.filter(Q(id__lte=15876), Q(basecard__rules_text__icontains='search'), Q(
                 basecard__cardtype__type__type='Creature')).order_by('-basecard__card__multiverseid')[:50]
-            counter_pcard_list = PhysicalCard.objects.filter(Q(id__lte=15876),
-                                                             Q(basecard__rules_text__icontains='counter'),
-                                                             Q(basecard__rules_text__icontains='target'),
-                                                             Q(basecard__rules_text__icontains='spell')).order_by('-basecard__card__multiverseid')[:25]
+            counter_pcard_list = PhysicalCard.objects.filter(Q(id__lte=15876), Q(basecard__rules_text__icontains='counter'), Q(
+                basecard__rules_text__icontains='target'), Q(basecard__rules_text__icontains='spell')).order_by('-basecard__card__multiverseid')[:25]
             burn_pcard_list = PhysicalCard.objects.filter(Q(id__lte=15876),
                                                           Q(basecard__rules_text__icontains='deal'),
                                                           Q(basecard__rules_text__icontains='damage'),

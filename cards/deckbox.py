@@ -20,5 +20,5 @@ def generate_auth_key(payload, session_id, secret=None):
         #m.update('{}:{}:{}'.format(secret, session_id, payload))
         m.update('{}:{}'.format(secret, payload))
         return m.hexdigest()
-    except:
+    except BaseException:
         return None

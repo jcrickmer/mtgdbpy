@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from settings import *
+from .settings import *
 
 DEFAULT_CHARSET = 'utf-8'
 
@@ -24,7 +24,7 @@ INTERNAL_IPS = ()
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mtgdb_staging',
+        'NAME': 'mtgdb2_staging',
         'USER': 'root',
         'PASSWORD': 'godzilla'
     },
@@ -51,7 +51,7 @@ LOGGING = {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            #'formatter': 'simple'
+            # 'formatter': 'simple'
         },
     },
     'loggers': {

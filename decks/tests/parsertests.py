@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.test import TestCase, TransactionTestCase
 from django_nose import FastFixtureTestCase
 

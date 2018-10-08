@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from django.test import TestCase, TransactionTestCase
-from django_nose import FastFixtureTestCase
+from django.test import TestCase
 from cards.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, FormatBasecard, SearchPredicate, CardManager, SortDirective
 FormatNotSpecifiedException = CardManager.FormatNotSpecifiedException
 from django.db import IntegrityError
@@ -17,9 +16,25 @@ PLAYABLE_CARD_COUNT = 1617
 
 # class CardManagerROTestCase(FastFixtureTestCase):
 
+from django.core import management
+
+
+def setup():
+    management.call_command('loaddata', 'mtgdbapp_testdata.json', verbosity=0)
+
+
+def teardown():
+    management.call_command('flush', verbosity=0, interactive=False)
+
 
 class CardManagerROTestCase(TestCase):
-    fixtures = ['mtgdbapp_testdata', ]
+    #fixtures = ['mtgdbapp_testdata', ]
+
+    def _fixture_setup(self):
+        pass
+
+    def _fixture_teardown(self):
+        pass
 
     def test_all(self):
         svalidator = '''SELECT count(id) FROM physicalcard WHERE layout NOT IN ('token','plane','scheme','phenomenon','vanguard');'''

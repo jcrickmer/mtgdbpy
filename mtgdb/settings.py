@@ -71,14 +71,15 @@ INSTALLED_APPS = [
     'decks',
 ]
 
-MIDDLEWARE_CLASSES = (
-    'cards.stats_middleware.StatsMiddleware',
+MIDDLEWARE = (
+    #    'cards.stats_middleware.StatsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'tz_detect.middleware.TimezoneMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'cards.deckbox_middleware.DeckboxMiddleware',
 )
@@ -94,7 +95,7 @@ WSGI_APPLICATION = 'mtgdb.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mtgdb',
+        'NAME': 'mtgdb2',
                 'USER': 'root',
                 'PASSWORD': 'godzilla'
     },
@@ -103,7 +104,7 @@ DATABASES = {
 # define the lookup channels in use on the Admin for type-ahead autocomplete
 AJAX_LOOKUP_CHANNELS = {
     #  simple: search Person.objects.filter(name__icontains=q)
-    #'deckcard'  : {'model': 'cards.PhysicalCard', 'search_field': 'id'},
+    # 'deckcard'  : {'model': 'cards.PhysicalCard', 'search_field': 'id'},
     'deckcard': ('cards.lookups', 'PhysicalCardLookup'),
     'physicalcard': ('cards.lookups', 'PhysicalCardLookup'),
     'expansionset': ('cards.lookups', 'ExpansionSetLookup'),
@@ -152,15 +153,15 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        #'file': {
+        # 'file': {
         #    'level': 'DEBUG',
         #    'class': 'logging.FileHandler',
         #    'filename': '/tmp/debug.log',
-        #},
+        # },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            #'formatter': 'simple'
+            # 'formatter': 'simple'
         },
     },
     'loggers': {
@@ -204,9 +205,9 @@ CARDS_SEARCH_CACHE_TIME = 60 * 15
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = "/home/jason/projects/mtgdbpy/cstatic/"
+STATIC_ROOT = "/home/jason/projects/mtgdb2/cstatic/"
 
-STATIC_ROOT_CN = '/home/jason/projects/mtgdbpy/cn'
+STATIC_ROOT_CN = '/home/jason/projects/mtgdb2/cn'
 STATIC_ROOT_CARD_IMAGES = '/home/jason/projects/mtgstats/card_images'
 
 DYNAMIC_IMAGE_FILE_ROOT = '/tmp/cn_dyn_root'
@@ -225,7 +226,7 @@ APP_SECRET = 'XXXXXXXX'
 OAUTH_TOKEN = 'XXXXXXXX'
 OAUTH_TOKEN_SECRET = 'XXXXXXXX'
 
-BETTER_BATTLE_PATH = '/home/jason/projects/mtgdb'
+BETTER_BATTLE_PATH = '/home/jason/projects/mtgdb2'
 
 HOME_URL = 'http://www.patsgames.com/'
 DECKBOX_LOGIN_URL = 'https://www.patsgames.com/store/custLogin.pl'

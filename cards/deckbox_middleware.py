@@ -17,7 +17,7 @@ class DeckboxMiddleware(object):
             # c, d, e, f).
             foo = str(uuid.UUID(deckbox_session_uuid_str))
             request.session['deckbox_session_id'] = deckbox_session_uuid_str
-        except:
+        except BaseException:
             #sys.stderr.write("killed Deckbox session: {}\n".format(sys.exc_info()[0]))
             request.session['deckbox_session_id'] = None
 
@@ -27,9 +27,19 @@ class DeckboxMiddleware(object):
             # c, d, e, f).
             foo = str(uuid.UUID(deckbox_order_uuid_str))
             request.session['deckbox_order_id'] = deckbox_order_uuid_str
-        except:
+        except BaseException:
             #sys.stderr.write("killed Deckbox order: {}\n".format(sys.exc_info()[0]))
             request.session['deckbox_order_id'] = None
 
     def process_response(self, request, response):
         return response
+
+    def __call__(self, request):
+        self.process_request(request)
+        resp = self.get_response(request)
+        resp = self.process_response(request, resp)
+        return resp
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+        super().__init__()

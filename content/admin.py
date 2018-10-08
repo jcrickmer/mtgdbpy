@@ -72,7 +72,7 @@ class ContentBlockAdmin(admin.ModelAdmin):
         form = super(ContentBlockAdmin, self).get_form(request, obj, **kwargs)
         if obj:
             sys.stderr.write("ContentBlockAdmin - obj is {}\n".format(obj))
-            pattern = re.compile(ur'PhysicalCard-(\d+)_')
+            pattern = re.compile(r'PhysicalCard-(\d+)_')
             pc_match = pattern.search(obj.key)
             if pc_match:
                 form.base_fields['key_card'].initial = int(pc_match.group(1))
@@ -84,6 +84,7 @@ class ContentBlockAdmin(admin.ModelAdmin):
                 form.base_fields['key_position'].initial = 'bottom'
 
         return form
+
 
 # Register your models here.
 admin.site.register(Author, AuthorAdmin)

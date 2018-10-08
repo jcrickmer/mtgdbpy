@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from settings import *
+from .settings import *
 
 DEFAULT_CHARSET = 'utf-8'
 
@@ -25,22 +25,22 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        #'file': {
+        # 'file': {
         #    'level': 'DEBUG',
         #    'class': 'logging.FileHandler',
         #    'filename': '/tmp/debug.log',
-        #},
-        #'applogfile': {
+        # },
+        # 'applogfile': {
         #    'level': 'DEBUG',
         #    'class': 'logging.handlers.RotatingFileHandler',
         #    'filename': os.path.join('/tmp/', 'mtgdb_debug.log'),
         #    'maxBytes': 1024 * 1024 * 15,  # 15MB
         #    'backupCount': 10,
-        #},
+        # },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            #'formatter': 'simple'
+            # 'formatter': 'simple'
         },
     },
     'loggers': {

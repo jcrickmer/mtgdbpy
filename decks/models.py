@@ -23,6 +23,8 @@ from .deckanalyzer import DeckManaDrawAnalyzer
 
 import time
 
+logger = logging.getLogger(__name__)
+
 
 class Timer:
 
@@ -39,7 +41,7 @@ class Tournament(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, null=False)
     url = models.CharField(max_length=500)
-    format = models.ForeignKey('cards.Format')
+    format = models.ForeignKey('cards.Format', on_delete=models.CASCADE)
     start_date = models.DateField(null=False, blank=False)
     end_date = models.DateField(null=False, blank=False)
     updated_at = models.DateTimeField(
@@ -63,7 +65,7 @@ class Deck(models.Model):
     VISIBILITY_CHOICES = ((VISIBLE, 'visible'), (HIDDEN, 'hidden'))
     visibility = models.CharField(max_length=12, choices=VISIBILITY_CHOICES, default=VISIBLE)
     authorname = models.CharField(max_length=100)
-    format = models.ForeignKey('cards.Format')
+    format = models.ForeignKey('cards.Format', on_delete=models.CASCADE)
     cards = models.ManyToManyField(PhysicalCard, through='DeckCard')
     tournaments = models.ManyToManyField(Tournament, through='TournamentDeck', through_fields=('deck', 'tournament'))
     updated_at = models.DateTimeField(
@@ -143,7 +145,7 @@ class Deck(models.Model):
         def __unicode__(self):
             return 'CardNotFoundException: "{}"'.format(str(self.text))
 
-    class CardsNotFoundException():
+    class CardsNotFoundException(BaseException):
 
         def __init__(self, cnfes):
             # a list of CardNotFoundExceptions
@@ -382,9 +384,9 @@ class Deck(models.Model):
 
 class DeckCard(models.Model):
     id = models.AutoField(primary_key=True)
-    deck = models.ForeignKey('Deck', null=False)
+    deck = models.ForeignKey('Deck', null=False, on_delete=models.CASCADE)
     cardcount = models.IntegerField(null=False, default=1)
-    physicalcard = models.ForeignKey('cards.PhysicalCard', null=False)
+    physicalcard = models.ForeignKey('cards.PhysicalCard', null=False, on_delete=models.CASCADE)
     MAIN = 'main'
     SIDE = 'side'
     COMMAND = 'command'
@@ -403,8 +405,8 @@ class DeckCard(models.Model):
 
 class TournamentDeck(models.Model):
     id = models.AutoField(primary_key=True)
-    deck = models.ForeignKey('Deck', null=False)
-    tournament = models.ForeignKey('Tournament', null=False)
+    deck = models.ForeignKey('Deck', null=False, on_delete=models.CASCADE)
+    tournament = models.ForeignKey('Tournament', null=False, on_delete=models.CASCADE)
     place = models.IntegerField(null=False, default=1)
 
     class Meta:
@@ -429,7 +431,7 @@ class FormatStat(models.Model):
     MIN_DECKS_IN_TOURNAMENT = 2
 
     id = models.AutoField(primary_key=True)
-    format = models.ForeignKey('cards.Format')
+    format = models.ForeignKey('cards.Format', on_delete=models.CASCADE)
     tournamentdeck_count = models.IntegerField(null=False, default=0)
     tournamentdeckcard_count = models.IntegerField(null=False, default=0)
 
@@ -541,8 +543,8 @@ class FormatCardStat(models.Model):
     STAPLE_THRESHOLD = 0.0008
 
     id = models.AutoField(primary_key=True)
-    format = models.ForeignKey('cards.Format')
-    physicalcard = models.ForeignKey('cards.PhysicalCard')
+    format = models.ForeignKey('cards.Format', on_delete=models.CASCADE)
+    physicalcard = models.ForeignKey('cards.PhysicalCard', on_delete=models.CASCADE)
 
     # the number of times that this card shows up in all decks in this format
     occurence_count = models.IntegerField(null=False, default=0)
@@ -628,7 +630,7 @@ class FormatCardStat(models.Model):
             self.average_card_count_in_deck = cstats['cardcount__avg'] or 0.0
             try:
                 self.percentage_of_all_cards = float(self.occurence_count) / float(self.formatstat.tournamentdeckcard_count)
-            except:
+            except BaseException:
                 self.percentage_of_all_cards = 0.0
                 # getting some DivByZero exceptions - not sure how
                 pass
@@ -747,7 +749,7 @@ class FormatCardStat(models.Model):
         result = None
 
         if self.previous_format_ids:
-            old_ids = [long(v) for v in self.previous_format_ids.split(',')]
+            old_ids = [int(v) for v in self.previous_format_ids.split(',')]
             # need to get the average inclusion of this card across all of these older formats. So, use the summed
             # occurence count with the summed total cards count.
             occc = FormatCardStat.objects.filter(format_id__in=old_ids, physicalcard=self.physicalcard)\
@@ -818,7 +820,7 @@ class FormatCardStat(models.Model):
         result = None
 
         if self.previous_format_ids:
-            old_ids = [long(v) for v in self.previous_format_ids.split(',')]
+            old_ids = [int(v) for v in self.previous_format_ids.split(',')]
             # need to get the average inclusion of this card across all of these older formats. So, use the summed
             # occurence count with the summed total cards count.
             afs = FormatStat.objects.filter(format_id__in=old_ids).aggregate(Sum('tournamentdeck_count'))
@@ -870,9 +872,9 @@ class FormatCardStat(models.Model):
 
 
 class DeckClusterDeck(models.Model):
-    deckcluster = models.ForeignKey('DeckCluster')
-    #deck = models.ForeignKey('Deck', unique=True)
-    deck = models.OneToOneField(Deck)
+    deckcluster = models.ForeignKey('DeckCluster', on_delete=models.CASCADE)
+    #deck = models.ForeignKey('Deck', unique=True, on_delete=models.CASCADE)
+    deck = models.OneToOneField(Deck, on_delete=models.CASCADE)
     distance = models.FloatField(default=1000.0, null=False)
 
     class Meta:
@@ -1001,15 +1003,20 @@ class Recommender(DeckCardRecommender):
         result = list()
         stop_it = 0
         for val in vals:
-            card = PhysicalCard.objects.get(pk=val[0]).get_latest_card()
-            card.annotations = dict()
-            card.annotations['score'] = val[1]
-            card.annotations['match_confidence'] = 500.0 + (2.0 * val[1])
-            if include_lands or not card.basecard.is_land():
-                result.append(card)
-                stop_it = stop_it + 1
-                if stop_it == 24:
-                    break
+            try:
+                card = PhysicalCard.objects.get(pk=val[0]).get_latest_card()
+                card.annotations = dict()
+                card.annotations['score'] = val[1]
+                card.annotations['match_confidence'] = 500.0 + (2.0 * val[1])
+                if include_lands or not card.basecard.is_land():
+                    result.append(card)
+                    stop_it = stop_it + 1
+                    if stop_it == 24:
+                        break
+            except BaseException as be:
+                logger.error("Recommender.get_recommended_cards() could not get PhysicalCard" +
+                             " {}. This is probably a signe that the ElasticSearch".format(val[0]) +
+                             " data is out of date.", exc_info=be)
         return result
 
 

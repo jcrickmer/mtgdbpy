@@ -103,7 +103,7 @@ class Command(BaseCommand):
                 self.update_basecard(jcard, bc)
             except BaseCard.DoesNotExist:
                 bc = self.add_basecard(jcard)
-            except:
+            except BaseException:
                 # sys.stderr.write("What!!??\n")
                 traceback.print_exc()
 
@@ -156,7 +156,7 @@ class Command(BaseCommand):
 
             # and now rulings
             self.set_rulings(bc, jcard)
-        except:
+        except BaseException:
             try:
                 sys.stderr.write("UNABLE TO LOAD CARD: " + jcard['name'] + '\n')
                 traceback.print_exc()

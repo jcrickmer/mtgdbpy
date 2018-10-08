@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
+
 from django.template.defaulttags import register
-import sys
 
 
 @register.filter
@@ -9,13 +10,13 @@ def get_item(dictionary, key):
 
 @register.filter
 def remove_whitespace(text):
-    result = text.replace(u"\r", u" ")
-    result = result.replace(u"\n", u" ")
+    result = text.replace("\r", " ")
+    result = result.replace("\n", " ")
     breaker = 0
-    while result.find(u"  ") > -1:
+    while result.find("  ") > -1:
         if breaker > 100:
             break
-        result = result.replace(u"  ", u" ")
+        result = result.replace("  ", " ")
         breaker = breaker + 1
     result = result.strip()
     return result

@@ -14,10 +14,25 @@ err = sys.stderr
 
 SKIP_TESTS_REQUIRING_SOLR = True
 
+from django.core import management
 
-# class CardManagerROTestCase(FastFixtureTestCase):
+
+def setup():
+    management.call_command('loaddata', 'mtgdbapp_testdata.json', verbosity=0)
+
+
+def teardown():
+    management.call_command('flush', verbosity=0, interactive=False)
+
+
 class CardManagerROTestCase(TestCase):
-    fixtures = ['mtgdbapp_testdata', ]
+    #fixtures = ['mtgdbapp_testdata', ]
+
+    def _fixture_setup(self):
+        pass
+
+    def _fixture_teardown(self):
+        pass
 
     def setUp(self):
         # Every test needs access to the request factory.

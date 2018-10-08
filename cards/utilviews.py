@@ -11,7 +11,7 @@ from django.http import Http404
 from django.db import connection
 from django.db import IntegrityError
 import collections
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.conf import settings
 
 import random
@@ -34,7 +34,7 @@ def cardclustertest(request, test_id=0):
     pcid_list = list()
 
     test_dir = os.path.join('/tmp/clusters/test_{:03d}'.format(int(test_id)))
-    #/tmp/clusters/test_000/clusters/
+    # /tmp/clusters/test_000/clusters/
     filelist = os.listdir(os.path.join(test_dir, 'pcards'))
     for filename in filelist:
         if 'physicalcard_' in filename:
@@ -56,6 +56,6 @@ def cardclustertest(request, test_id=0):
     context['metrics'] = {}
     try:
         context['metrics'] = json.load(open(os.path.join(test_dir, 'metrics')))
-    except:
+    except BaseException:
         pass
     return render(request, 'cards/clustertest.html', context)

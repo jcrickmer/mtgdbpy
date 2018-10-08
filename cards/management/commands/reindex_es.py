@@ -17,15 +17,8 @@ from elasticsearch import Elasticsearch, exceptions
 
 from kitchen.text.converters import getwriter
 
-UTF8Writer = getwriter('utf8')
-sys.stdout = UTF8Writer(sys.stdout)
-UTF8Reader = codecs.getreader('utf8')
-sys.stdin = UTF8Reader(sys.stdin)
-
 
 class Command(BaseCommand):
-
-    # DO THIS: export PYTHONIOENCODING=utf-8
 
     def add_arguments(self, parser):
         parser.add_argument('--full', dest='full', action='store_true',

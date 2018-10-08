@@ -203,7 +203,7 @@ class PhysicalCard(models.Model):
         if card is None:
             bc = self.basecard_set.filter(cardposition__in=[BaseCard.FRONT, BaseCard.LEFT, BaseCard.UP]).first()
             if bc is None:
-                logger.error("PhysicalCard.get_latest_card: ouch. bc is None")
+                logger.error("PhysicalCard.get_latest_card: ouch. bc is None. PhysicalCard pk={}".format(self.pk))
             card = bc.card_set.all().order_by('-multiverseid').first()
             cache.set('c_pc' + str(self.id), card, settings.CARDS_SEARCH_CACHE_TIME)
         return card
@@ -248,7 +248,7 @@ class PhysicalCard(models.Model):
                         result['power'] = max(eval(power), result['power'])
                     else:
                         result['power'] = eval(power)
-                except:
+                except BaseException:
                     pass
                 try:
                     toughness = bc.toughness
@@ -257,7 +257,7 @@ class PhysicalCard(models.Model):
                         result['toughness'] = max(eval(toughness), result['toughness'])
                     else:
                         result['toughness'] = eval(toughness)
-                except:
+                except BaseException:
                     pass
             result['filing_name'] = self.get_card_filing_name()
             cache.set(cache_key, result, 60 * 60 * 18)
@@ -270,7 +270,7 @@ class PhysicalCard(models.Model):
                 power = bc.power
                 power = power.replace('*', '4')
                 result = max(eval(power), result)
-            except:
+            except BaseException:
                 pass
         return result
 
@@ -281,7 +281,7 @@ class PhysicalCard(models.Model):
                 toughness = bc.toughness
                 toughness = toughness.replace('*', '4')
                 result = max(eval(toughness), result)
-            except:
+            except BaseException:
                 pass
         return result
 
@@ -354,13 +354,13 @@ class PhysicalCard(models.Model):
         # repacle numbers that have plus and minus signs in front of them.
         pattern = re.compile(r'\+([Xx\d]+)')
         result = pattern.sub(lambda m: 'plus{}'.format(m.group(1)), result)
-        pattern = re.compile(ur'[\-−\u2010-\u2015]([Xx\d]+)', re.U)
-        result = pattern.sub(lambda m: u'minus{}'.format(m.group(1)), unicode(result))
+        pattern = re.compile(r'[\-−\u2010-\u2015]([Xx\d]+)', re.U)
+        result = pattern.sub(lambda m: u'minus{}'.format(m.group(1)), result)
 
         result = result.replace(" or ", " litor ")
         result = result.replace(" and ", " litand ")
 
-        remindpat = re.compile(ur'\([^\)]+\)', re.U)
+        remindpat = re.compile(r'\([^\)]+\)', re.U)
         result = remindpat.sub('', result)
 
         if not include_symbols:
@@ -432,7 +432,7 @@ class PhysicalCard(models.Model):
             cmcct = cmcct + 1
             combocmc = combocmc + basecard.cmc
             result = result + 'cmc' + str(basecard.cmc) + "\n"
-            strippedcost = strippedcost + unicode(basecard.mana_cost)
+            strippedcost = strippedcost + str(basecard.mana_cost)
         if cmcct > 1:
             result = result + 'cmc' + str(combocmc) + "\n"
         strippedcost = strippedcost.replace('{', '')
@@ -475,17 +475,17 @@ class PhysicalCard(models.Model):
             if basecard.power is not None:
                 try:
                     result = result + ' power' + str(basecard.power) + "\n"
-                except:
+                except BaseException:
                     pass
             if basecard.toughness is not None:
                 try:
                     result = result + ' toughness' + str(basecard.toughness) + "\n"
-                except:
+                except BaseException:
                     pass
             if basecard.loyalty is not None:
                 try:
                     result = result + ' loyalty' + str(basecard.loyalty) + "\n"
-                except:
+                except BaseException:
                     pass
 
             result = result + "\n"
@@ -601,7 +601,7 @@ class PhysicalCard(models.Model):
                         if next_word in keywords:
                             pboost = pboost * 4.0
                         bigrams.append((rword, next_word, pboost))
-                except:
+                except BaseException:
                     pass
 
         for bigram in bigrams:
@@ -778,7 +778,7 @@ class BaseCard(models.Model):
     UP = 'U'
     DOWN = 'D'
     #id = models.IntegerField(primary_key=True)
-    physicalcard = models.ForeignKey(PhysicalCard)
+    physicalcard = models.ForeignKey(PhysicalCard, on_delete=models.CASCADE)
     name = models.CharField(max_length=128, unique=True, blank=False)
     filing_name = models.CharField(max_length=128, blank=False)
     rules_text = models.CharField(max_length=1000, blank=True)
@@ -817,11 +817,11 @@ class BaseCard(models.Model):
 
         Examples: "Legendary Creature - Human Wizard", "Enchantment", "Basic Land - Forest", "Tribal Instant - Goblin"
         """
-        spt = u' '.join(unicode(v.supertype) for v in self.supertypes.all())
-        tt = u' '.join(unicode(v.type) for v in self.types.all().order_by('sort_order'))
+        spt = u' '.join(str(v.supertype) for v in self.supertypes.all())
+        tt = u' '.join(str(v.type) for v in self.types.all().order_by('sort_order'))
         t = u' '.join([spt.strip(), tt.strip()])
         a = t
-        st = u' '.join(unicode(v.subtype) for v in self.subtypes.all())
+        st = u' '.join(str(v.subtype) for v in self.subtypes.all())
         if len(st) > 0:
             a = u' - '.join([t, st])
         return a.strip()
@@ -861,7 +861,7 @@ class BaseCard(models.Model):
 
 class Ruling(models.Model):
     #id = models.IntegerField(primary_key=True)
-    basecard = models.ForeignKey(BaseCard)
+    basecard = models.ForeignKey(BaseCard, on_delete=models.CASCADE)
     ruling_text = models.TextField(null=False)
     ruling_date = models.DateField(null=False, blank=False)
 
@@ -1390,17 +1390,16 @@ class SearchPredicate():
 
 class Card(models.Model):
     #id = models.IntegerField(primary_key=True)
-    expansionset = models.ForeignKey('ExpansionSet')
-    basecard = models.ForeignKey(BaseCard)
-    rarity = models.ForeignKey(
-        'Rarity',
-        db_column='rarity',
-        blank=True,
-        null=True)
+    expansionset = models.ForeignKey('ExpansionSet', on_delete=models.CASCADE)
+    basecard = models.ForeignKey(BaseCard, on_delete=models.CASCADE)
+    rarity = models.ForeignKey('Rarity',
+                               db_column='rarity',
+                               blank=True,
+                               null=True, on_delete=models.CASCADE)
     multiverseid = models.IntegerField(unique=False, blank=True, null=False)
     flavor_text = models.CharField(max_length=1000, blank=True, null=True)
     card_number = models.CharField(max_length=6, blank=True, null=True)
-    mark = models.ForeignKey('Mark', blank=True, null=True)
+    mark = models.ForeignKey('Mark', blank=True, null=True, on_delete=models.CASCADE)
     created_at = models.DateTimeField(
         null=False,
         auto_now_add=True)
@@ -1523,8 +1522,8 @@ class Card(models.Model):
 
 class CardColor(models.Model):
     #id = models.IntegerField(primary_key=True)
-    basecard = models.ForeignKey(BaseCard)
-    color = models.ForeignKey('Color')
+    basecard = models.ForeignKey(BaseCard, on_delete=models.CASCADE)
+    color = models.ForeignKey('Color', on_delete=models.CASCADE)
 
     class Meta:
         managed = True
@@ -1534,8 +1533,8 @@ class CardColor(models.Model):
 
 class CardSupertype(models.Model):
     #id = models.IntegerField(primary_key=True)
-    basecard = models.ForeignKey(BaseCard)
-    supertype = models.ForeignKey('Supertype')
+    basecard = models.ForeignKey(BaseCard, on_delete=models.CASCADE)
+    supertype = models.ForeignKey('Supertype', on_delete=models.CASCADE)
     position = models.IntegerField()
 
     class Meta:
@@ -1546,8 +1545,8 @@ class CardSupertype(models.Model):
 
 class CardSubtype(models.Model):
     #id = models.IntegerField(primary_key=True)
-    basecard = models.ForeignKey(BaseCard)
-    subtype = models.ForeignKey('Subtype')
+    basecard = models.ForeignKey(BaseCard, on_delete=models.CASCADE)
+    subtype = models.ForeignKey('Subtype', on_delete=models.CASCADE)
     position = models.IntegerField()
 
     class Meta:
@@ -1558,8 +1557,8 @@ class CardSubtype(models.Model):
 
 class CardType(models.Model):
     #id = models.IntegerField(primary_key=True)
-    basecard = models.ForeignKey(BaseCard)
-    type = models.ForeignKey('Type')
+    basecard = models.ForeignKey(BaseCard, on_delete=models.CASCADE)
+    type = models.ForeignKey('Type', on_delete=models.CASCADE)
     position = models.IntegerField()
 
     class Meta:
@@ -1697,33 +1696,35 @@ class Format(models.Model):
 
 
 class FormatExpansionSet(models.Model):
-    format = models.ForeignKey(Format)
-    expansionset = models.ForeignKey(ExpansionSet)
+    format = models.ForeignKey(Format, on_delete=models.CASCADE)
+    expansionset = models.ForeignKey(ExpansionSet, on_delete=models.CASCADE)
 
     class Meta:
-        auto_created = True
-        managed = True
+        #auto_created = True
+        #managed = True
         verbose_name_plural = 'Format Expansion Sets'
+        db_table = 'formatexpansionset'
 
     def __unicode__(self):
         return "Format: " + str(self.format.format) + " - " + self.expansionset.name + " (" + str(self.expansionset.id) + ")"
 
 
 class FormatBannedCard(models.Model):
-    format = models.ForeignKey(Format)
-    physicalcard = models.ForeignKey(PhysicalCard)
+    format = models.ForeignKey(Format, on_delete=models.CASCADE)
+    physicalcard = models.ForeignKey(PhysicalCard, on_delete=models.CASCADE)
 
     class Meta:
-        managed = True
+        #managed = True
         verbose_name_plural = 'Format Banned Cards'
+        db_table = 'formatbannedcard'
 
     def __unicode__(self):
         return "Format: " + str(self.format.format) + " - " + self.physicalcard.get_card_name() + " (" + str(self.physicalcard.id) + ")"
 
 
 class FormatBasecard(models.Model):
-    format = models.ForeignKey(Format)
-    basecard = models.ForeignKey(BaseCard)
+    format = models.ForeignKey(Format, on_delete=models.CASCADE)
+    basecard = models.ForeignKey(BaseCard, on_delete=models.CASCADE)
 
     def won_battles(self):
         """ Get all Battles won for this card in this format.
@@ -1801,9 +1802,9 @@ class FormatBasecard(models.Model):
 
 class Battle(models.Model):
     #id = models.IntegerField(primary_key=True)
-    format = models.ForeignKey('Format')
-    winner_pcard = models.ForeignKey('PhysicalCard', related_name='won_battles')
-    loser_pcard = models.ForeignKey('PhysicalCard', related_name='lost_battles')
+    format = models.ForeignKey('Format', on_delete=models.CASCADE)
+    winner_pcard = models.ForeignKey('PhysicalCard', related_name='won_battles', on_delete=models.CASCADE)
+    loser_pcard = models.ForeignKey('PhysicalCard', related_name='lost_battles', on_delete=models.CASCADE)
     battle_date = models.DateTimeField(
         auto_now_add=True,
         null=False)
@@ -1825,10 +1826,10 @@ class Battle(models.Model):
 
 class CardRating(models.Model):
     id = models.AutoField(primary_key=True)
-    physicalcard = models.ForeignKey('PhysicalCard')
+    physicalcard = models.ForeignKey('PhysicalCard', on_delete=models.CASCADE)
     mu = models.FloatField(default=25.0, null=False)
     sigma = models.FloatField(default=25.0 / 3.0, null=False)
-    format = models.ForeignKey('Format')
+    format = models.ForeignKey('Format', on_delete=models.CASCADE)
     updated_at = models.DateTimeField(
         auto_now=True,
         null=False)
@@ -1861,7 +1862,7 @@ class CardBattleStats():
     def __unicode__(self):
         try:
             return u'[CardBattleStats for "{}" in "{}"]'.format(self.physicalcard.get_card_name(), self.format.format)
-        except:
+        except BaseException:
             return u'[CardBattleStats for [{}] in [{}]]'.format(self.physicalcard.id, self.format.id)
 
     def won_battles(self):
@@ -1930,7 +1931,7 @@ class CardBattleStats():
 
 class CardKeyword(models.Model):
     #id = models.IntegerField(primary_key=True)
-    physicalcard = models.ForeignKey(PhysicalCard)
+    physicalcard = models.ForeignKey(PhysicalCard, on_delete=models.CASCADE)
     keyword = models.CharField(max_length=60, null=False)
     kwscore = models.FloatField(null=False)
 
@@ -1942,8 +1943,8 @@ class CardKeyword(models.Model):
 class SimilarPhysicalCard(models.Model):
     #id = models.IntegerField(primary_key=True)
     score = models.FloatField(null=False)
-    physicalcard = models.ForeignKey(PhysicalCard, related_name='physicalcard')
-    sim_physicalcard = models.ForeignKey(PhysicalCard, related_name='simphysicalcard')
+    physicalcard = models.ForeignKey(PhysicalCard, related_name='physicalcard', on_delete=models.CASCADE)
+    sim_physicalcard = models.ForeignKey(PhysicalCard, related_name='simphysicalcard', on_delete=models.CASCADE)
 
     class Meta:
         managed = True
@@ -1970,20 +1971,20 @@ class Association(models.Model):
         verbose_name_plural = 'Associations'
 
     def __unicode__(self):
-        return unicode(self.name) + u' [' + unicode(self.id) + u']'
+        return str(self.name) + ' [' + str(self.id) + ']'
 
 
 class AssociationCard(models.Model):
     #id = models.IntegerField(primary_key=True)
-    association = models.ForeignKey(Association)
-    physicalcard = models.ForeignKey(PhysicalCard, related_name='assocphysicalcard')
+    association = models.ForeignKey(Association, on_delete=models.CASCADE)
+    physicalcard = models.ForeignKey(PhysicalCard, related_name='assocphysicalcard', on_delete=models.CASCADE)
 
     class Meta:
         managed = True
         db_table = 'associationcard'
 
     def __unicode__(self):
-        return unicode(self.physicalcard) + u' => ' + unicode(self.association) + u' [' + unicode(self.id) + u']'
+        return str(self.physicalcard) + ' => ' + str(self.association) + ' [' + str(self.id) + ']'
 
 
 class CardPrice(models.Model):
@@ -1996,7 +1997,7 @@ class CardPrice(models.Model):
     # InterpolatedQuerySet or something like that.
 
     #id = models.IntegerField(primary_key=True)
-    card = models.ForeignKey(Card)
+    card = models.ForeignKey(Card, on_delete=models.CASCADE)
     at_datetime = models.DateTimeField(
         null=False,
         auto_now=True)
@@ -2013,10 +2014,5 @@ class CardPrice(models.Model):
         db_table = 'cardprice'
 
     def __unicode__(self):
-        return u'{}-{} ({}) [{}]: ${}'.format(
-            unicode(
-                self.card.multiverseid), unicode(
-                self.card.basecard.physicalcard.get_card_name()), unicode(
-                self.printing), unicode(
-                    self.at_datetime), unicode(
-                        self.price))
+        return u'{}-{} ({}) [{}]: ${}'.format(self.card.multiverseid, self.card.basecard.physicalcard.get_card_name(),
+                                              self.printing, self.at_datetime, self.price)

@@ -28,10 +28,11 @@ sleep 3
 mysqladmin -S /tmp/testramdisk/mysql.sock -u root password tester
 
 echo "Running tests..."
-source /home/jason/venvs/mtgdb/bin/activate
+source /home/jason/venvs/mtgdb2/bin/activate
 
 ./manage.py test --settings=mtgdb.settings_test cards.tests.helpertests && \
     ./manage.py test --settings=mtgdb.settings_test cards.tests.tests && \
+    ./manage.py test --settings=mtgdb.settings_test cards.tests.cardmanagertests && \
     ./manage.py test --settings=mtgdb.settings_test cards.tests.filingstringtests && \
     ./manage.py test --settings=mtgdb.settings_test cards.tests.loadertests && \
     ./manage.py test --settings=mtgdb.settings_test cards.tests.searchtests && \

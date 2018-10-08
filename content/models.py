@@ -5,7 +5,7 @@ from django.db import models
 from django.contrib.auth.models import User
 import re
 from cards.models import BaseCard
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 # Create your models here.
 
@@ -32,7 +32,7 @@ class ContentBlock(models.Model):
     #id = models.IntegerField(primary_key=True)
     key = models.CharField(max_length=128)
     content = models.TextField()
-    author = models.ForeignKey(Author)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
     version = models.IntegerField()
     created_at = models.DateTimeField(null=False, auto_now_add=True)
     updated_at = models.DateTimeField(null=False, auto_now=True)
@@ -58,7 +58,7 @@ class ContentBlock(models.Model):
         """
         result = self.content.replace("\n\n", "<br><br>")
         result = result.replace("\r\n\r\n", "<br><br>")
-        pattern = re.compile(ur'\[\[([^\]]+)\]\]', re.U)
+        pattern = re.compile(r'\[\[([^\]]+)\]\]', re.U)
         result = pattern.sub(lambda m: self._make_ahref_html_for_card_name(m.group(1)), result)
         return result
 

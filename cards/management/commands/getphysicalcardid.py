@@ -14,15 +14,9 @@ import operator
 
 import sys
 from kitchen.text.converters import getwriter
-UTF8Writer = getwriter('utf8')
-sys.stdout = UTF8Writer(sys.stdout)
-UTF8Reader = codecs.getreader('utf8')
-sys.stdin = UTF8Reader(sys.stdin)
 
 
 class Command(BaseCommand):
-
-    # DO THIS: export PYTHONIOENCODING=utf-8
 
     def handle(self, *args, **options):
         for line in sys.stdin:

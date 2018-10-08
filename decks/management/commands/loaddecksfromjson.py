@@ -27,13 +27,9 @@ from os.path import isfile, join, getmtime
 
 import sys
 from kitchen.text.converters import getwriter
-UTF8Writer = getwriter('utf8')
-sys.stdout = UTF8Writer(sys.stdout)
-UTF8Reader = codecs.getreader('utf8')
-sys.stdin = UTF8Reader(sys.stdin)
 import exceptions
 
-SCG_DECK_URL_KEY_RE = re.compile('deckid=(\d+)', re.IGNORECASE)
+SCG_DECK_URL_KEY_RE = re.compile(r'deckid=(\d+)', re.IGNORECASE)
 
 
 class Command(BaseCommand):
@@ -83,7 +79,7 @@ class Command(BaseCommand):
             last_start_time = dtparse(lst_str)
             last_start_time = last_start_time.replace(tzinfo=self.localtime)
             sema_in.close()
-        except:
+        except BaseException:
             sys.stderr.write("Cannot read the {} file. Proceeding anyway...\n".format(sema_filename))
 
         onlyfiles = [f for f in listdir(directory) if isfile(join(directory, f))]

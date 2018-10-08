@@ -818,8 +818,7 @@ class FormatCardStatTestCase(TestCase):
                 True,
                 "The previous format ids on the FormatCardStat object should be the previous format id. Not {}".format(
                     first_cc.previous_format_ids))
-            self.assertIs(str(old_form.pk) in first_cc.previous_format_ids,
-                          True,
+            self.assertIs(str(old_form.pk) in first_cc.previous_format_ids, True,
                           "The old format ids on the FormatCardStat object should be the old format id Not {}".format(first_cc.previous_format_ids))
 
             # in prev_format, 1 out of 6 were Island

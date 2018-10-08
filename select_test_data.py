@@ -6,12 +6,6 @@ import json
 import codecs
 import re
 
-UTF8Reader = codecs.getreader('utf8')
-sys.stdin = UTF8Reader(sys.stdin)
-UTF8Writer = codecs.getwriter('utf8')
-sys.stdout = UTF8Writer(sys.stdout)
-sys.stderr = UTF8Writer(sys.stderr)
-
 MAX_PER_CRITERION = 3
 
 final_muids = list()

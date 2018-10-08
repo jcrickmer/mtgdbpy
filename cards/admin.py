@@ -15,7 +15,7 @@ import sys
 
 from django.utils.html import format_html
 from django.conf.urls import url
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from .forms import CopyFormatForm
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
@@ -147,9 +147,17 @@ class FormatBannedCardInline(admin.TabularInline):
     })
 
 
+class FormatExpansionSetInline(admin.TabularInline):
+    readonly_fields = ('id',)
+    model = Format.expansionsets.through
+    form = make_ajax_form(FormatExpansionSet, {
+        'expansionset': 'expansionset'      # ForeignKeyField
+    })
+
+
 class FormatAdmin(admin.ModelAdmin):
     readonly_fields = ('id', 'cur_size')
-    inlines = [FormatBannedCardInline, ]
+    inlines = [FormatBannedCardInline, FormatExpansionSetInline]
 
     list_display = ('id', 'format', 'formatname', 'abbr', 'start_date', 'end_date', 'format_actions')
     list_display_links = ('format', )
@@ -168,7 +176,6 @@ class FormatAdmin(admin.ModelAdmin):
               'uses_command_zone',
               'validator',
               'cur_size',
-              'expansionsets',
               ]
     form = FormatModelForm
 
