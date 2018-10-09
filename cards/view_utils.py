@@ -180,7 +180,7 @@ def convertSymbolsToHTML(text):
         tag_close)
     # ####
 
-    for x in range(0, 15):
+    for x in range(0, 16):
         result = result.replace(
             "{" +
             str(x) +
