@@ -78,9 +78,12 @@ class Command(BaseCommand):
         # the first (and only) arg should be a filename
 
         mvids = self.mvids_of_interest("modern")
-        mvids = mvids + self.mvids_of_interest("standard")
-        mvids = mvids + self.mvids_of_interest("legacy")
-        mvids = mvids + self.mvids_of_interest("commander")
+        mvids_s = self.mvids_of_interest("standard")
+        mvids_l = self.mvids_of_interest("legacy")
+        mvids_c = self.mvids_of_interest("commander")
+        mvids = {**mvids, **mvids_s}
+        mvids = {**mvids, **mvids_l}
+        mvids = {**mvids, **mvids_c}
         dedup = list()
         for val in mvids:
             if val not in dedup:
