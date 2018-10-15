@@ -186,7 +186,10 @@ SELECT s1.physicalcard_id AS id,
             else:
                 result[self.likely_printing_mvid(pc)] = True
 
-        return result.keys()
+        realresult = list()
+        for rk in result.keys():
+            realresult.append(rk)
+        return realresult
 
     expsets = ExpansionSet.objects.exclude(
         name__icontains='clash pack').exclude(
