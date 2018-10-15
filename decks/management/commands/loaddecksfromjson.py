@@ -27,7 +27,6 @@ from os.path import isfile, join, getmtime
 
 import sys
 from kitchen.text.converters import getwriter
-import exceptions
 
 SCG_DECK_URL_KEY_RE = re.compile(r'deckid=(\d+)', re.IGNORECASE)
 
@@ -161,7 +160,7 @@ class Command(BaseCommand):
         for filename in onlyfiles:
             if filename.find('deck_') > -1:
                 ###fqfilename = join(directory, filename)
-                # print "last modified: %s" % time.ctime(getmtime(fqfilename))
+                # print("last modified: %s" % time.ctime(getmtime(fqfilename)))
                 filehandler = open(join(directory, filename))
 
                 filetime = datetime.fromtimestamp(os.path.getmtime(join(directory, filename)))
