@@ -42,7 +42,7 @@ class Command(BaseCommand):
     def grab_price(self, mvid):
         auth_key = generate_auth_key(mvid, 'bogus_session_id')
         url = 'https://www.patsgames.com/store/getCardInfo.pl?mvid={}&key={}'.format(mvid, auth_key)
-        serialized_data = urllib.urlopen(url).read()
+        serialized_data = urllib.request.urlopen(url).read()
 
         data = json.loads(serialized_data)
         sys.stdout.write("Data: {}\n".format(json.dumps(data)))
@@ -81,9 +81,8 @@ class Command(BaseCommand):
         mvids_s = self.mvids_of_interest("standard")
         mvids_l = self.mvids_of_interest("legacy")
         mvids_c = self.mvids_of_interest("commander")
-        mvids = {**mvids, **mvids_s}
-        mvids = {**mvids, **mvids_l}
-        mvids = {**mvids, **mvids_c}
+        mvids = mvids + mvids_s + mvids_l + mvids_c
+
         dedup = list()
         for val in mvids:
             if val not in dedup:
