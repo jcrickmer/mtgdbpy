@@ -15,7 +15,7 @@ import time
 import traceback
 import os
 import json
-import urllib2
+import urllib
 from cards.deckbox import generate_auth_key
 
 
@@ -42,7 +42,7 @@ class Command(BaseCommand):
     def grab_price(self, mvid):
         auth_key = generate_auth_key(mvid, 'bogus_session_id')
         url = 'https://www.patsgames.com/store/getCardInfo.pl?mvid={}&key={}'.format(mvid, auth_key)
-        serialized_data = urllib2.urlopen(url).read()
+        serialized_data = urllib.urlopen(url).read()
 
         data = json.loads(serialized_data)
         sys.stdout.write("Data: {}\n".format(json.dumps(data)))
