@@ -184,14 +184,11 @@ class Command(BaseCommand):
         # cases around it. So, things are just going to be dirty.
 
         pc = PhysicalCard()
+        # MTGJSON now includes layout... maybe I should leverage their data here.
         pc.layout = pc.NORMAL
         cardposition = 'F'  # FRONT
 
-        card_number = ''
-        try:
-            card_number = str(jcard['number'])
-        except KeyError:
-            pass
+        card_number = self.get_card_number(jcard)
 
         try:
             pc.layout = jcard['layout']
@@ -235,11 +232,11 @@ class Command(BaseCommand):
         bc.cardposition = cardposition
 
         # Name is going to be handled by update_basecard anyway...
-        # try:
-        #    bc.name = jcard['name']
-        # except KeyError:
-        #    # REVISIT - we now have an orphaned PhysicalCard
-        #    raise KeyError('JSON is missing attribute "name".')
+        try:
+            bc.name = jcard['name']
+        except KeyError:
+            # REVISIT - we now have an orphaned PhysicalCard
+            raise KeyError('JSON is missing attribute "name".')
 
         # Rules text is going to be handled by update_basecard anyway...
         # try:
