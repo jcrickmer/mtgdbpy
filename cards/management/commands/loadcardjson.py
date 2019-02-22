@@ -425,7 +425,8 @@ class Command(BaseCommand):
 
     def update_card(self, jcard, card):
 
-        card.rarity = Rarity.objects.filter(rarity__iexact=jcard['rarity']).first()
+        # Looks like MTGJSON changed 'Mythic' to 'Mythic Rare', or something like that.
+        card.rarity = Rarity.objects.filter(rarity__istartswith=jcard['rarity'][0:3]).first()
 
         try:
             card.flavor_text = jcard['flavor']
