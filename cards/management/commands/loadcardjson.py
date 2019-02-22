@@ -376,7 +376,10 @@ class Command(BaseCommand):
         try:
             CardColor.objects.filter(basecard=bc).delete()
             for ccolor in jcard['colors']:
-                dbcolor = Color.objects.get(color__iexact=ccolor)
+                try:
+                    dbcolor = Color.objects.get(color__iexact=ccolor)
+                except Color.DoesNotExist:
+                    dbcolor = Color.objects.get(id__iexact=ccolor)
                 cc = CardColor()
                 cc.basecard = bc
                 cc.color = dbcolor
