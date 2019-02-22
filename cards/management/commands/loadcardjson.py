@@ -134,7 +134,10 @@ class Command(BaseCommand):
                 return
 
             try:
-                muid = jcard['multiverseid']
+                if 'multiverseid' in jcard:
+                    muid = jcard['multiverseid']
+                else:
+                    muid = jcard['multiverseId']
             except KeyError:
                 sys.stderr.write(" no multiverseid, so skipped.\n")
                 return
@@ -290,7 +293,10 @@ class Command(BaseCommand):
             pass
 
         try:
-            bc.cmc = jcard['cmc']
+            if 'cmc' in jcard:
+                bc.cmc = jcard['cmc']
+            else:
+                bc.cmc = int(jcard['convertedManaCost'])
         except KeyError:
             # REVISIT - we now have an orphaned PhysicalCard
             #raise KeyError('JSON is missing attribute "cmc".')
