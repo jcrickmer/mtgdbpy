@@ -111,16 +111,7 @@ class Command(BaseCommand):
 
             # Now let's get the Card
             card = None
-            card_number = None
-            try:
-                card_number = jcard['card_number']
-            except KeyError:
-                pass
-            if card_number is None:
-                try:
-                    card_number = jcard['number']
-                except KeyError:
-                    pass
+            card_number = self.get_card_number(jcard)
 
             sys.stderr.write("Name: " + jcard['name'] + ': ')
 
@@ -160,6 +151,21 @@ class Command(BaseCommand):
                 traceback.print_exc()
             except KeyError:
                 sys.stderr.write("UNABLE TO LOAD CARD WITH NO NAME!!\n")
+
+    def get_card_number(self, jcard):
+        card_number = None
+        try:
+            card_number = jcard['card_number']
+        except KeyError:
+            pass
+        if card_number is None:
+            try:
+                card_number = jcard['number']
+            except KeyError:
+                pass
+        if 'side' in jcard and 'a' not in card_number and 'b' not in card_number and 'c' not in card_number and 'd' not in card_number and 'e' not in card_number:
+            card_number = '{}{}'.format(card_number, jcard['side']).lower()
+        return card_number
 
     def get_muid(self, jcard):
         if 'multiverseid' in jcard:
@@ -412,10 +418,7 @@ class Command(BaseCommand):
     def add_card(self, jcard, expset, basecard):
         card = Card()
         card.basecard = basecard
-        try:
-            card.card_number = jcard['number']
-        except KeyError:
-            pass
+        card.card_number = self.get_card_number(jcard)
         card.expansionset = expset
         card.multiverseid = self.get_muid(jcard)
         card.save()
