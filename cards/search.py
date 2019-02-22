@@ -143,7 +143,7 @@ class SearchService(object):
             logger.info(
                 'Search Service connecting to default post "{}" because ELASTICSEARCH_PORT is not set.'.format(
                     self._port))
-        self._es = Elasticsearch(hosts=[{"host": self._host, "port": self._port}, ])
+        self._es = Elasticsearch(hosts=[{"host": self._host, "port": self._port}, ], timeout=30)
 
         self._index_name = 'card'
         try:
