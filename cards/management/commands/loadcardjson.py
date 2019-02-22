@@ -134,22 +134,17 @@ class Command(BaseCommand):
                 return
 
             try:
-                if 'multiverseid' in jcard:
-                    muid = jcard['multiverseid']
-                else:
-                    muid = jcard['multiverseId']
+                sys.stderr.write(" {}\n".format(self.get_muid(jcard)))
             except KeyError:
                 sys.stderr.write(" no multiverseid, so skipped.\n")
                 return
-
-            sys.stderr.write(" " + str(jcard['multiverseid']) + '\n')
             # sys.stderr.write(" card #: " + str(card_number) + '\n')
             #sys.stderr.write(str(bc) + "\n")
 
             card = Card.objects.filter(
                 expansionset=expset,
                 card_number=card_number,
-                multiverseid=jcard['multiverseid'],
+                multiverseid=self.get_muid(jcard),
                 basecard=bc).first()
             if card is None:
                 card = self.add_card(jcard, expset, bc)
@@ -165,6 +160,13 @@ class Command(BaseCommand):
                 traceback.print_exc()
             except KeyError:
                 sys.stderr.write("UNABLE TO LOAD CARD WITH NO NAME!!\n")
+
+    def get_muid(self, jcard):
+        if 'multiverseid' in jcard:
+            result = jcard['multiverseid']
+        else:
+            result = jcard['multiverseId']
+        return int(result)
 
     def add_basecard(self, jcard):
         # Initially, I had tried to put all of the objects into a
@@ -412,7 +414,7 @@ class Command(BaseCommand):
         except KeyError:
             pass
         card.expansionset = expset
-        card.multiverseid = int(jcard['multiverseid'])
+        card.multiverseid = self.get_muid(jcard)
         card.save()
 
         card = self.update_card(jcard, card)
