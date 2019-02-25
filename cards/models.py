@@ -652,7 +652,7 @@ class PhysicalCard(models.Model):
                     result.append(card)
             except BaseException as e:
                 logger.error(
-                    "PhysicalCard.find_similiar_cards received exception when getting cards back from ElasticSearch and trying to find them in the database.",
+                    "PhysicalCard.find_similiar_cards received exception when getting cards back from ElasticSearch and trying to find them in the database. PhysicalCard id {}.".format(sim['_id']),
                     exc_info=True)
         return result
 
