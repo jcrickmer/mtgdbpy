@@ -24,7 +24,13 @@ class Command(BaseCommand):
             sys.stdout.write('{}|'.format(card.basecard.physicalcard.get_card_name()))
             sys.stdout.write('{}|'.format(card.expansionset.abbr))
             sys.stdout.write('{}|'.format(card.expansionset.name))
-            sys.stdout.write('{}|'.format(card.rarity.rarity))
+
+            try:
+                sys.stdout.write('{}'.format(card.rarity.rarity))
+            except:
+                pass
+            sys.stdout.write('|')
+
             sys.stdout.write('{}|'.format(card.card_number))
             if card.mark:
                 sys.stdout.write('{}|'.format(card.mark.mark))

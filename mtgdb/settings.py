@@ -15,6 +15,7 @@ import os
 from distutils.sysconfig import get_python_lib
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SITE_PACKAGES_DIR = str(get_python_lib())
+DIST_PACKAGES_DIR = SITE_PACKAGES_DIR.replace('site-pack','dist-pack')
 DEFAULT_CHARSET = 'utf-8'
 
 # Quick-start development settings - unsuitable for production
@@ -132,6 +133,8 @@ TEMPLATES = [
                  os.path.join(BASE_DIR, 'mtgdb', 'templates'),
                  os.path.join(SITE_PACKAGES_DIR, 'django', 'contrib', 'admin', 'templates'),
                  os.path.join(SITE_PACKAGES_DIR, 'ajax_select', 'templates'),
+                 os.path.join(DIST_PACKAGES_DIR, 'django', 'contrib', 'admin', 'templates'),
+                 os.path.join(DIST_PACKAGES_DIR, 'ajax_select', 'templates'),
                  ],
         'OPTIONS': {
             'debug': True,
