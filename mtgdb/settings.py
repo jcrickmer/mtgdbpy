@@ -231,7 +231,7 @@ OAUTH_TOKEN_SECRET = 'XXXXXXXX'
 
 BETTER_BATTLE_PATH = '/home/jason/projects/mtgdb2'
 
-HOME_URL = 'http://www.patsgames.com/'
+HOME_URL = 'http://mtgcardtech.jcrickmer.com/'
 DECKBOX_LOGIN_URL = 'https://www.patsgames.com/store/custLogin.pl'
 DECKBOX_URL = 'https://www.patsgames.com/store/custCheckout.pl'
 DECKBOX_SESSION_COOKIE_KEY = 'PGCUSTISA'

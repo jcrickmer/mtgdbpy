@@ -12,7 +12,7 @@ my $dbh = DBI->connect('DBI:mysql:mtgdb','root','godzilla', {RaiseError=>1, Prin
 $dbh->{'mysql_enable_utf8'} = 1;
 $dbh->do(qq{SET NAMES 'utf8';});
 
-my $baseurl = 'http://spellbook.patsgames.com/';
+my $baseurl = 'http://mtgcardtech.jcrickmer.com/';
 my $prefix = $baseurl . 'cards/';
 
 my $color_slang = {'white'=>['white'],
