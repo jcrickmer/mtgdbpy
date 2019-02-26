@@ -39,7 +39,7 @@
     "availability": "http://schema.org/InStock",
     "seller": {
       "@type": "Organization",
-      "name": "Pat's Games"
+      "name": "MTG Card Tech"
     }
   }
   {% endif %}
@@ -51,7 +51,7 @@
   <meta property="og:description" content="{{request_card.basecard.rules_text|remove_whitespace}}">
   <meta property="og:image" content="{{request.scheme}}://{{request.get_host}}{{request_card.img_url}}">
   <meta property="og:url" content="{{request.scheme}}://{{request.get_host}}{{request.path}}">
-  <meta property="og:site_name" content="Pat's Games: Spellbook">
+  <meta property="og:site_name" content="MTG Card Tech">
 
   {% for ccc in cards %}
     {% if forloop.counter0 == 0 %}
@@ -223,7 +223,7 @@ function drawCardStatsChart(formatname) {
                 </div>
               </div>
               <div class="row card-attr-row">
-                <div class="col-xs-3 card-attr-title">Pat's Card&nbsp;Ratings</div>
+                <div class="col-xs-3 card-attr-title">Card&nbsp;Ratings</div>
                 <div class="col-xs-9 card-attr-value">
                   {% for lf in physicalcard.legal_formats %}
                     <span class="format-name">{{lf.formatname}}</span>
@@ -275,7 +275,7 @@ function drawCardStatsChart(formatname) {
   <div class="col-xs-12 col-md-4" id="pricing-container">
     {% if request_card.get_recent_lowest_cardprice %}
       <table class='pricing-table' id='pricing-table'>
-        <tr class='table-header-row'><th class='pricing-header' colspan='3'>Pat's Prices</th></tr>
+        <tr class='table-header-row'><th class='pricing-header' colspan='3'>Prices</th></tr>
         <tr><td colspan="3" class="pricing-recent-qualifier">recent pricing</td></tr>
         <tr class="price-current-card">
           <td class='price-expansion'>{{ request_card.expansionset.name }}</td>
@@ -334,7 +334,7 @@ function drawCardStatsChart(formatname) {
                 <div class="panel-heading" role="tab" id="heading-{{format.formatname|lower}}-rating">
                   <h5 class="panel-title">
                     <a data-toggle="collapse" data-parent="#accordion-{{format.formatname|lower}}" href="#collapse-{{format.formatname|lower}}-rating" aria-expanded="false" aria-controls="collapse-{{format.formatname|lower}}-rating">
-                      <i class="indicator glyphicon glyphicon-menu-right pull-left" style="font-size: 90%; padding-right: 5px;"></i> Pat's Card Rating: {{cr.cardninjaRating|floatformat:2 }}
+                      <i class="indicator glyphicon glyphicon-menu-right pull-left" style="font-size: 90%; padding-right: 5px;"></i> Card Rating: {{cr.cardninjaRating|floatformat:2 }}
                     </a>
                   </h5>
                 </div>
@@ -347,7 +347,7 @@ function drawCardStatsChart(formatname) {
                         <div><b>Wins</b> - {{cbs.win_count}} ({{cbs.win_percentage|floatformat:1}}%)</div>
                         {% if cbs.win_count > 0 %}
                           <!-- WON BATTLES -->
-                          <div>{{ physicalcard.get_card_name }} has beaten these cards in Pat's Card Battles:</div>
+                          <div>{{ physicalcard.get_card_name }} has beaten these cards in Card Battles:</div>
                           <div class="row">
                             {% for fbc in formatbasecards %}
                               {% if fbc.format.formatname == format.formatname %}
@@ -367,7 +367,7 @@ function drawCardStatsChart(formatname) {
                         <div><b>Losses</b> - {{cbs.loss_count}} ({{cbs.loss_percentage|floatformat:1}}%)</div>
                         {% if cbs.loss_count > 0 %}
                           <!-- LOST BATTLES -->
-                          <div>{{ physicalcard.get_card_name }} has lost to these cards in Pat's Card Battles:</div>
+                          <div>{{ physicalcard.get_card_name }} has lost to these cards in Card Battles:</div>
                           <div class="row">
                             {% for fbc in formatbasecards %}
                               {% if fbc.format.formatname == format.formatname %}
@@ -546,7 +546,7 @@ drawPrices = function(val) {
         window.cn.log("calling _ucp"); 
         $.ajax({url: "/cards/_ucp/",data: {"p":JSON.stringify(cn.cardprices)},dataType: "json",method: "POST",async: true,xhrFields:{withCredentials: true},crossDomain: true});
         $("#pricing-table").remove();
-        $("#pricing-container").append("<table class='pricing-table' id='pricing-table'><tr class='table-header-row'><th class='pricing-header' colspan='3'>Pat's Prices</th></tr></table>"); 
+        $("#pricing-container").append("<table class='pricing-table' id='pricing-table'><tr class='table-header-row'><th class='pricing-header' colspan='3'>Prices</th></tr></table>");
         for (var f = 0; f < window.cn.cardprices.length; f++) {
             var cp = window.cn.cardprices[f]; 
             var xp_ident = '';
@@ -575,20 +575,18 @@ drawPrices = function(val) {
             }
             $("#pricing-table").append("<tr class='" + tr_css_classes + "' data-price='" + disp_price + "'><td class='price-expansion'><a href='/cards/" + cp.mvid + "/'>" + xp_ident + "</a></td><td class='price-printing'>" + cp.printing + "</td><td class='price-price'>$" + disp_price + "</td></tr>");
         }
-        $("#pricing-table").append("<tr><td colspan='3' class='pricing-table-add'><form action='https://www.patsgames.com/store/custFCdeck.pl' method='post' enctype='multipart/form-data' target='deckbox'><input type='hidden' name='BULKIN' value='1 {{physicalcard.get_card_name|escape}}'><input type='hidden' name='QTY:{{ request_card.multiverseid }}' value='1'><input type='hidden' name='NOTES:{{ request_card.multiverseid }}' value=''><input class='button btn-cart' type='submit' name='VALUE' value='ADD TO DECKBOX'></form></td></tr>");
+        //$("#pricing-table").append("<tr><td colspan='3' class='pricing-table-add'><form action='https://www.patsgames.com/store/custFCdeck.pl' method='post' enctype='multipart/form-data' target='deckbox'><input type='hidden' name='BULKIN' value='1 {{physicalcard.get_card_name|escape}}'><input type='hidden' name='QTY:{{ request_card.multiverseid }}' value='1'><input type='hidden' name='NOTES:{{ request_card.multiverseid }}' value=''><input class='button btn-cart' type='submit' name='VALUE' value='ADD TO DECKBOX'></form></td></tr>");
     } else {
-        $("#pricing-container").append("<div class='pricing-login-prompt'><a href='{{settings.DECKBOX_LOGIN_URL}}' target='deckbox'>Log in to Pat\'s Games<br>to see prices!</div>");
+        //$("#pricing-container").append("<div class='pricing-login-prompt'><a href='{{settings.DECKBOX_LOGIN_URL}}' target='deckbox'>Log in to Pat\'s Games<br>to see prices!</div>");
     }
 };
 checkPrices = function(val) {
     window.cn.log("checkPrices with " + val);
     window.cn.dir(val);
     if (window.cn.cardprices != null && window.cn.cardprices.length > 0) {
-        window.cn.log("checkPrices L494");
         window.cn.dir(window.cn.cardprices);
         if (window.cn.cardprices.length == 1 && (window.cn.cardprices[0].price == "99999999.99" || window.cn.cardprices[0].price == 99999999.99 || window.cn.cardprices[0].name == "")) {
-            window.cn.log("checkPrices L496"); 
-            // let's try again 
+            // let's try again
             for (var pp = 0; pp < pbmk.length; pp++) {
                 if (pbmk[pp].length == 2) {
                     // let's try this one. 

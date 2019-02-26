@@ -6,7 +6,7 @@ DEFAULT_CHARSET = 'utf-8'
 
 DEBUG = TEMPLATE_DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '172-31-44-78', 'ip-172-31-47-162', '172.31.47.162', 'spellbook.patsgames.com', '34.215.208.197']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '172-31-44-78', 'ip-172-31-47-162', '172.31.47.162', 'spellbook.patsgames.com', 'mtgcardtech.jcrickmer.com','34.215.208.197']
 INTERNAL_IPS = ()
 #DATABASE_NAME = 'production'
 #DATABASE_USER = 'app'
@@ -83,7 +83,7 @@ DECKBOX_PRICE_URL_BASE = 'https://www.patsgames.com/store/getCardInfo.pl?mvid='
 DECKBOX_AUTH_SECRET = "patsgamesRocks"
 
 # Google Analytics
-GA_TRACKING_ID = 'UA-112384301-1'
+GA_TRACKING_ID = 'UA-135211556-2'
 GTM_ID = 'GTM-TFQMBXJ'
 
 ELASTICSEARCH_HOST = 'vpc-spellbook-u24glnd5zfp4imkyavrokeygku.us-west-2.es.amazonaws.com'
