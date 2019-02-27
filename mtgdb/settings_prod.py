@@ -74,7 +74,7 @@ OAUTH_TOKEN_SECRET = 'XXXXX'
 
 BETTER_BATTLE_PATH = '/opt/mtgdb-prod'
 
-HOME_URL = 'https://www.patsgames.com/'
+HOME_URL = 'http://mtgcardtech.jcrickmer.com/cards/'
 DECKBOX_LOGIN_URL = 'https://www.patsgames.com/store/custLogin.pl'
 DECKBOX_URL = 'https://www.patsgames.com/store/custCheckout.pl'
 DECKBOX_SESSION_COOKIE_KEY = 'PGCUSTISA'
