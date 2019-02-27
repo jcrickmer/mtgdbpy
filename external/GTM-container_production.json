@@ -1,30 +1,30 @@
 {
     "exportFormatVersion": 2,
-    "exportTime": "2018-09-28 19:37:57",
+    "exportTime": "2019-02-27 05:05:18",
     "containerVersion": {
-        "path": "accounts/2441324769/containers/8336345/versions/5",
-        "accountId": "2441324769",
-        "containerId": "8336345",
-        "containerVersionId": "5",
-        "name": "Cart tracking",
-        "description": "Add to Cart button is now being tracked in GA.",
+        "path": "accounts/4701297090/containers/11173414/versions/3",
+        "accountId": "4701297090",
+        "containerId": "11173414",
+        "containerVersionId": "3",
+        "name": "Right UA Id",
+        "description": "Updated to new UA id",
         "container": {
-            "path": "accounts/2441324769/containers/8336345",
-            "accountId": "2441324769",
-            "containerId": "8336345",
-            "name": "spellbook.patsgames.com",
-            "publicId": "GTM-TFQMBXJ",
+            "path": "accounts/4701297090/containers/11173414",
+            "accountId": "4701297090",
+            "containerId": "11173414",
+            "name": "mtgcardtech.jcrickmer.com",
+            "publicId": "GTM-K6PP4K7",
             "usageContext": [
                 "WEB"
             ],
-            "fingerprint": "1538162802700",
-            "tagManagerUrl": "https://tagmanager.google.com/#/container/accounts/2441324769/containers/8336345/workspaces?apiLink=container"
+            "fingerprint": "1551243765715",
+            "tagManagerUrl": "https://tagmanager.google.com/#/container/accounts/4701297090/containers/11173414/workspaces?apiLink=container"
         },
         "tag": [
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
-                "tagId": "8",
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "tagId": "1",
                 "name": "GA Event - Add to Cart",
                 "type": "ua",
                 "parameter": [
@@ -37,6 +37,11 @@
                         "type": "BOOLEAN",
                         "key": "overrideGaSettings",
                         "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "eventValue",
+                        "value": "{{Product Price}}"
                     },
                     {
                         "type": "TEMPLATE",
@@ -64,16 +69,16 @@
                         "value": "{{Page URL}}"
                     }
                 ],
-                "fingerprint": "1538162802700",
+                "fingerprint": "1551243717318",
                 "firingTriggerId": [
-                    "16"
+                    "6"
                 ],
                 "tagFiringOption": "ONCE_PER_EVENT"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
-                "tagId": "6",
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "tagId": "2",
                 "name": "GA Event - Playedwith Card Commander Clicks",
                 "type": "ua",
                 "parameter": [
@@ -118,16 +123,16 @@
                         "value": "{{Click URL}}"
                     }
                 ],
-                "fingerprint": "1517800526830",
+                "fingerprint": "1551243717320",
                 "firingTriggerId": [
-                    "10"
+                    "7"
                 ],
                 "tagFiringOption": "ONCE_PER_EVENT"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
-                "tagId": "4",
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "tagId": "3",
                 "name": "GA Event - Playedwith Card Legacy Clicks",
                 "type": "ua",
                 "parameter": [
@@ -172,16 +177,16 @@
                         "value": "{{Click URL}}"
                     }
                 ],
-                "fingerprint": "1517800431265",
+                "fingerprint": "1551243717322",
                 "firingTriggerId": [
-                    "11"
+                    "8"
                 ],
                 "tagFiringOption": "ONCE_PER_EVENT"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
-                "tagId": "2",
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "tagId": "4",
                 "name": "GA Event - Playedwith Card Modern Clicks",
                 "type": "ua",
                 "parameter": [
@@ -226,15 +231,15 @@
                         "value": "{{Click URL}}"
                     }
                 ],
-                "fingerprint": "1517799819655",
+                "fingerprint": "1551243717323",
                 "firingTriggerId": [
-                    "6"
+                    "9"
                 ],
                 "tagFiringOption": "ONCE_PER_EVENT"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
+                "accountId": "4701297090",
+                "containerId": "11173414",
                 "tagId": "5",
                 "name": "GA Event - Playedwith Card Standard Clicks",
                 "type": "ua",
@@ -280,16 +285,16 @@
                         "value": "{{Click URL}}"
                     }
                 ],
-                "fingerprint": "1517800476131",
+                "fingerprint": "1551243717325",
                 "firingTriggerId": [
-                    "12"
+                    "10"
                 ],
                 "tagFiringOption": "ONCE_PER_EVENT"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
-                "tagId": "3",
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "tagId": "6",
                 "name": "GA Event - Sim Card Clicks",
                 "type": "ua",
                 "parameter": [
@@ -329,15 +334,15 @@
                         "value": "{{Click URL}}"
                     }
                 ],
-                "fingerprint": "1517799819662",
+                "fingerprint": "1551243717327",
                 "firingTriggerId": [
-                    "7"
+                    "11"
                 ],
                 "tagFiringOption": "ONCE_PER_EVENT"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
+                "accountId": "4701297090",
+                "containerId": "11173414",
                 "tagId": "7",
                 "name": "GA Event - Tutor Select",
                 "type": "ua",
@@ -378,16 +383,16 @@
                         "value": "{{Event Value}}"
                     }
                 ],
-                "fingerprint": "1517936084876",
+                "fingerprint": "1551243717328",
                 "firingTriggerId": [
-                    "14"
+                    "12"
                 ],
                 "tagFiringOption": "ONCE_PER_EVENT"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
-                "tagId": "1",
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "tagId": "8",
                 "name": "Google UA",
                 "type": "ua",
                 "parameter": [
@@ -407,7 +412,7 @@
                         "value": "{{UA Tracking Id}}"
                     }
                 ],
-                "fingerprint": "1517510835235",
+                "fingerprint": "1551243717329",
                 "firingTriggerId": [
                     "2147479553"
                 ],
@@ -416,9 +421,9 @@
         ],
         "trigger": [
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
-                "triggerId": "16",
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "triggerId": "6",
                 "name": "Add to Cart",
                 "type": "CLICK",
                 "filter": [
@@ -438,12 +443,12 @@
                         ]
                     }
                 ],
-                "fingerprint": "1538162528799"
+                "fingerprint": "1551243717309"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
-                "triggerId": "10",
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "triggerId": "7",
                 "name": "Played With Card Anchor Commander",
                 "type": "LINK_CLICK",
                 "filter": [
@@ -495,12 +500,12 @@
                 "uniqueTriggerId": {
                     "type": "TEMPLATE"
                 },
-                "fingerprint": "1517800317856"
+                "fingerprint": "1551243717310"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
-                "triggerId": "11",
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "triggerId": "8",
                 "name": "Played With Card Anchor Legacy",
                 "type": "LINK_CLICK",
                 "filter": [
@@ -552,12 +557,12 @@
                 "uniqueTriggerId": {
                     "type": "TEMPLATE"
                 },
-                "fingerprint": "1517800349972"
+                "fingerprint": "1551243717311"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
-                "triggerId": "6",
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "triggerId": "9",
                 "name": "Played With Card Anchor Modern",
                 "type": "LINK_CLICK",
                 "filter": [
@@ -609,12 +614,12 @@
                 "uniqueTriggerId": {
                     "type": "TEMPLATE"
                 },
-                "fingerprint": "1517799819640"
+                "fingerprint": "1551243717312"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
-                "triggerId": "12",
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "triggerId": "10",
                 "name": "Played With Card Anchor Standard",
                 "type": "LINK_CLICK",
                 "filter": [
@@ -666,12 +671,12 @@
                 "uniqueTriggerId": {
                     "type": "TEMPLATE"
                 },
-                "fingerprint": "1517800373498"
+                "fingerprint": "1551243717313"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
-                "triggerId": "7",
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "triggerId": "11",
                 "name": "Sim Card Anchor",
                 "type": "LINK_CLICK",
                 "filter": [
@@ -723,12 +728,12 @@
                 "uniqueTriggerId": {
                     "type": "TEMPLATE"
                 },
-                "fingerprint": "1517799819648"
+                "fingerprint": "1551243717314"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
-                "triggerId": "14",
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "triggerId": "12",
                 "name": "cardtutor select",
                 "type": "CUSTOM_EVENT",
                 "customEventFilter": [
@@ -748,14 +753,14 @@
                         ]
                     }
                 ],
-                "fingerprint": "1517935954557"
+                "fingerprint": "1551243717314"
             }
         ],
         "variable": [
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
-                "variableId": "2",
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "variableId": "1",
                 "name": "Event Value",
                 "type": "v",
                 "parameter": [
@@ -775,12 +780,38 @@
                         "value": "eventValue"
                     }
                 ],
-                "fingerprint": "1517935830943"
+                "fingerprint": "1551243717315"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
-                "variableId": "1",
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "variableId": "2",
+                "name": "Product Price",
+                "type": "d",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "elementSelector",
+                        "value": ".price-current-card"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "attributeName",
+                        "value": "data-price"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "selectorType",
+                        "value": "CSS"
+                    }
+                ],
+                "fingerprint": "1551243717316",
+                "formatValue": {}
+            },
+            {
+                "accountId": "4701297090",
+                "containerId": "11173414",
+                "variableId": "3",
                 "name": "UA Tracking Id",
                 "type": "gas",
                 "parameter": [
@@ -827,81 +858,81 @@
                     {
                         "type": "TEMPLATE",
                         "key": "trackingId",
-                        "value": "UA-112384301-1"
+                        "value": "UA-135211556-2"
                     }
                 ],
-                "fingerprint": "1517799910068"
+                "fingerprint": "1551243814822"
             }
         ],
         "builtInVariable": [
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
+                "accountId": "4701297090",
+                "containerId": "11173414",
                 "type": "PAGE_URL",
                 "name": "Page URL"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
+                "accountId": "4701297090",
+                "containerId": "11173414",
                 "type": "PAGE_HOSTNAME",
                 "name": "Page Hostname"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
+                "accountId": "4701297090",
+                "containerId": "11173414",
                 "type": "PAGE_PATH",
                 "name": "Page Path"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
+                "accountId": "4701297090",
+                "containerId": "11173414",
                 "type": "REFERRER",
                 "name": "Referrer"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
+                "accountId": "4701297090",
+                "containerId": "11173414",
                 "type": "EVENT",
                 "name": "Event"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
+                "accountId": "4701297090",
+                "containerId": "11173414",
                 "type": "CLICK_ELEMENT",
                 "name": "Click Element"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
+                "accountId": "4701297090",
+                "containerId": "11173414",
                 "type": "CLICK_CLASSES",
                 "name": "Click Classes"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
+                "accountId": "4701297090",
+                "containerId": "11173414",
                 "type": "CLICK_ID",
                 "name": "Click ID"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
+                "accountId": "4701297090",
+                "containerId": "11173414",
                 "type": "CLICK_TARGET",
                 "name": "Click Target"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
+                "accountId": "4701297090",
+                "containerId": "11173414",
                 "type": "CLICK_URL",
                 "name": "Click URL"
             },
             {
-                "accountId": "2441324769",
-                "containerId": "8336345",
+                "accountId": "4701297090",
+                "containerId": "11173414",
                 "type": "CLICK_TEXT",
                 "name": "Click Text"
             }
         ],
-        "fingerprint": "1538162979432",
-        "tagManagerUrl": "https://tagmanager.google.com/#/versions/accounts/2441324769/containers/8336345/versions/5?apiLink=version"
+        "fingerprint": "1551243832516",
+        "tagManagerUrl": "https://tagmanager.google.com/#/versions/accounts/4701297090/containers/11173414/versions/3?apiLink=version"
     }
 }

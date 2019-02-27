@@ -84,7 +84,7 @@ DECKBOX_AUTH_SECRET = "patsgamesRocks"
 
 # Google Analytics
 GA_TRACKING_ID = 'UA-135211556-2'
-GTM_ID = 'GTM-TFQMBXJ'
+GTM_ID = 'GTM-K6PP4K7'
 
 ELASTICSEARCH_HOST = 'vpc-spellbook-u24glnd5zfp4imkyavrokeygku.us-west-2.es.amazonaws.com'
 ELASTICSEARCH_PORT = 80
