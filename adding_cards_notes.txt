@@ -19,10 +19,11 @@ And set the expansionset_id to be the id for the new expansion set.
 Step 3:
 Create new formats. You will need to know the start and end dates for the new formats. Here are some examples.
 
-INSERT INTO format (formatname, format, start_date, end_date, max_cards_main, max_cards_side, max_nonbl_card_count, min_cards_main, min_cards_side, uses_command_zone,abbr) VALUES ('Commander','Commander_2016-04-02','2016-04-02','2016-07-15',100,0,1,100,0,1,'EDH');
+INSERT INTO format (formatname, format, start_date, end_date, max_cards_main, max_cards_side, max_nonbl_card_count, min_cards_main, min_cards_side, uses_command_zone,abbr) VALUES ('Commander','Commander_2019-01-25','2019-01-25','2019-04-26',100,0,1,100,0,1,'EDH');
+INSERT INTO format (formatname, format, start_date, end_date, max_cards_main, max_cards_side, max_nonbl_card_count, min_cards_main, min_cards_side, uses_command_zone,abbr) VALUES ('Modern','Modern_2019-01-25','2019-01-25','2019-04-26',1000,15,4,60,0,0,'MOD');
+INSERT INTO format (formatname, format, start_date, end_date, max_cards_main, max_cards_side, max_nonbl_card_count, min_cards_main, min_cards_side, uses_command_zone,abbr) VALUES ('Standard','Standard_2019-01-25','2019-01-25','2019-04-26',1000,15,4,60,0,0,'STD');
+INSERT INTO format (formatname, format, start_date, end_date, max_cards_main, max_cards_side, max_nonbl_card_count, min_cards_main, min_cards_side, uses_command_zone,abbr) VALUES ('Legacy','Legacy_2019-01-25','2019-01-25','2019-04-26',1000,15,4,60,0,0,'LEG');
 INSERT INTO format (formatname, format, start_date, end_date, max_cards_main, max_cards_side, max_nonbl_card_count, min_cards_main, min_cards_side, uses_command_zone,abbr) VALUES ('TinyLeaders','Tiny Leaders_2016-04-08','2016-04-08','2016-07-21',50,15,1,50,0,1,'TL');
-INSERT INTO format (formatname, format, start_date, end_date, max_cards_main, max_cards_side, max_nonbl_card_count, min_cards_main, min_cards_side, uses_command_zone,abbr) VALUES ('Modern','Modern_2016-04-08','2016-04-08','2016-07-21',1000,15,4,60,0,0,'MOD');
-INSERT INTO format (formatname, format, start_date, end_date, max_cards_main, max_cards_side, max_nonbl_card_count, min_cards_main, min_cards_side, uses_command_zone,abbr) VALUES ('Standard','Standard_2016-04-08','2016-04-08','2016-07-21',1000,15,4,60,0,0,'STD');
 INSERT INTO format (formatname, format, start_date, end_date, max_cards_main, max_cards_side, max_nonbl_card_count, min_cards_main, min_cards_side, uses_command_zone,abbr) VALUES ('ShadowsOverInnistrad','BlockLimited_SOI_2016-04-02','2016-04-02','2016-07-15',1000,15,4,60,0,0,'SOI');
 
 Step 4:
@@ -48,16 +49,16 @@ For standard rotations, it is probably best to just start over and load all 4 pr
 Step 5:
 Now bring over all of the battles.
 
-CREATE TEMPORARY TABLE fooy AS (SELECT battle_date, 18 AS format_id, loser_pcard_id, session_key, winner_pcard_id, test_id FROM battle WHERE format_id = 15);
-INSERT INTO fooy (SELECT battle_date, 19 AS format_id, loser_pcard_id, session_key, winner_pcard_id, test_id FROM battle WHERE format_id = 17);
-INSERT INTO fooy (SELECT battle_date, 20 AS format_id, loser_pcard_id, session_key, winner_pcard_id, test_id FROM battle WHERE format_id = 16);
-INSERT INTO fooy (SELECT battle_date, 21 AS format_id, loser_pcard_id, session_key, winner_pcard_id, test_id FROM battle WHERE format_id = 14);
+CREATE TEMPORARY TABLE fooy AS (SELECT battle_date, 107 AS format_id, loser_pcard_id, session_key, winner_pcard_id FROM battle WHERE format_id = 99);
+INSERT INTO fooy (SELECT battle_date, 108 AS format_id, loser_pcard_id, session_key, winner_pcard_id FROM battle WHERE format_id = 100);
+INSERT INTO fooy (SELECT battle_date, 109 AS format_id, loser_pcard_id, session_key, winner_pcard_id FROM battle WHERE format_id = 102);
+INSERT INTO fooy (SELECT battle_date, 110 AS format_id, loser_pcard_id, session_key, winner_pcard_id FROM battle WHERE format_id = 101);
 
-INSERT INTO fooy (SELECT battle_date, 42 AS format_id, loser_pcard_id, session_key, winner_pcard_id, test_id FROM battle JOIN basecard AS wbc ON winner_pcard_id = wbc.physicalcard_id JOIN basecard AS lbc ON loser_pcard_id = lbc.physicalcard_id WHERE format_id = 37 AND wbc.id IN (SELECT basecard_id FROM formatbasecard WHERE format_id = 42) AND lbc.id IN (SELECT basecard_id FROM formatbasecard WHERE format_id = 42));
+INSERT INTO fooy (SELECT battle_date, 42 AS format_id, loser_pcard_id, session_key, winner_pcard_id FROM battle JOIN basecard AS wbc ON winner_pcard_id = wbc.physicalcard_id JOIN basecard AS lbc ON loser_pcard_id = lbc.physicalcard_id WHERE format_id = 37 AND wbc.id IN (SELECT basecard_id FROM formatbasecard WHERE format_id = 42) AND lbc.id IN (SELECT basecard_id FROM formatbasecard WHERE format_id = 42));
 
 And then push them into battle again.
 
-INSERT IGNORE INTO battle (battle_date, format_id, loser_pcard_id, session_key, winner_pcard_id, test_id) SELECT battle_date, format_id, loser_pcard_id, session_key, winner_pcard_id, test_id FROM fooy;
+INSERT IGNORE INTO battle (battle_date, format_id, loser_pcard_id, session_key, winner_pcard_id) SELECT battle_date, format_id, loser_pcard_id, session_key, winner_pcard_id FROM fooy;
 DROP TABLE fooy;
 
 Again, you will probably need to do something a little bit different for Standard set rotations and possibly for bannings.
