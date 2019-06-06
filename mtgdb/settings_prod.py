@@ -6,7 +6,15 @@ DEFAULT_CHARSET = 'utf-8'
 
 DEBUG = TEMPLATE_DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '172-31-44-78', 'ip-172-31-47-162', '172.31.47.162', 'spellbook.patsgames.com', 'mtgcardtech.jcrickmer.com','34.215.208.197']
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    '172-31-44-78',
+    'ip-172-31-47-162',
+    '172.31.47.162',
+    'spellbook.patsgames.com',
+    'mtgcardtech.jcrickmer.com',
+    '34.215.208.197']
 INTERNAL_IPS = ()
 #DATABASE_NAME = 'production'
 #DATABASE_USER = 'app'

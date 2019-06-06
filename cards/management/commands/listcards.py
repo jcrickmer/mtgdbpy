@@ -10,6 +10,7 @@ from django.db.models import Q
 from datetime import datetime, date, timedelta
 import sys
 
+
 class Command(BaseCommand):
 
     help = '''List out all cards in the database by Multiversid, one card per line.'''
@@ -27,7 +28,7 @@ class Command(BaseCommand):
 
             try:
                 sys.stdout.write('{}'.format(card.rarity.rarity))
-            except:
+            except BaseException:
                 pass
             sys.stdout.write('|')
 
@@ -45,15 +46,13 @@ class Command(BaseCommand):
             sys.stdout.write('{}|'.format(card.basecard.toughness))
             sys.stdout.write('{}|'.format(card.basecard.loyalty))
             clean_rt = str(card.basecard.rules_text)
-            clean_rt = clean_rt.replace("\n"," ")
-            clean_rt = clean_rt.replace("|","_")
+            clean_rt = clean_rt.replace("\n", " ")
+            clean_rt = clean_rt.replace("|", "_")
             sys.stdout.write('{}|'.format(clean_rt))
             sys.stdout.write('{}|'.format(card.basecard.ispermanent))
             sys.stdout.write('{}|'.format(card.basecard.get_full_type_str()))
             clean_colors = str(card.basecard.physicalcard.get_searchable_document_color())
-            clean_colors = clean_colors.replace("\n"," ")
+            clean_colors = clean_colors.replace("\n", " ")
             sys.stdout.write('{}|'.format(clean_colors))
 
             sys.stdout.write("\n")
-
-

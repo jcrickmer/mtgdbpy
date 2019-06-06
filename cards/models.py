@@ -169,7 +169,7 @@ class PhysicalCard(models.Model):
                 first_card = bc
         if not first_card:
             result = "!FIRST_CARD MISSING!"
-            logger.warn("NO first_card for " + str(self.id))
+            logger.warning("NO first_card for " + str(self.id))
         else:
             result = first_card.name
         if sec_card:
@@ -652,7 +652,8 @@ class PhysicalCard(models.Model):
                     result.append(card)
             except BaseException as e:
                 logger.error(
-                    "PhysicalCard.find_similiar_cards received exception when getting cards back from ElasticSearch and trying to find them in the database. PhysicalCard id {}.".format(sim['_id']),
+                    "PhysicalCard.find_similiar_cards received exception when getting cards back from ElasticSearch and trying to find them in the database. PhysicalCard id {}.".format(
+                        sim['_id']),
                     exc_info=True)
         return result
 

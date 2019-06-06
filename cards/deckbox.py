@@ -6,7 +6,7 @@ import re
 import hashlib
 import logging
 logger = logging.getLogger(__name__)
-  
+
 
 def generate_auth_key(payload, session_id, secret=None):
     """ Generate an authentication key expected by Deckbox to be able to access API calls.

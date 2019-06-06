@@ -20,6 +20,9 @@ from .forms import CopyFormatForm
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class CardModelForm(forms.ModelForm):
     flavor_text = forms.CharField(widget=forms.Textarea, required=False)
@@ -132,7 +135,14 @@ class PhysicalCardAdmin(admin.ModelAdmin):
 
 
 class FormatModelForm(forms.ModelForm):
-    expansionsets = ModelMultipleChoiceField(queryset=ExpansionSet.objects.all().order_by('-releasedate'))
+    expansionsets = ModelMultipleChoiceField(queryset=ExpansionSet.objects.all().order_by('-releasedate'), required=False)
+
+    # Lots of issues with the ExpansionSets being "required", which I don't quite understand. This was some helpful
+    # debugging code to let me see exactly what the issue is/was.
+    # def is_valid(self):
+    #    from django.utils.encoding import force_text
+    #    logger.error(force_text(self.errors))
+    #    return super(FormatModelForm, self).is_valid()
 
     class Meta:
         model = Format
