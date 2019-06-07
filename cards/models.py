@@ -1687,6 +1687,9 @@ class Format(models.Model):
         # a not-so-often admin function, I am not worried about it.
         return
 
+    def card_count(self):
+        return FormatBasecard.objects.filter(format=self).count()
+
     class Meta:
         verbose_name_plural = 'Formats'
         db_table = 'format'

@@ -20,6 +20,8 @@ from .forms import CopyFormatForm
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
 
+from cards.tasks import populate_format_cards
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -169,7 +171,7 @@ class FormatAdmin(admin.ModelAdmin):
     readonly_fields = ('id', 'cur_size')
     inlines = [FormatBannedCardInline, FormatExpansionSetInline]
 
-    list_display = ('id', 'format', 'formatname', 'abbr', 'start_date', 'end_date', 'format_actions')
+    list_display = ('id', 'format', 'formatname', 'abbr', 'start_date', 'end_date', 'card_count', 'format_actions')
     list_display_links = ('format', )
 
     fields = ['id',
@@ -197,16 +199,36 @@ class FormatAdmin(admin.ModelAdmin):
                 self.admin_site.admin_view(self.process_copy),
                 name='format-copy',
             ),
+            url(
+                r'^(?P<format_id>.+)/populate/$',
+                self.admin_site.admin_view(self.process_populate),
+                name='format-populate',
+            ),
         ]
         return custom_urls + urls
 
-    def format_actions(self, obj):
-        return format_html(
+    def format_actions(self, format):
+        buttons = list()
+        buttons.append(format_html(
             '<a class="button" href="{}">Copy</a>',
-            reverse('admin:format-copy', args=[obj.pk]),
-        )
+            reverse('admin:format-copy', args=[format.pk]),
+        ))
+        buttons.append(format_html(
+            '<a class="button" href="{}">Populate</a>',
+            reverse('admin:format-populate', args=[format.pk]),
+        ))
+        return format_html(' '.join(buttons))
+
     format_actions.short_description = 'Format Actions'
     format_actions.allow_tags = True
+
+    def card_count(self, format):
+        ''' Return the current number of cards in the format.
+        '''
+        return format.card_count()
+
+    card_count.short_description = 'Cards in format'
+    card_count.allow_tags = False
 
     def process_copy(self, request, format_id, *args, **kwargs):
         return self.process_action(
@@ -215,6 +237,23 @@ class FormatAdmin(admin.ModelAdmin):
             action_form=CopyFormatForm,
             action_title='Copy',
         )
+
+    def process_populate(self, request, format_id, *args, **kwargs):
+        ''' The admin user wants to populate the format with the FormatExpansionSet and FormatBannedCard lists. For
+            performance reasons, this action is not done with the format is initially created.
+
+            Once the user has initiated this request, go ahead and return them back to the Format list page with a note
+            that we got the process started.
+        '''
+        format = Format.objects.get(pk=format_id)
+        async_result = populate_format_cards.delay(format_id)
+        self.message_user(
+            request,
+            'Populate task for format "{}" started. Current status is {}.'.format(
+                format.format,
+                async_result.status))
+        url = reverse('admin:cards_format_changelist', current_app=self.admin_site.name)
+        return HttpResponseRedirect(url)
 
     def process_action(self, request, format_id, action_form, action_title):
         format = self.get_object(request, format_id)
