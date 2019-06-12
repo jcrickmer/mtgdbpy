@@ -749,7 +749,7 @@ class PhysicalCard(models.Model):
         ckey = 'c_pc_laggcp-{}'.format(self.id)
         result = cache.get(ckey)
         if not result:
-            oldest = timezone.now() - timedelta(days=14)
+            oldest = timezone.now() - timedelta(days=35)
             latest_cp = CardPrice.objects.filter(card__basecard__physicalcard=self,
                                                  at_datetime__gt=oldest,
                                                  printing='normal')\
@@ -1506,8 +1506,8 @@ class Card(models.Model):
                 BaseCard.LEFT,
                 BaseCard.UP]).order_by('multiverseid')
 
-    def get_recent_lowest_cardprice(self):
-        history = timezone.now() - timedelta(days=14)
+    def get_recent_lowest_cardprice(self, days_back=35):
+        history = timezone.now() - timedelta(days=days_back)
         cp = CardPrice.objects.filter(card=self, at_datetime__gt=history).order_by('price', '-at_datetime').first()
         return cp
 
@@ -2002,9 +2002,8 @@ class CardPrice(models.Model):
 
     #id = models.IntegerField(primary_key=True)
     card = models.ForeignKey(Card, on_delete=models.CASCADE)
-    at_datetime = models.DateTimeField(
-        null=False,
-        auto_now=True)
+    at_datetime = models.DateTimeField(default=timezone.now,
+                                       null=False)
     price = models.FloatField(default=0.0, null=False)
     price_discounted = models.BooleanField(null=False, default=False)
 

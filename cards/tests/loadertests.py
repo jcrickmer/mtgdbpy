@@ -3,12 +3,16 @@
 from django.test import TestCase, TransactionTestCase
 from django_nose import FastFixtureTestCase
 from cards.models import Color, Rarity, Type, Subtype, PhysicalCard, Card, BaseCard, CardRating, ExpansionSet, FormatBasecard, SearchPredicate
+from cards.models import CardPrice
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from cards.tests.helper import TestLoadHelper
+from cards.utils.cardjson import Processor
+import json
 
-from cards.management.commands.loadcardjson import Command
+from datetime import date, datetime, time, timedelta, timezone
+
 import sys
 err = sys.stderr
 
@@ -360,7 +364,7 @@ class LoaderTestCase(TestCase):
             helper.color_loader()
             helper.expansionset_example_loader()
         expset = ExpansionSet.objects.filter(abbr=set_abbr).first()
-        tool = Command()
+        tool = Processor()
         tool.handle_card_json(json, expset)
         card = BaseCard.objects.filter(name=name).first()
         return card
@@ -469,6 +473,7 @@ class LoaderTestCase(TestCase):
 
 #    def test_to_make_sure_types_are_being_reused(self):
 #        self.assertTrue(False)
+
 
     def test_types_legendary(self):
         card = self.load_card(self.alesha_json, "Alesha, Who Smiles at Death")
@@ -697,3 +702,92 @@ class LoaderTestCase(TestCase):
     def test_isperm_12(self):
         card = self.load_card(self.elspeth_json, "Elspeth, Sun's Champion")
         self.assertTrue(card.ispermanent)
+
+    def test_empty_price(self):
+        jobj = json.loads(self.heliod_json)
+        jobj['price'] = None
+        expset_abbr = 'BAR'
+        bcard = self.load_card(json.dumps(jobj), "Heliod, God of the Sun", set_abbr=expset_abbr)
+        card = Card.objects.filter(basecard=bcard, expansionset__abbr=expset_abbr).first()
+        self.assertIsNone(card.get_recent_lowest_cardprice())
+        self.assertEqual(0, CardPrice.objects.filter(card=card).count())
+
+    def test_empty_price_2(self):
+        jobj = json.loads(self.heliod_json)
+        jobj['price'] = {}
+        expset_abbr = 'BAR'
+        bcard = self.load_card(json.dumps(jobj), "Heliod, God of the Sun", set_abbr=expset_abbr)
+        card = Card.objects.filter(basecard=bcard, expansionset__abbr=expset_abbr).first()
+        self.assertIsNone(card.get_recent_lowest_cardprice())
+        self.assertEqual(0, CardPrice.objects.filter(card=card).count())
+
+    def test_empty_price_3(self):
+        jobj = json.loads(self.heliod_json)
+        jobj['price'] = {'paper': None}
+        expset_abbr = 'BAR'
+        bcard = self.load_card(json.dumps(jobj), "Heliod, God of the Sun", set_abbr=expset_abbr)
+        card = Card.objects.filter(basecard=bcard, expansionset__abbr=expset_abbr).first()
+        self.assertIsNone(card.get_recent_lowest_cardprice())
+        self.assertEqual(0, CardPrice.objects.filter(card=card).count())
+
+    def test_a_price(self):
+        jobj = json.loads(self.heliod_json)
+        yest = datetime.now(timezone.utc) + timedelta(days=-1)
+        jobj['prices'] = {}
+        jobj['prices']['paper'] = {'{:%Y-%m-%d}'.format(yest): 7.99}
+        expset_abbr = 'BAR'
+        bcard = self.load_card(json.dumps(jobj), "Heliod, God of the Sun", set_abbr=expset_abbr)
+        card = Card.objects.filter(basecard=bcard, expansionset__abbr=expset_abbr).first()
+        self.assertIsNotNone(card.get_recent_lowest_cardprice())
+        self.assertEqual(card.get_recent_lowest_cardprice().price, 7.99)
+        self.assertEqual(1, CardPrice.objects.filter(card=card).count())
+
+    def test_a_price_bad_date(self):
+        jobj = json.loads(self.heliod_json)
+        jobj['prices'] = {}
+        jobj['prices']['paper'] = {'yuck': 7.99}
+        expset_abbr = 'BAR'
+        bcard = self.load_card(json.dumps(jobj), "Heliod, God of the Sun", set_abbr=expset_abbr)
+        card = Card.objects.filter(basecard=bcard, expansionset__abbr=expset_abbr).first()
+        self.assertIsNone(card.get_recent_lowest_cardprice())
+        self.assertEqual(0, CardPrice.objects.filter(card=card).count())
+
+    def test_a_price_bad_price(self):
+        jobj = json.loads(self.heliod_json)
+        yest = datetime.now(timezone.utc) + timedelta(days=-1)
+        jobj['prices'] = {}
+        jobj['prices']['paper'] = {'{:%Y-%m-%d}'.format(yest): 'not a number'}
+        expset_abbr = 'BAR'
+        bcard = self.load_card(json.dumps(jobj), "Heliod, God of the Sun", set_abbr=expset_abbr)
+        card = Card.objects.filter(basecard=bcard, expansionset__abbr=expset_abbr).first()
+        self.assertIsNone(card.get_recent_lowest_cardprice())
+        self.assertEqual(0, CardPrice.objects.filter(card=card).count())
+
+    def test_three_prices_one_bad_price(self):
+        jobj = json.loads(self.heliod_json)
+        jobj['prices'] = {'paper': {}}
+        yest = datetime.now(timezone.utc) + timedelta(days=-5)
+        jobj['prices']['paper']['{:%Y-%m-%d}'.format(yest)] = '8.25'
+        yest = datetime.now(timezone.utc) + timedelta(days=-4)
+        jobj['prices']['paper']['{:%Y-%m-%d}'.format(yest)] = 'not a number'
+        yest = datetime.now(timezone.utc) + timedelta(days=-3)
+        jobj['prices']['paper']['{:%Y-%m-%d}'.format(yest)] = 7.76
+        expset_abbr = 'BAR'
+        bcard = self.load_card(json.dumps(jobj), "Heliod, God of the Sun", set_abbr=expset_abbr)
+        card = Card.objects.filter(basecard=bcard, expansionset__abbr=expset_abbr).first()
+        self.assertIsNotNone(card.get_recent_lowest_cardprice())
+        self.assertEqual(2, CardPrice.objects.filter(card=card).count())
+        self.assertEqual(card.get_recent_lowest_cardprice().price, 7.76)
+
+    def test_lots_of_prices(self):
+        jobj = json.loads(self.heliod_json)
+        jobj['prices'] = {'paper': {}}
+        for daysback in range(-55, 0):
+            yest = datetime.now(timezone.utc) + timedelta(days=daysback)
+            jobj['prices']['paper']['{:%Y-%m-%d}'.format(yest)] = 14.0 + (-0.01 * daysback)
+        expset_abbr = 'BAR'
+        bcard = self.load_card(json.dumps(jobj), "Heliod, God of the Sun", set_abbr=expset_abbr)
+        card = Card.objects.filter(basecard=bcard, expansionset__abbr=expset_abbr).first()
+        self.assertIsNotNone(card.get_recent_lowest_cardprice())
+        self.assertEqual(card.get_recent_lowest_cardprice().price, 14.01)
+        self.assertEqual(55, CardPrice.objects.filter(card=card).count())

@@ -12,7 +12,8 @@ import json
 from datetime import datetime, date
 from cards.views import autocomplete
 from cards.tests.helper import TestLoadHelper
-from cards.management.commands.loadcardjson import Command
+from cards.utils.cardjson import Processor
+
 import sys
 err = sys.stderr
 
@@ -109,7 +110,7 @@ class FormatTestCase(TestCase):
             helper.color_loader()
             helper.expansionset_example_loader()
         expset = ExpansionSet.objects.filter(abbr=set_abbr).first()
-        tool = Command()
+        tool = Processor()
         tool.handle_card_json(json, expset)
         card = BaseCard.objects.filter(name=name).first()
         return card

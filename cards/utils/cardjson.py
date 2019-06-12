@@ -3,6 +3,7 @@
 from cards.models import PhysicalCard
 from cards.models import BaseCard
 from cards.models import Card
+from cards.models import CardPrice
 from cards.models import Color, CardColor
 from cards.models import Rarity
 from cards.models import Type
@@ -15,6 +16,7 @@ from cards.models import Mark
 from cards.models import ExpansionSet
 from cards.models import Ruling
 from django.db.models import Q
+from django.utils import dateparse
 
 import logging
 import sys
@@ -45,7 +47,7 @@ class Processor(object):
 
     '''Load up some JSON and add it to the database, if needed.'''
 
-    def __init__(self, filename):
+    def __init__(self, filename=None):
         self.filename = filename
 
     def process(self):
@@ -85,6 +87,7 @@ class Processor(object):
                             card_process_count,
                             cards_to_load_count,
                             100.0 * percent_complete))
+
                 except CardMissingLayoutError as cmle:
                     logger.info("\"{}\" does not have a layout. Not processed.".format(jcard['name']))
                 except CardMissingMultiverseIdError as cmmuide:
@@ -181,6 +184,30 @@ class Processor(object):
         # and now rulings
         self.set_rulings(bc, jcard)
 
+        # let's set prices...
+        if 'prices' in jcard:
+            if 'paper' in jcard['prices']:
+                for pdate in jcard['prices']['paper']:
+                    try:
+                        cprice = float(jcard['prices']['paper'][pdate])
+                    except ValueError:
+                        logger.warning(
+                            "Unable to save card price for \"{}\" with date \"{}\" and price \"{}\" because it isn't a number.".format(
+                                card.basecard.name, pdate, jcard['prices']['paper'][pdate]))
+                        continue
+                    dt = dateparse.parse_datetime('{}T00:00:00+00:00'.format(pdate))
+                    if dt is not None:
+                        try:
+                            card_price, created = CardPrice.objects.get_or_create(card_id=card.id, printing='normal', at_datetime=dt)
+                            if created or card_price.price != cprice:
+                                card_price.price = cprice
+                                card_price.save()
+                        except BaseException as be:
+                            # probably a SQL error?
+                            logger.warning(
+                                "Unable to save card price for \"{}\" with date \"{}\" and price \"{}\". Exception: {}".format(
+                                    card.basecard.name, pdate, cprice, be))
+                            pass
         return card
 
     def get_card_number(self, jcard):
