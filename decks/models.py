@@ -314,6 +314,8 @@ class Deck(models.Model):
                        'lighting helix': 'Lightning Helix',
                        'liliana, vess': 'Liliana Vess',
                        'lilianna vess': 'Liliana Vess',
+                       "lim-da?l's vault": "Lim-Dûl's Vault",
+                       "lim-dul's vault": "Lim-Dûl's Vault",
                        'lingeroing souls': 'Lingering Souls',
                        'manastery swiftspear': 'Monastery Swiftspear',
                        'mirran crusade': 'Mirran Crusader',
