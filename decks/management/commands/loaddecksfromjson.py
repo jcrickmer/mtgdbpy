@@ -158,7 +158,7 @@ class Command(BaseCommand):
 
         # Process the deck files
         for filename in onlyfiles:
-            if filename.find('deck_') > -1:
+            if filename.find('deck_') == 0 and filename.find('.json') > -1:
                 ###fqfilename = join(directory, filename)
                 # print("last modified: %s" % time.ctime(getmtime(fqfilename)))
                 filehandler = open(join(directory, filename))
