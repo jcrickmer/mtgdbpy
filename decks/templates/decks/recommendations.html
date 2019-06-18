@@ -33,7 +33,8 @@ $('#top-menu-crafter').addClass('active');
     <div class="row">
       <div class="col-xs-12">
         <button type="submit" class="btn btn-success">Go</button>
-        <label for="exclude_lands">Exclude lands</label>: <input type="checkbox" name="exclude_lands" {% if exclude_lands %}checked{% endif %}/>
+        <label for="exclude_lands">Exclude lands</label>: <input type="checkbox" id="exclude_lands" name="exclude_lands" {% if exclude_lands %}checked{% endif %}/>
+        <label for="constrain_colors">Constrain colors</label>: <input type="checkbox" id="constrain_colors" name="constrain_colors" {% if constrain_colors %}checked{% endif %}/>
         {% csrf_token %}
       </div>
     </div>

@@ -13,9 +13,12 @@ class DeckCardRecommender(object):
         self.DECAY = 0.85
         self.LOOKBACK_REL_DENOM_DAYS = 1.1 * 365
 
-    def get_decks_for_physicalcard(self, pcard_id, formatname, result=dict()):
+    def get_decks_for_physicalcard(self, pcard_id, formatname, result=None):
         ''' For the card pcard_id, find all decks in formatname.
         '''
+        if result is None:
+            result = dict()
+
         # REVISIT - we need a way to SAMPLE this list somewhat randomly, with more
         # attention paid to recent rather than old. Just sorting by format end
         # date and limitting to 50 is not good enough.
@@ -38,6 +41,12 @@ class DeckCardRecommender(object):
 
     def get_recommendations_decklists(self, physicalcard_ids, formatname='Modern', include_seeds=False, k=20):
         deck_ids = dict()
+
+        # REVISIT - hard coding some deck sizes, but should really go and grab this data from the database.
+        format_card_count = 60 + 15
+        if formatname == 'Commander' or formatname == 'EDH':
+            format_card_count = 100 + 0
+
         for ccc in physicalcard_ids:
             deck_ids = self.get_decks_for_physicalcard(ccc, formatname, result=deck_ids)
 
@@ -67,10 +76,9 @@ class DeckCardRecommender(object):
                 # Then, subtract the age of the last time that this card was used as a precentage of the total lookback time that we care
                 # about, represented by self.LOOKBACK_REL_DENOM_DAYS. But, let's not let that get bigger than 1.
                 #
-                # This, let's use the cardcount as a means of expressing how valuable this card is to the deck. REVISIT - assuming deck
-                # size of 75 for now.
-                pcard_scores[c_pcard_id] = 1 - \
-                    (min(c_age, self.LOOKBACK_REL_DENOM_DAYS - 1) / self.LOOKBACK_REL_DENOM_DAYS) + (.25 * (c_cardcount / 75)) + ov
+                # This, let's use the cardcount as a means of expressing how valuable this card is to the deck.
+                pcard_scores[c_pcard_id] = 1 - (min(c_age, self.LOOKBACK_REL_DENOM_DAYS - 1) /
+                                                self.LOOKBACK_REL_DENOM_DAYS) + (.25 * (c_cardcount / format_card_count)) + ov
                 touched_ids.append(c_pcard_id)
                 # print "{} {} {}".format(c_pcard_id, c_cardcount, c_age)
             # penalize the missing

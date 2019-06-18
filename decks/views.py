@@ -151,6 +151,10 @@ def recommendations(request):
     include_lands = 'exclude_lands' not in request.POST
     context['exclude_lands'] = not include_lands
 
+    constrain_colors = 'constrain_colors' in request.POST
+    context['constrain_colors'] = constrain_colors
+    colors = list()
+
     pcs = list()
     if 'format' in request.POST:
         for ff in context['current_formats']:
@@ -167,7 +171,15 @@ def recommendations(request):
             pass
         #sys.stderr.write("cardlist is '{}'".format(pcs))
     context['card_list'] = (a.get_card_name() for a in pcs)
-    context['seeds'] = (a.get_latest_card() for a in pcs)
+    context['seeds'] = list()
+    for a in pcs:
+        context['seeds'].append(a.get_latest_card())
+    if constrain_colors:
+        for acard in context['seeds']:
+            for acc in acard.basecard.colors.all():
+                if acc.id not in colors:
+                    colors.append(acc.id)
+
     context['recommendations'] = ()
     context['spicy'] = list()
     if len(pcs):
@@ -177,7 +189,14 @@ def recommendations(request):
         # get spicy...
         basic_supertype = Supertype.objects.filter(supertype='Basic').first()
         #sys.stderr.write("Basic type is {}\n".format(basic_supertype))
+        combined_cards = list()
+        for tcard in context['seeds']:
+            tcard.annotations = {'match_confidence': 1.0}
+            combined_cards.append(tcard)
         for tcard in context['recommendations']:
+            combined_cards.append(tcard)
+        iteration_count = 0
+        for tcard in combined_cards:
             if basic_supertype in tcard.basecard.types.all():
                 # Let's not look up similar cards to Basic lands
                 continue
@@ -202,12 +221,30 @@ def recommendations(request):
                 if sim in context['spicy']:
                     #sys.stderr.write("-- skipping {} for spicy because it is already spicy!\n".format(sim))
                     continue
+                if constrain_colors:
+                    wrong_color = False
+                    for simc in sim.basecard.colors.all():
+                        if simc.id not in colors:
+                            wrong_color = True
+                    if wrong_color:
+                        continue
                 #sys.stderr.write("starting with score of {}\n".format(tcard.annotations['match_confidence']))
-                sim.annotations['spicy_score'] = tcard.annotations['match_confidence'] + (sim.annotations['similarity_score'] * 50.0)
+                cr = sim.basecard.physicalcard.cardrating_set.filter(format=context['format']).first()
+                cr_mod = 500.0
+                if cr is not None:
+                    cr_mod = cr.cardninjaRating()
+                sim.annotations['spicy_score'] = (tcard.annotations['match_confidence'] +
+                                                  (sim.annotations['similarity_score'] * 50.0)) * cr_mod / 10000.0
+
                 context['spicy'].append(sim)
+                # break # this limits us to just look at the FIRST card from the 4 potential results. Let's look at all 4, if we can.
+            if len(context['spicy']) >= 256 or iteration_count > 128:
                 break
-            if len(context['spicy']) >= 8:
-                break
+            iteration_count += 1
+            #sys.stderr.write("Looping... spicy length {}, count {}\n".format(len(context['spicy']), iteration_count))
+    # let's sort spicy by its spiciness level...
+    sorted_spicy_list = sorted(context['spicy'], key=lambda tcard: tcard.annotations['spicy_score'], reverse=True)
+    context['spicy'] = sorted_spicy_list[:12]
     return render(request, 'decks/recommendations.html', context)
 
 
