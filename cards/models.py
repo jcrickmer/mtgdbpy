@@ -1968,6 +1968,9 @@ class Association(models.Model):
         auto_now=True)
     associationcards = models.ManyToManyField(PhysicalCard, through='AssociationCard')
 
+    def card_count(self):
+        return self.associationcards.all().count()
+
     class Meta:
         managed = True
         db_table = 'association'
@@ -1975,7 +1978,7 @@ class Association(models.Model):
         verbose_name_plural = 'Associations'
 
     def __str__(self):
-        return str(self.name) + ' [' + str(self.id) + ']'
+        return '{}'.format(self.name)
 
 
 class AssociationCard(models.Model):
