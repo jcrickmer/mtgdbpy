@@ -41,7 +41,7 @@ class Rule(models.Model):
     class Meta:
         managed = True
 
-    def __unicode__(self):
+    def __str__(self):
         return str(self.section)
 
 
@@ -58,5 +58,5 @@ class Example(models.Model):
     class Meta:
         managed = True
 
-    def __unicode__(self):
+    def __str__(self):
         return '[Example ' + str(self.rule.section) + ' ' + str(self.position) + ']'

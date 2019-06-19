@@ -45,7 +45,7 @@ class Color(models.Model):
         managed = True
         db_table = 'color'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.color
 
 
@@ -59,7 +59,7 @@ class Rarity(models.Model):
         db_table = 'rarity'
         verbose_name_plural = 'Rarities'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.rarity
 
 
@@ -72,7 +72,7 @@ class Type(models.Model):
         managed = True
         db_table = 'type'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.type
 
 
@@ -84,7 +84,7 @@ class Supertype(models.Model):
         managed = True
         db_table = 'supertype'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.supertype
 
 
@@ -96,7 +96,7 @@ class Subtype(models.Model):
         managed = True
         db_table = 'subtype'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.subtype
 
 
@@ -767,7 +767,7 @@ class PhysicalCard(models.Model):
         verbose_name = 'Physical Card'
         verbose_name_plural = 'Physical Cards'
 
-    def __unicode__(self):
+    def __str__(self):
         return '{} [PC:{}]'.format(self.get_card_name(), str(self.id))
 
 
@@ -843,7 +843,7 @@ class BaseCard(models.Model):
         verbose_name_plural = 'Base Cards'
         unique_together = ('physicalcard', 'cardposition',)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name + \
             ' (physicalcard.id=' + str(self.physicalcard.id) + ')'
 
@@ -870,7 +870,7 @@ class Ruling(models.Model):
         verbose_name_plural = 'Rulings'
         db_table = 'ruling'
 
-    def __unicode__(self):
+    def __str__(self):
         return "Ruling " + str(self.id) + " for " + self.basecard.name
 
 
@@ -888,7 +888,7 @@ class ExpansionSet(models.Model):
         db_table = 'expansionset'
         verbose_name_plural = 'Expansion Sets'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name + " (" + self.abbr + ")"
 
 
@@ -900,7 +900,7 @@ class Mark(models.Model):
         managed = True
         db_table = 'mark'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.mark
 
 
@@ -1516,7 +1516,7 @@ class Card(models.Model):
         db_table = 'card'
         unique_together = ('expansionset', 'card_number', 'multiverseid')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.basecard.name + \
             "(" + self.expansionset.abbr + ") [" + str(self.multiverseid) + "]"
 
@@ -1567,7 +1567,7 @@ class CardType(models.Model):
         db_table = 'cardtype'
         unique_together = ('basecard', 'position',)
 
-    def __unicode__(self):
+    def __str__(self):
         return str(
             self.id) + " [Card: " + str(
             self.basecard.id) + " (" + self.basecard.name + "), Type: " + str(
@@ -1694,7 +1694,7 @@ class Format(models.Model):
         verbose_name_plural = 'Formats'
         db_table = 'format'
 
-    def __unicode__(self):
+    def __str__(self):
         return str(
             self.id) + " [Format: " + str(self.formatname) + " (" + self.format + ")]"
 
@@ -1709,7 +1709,7 @@ class FormatExpansionSet(models.Model):
         verbose_name_plural = 'Format Expansion Sets'
         db_table = 'formatexpansionset'
 
-    def __unicode__(self):
+    def __str__(self):
         return "Format: " + str(self.format.format) + " - " + self.expansionset.name + " (" + str(self.expansionset.id) + ")"
 
 
@@ -1722,7 +1722,7 @@ class FormatBannedCard(models.Model):
         verbose_name_plural = 'Format Banned Cards'
         db_table = 'formatbannedcard'
 
-    def __unicode__(self):
+    def __str__(self):
         return "Format: " + str(self.format.format) + " - " + self.physicalcard.get_card_name() + " (" + str(self.physicalcard.id) + ")"
 
 
@@ -1799,7 +1799,7 @@ class FormatBasecard(models.Model):
         unique_together = ('format', 'basecard',)
         db_table = 'formatbasecard'
 
-    def __unicode__(self):
+    def __str__(self):
         return "[Format: " + str(self.format.format) + " - " + \
             self.basecard.name + " (" + str(self.basecard.id) + ")]"
 
@@ -1823,7 +1823,7 @@ class Battle(models.Model):
             'loser_pcard',
             'session_key')
 
-    def __unicode__(self):
+    def __str__(self):
         return "[Battle " + str(self.id) + ": " + str(self.winner_pcard.id) + \
             " > " + str(self.loser_pcard.id) + " in " + self.format.format + "]"
 
@@ -1849,7 +1849,7 @@ class CardRating(models.Model):
         unique_together = ('physicalcard', 'format')
         db_table = 'cardrating'
 
-    def __unicode__(self):
+    def __str__(self):
         return "[CardRating " + str(self.id) + ": " + str(self.physicalcard.id) + " mu=" + str(self.mu) + " sigma=" + str(
             self.sigma) + " for format \"" + str(self.format.format) + "\"]"
 
@@ -1863,7 +1863,7 @@ class CardBattleStats():
         self.physicalcard = physicalcard
         self.format = format
 
-    def __unicode__(self):
+    def __str__(self):
         try:
             return u'[CardBattleStats for "{}" in "{}"]'.format(self.physicalcard.get_card_name(), self.format.format)
         except BaseException:
@@ -1974,7 +1974,7 @@ class Association(models.Model):
         verbose_name = 'Association'
         verbose_name_plural = 'Associations'
 
-    def __unicode__(self):
+    def __str__(self):
         return str(self.name) + ' [' + str(self.id) + ']'
 
 
@@ -1987,7 +1987,7 @@ class AssociationCard(models.Model):
         managed = True
         db_table = 'associationcard'
 
-    def __unicode__(self):
+    def __str__(self):
         return str(self.physicalcard) + ' => ' + str(self.association) + ' [' + str(self.id) + ']'
 
 
@@ -2016,6 +2016,6 @@ class CardPrice(models.Model):
         managed = True
         db_table = 'cardprice'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'{}-{} ({}) [{}]: ${}'.format(self.card.multiverseid, self.card.basecard.physicalcard.get_card_name(),
                                               self.printing, self.at_datetime, self.price)

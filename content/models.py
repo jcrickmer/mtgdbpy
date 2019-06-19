@@ -18,7 +18,7 @@ class Author(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField()
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{} [Author {}]".format(self.user.username, self.id)
 
     class Meta:
@@ -62,7 +62,7 @@ class ContentBlock(models.Model):
         result = pattern.sub(lambda m: self._make_ahref_html_for_card_name(m.group(1)), result)
         return result
 
-    def __unicode__(self):
+    def __str__(self):
         return u"ContentBlock {} [ver {}]".format(self.key, self.version)
 
     class Meta:

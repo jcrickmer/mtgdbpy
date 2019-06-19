@@ -48,7 +48,7 @@ class Tournament(models.Model):
         auto_now=True,
         null=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return 'Tournament {} ({}, {}) [{}]'.format(str(self.name), str(self.format.formatname), str(self.start_date), str(self.id))
 
     class Meta:
@@ -142,7 +142,7 @@ class Deck(models.Model):
         def __init__(self, text):
             self.text = text
 
-        def __unicode__(self):
+        def __str__(self):
             return 'CardNotFoundException: "{}"'.format(str(self.text))
 
     class CardsNotFoundException(BaseException):
@@ -151,7 +151,7 @@ class Deck(models.Model):
             # a list of CardNotFoundExceptions
             self.cnfes = cnfes
 
-        def __unicode__(self):
+        def __str__(self):
             return 'CardsNotFoundException: "{}"'.format(','.join(str(c) for c in self.cnfes))
 
     # Note that when matching the card name here we are getting everything but
@@ -380,7 +380,7 @@ class Deck(models.Model):
         managed = True
         db_table = 'deck'
 
-    def __unicode__(self):
+    def __str__(self):
         return '{} [{}]'.format(str(self.name), str(self.id))
 
 
@@ -400,7 +400,7 @@ class DeckCard(models.Model):
         db_table = 'deckcard'
         unique_together = ('deck', 'physicalcard', 'board')
 
-    def __unicode__(self):
+    def __str__(self):
         return '[' + str(self.deck.name) + ' (' + str(self.deck.id) + '): ' + str(self.cardcount) + \
             ' ' + str(self.physicalcard.id) + ' ' + str(self.board) + ']'
 
@@ -416,7 +416,7 @@ class TournamentDeck(models.Model):
         db_table = 'tournamentdeck'
         unique_together = ('deck', 'tournament')
 
-    def __unicode__(self):
+    def __str__(self):
         return 'TournamentDeck ({}, {}, {}) [{}]'.format(str(self.tournament), str(self.deck), str(self.place), str(self.id))
 
 
@@ -500,7 +500,7 @@ class FormatStat(models.Model):
                     fs.save()
                     safelog("      {}".format(fs))
 
-    def __unicode__(self):
+    def __str__(self):
         return 'FormatStat f="{}": dc={}, dcc={}'.format(str(self.format.format),
                                                          str(self.tournamentdeck_count),
                                                          str(self.tournamentdeckcard_count))
@@ -861,7 +861,7 @@ class FormatCardStat(models.Model):
             return 0.0
         return self.percentage_of_all_decks_delta(format_lookback_days=format_lookback_days) / part
 
-    def __unicode__(self):
+    def __str__(self):
         return 'FormatCardStat f="{}" c="{}": dc={}, oc={}'.format(
             self.format.format, self.physicalcard.get_card_name(), str(
                 self.deck_count), str(
@@ -982,7 +982,7 @@ class DeckCluster(models.Model):
 
         return result
 
-    def __unicode__(self):
+    def __str__(self):
         return 'DeckCluster {} ({}) [{}]'.format(str(self.name), str(self.formatname), str(self.id))
 
     class Meta:
