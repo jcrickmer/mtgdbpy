@@ -35,7 +35,7 @@ class CardModelForm(forms.ModelForm):
 
 
 class CardAdmin(admin.ModelAdmin):
-    search_fields = ['id','basecard__name', 'basecard__filing_name']
+    search_fields = ['id', 'basecard__name', 'basecard__filing_name']
     readonly_fields = ('id', 'basecard')
     fields = [
         'id',
@@ -49,8 +49,12 @@ class CardAdmin(admin.ModelAdmin):
 
     form = CardModelForm
 
-    list_display = ('id','get_name', 'rarity', 'multiverseid', 'expansionset_name_and_abbr', 'card_number')
+    list_display = ('id', 'get_name', 'rarity', 'multiverseid', 'expansionset_name_and_abbr', 'card_number', 'basecard_id', 'pcard_id')
     list_display_links = ('id', 'get_name')
+
+    def pcard_id(self, card):
+        return card.basecard.physicalcard_id
+    pcard_id.short_description = 'Physical Card Id'
 
     def get_name(self, obj):
         return obj.basecard.name
@@ -71,10 +75,23 @@ class BaseCardModelForm(forms.ModelForm):
 
 class ExpansionSetAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
+    list_display = ('id', 'name', 'abbr', 'release_date')
+    list_display_links = ('id', 'name', 'abbr')
+    ordering = ('-releasedate',)
+
+    def release_date(self, expansionset):
+        return expansionset.releasedate
 
 
 class TypeAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
+    list_display = ('id', 'type', 'card_count')
+    list_display_links = ('id', 'type')
+
+    def card_count(self, type):
+        return type.cardtype_set.all().count()
+
+    card_count.short_description = 'Card Count'
 
 
 class CardTypeAdmin(admin.ModelAdmin):
@@ -95,10 +112,24 @@ class CardSupertypeInline(admin.TabularInline):
 
 class SupertypeAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
+    list_display = ('id', 'supertype', 'card_count')
+    list_display_links = ('id', 'supertype')
+
+    def card_count(self, supertype):
+        return supertype.cardsupertype_set.all().count()
+
+    card_count.short_description = 'Card Count'
 
 
 class SubtypeAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
+    list_display = ('id', 'subtype', 'card_count')
+    list_display_links = ('id', 'subtype')
+
+    def card_count(self, subtype):
+        return subtype.cardsubtype_set.all().count()
+
+    card_count.short_description = 'Card Count'
 
 
 class CardSubtypeAdmin(admin.ModelAdmin):
@@ -114,6 +145,8 @@ class CardSubtypeInline(admin.TabularInline):
 
 class ColorAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
+    list_display = ('id', 'color')
+    list_display_links = ('id', 'color')
 
 
 class CardColorAdmin(admin.ModelAdmin):
@@ -288,7 +321,7 @@ class FormatAdmin(admin.ModelAdmin):
 
 
 class BaseCardAdmin(admin.ModelAdmin):
-    search_fields = ['id','name', 'filing_name']
+    search_fields = ['id', 'name', 'filing_name']
     readonly_fields = ('id', 'cmc', 'physicalcard')
     fields = [
         'id',
@@ -302,14 +335,25 @@ class BaseCardAdmin(admin.ModelAdmin):
         'loyalty']
     inlines = [CardColorInline, CardSupertypeInline, CardTypeInline, CardSubtypeInline]
     form = BaseCardModelForm
-    list_display = ('id', 'name', 'filing_name', 'basecard_full_type', 'physicalcard_id', 'cardposition', 'basecard_print_count','created_at', 'updated_at')
+    list_display = (
+        'id',
+        'name',
+        'filing_name',
+        'basecard_full_type',
+        'physicalcard_id',
+        'cardposition',
+        'basecard_print_count',
+        'created_at',
+        'updated_at')
     list_display_links = ('id', 'name', 'filing_name')
 
     def basecard_full_type(self, basecard):
         return basecard.get_full_type_str()
     basecard_full_type.short_description = 'Full Type'
+
     def basecard_print_count(self, basecard):
         return basecard.card_set.all().count()
+
 
 class FormatExpansionSetAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
@@ -330,11 +374,24 @@ class AssociationAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
     inlines = [AssociationCardInline, ]
     list_display = ['id', 'name', 'classification', 'card_count', 'created_at', 'updated_at']
-    list_display_links = ['id','name']
+    list_display_links = ['id', 'name']
+
+
+class RarityAdmin(admin.ModelAdmin):
+    readonly_fields = ('id',)
+    list_display = ['id', 'rarity', 'sortorder', 'card_count']
+    list_display_links = ['id', 'rarity']
+    ordering = ['sortorder', ]
+
+    def card_count(self, rarity):
+        return rarity.card_set.all().count()
+
+    card_count.short_description = 'Card Count'
+
 
 # Register your models here.
 admin.site.register(Color, ColorAdmin)
-admin.site.register(Rarity)
+admin.site.register(Rarity, RarityAdmin)
 admin.site.register(Card, CardAdmin)
 admin.site.register(BaseCard, BaseCardAdmin)
 admin.site.register(Mark, MarkAdmin)
