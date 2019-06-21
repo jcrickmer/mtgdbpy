@@ -110,6 +110,7 @@ AJAX_LOOKUP_CHANNELS = {
     'deckcard': ('cards.lookups', 'PhysicalCardLookup'),
     'physicalcard': ('cards.lookups', 'PhysicalCardLookup'),
     'expansionset': ('cards.lookups', 'ExpansionSetLookup'),
+    'card': ('cards.lookups', 'CardLookup'),
 }
 
 # Internationalization
@@ -169,6 +170,11 @@ LOGGING = {
         },
     },
     'loggers': {
+        'cards.admin': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
         'cards.views': {
             'handlers': ['console'],
             'level': 'INFO',

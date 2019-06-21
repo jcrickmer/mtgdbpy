@@ -4,6 +4,7 @@ from django.contrib import admin
 from cards.models import Color, Rarity, Card, BaseCard, Mark, ExpansionSet, Supertype, Subtype, Type, CardType, CardSubtype, PhysicalCard
 from cards.models import Format, FormatExpansionSet, FormatBannedCard, FormatBasecard
 from cards.models import Association, AssociationCard
+from cards.models import CardPrice
 from django.utils.safestring import mark_safe
 from django import forms
 from django.db import models
@@ -402,6 +403,69 @@ class RarityAdmin(admin.ModelAdmin):
     card_count.short_description = 'Card Count'
 
 
+class CardPriceAdmin(admin.ModelAdmin):
+    search_fields = ['id', 'card__basecard__name', 'card__basecard__filing_name']
+    readonly_fields = ('id', 'card_link')
+    list_display = ('id', 'card_name', 'expset', 'printing', 'formatted_price', 'at_datetime')
+    list_display_links = ('id', 'card_name', 'expset', 'printing', 'formatted_price', 'at_datetime')
+    ordering = ['-at_datetime', ]
+
+    # Both card and card_link are listed in the fields to be able to handle bot the "add" and "change" requests.
+    # Depending on the request path, the fields will be slightly modified in the get_fieldsets() method and the
+    # get_readonly_fields() method.
+    fields = ['id', 'card', 'card_link', 'printing', 'price', 'at_datetime']
+
+    def card_name(self, cardprice):
+        return cardprice.card.basecard.physicalcard.get_card_name()
+
+    def formatted_price(self, cardprice):
+        return '${:.2f}'.format(cardprice.price)
+
+    formatted_price.short_description = 'Price'
+
+    def expset(self, cardprice):
+        return cardprice.card.expansionset.name
+
+    def card_link(self, cardprice):
+        card_url = reverse('admin:cards_card_change', kwargs={
+            'object_id': cardprice.card.pk})
+        return mark_safe('<a href="{}">{} [{}]</a>'.format(card_url,
+                                                           cardprice.card.basecard.physicalcard.get_card_name(),
+                                                           cardprice.card.expansionset.name))
+
+    card_link.short_decription = 'Card'
+
+    def get_fieldsets(self, request, obj=None):
+        # If the operation is to add a new CardPrice, then let's REMOVE the "card_link" field all together.
+        result = super().get_fieldsets(request, obj=obj)
+        if 'cardprice/add' in request.path_info:
+            # let's remove card_link from the list of fields...
+            new_fields_list = list()
+            for field in result[0][1]['fields']:
+                if field != 'card_link':
+                    new_fields_list.append(field)
+            result[0][1]['fields'] = new_fields_list
+
+        return result
+
+    def get_readonly_fields(self, request, obj=None):
+        # If the operation is NOT an "add" (like it is a "change"), then let's make the "card" field readonly. This
+        # will greatly improve page load time, and it isn't an action we really want the admin user to be taking
+        # anyway.
+        ro_fields = super().get_readonly_fields(request, obj=obj)
+        if 'cardprice/add' not in request.path_info:
+            new_ros = list(ro_fields)
+            new_ros.append('card')
+            ro_fields = tuple(new_ros)
+        return ro_fields
+
+    # When "adding" a new CardPrice, let's use an AJAX form for the card. Note that this is also configured in
+    # settings.py and cards.lookups.CardLookup
+    form = make_ajax_form(CardPrice, {
+        'card': 'card'      # ForeignKeyField
+    })
+
+
 # Register your models here.
 admin.site.register(Color, ColorAdmin)
 admin.site.register(Rarity, RarityAdmin)
@@ -417,3 +481,4 @@ admin.site.register(Subtype, SubtypeAdmin)
 #admin.site.register(CardSubtype, CardSubtypeAdmin)
 admin.site.register(Format, FormatAdmin)
 admin.site.register(Association, AssociationAdmin)
+admin.site.register(CardPrice, CardPriceAdmin)
