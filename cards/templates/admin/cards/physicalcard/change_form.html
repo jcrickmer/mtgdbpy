@@ -1,0 +1,17 @@
+{% extends "admin/change_form.html" %}
+
+{% block after_related_objects %}
+  <fieldset class="module aligned cards">
+    <h2>BASECARDS</h2>
+    <div class="description">BaseCards of this PhysicalCard</div>
+    <div class="form-row field-basecard">
+      {% for basecard in original.basecard_set.all %}
+        <div>
+          <a href="{% url 'admin:cards_basecard_change' basecard.id %}">{{ basecard.name }}</a>
+          {{basecard.cardposition}}
+          [{{basecard.id}}]
+        </div>
+      {% endfor %}
+    </div>
+  </fieldset>
+{% endblock %}

@@ -4,6 +4,7 @@ from django.contrib import admin
 from cards.models import Color, Rarity, Card, BaseCard, Mark, ExpansionSet, Supertype, Subtype, Type, CardType, CardSubtype, PhysicalCard
 from cards.models import Format, FormatExpansionSet, FormatBannedCard, FormatBasecard
 from cards.models import Association, AssociationCard
+from django.utils.safestring import mark_safe
 from django import forms
 from django.db import models
 from django.forms import SelectMultiple, ModelMultipleChoiceField
@@ -36,11 +37,11 @@ class CardModelForm(forms.ModelForm):
 
 class CardAdmin(admin.ModelAdmin):
     search_fields = ['id', 'basecard__name', 'basecard__filing_name']
-    readonly_fields = ('id', 'basecard')
+    readonly_fields = ('id', 'basecard_link')
     fields = [
         'id',
         'expansionset',
-        'basecard',
+        'basecard_link',
         'multiverseid',
         'rarity',
         'flavor_text',
@@ -51,6 +52,12 @@ class CardAdmin(admin.ModelAdmin):
 
     list_display = ('id', 'get_name', 'rarity', 'multiverseid', 'expansionset_name_and_abbr', 'card_number', 'basecard_id', 'pcard_id')
     list_display_links = ('id', 'get_name')
+
+    def basecard_link(self, card):
+        bc_url = reverse('admin:cards_basecard_change', kwargs={
+            'object_id': card.basecard.pk})
+        return mark_safe('<a href="{}">{}</a>'.format(bc_url, card.basecard.id))
+    basecard_link.short_description = 'BaseCard Id'
 
     def pcard_id(self, card):
         return card.basecard.physicalcard_id
@@ -157,7 +164,7 @@ class MarkAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
 
 
-class CardColorInline(admin.TabularInline):
+class CardColorInline(admin.StackedInline):
     readonly_fields = ('id',)
     model = BaseCard.colors.through
 
@@ -322,10 +329,10 @@ class FormatAdmin(admin.ModelAdmin):
 
 class BaseCardAdmin(admin.ModelAdmin):
     search_fields = ['id', 'name', 'filing_name']
-    readonly_fields = ('id', 'cmc', 'physicalcard')
+    readonly_fields = ('id', 'cmc', 'pcard_link')
     fields = [
         'id',
-        'physicalcard',
+        'pcard_link',
         'name',
         'rules_text',
         'mana_cost',
@@ -346,6 +353,12 @@ class BaseCardAdmin(admin.ModelAdmin):
         'created_at',
         'updated_at')
     list_display_links = ('id', 'name', 'filing_name')
+
+    def pcard_link(self, basecard):
+        pc_url = reverse('admin:cards_physicalcard_change', kwargs={
+            'object_id': basecard.physicalcard.pk})
+        return mark_safe('<a href="{}">{}</a>'.format(pc_url, basecard.physicalcard.id))
+    pcard_link.short_description = 'PhysicalCard Id'
 
     def basecard_full_type(self, basecard):
         return basecard.get_full_type_str()
