@@ -183,7 +183,9 @@ SELECT s1.physicalcard_id AS id,
             if pc.get_card_name() in ('Plains', 'Island', 'Swamp', 'Mountain', 'Forest'):
                 pass
             else:
-                result[self.likely_printing_mvid(pc)] = True
+                mvid_as_int = self.likely_printing_mvid(pc)
+                if mvid_as_int:
+                    result[mvid_as_int] = True
 
         realresult = list()
         for rk in result.keys():
@@ -204,7 +206,9 @@ SELECT s1.physicalcard_id AS id,
     def likely_printing_mvid(self, pcard):
         """ pcard is a PhysicalCard. """
         card = Card.objects.filter(basecard__physicalcard=pcard, expansionset__in=self.expsets).order_by('multiverseid').first()
-        if card.multiverseid == 1084:
+        if card is None:
+            return
+        elif card.multiverseid == 1084:
             # Urza's Power Plant
             return 4193
         elif card.multiverseid == 1080:
