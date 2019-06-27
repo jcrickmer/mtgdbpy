@@ -18,6 +18,7 @@ import json
 import urllib
 from cards.deckbox import generate_auth_key
 
+logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
 
@@ -207,6 +208,7 @@ SELECT s1.physicalcard_id AS id,
         """ pcard is a PhysicalCard. """
         card = Card.objects.filter(basecard__physicalcard=pcard, expansionset__in=self.expsets).order_by('multiverseid').first()
         if card is None:
+            logger.warning("Unable to find a card for PhysicalCard {}".format(pcard))
             return
         elif card.multiverseid == 1084:
             # Urza's Power Plant
