@@ -16,7 +16,7 @@ cryptography==2.3.1
 cssselect==1.0.3
 Django==2.1.9
 django-ajax-selects==1.7.1
-django-celery-results==1.1.2
+django-celery-results==2.4.0
 django-configurations==2.1
 django-mathfilters==0.4.0
 django-mysql==2.4.1
